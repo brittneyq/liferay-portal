@@ -556,11 +556,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>MODAL_BUTTON_CLOSE</td>
-	<td>//div[contains(@class,'side-panel-iframe-header')]//button[contains(@class,'side-panel-iframe-close')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>WAREHOUSE_GEOLOCATION</td>
 	<td>//div[contains(@id, 'geolocationTitle')]</td>
 	<td></td>
