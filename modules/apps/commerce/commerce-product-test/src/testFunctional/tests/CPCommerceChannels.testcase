@@ -627,6 +627,99 @@ definition {
 		property portal.acceptance = "false";
 
 		// TODO COMMERCE-6266 VerifyNotificationQueue
+		property test.name.skip.portal.instance = "VerifyNotificationQueue";
+
+		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+		ApplicationsMenu.gotoSite(site = "Minium");
+
+		CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
+
+		CommerceAcceleratorsInitializer.createNewAccountViaFront(
+			accountName = "new Account",
+			adminEmailAddress = "test@liferay.com");
+
+		//ApplicationsMenu.gotoPortlet(
+		//	category = "User Group",
+		//	panel = "Control Panel",
+		//	portlet = "Users and Organizations");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "User Groups");
+
+		Click(locator1 = "Button#PLUS");
+
+		Type(
+			key_fieldLabel = "",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "User Account Group");
+
+		Button.clickSave();
+
+		Click(
+			key_userName = "User Account Group",
+			locator1= "Account#USER_TABLE_NAME");
+
+		Click(locator1 = "Button#PLUS");
+
+		Click(
+			key_userName = "Test Test",
+			locator1= "Account#USER_TABLE_NAME");
+
+		Button.click(button = "Add");
+
+		CommerceNavigator.gotoPortlet(
+			category = "Store Management",
+			portlet = "Channels");
+
+		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Notification Templates");
+
+		Click(locator1 = "Button#PLUS");
+
+		CommerceEntry.addNewNotificationTemplate(
+			entryName = "Test Notification Template",
+			entryTo = "[%USER_GROUP_User Account Group%]",
+			fromAddress = "test@liferay.com",
+			fromName = "Test",
+			notificationType = "Order Placed");
+
+		Button.clickSave();		
+
+		ApplicationsMenu.gotoSite(site = "Minium");
+
+		FrontStore.addInitializerProductToCart(
+			productName = "U-Joint",
+			productQuantity = "1");
+
+		CommerceNavigator.gotoMiniCart();
+
+		Button.click(button = "Submit");
+
+		Pause(locator1 = "3000");
+
+		CommerceCheckout.initializersCheckout(
+			newAddressAddress = "Test Address",
+			newAddressCity = "Test City",
+			newAddressCountry = "United States",
+			newAddressName = "Address Name",
+			newAddressZipCode = "Test Zip Code",
+			productName = "U-Joint",
+			productQuantity = "1",
+			productUnitPrice = "24",
+			shippingMethod = "Standard");
+
+		CommerceNavigator.gotoPortlet(
+			category = "Store Management",
+			portlet = "Channels");
+
+		CommerceNavigator.gotoEntry(entryName = "Minium Portal");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Notification Queue");
+	
 	}
 
 }

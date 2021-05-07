@@ -617,6 +617,11 @@
 	<td>//h4[contains(text(), '${key_entryName}')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td>NOTIFICATION_TEMPLATE_TO_FIELD</td>
+	<td>//input[contains(@id,'_to')]</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>
