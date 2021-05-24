@@ -20,6 +20,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.increment.BufferedIncrementThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.BaseDestination;
@@ -180,6 +181,8 @@ public class SynchronousDestinationTestRule
 			_destinations = ReflectionTestUtil.getFieldValue(
 				MessageBusUtil.getMessageBus(), "_destinations");
 
+			_bufferedIncrementForceSyncSafeCloseable =
+				BufferedIncrementThreadLocal.setWithSafeCloseable(true);
 			_forceSyncSafeCloseable = ProxyModeThreadLocal.setWithSafeCloseable(
 				true);
 
@@ -332,6 +335,10 @@ public class SynchronousDestinationTestRule
 		}
 
 		public void restorePreviousSync() {
+			if (_bufferedIncrementForceSyncSafeCloseable != null) {
+				_bufferedIncrementForceSyncSafeCloseable.close();
+			}
+
 			if (_forceSyncSafeCloseable != null) {
 				_forceSyncSafeCloseable.close();
 			}
@@ -419,6 +426,7 @@ public class SynchronousDestinationTestRule
 		private final List<String> _absentDestinationNames = new ArrayList<>();
 		private final List<Destination> _asyncServiceDestinations =
 			new ArrayList<>();
+		private SafeCloseable _bufferedIncrementForceSyncSafeCloseable;
 		private Map<String, Destination> _destinations;
 		private SafeCloseable _forceSyncSafeCloseable;
 		private final List<InvokerMessageListener>

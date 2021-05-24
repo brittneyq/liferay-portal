@@ -134,6 +134,23 @@ definition {
 			value1 = "${categoryName}");
 	}
 
+	macro viewNoVocabularyField {
+		Panel.expandPanel(panel = "Categorization");
+
+		AssertElementNotPresent(
+			key_vocabularyName = "${vocabularyName}",
+			locator1 = "AssetCategorization#CATEGORIES_FIELD");
+	}
+
+	macro viewTag {
+		var tagName = StringUtil.lowerCase("${tagName}");
+
+		AssertTextEquals(
+			key_tagName = "${tagName}",
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
+	}
+
 	macro viewVocabulary {
 		AssertTextEquals(
 			key_vocabularyName = "${vocabularyName}",

@@ -17,17 +17,24 @@ package com.liferay.object.rest.internal.deployer;
 import com.liferay.object.deployer.ObjectDefinitionDeployer;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.internal.graphql.dto.v1_0.ObjectDefinitionGraphQLDTOContributor;
+import com.liferay.object.rest.internal.jaxrs.context.provider.ObjectDefinitionContextProvider;
 import com.liferay.object.rest.internal.manager.v1_0.ObjectEntryManager;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.vulcan.graphql.dto.GraphQLDTOContributor;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.cxf.jaxrs.ext.ContextProvider;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentFactory;
+import org.osgi.service.component.ComponentInstance;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -41,22 +48,55 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 	public List<ServiceRegistration<?>> deploy(
 		ObjectDefinition objectDefinition) {
 
-		_componentFactory.newInstance(
-			HashMapDictionaryBuilder.<String, Object>put(
-				"liferay.jackson", false
-			).put(
-				"osgi.jaxrs.application.base",
-				"/" + objectDefinition.getRESTContextPath()
-			).put(
-				"osgi.jaxrs.extension.select",
-				"(osgi.jaxrs.name=Liferay.Vulcan)"
-			).put(
-				"osgi.jaxrs.name", objectDefinition.getName()
-			).put(
-				"objectDefinitionId", objectDefinition.getObjectDefinitionId()
-			).build());
+		_componentInstancesMap.put(
+			objectDefinition.getObjectDefinitionId(),
+			Arrays.asList(
+				_objectEntryApplicationComponentFactory.newInstance(
+					HashMapDictionaryBuilder.<String, Object>put(
+						"liferay.jackson", false
+					).put(
+						"liferay.object.definition.id",
+						objectDefinition.getObjectDefinitionId()
+					).put(
+						"osgi.jaxrs.application.base",
+						"/" + objectDefinition.getRESTContextPath()
+					).put(
+						"osgi.jaxrs.extension.select",
+						"(osgi.jaxrs.name=Liferay.Vulcan)"
+					).put(
+						"osgi.jaxrs.name", objectDefinition.getName()
+					).build()),
+				_objectEntryResourceComponentFactory.newInstance(
+					HashMapDictionaryBuilder.<String, Object>put(
+						"api.version", "v1.0"
+					).put(
+						"batch.engine.task.item.delegate", "true"
+					).put(
+						"batch.engine.task.item.delegate.name",
+						objectDefinition.getName()
+					).put(
+						"osgi.jaxrs.resource", "true"
+					).put(
+						"osgi.jaxrs.application.select",
+						"(osgi.jaxrs.name=" + objectDefinition.getName() + ")"
+					).build())));
 
-		return Collections.singletonList(
+		return Arrays.asList(
+			_bundleContext.registerService(
+				ContextProvider.class,
+				new ObjectDefinitionContextProvider(objectDefinition),
+				HashMapDictionaryBuilder.<String, Object>put(
+					"osgi.jaxrs.application.select",
+					"(osgi.jaxrs.name=" + objectDefinition.getName() + ")"
+				).put(
+					"osgi.jaxrs.extension", "true"
+				).put(
+					"enabled", "false"
+				).put(
+					"osgi.jaxrs.name",
+					objectDefinition.getRESTContextPath() +
+						"ObjectDefinitionContextProvider"
+				).build()),
 			_bundleContext.registerService(
 				GraphQLDTOContributor.class,
 				ObjectDefinitionGraphQLDTOContributor.of(
@@ -68,20 +108,40 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				).build()));
 	}
 
+	@Override
+	public void undeploy(long objectDefinitionId) {
+		List<ComponentInstance> componentInstances = _componentInstancesMap.get(
+			objectDefinitionId);
+
+		for (ComponentInstance componentInstance : componentInstances) {
+			componentInstance.dispose();
+		}
+	}
+
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		_bundleContext = bundleContext;
 	}
 
 	private BundleContext _bundleContext;
+	private final Map<Long, List<ComponentInstance>> _componentInstancesMap =
+		new HashMap<>();
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference(
 		target = "(component.factory=com.liferay.object.internal.jaxrs.application.ObjectEntryApplication)"
 	)
-	private ComponentFactory _componentFactory;
+	private ComponentFactory _objectEntryApplicationComponentFactory;
 
 	@Reference
 	private ObjectEntryManager _objectEntryManager;
+
+	@Reference(
+		target = "(component.factory=com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResource)"
+	)
+	private ComponentFactory _objectEntryResourceComponentFactory;
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;

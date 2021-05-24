@@ -9,6 +9,12 @@ definition {
 
 		var userLastName = JSONUserSetter.setUserLastName(userLastName = "${userLastName}");
 
+		var serviceContext = JSONUserSetter.setServiceContext(
+			assetCategoryIds = "${assetCategoryIds}",
+			assetTagNames = "${assetTagNames}",
+			serviceContext = "${serviceContext}",
+			workflowAction = "${workflowAction}");
+
 		if (!(isSet(birthdayDay))) {
 			var birthdayDay = "31";
 		}
@@ -41,6 +47,7 @@ definition {
 			creatorPassword = "${creatorPassword}",
 			jobTitle = "${jobTitle}",
 			locale = "${locale}",
+			serviceContext = "${serviceContext}",
 			userEmailAddress = "${userEmailAddress}",
 			userFirstName = "${userFirstName}",
 			userLastName = "${userLastName}",
@@ -252,6 +259,21 @@ definition {
 					authenticationMethod = "${authenticationMethod}",
 					userId = "${userId}");
 			}
+		}
+	}
+
+	macro updateStatus {
+		Variables.assertDefined(parameterList = "${userEmailAddress}");
+
+		var userIds = JSONUserAPI._getUserIdByEmailAddress(userEmailAddress = "${userEmailAddress}");
+
+		var status = JSONUserSetter.setStatus(
+			userStatus = "${userStatus}");
+
+		for (var userId : list "${userIds}") {
+			JSONUserAPI._updateStatus(
+				status = "${status}",
+				userId = "${userId}");
 		}
 	}
 

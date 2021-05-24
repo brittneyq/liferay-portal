@@ -283,12 +283,93 @@ definition {
 	}
 
 	@description = "COMMERCE-6321. As a buyer, I want to be able to search an Orders entry using Global Search and I want to be able to click on a suggested entry and get redirected to that order details page"
-	@ignore = "true"
 	@priority = "3"
 	test GlobalSearchSuggestedOrdersEntries {
 		property portal.acceptance = "false";
 
-		// TODO COMMERCE-6321 GlobalSearchSuggestedOrdersEntries pending implementation
+		// TODO Review
+
+		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+		ApplicationsMenu.gotoSite(site = "Minium");
+
+		CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Account Management");
+
+		CommerceAcceleratorsInitializer.createNewAccountViaFront(
+			accountName = "Commerce Account",
+			adminEmailAddress = "test@liferay.com");
+
+		Click(
+			key_navUnderline = "Members",
+			locator1 = "NavUnderline#NAV_UNDERLINE_LINK");
+
+		CommerceAcceleratorsInitializer.inviteNewMemberWithRoleToAccount(
+			emailAddress = "buyer@liferay.com",
+			role = "Buyer");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Account Users");
+
+		CommerceLogin.editPasswordCP(
+			newPassword = "ttest",
+			requirePasswordReset = "true",
+			userScreenName = "buyer");
+
+		User.logoutPG();
+
+		CommerceLogin.miniumLogin(
+			password = "ttest",
+			resetPassword = "test",
+			urlAppend = "web/minium",
+			userEmailAddress = "buyer@liferay.com");
+
+		CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Pending Orders");
+
+		Click(
+			key_text = "Add Order",
+			locator1 = "Button#ANY");
+
+		SelectFrameTop();
+
+		var orderId = selenium.getText("CommerceEntry#ACTIVE_ORDER_ID");
+
+		CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Catalog");
+
+		Click(locator1 = "AppBuilder#SEARCH_BUTTON");
+
+		Type(
+			key_text = "Search",
+			locator1 = "TextInput#CUSTOM_CANONICAL_URL_ENABLED",
+			value1 = "${orderId}");
+
+		AssertElementPresent(
+			key_value = "${orderId}",
+			locator1 = "CommerceEntry#SUGGESTION_ACTIVE_ORDER_KEY");
+
+		Click(locator1 = "Button#SEARCH_CLOSE");
+
+		Type(
+			key_text = "Search",
+			locator1 = "TextInput#CUSTOM_CANONICAL_URL_ENABLED",
+			value1 = "buyer@liferay.com");
+
+		AssertElementPresent(
+			key_value = "${orderId}",
+			locator1 = "CommerceEntry#SUGGESTION_ACTIVE_ORDER_KEY");
+
+		Click(
+			key_value = "${orderId}",
+			locator1 = "CommerceEntry#SUGGESTION_ACTIVE_ORDER_KEY");
+
+		AssertElementPresent(
+			key_value = "${orderId}",
+			locator1 = "CommerceEntry#ORDER_BY_KEY");
 	}
 
 	@description = "COMMERCE-6148. As a buyer, I want to search a product by its name using the Search Bar widget and I want the results to be visible on the Search Results widget"
@@ -580,21 +661,89 @@ definition {
 	}
 
 	@description = "COMMERCE-6147. As a buyer, I want to switch from one results page to another in Search Results"
-	@ignore = "true"
 	@priority = "3"
 	test SearchResultsWidgetChangeResultsPage {
 		property portal.acceptance = "false";
+		property test.name.skip.portal.instance = "CommerceSearch#SearchResultsWidgetChangeResultsPage";
 
-		// TODO COMMERCE-6147 SearchResultsWidgetChangeResultsPage pending implementation
+		// TODO Review
+
+		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+		ApplicationsMenu.gotoSite(site = "Minium");
+
+		var productsNamePage1 = "";
+		var curr_productNamePage1 = "";
+
+		for (var iterator : list "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20") {
+			Click(
+				key_index = "${iterator}",
+				locator1 = "CommerceAccelerators#PRODUCT_CARD_NAME_BY_INDEX");
+
+			WaitForElementPresent(locator1 = "CommerceFrontStore#FS_PRODUCT_NAME");
+
+			curr_productNamePage1 = selenium.getText("CommerceFrontStore#FS_PRODUCT_NAME");
+
+			if ("${iterator}" == "1") {
+				productsNamePage1 = "${curr_productNamePage1}";
+			}
+			else {
+				productsNamePage1 = "${productsNamePage1},${curr_productNamePage1}";
+			}
+
+			CommerceNavigator.gotoMiniumSidebarItem(menuItem = "Catalog");
+		}
+
+		Click(
+			key_pageNumber = "2",
+			locator1 = "Pagination#ANY_PAGE");
+
+		iterator = "1";
+
+		for (var curr_productNamePage1 : list "${productsNamePage1}") {
+			AssertTextNotEquals(
+				key_index = "${iterator}",
+				locator1 = "CommerceAccelerators#PRODUCT_CARD_NAME_BY_INDEX",
+				value1 = "${curr_productNamePage1}");
+
+			var iterator = MathUtil.sum("${iterator}", "1");
+		}
 	}
 
 	@description = "COMMERCE-6146. As a buyer, I want to change the number of items to display for every page from Search Results widget configuration"
-	@ignore = "true"
 	@priority = "3"
 	test SearchResultsWidgetEditNumberOfItemsToDisplayFromConfiguration {
 		property portal.acceptance = "false";
+		property test.name.skip.portal.instance = "CommerceSearch#SearchResultsWidgetEditNumberOfItemsToDisplayFromConfiguration";
 
-		// TODO COMMERCE-6146 SearchResultsWidgetEditNumberOfItemsToDisplayFromConfiguration pending implementation
+		// TODO Review
+
+		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+		ApplicationsMenu.gotoSite(site = "Minium");
+
+		MouseOver(locator1 = "CommerceEntry#PAGINATION_BAR");
+
+		Click.clickNoWaitForVisible(locator1 = "CommerceAccelerators#SEARCH_RESULT_OPTIONS");
+
+		MenuItem.click(menuItem = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		Navigator.gotoNavTab(navTab = "Pagination");
+
+		Type(
+			key_fieldLabel = "Number of Items to Display",
+			locator1 = "TextInput#GENERIC_NUMBER_INPUT",
+			value1 = "4");
+
+		Button.clickSave();
+
+		IFrame.closeFrame();
+
+		AssertTextEquals(
+			locator1 = "Dropdown#ENTRIES",
+			value1 = "4 Entries Per Page");
 	}
 
 	@description = "COMMERCE-6663. I want to be able to use ADT to render Search Results widget and I want to be able to select a Display Template and see it applied to the widget"

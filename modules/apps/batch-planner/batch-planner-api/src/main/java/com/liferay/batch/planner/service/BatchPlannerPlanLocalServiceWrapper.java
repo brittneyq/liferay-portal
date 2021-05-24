@@ -51,6 +51,15 @@ public class BatchPlannerPlanLocalServiceWrapper
 			batchPlannerPlan);
 	}
 
+	@Override
+	public com.liferay.batch.planner.model.BatchPlannerPlan addBatchPlannerPlan(
+			long userId, String externalType, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _batchPlannerPlanLocalService.addBatchPlannerPlan(
+			userId, externalType, name);
+	}
+
 	/**
 	 * Creates a new batch planner plan with the primary key. Does not add the batch planner plan to the database.
 	 *
@@ -329,6 +338,16 @@ public class BatchPlannerPlanLocalServiceWrapper
 
 		return _batchPlannerPlanLocalService.updateBatchPlannerPlan(
 			batchPlannerPlan);
+	}
+
+	@Override
+	public com.liferay.batch.planner.model.BatchPlannerPlan
+			updateBatchPlannerPlan(
+				long userId, long batchPlannerPlanId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _batchPlannerPlanLocalService.updateBatchPlannerPlan(
+			userId, batchPlannerPlanId, name);
 	}
 
 	@Override

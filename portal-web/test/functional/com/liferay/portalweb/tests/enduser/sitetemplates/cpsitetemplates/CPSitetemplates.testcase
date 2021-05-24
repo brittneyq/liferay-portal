@@ -639,8 +639,8 @@ definition {
 		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
 
 		Click(
-			key_url = "site-configuration-google-pagespeed",
-			locator1 = "ListGroupItem#CONFIGURATION_ITEM_LINK");
+			key_itemName = "Pages",
+			locator1 = "ListGroupItem#ITEM_TEXT");
 
 		Navigator.gotoNavTab(navTab = "Pages");
 

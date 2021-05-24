@@ -207,6 +207,11 @@
 </tr>
 <!--PUBLISH-->
 <tr>
+    <td>PUBLISH_FORM_DESCRIPTION_FIELD</td>
+    <td>//div[contains(@class,'ddm-form-basic-info')]//p[contains(text(), '${key_formDescription}')]</td>
+    <td></td>
+</tr>
+<tr>
     <td>PUBLISH_FORM_NAME_FIELD</td>
     <td>//h1[contains(@class,'form-name') and contains(.,'${key_formName}')]</td>
     <td></td>
@@ -373,7 +378,7 @@
 </tr>
 <tr>
     <td>SIDEBAR_MENUITEM_DUPLICATE_FIELD</td>
-    <td>//a[@title='Duplicate Field'] | //button[text()='Duplicate Field']</td>
+    <td>//a[@title='Duplicate'] | //button[text()='Duplicate']</td>
     <td></td>
 </tr>
 <tr>
@@ -461,6 +466,11 @@
 <tr>
     <td>DATA_PROVIDER_PERMISSIONS_VIEWABLE_BY_SELECT</td>
     <td>//div[contains(@id,'permissionsContent')]//select[contains(@id,'inputPermissionsViewRole')]</td>
+    <td></td>
+</tr>
+<tr>
+    <td>ANY_DISABLED_BUTTON</td>
+    <td>//button[contains(@class,'disabled') and contains (text(),'${key_value}')]</td>
     <td></td>
 </tr>
 </tbody>

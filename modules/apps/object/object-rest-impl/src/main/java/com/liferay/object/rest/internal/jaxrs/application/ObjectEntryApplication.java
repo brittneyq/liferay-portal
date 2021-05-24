@@ -14,15 +14,22 @@
 
 package com.liferay.object.rest.internal.jaxrs.application;
 
+import com.liferay.object.model.ObjectField;
 import com.liferay.object.rest.internal.jaxrs.container.request.filter.ObjectDefinitionIdContainerRequestFilter;
-import com.liferay.object.rest.internal.jaxrs.context.provider.ObjectDefinitionContextProvider;
+import com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResourceImpl;
 import com.liferay.object.rest.internal.resource.v1_0.OpenAPIResourceImpl;
-import com.liferay.object.rest.resource.v1_0.ObjectEntryResource;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.portal.vulcan.openapi.DTOProperty;
+import com.liferay.portal.vulcan.openapi.OpenAPISchemaFilter;
+import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
 
@@ -43,32 +50,65 @@ public class ObjectEntryApplication extends Application {
 	public Set<Object> getSingletons() {
 		Set<Object> objects = new HashSet<>();
 
-		objects.add(_objectEntryResource);
-		objects.add(_openAPIResourceImpl);
 		objects.add(
-			new ObjectDefinitionContextProvider(
-				_objectDefinitionLocalService.fetchObjectDefinition(
-					_objectDefinitionId)));
+			new ObjectDefinitionIdContainerRequestFilter(
+				_applicationName, _objectDefinitionId));
 		objects.add(
-			new ObjectDefinitionIdContainerRequestFilter(_objectDefinitionId));
+			new OpenAPIResourceImpl(
+				_openAPIResource, _getOpenAPISchemaFilter(),
+				new HashSet<Class<?>>() {
+					{
+						add(ObjectEntryResourceImpl.class);
+						add(OpenAPIResourceImpl.class);
+					}
+				}));
 
 		return objects;
 	}
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
-		_objectDefinitionId = (Long)properties.get("objectDefinitionId");
+		_applicationName = (String)properties.get("osgi.jaxrs.name");
+
+		_objectDefinitionId = (Long)properties.get(
+			"liferay.object.definition.id");
+
+		_objectFields = _objectFieldLocalService.getObjectFields(
+			_objectDefinitionId);
 	}
 
+	private OpenAPISchemaFilter _getOpenAPISchemaFilter() {
+		OpenAPISchemaFilter openAPISchemaFilter = new OpenAPISchemaFilter();
+
+		DTOProperty dtoProperty = new DTOProperty("ObjectEntry", "object");
+
+		Stream<ObjectField> stream = _objectFields.stream();
+
+		dtoProperty.setDTOProperties(
+			stream.map(
+				objectField -> new DTOProperty(
+					objectField.getName(), objectField.getType())
+			).collect(
+				Collectors.toList()
+			));
+
+		openAPISchemaFilter.setDTOProperty(dtoProperty);
+
+		return openAPISchemaFilter;
+	}
+
+	private String _applicationName;
 	private Long _objectDefinitionId;
 
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
-	private ObjectEntryResource _objectEntryResource;
+	private ObjectFieldLocalService _objectFieldLocalService;
+
+	private List<ObjectField> _objectFields;
 
 	@Reference
-	private OpenAPIResourceImpl _openAPIResourceImpl;
+	private OpenAPIResource _openAPIResource;
 
 }

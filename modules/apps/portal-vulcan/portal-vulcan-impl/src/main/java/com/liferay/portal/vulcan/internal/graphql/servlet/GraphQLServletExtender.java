@@ -902,8 +902,6 @@ public class GraphQLServletExtender {
 
 		Field field = _getThisField(declaringClass);
 
-		GraphQLFieldDefinition graphQLFieldDefinition =
-			dataFetchingEnvironment.getFieldDefinition();
 		Object instance = null;
 
 		Class<?> contributorClass = _getContributorClass(declaringClass);
@@ -914,6 +912,9 @@ public class GraphQLServletExtender {
 				dataFetchingEnvironment.getSource());
 		}
 		else {
+			GraphQLFieldDefinition graphQLFieldDefinition =
+				dataFetchingEnvironment.getFieldDefinition();
+
 			if ((dataFetchingEnvironment.getRoot() ==
 					dataFetchingEnvironment.getSource()) ||
 				Objects.equals(
@@ -1430,8 +1431,6 @@ public class GraphQLServletExtender {
 	private Object _getContributorInstance(
 		Class<?> contributorClass, Class<?> declaringClass, Object source) {
 
-		Object service = _getService(contributorClass);
-
 		Class<?> queryClass = declaringClass.getEnclosingClass();
 
 		Constructor<?> constructor = queryClass.getConstructors()[0];
@@ -1442,7 +1441,7 @@ public class GraphQLServletExtender {
 			args = new Object[0];
 		}
 		else {
-			args = new Object[] {service};
+			args = new Object[] {_getService(contributorClass)};
 		}
 
 		Object query = ReflectionKit.constructNewInstance(constructor, args);
@@ -1737,8 +1736,7 @@ public class GraphQLServletExtender {
 		mutationBuilder.field(
 			_addField(
 				graphQLObjectType, createName,
-				_addArgument(graphQLInputType, resourceName),
-				_addArgument(Scalars.GraphQLLong, "siteId")));
+				_addArgument(graphQLInputType, resourceName)));
 
 		GraphQLCodeRegistry.Builder graphQLCodeRegistryBuilder =
 			processingElementsContainer.getCodeRegistryBuilder();
@@ -1749,13 +1747,7 @@ public class GraphQLServletExtender {
 				(DataFetcher<Object>)
 					dataFetchingEnvironment -> graphQLDTOContributor.createDTO(
 						dataFetchingEnvironment.getArgument(resourceName),
-						_getDTOConverterContext(
-							dataFetchingEnvironment,
-							HashMapBuilder.<String, Serializable>put(
-								"siteId",
-								(Long)dataFetchingEnvironment.getArgument(
-									"siteId")
-							).build()))
+						_getDTOConverterContext(dataFetchingEnvironment, null))
 			).build());
 
 		// Delete

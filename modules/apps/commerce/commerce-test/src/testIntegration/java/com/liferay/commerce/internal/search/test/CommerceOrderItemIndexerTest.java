@@ -24,6 +24,7 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.service.CommerceOrderItemLocalService;
+import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
@@ -38,7 +39,6 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.SortFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
@@ -57,8 +57,10 @@ import java.util.List;
 
 import org.frutilla.FrutillaRule;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,7 +70,6 @@ import org.junit.runner.RunWith;
  * @author Andrea Di Giorgi
  * @author Alessio Antonio Rendina
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 @Sync
 public class CommerceOrderItemIndexerTest {
@@ -81,12 +82,15 @@ public class CommerceOrderItemIndexerTest {
 			PermissionCheckerMethodTestRule.INSTANCE,
 			SynchronousDestinationTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
 
@@ -94,6 +98,11 @@ public class CommerceOrderItemIndexerTest {
 			_group.getCompanyId());
 
 		_indexer = _indexerRegistry.getIndexer(CommerceOrderItem.class);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		_commerceOrderLocalService.deleteCommerceOrders(_group.getGroupId());
 	}
 
 	@Test
@@ -289,22 +298,23 @@ public class CommerceOrderItemIndexerTest {
 	@Inject
 	private static CommerceOrderItemLocalService _commerceOrderItemLocalService;
 
+	private static Company _company;
+
 	@Inject
 	private static IndexerRegistry _indexerRegistry;
+
+	private static User _user;
 
 	@DeleteAfterTestRun
 	private CommerceCurrency _commerceCurrency;
 
-	@DeleteAfterTestRun
-	private Company _company;
+	@Inject
+	private CommerceOrderLocalService _commerceOrderLocalService;
 
 	@Inject
 	private CPInstanceLocalService _cpInstanceLocalService;
 
 	private Group _group;
 	private Indexer<CommerceOrderItem> _indexer;
-
-	@DeleteAfterTestRun
-	private User _user;
 
 }

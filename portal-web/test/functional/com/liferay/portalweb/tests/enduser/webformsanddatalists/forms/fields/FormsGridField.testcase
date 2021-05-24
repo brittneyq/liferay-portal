@@ -204,7 +204,7 @@ definition {
 		property portal.acceptance = "false";
 
 		// TODO LPS-132457 TypeCanBeChanged pending implementation
-		
+
 	}
 
 }

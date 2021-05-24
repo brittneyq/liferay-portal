@@ -15,9 +15,14 @@
 package com.liferay.digital.signature.internal.manager;
 
 import com.liferay.digital.signature.internal.http.DSHttp;
+import com.liferay.digital.signature.manager.DSCustomFieldManager;
 import com.liferay.digital.signature.manager.DSEnvelopeManager;
+import com.liferay.digital.signature.model.DSCustomField;
+import com.liferay.digital.signature.model.DSDocument;
 import com.liferay.digital.signature.model.DSEnvelope;
+import com.liferay.digital.signature.model.DSRecipient;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -28,7 +33,9 @@ import com.liferay.portal.kernel.util.StringBundler;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -41,14 +48,29 @@ public class DSEnvelopeManagerImpl implements DSEnvelopeManager {
 
 	@Override
 	public DSEnvelope addDSEnvelope(long groupId, DSEnvelope dsEnvelope) {
+		String dsEnvelopeName = dsEnvelope.getName();
+		String dsEnvelopeSenderEmailAddress =
+			dsEnvelope.getSenderEmailAddress();
+
 		dsEnvelope = _toDSEnvelope(
 			_dsHttp.post(groupId, "envelopes", _toJSONObject(dsEnvelope)));
 
-		if (_log.isDebugEnabled()) {
-			_log.debug(
-				"Added digital signature envelope ID " +
-					dsEnvelope.getDSEnvelopeId());
-		}
+		_dsCustomFieldManager.addDSCustomFields(
+			groupId, dsEnvelope.getDSEnvelopeId(),
+			new DSCustomField() {
+				{
+					name = "envelopeName";
+					show = true;
+					value = dsEnvelopeName;
+				}
+			},
+			new DSCustomField() {
+				{
+					name = "envelopeSenderEmailAddress";
+					show = true;
+					value = dsEnvelopeSenderEmailAddress;
+				}
+			});
 
 		return dsEnvelope;
 	}
@@ -68,7 +90,8 @@ public class DSEnvelopeManagerImpl implements DSEnvelopeManager {
 		JSONObject jsonObject = _dsHttp.get(
 			groupId,
 			StringBundler.concat(
-				"envelopes/", dsEnvelopeId, "?include=documents,recipients"));
+				"envelopes/", dsEnvelopeId,
+				"?include=custom_fields,documents,recipients"));
 
 		return _toDSEnvelope(jsonObject);
 	}
@@ -81,7 +104,7 @@ public class DSEnvelopeManagerImpl implements DSEnvelopeManager {
 			groupId,
 			StringBundler.concat(
 				"envelopes?from_date=", fromDateString,
-				"&include=recipients,documents&order=desc"));
+				"&include=custom_fields,documents,recipients&order=desc"));
 
 		return JSONUtil.toList(
 			jsonObject.getJSONArray("envelopes"),
@@ -97,11 +120,69 @@ public class DSEnvelopeManagerImpl implements DSEnvelopeManager {
 			StringBundler.concat(
 				"envelopes/?envelope_ids=",
 				ArrayUtil.toString(dsEnvelopeIds, StringPool.BLANK),
-				"&include=documents,recipients"));
+				"&include=custom_fields,documents,recipients"));
 
 		return JSONUtil.toList(
 			jsonObject.getJSONArray("envelopes"),
 			evenlopeJSONObject -> _toDSEnvelope(evenlopeJSONObject), _log);
+	}
+
+	private List<DSDocument> _getDSDocuments(JSONArray jsonArray) {
+		return JSONUtil.toList(
+			jsonArray,
+			jsonObject -> new DSDocument() {
+				{
+					dsDocumentId = jsonObject.getString("documentId");
+					name = jsonObject.getString("name");
+					uri = jsonObject.getString("uri");
+				}
+			},
+			_log);
+	}
+
+	private List<DSRecipient> _getDSRecipients(JSONObject jsonObject) {
+		if (jsonObject == null) {
+			return Collections.emptyList();
+		}
+
+		return JSONUtil.toList(
+			jsonObject.getJSONArray("signers"),
+			signerJSONObject -> new DSRecipient() {
+				{
+					dsRecipientId = signerJSONObject.getString("recipientId");
+					emailAddress = signerJSONObject.getString("email");
+					name = signerJSONObject.getString("name");
+				}
+			},
+			_log);
+	}
+
+	private void _setDSEnvelopeCustomField(
+		DSEnvelope dsEnvelope, JSONObject jsonObject) {
+
+		String name = jsonObject.getString("name");
+		String value = jsonObject.getString("value");
+
+		if (Objects.equals(name, "envelopeName")) {
+			dsEnvelope.setName(value);
+		}
+		else if (Objects.equals(name, "envelopeSenderEmailAddress")) {
+			dsEnvelope.setSenderEmailAddress(value);
+		}
+	}
+
+	private void _setDSEnvelopeCustomFields(
+		DSEnvelope dsEnvelope, JSONObject jsonObject) {
+
+		if (jsonObject == null) {
+			return;
+		}
+
+		JSONArray jsonArray = jsonObject.getJSONArray("textCustomFields");
+
+		jsonArray.forEach(
+			element -> _setDSEnvelopeCustomField(
+				dsEnvelope, (JSONObject)element));
 	}
 
 	private DSEnvelope _toDSEnvelope(JSONObject jsonObject) {
@@ -109,16 +190,28 @@ public class DSEnvelopeManagerImpl implements DSEnvelopeManager {
 			return new DSEnvelope();
 		}
 
-		return new DSEnvelope() {
+		DSEnvelope dsEnvelope = new DSEnvelope() {
 			{
 				createdLocalDateTime = _toLocalDateTime(
 					jsonObject.getString("createdDateTime"));
+				dsDocuments = _getDSDocuments(
+					jsonObject.getJSONArray("envelopeDocuments"));
 				dsEnvelopeId = jsonObject.getString("envelopeId");
+				dsRecipients = _getDSRecipients(
+					jsonObject.getJSONObject("recipients"));
 				emailBlurb = jsonObject.getString("emailBlurb");
 				emailSubject = jsonObject.getString("emailSubject");
+				name = jsonObject.getString("envelopeName");
+				senderEmailAddress = jsonObject.getString(
+					"envelopeSenderEmailAddress");
 				status = jsonObject.getString("status");
 			}
 		};
+
+		_setDSEnvelopeCustomFields(
+			dsEnvelope, jsonObject.getJSONObject("customFields"));
+
+		return dsEnvelope;
 	}
 
 	private JSONObject _toJSONObject(DSEnvelope dsEnvelope) {
@@ -176,6 +269,9 @@ public class DSEnvelopeManagerImpl implements DSEnvelopeManager {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DSEnvelopeManagerImpl.class);
+
+	@Reference
+	private DSCustomFieldManager _dsCustomFieldManager;
 
 	@Reference
 	private DSHttp _dsHttp;

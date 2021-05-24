@@ -20,6 +20,7 @@ import com.liferay.petra.encryptor.Encryptor;
 import com.liferay.petra.encryptor.EncryptorException;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.db.partition.DBPartitionUtil;
@@ -48,6 +49,7 @@ import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.ContactConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.GroupTable;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.Organization;
@@ -1042,6 +1044,9 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 				if (!Objects.equals(oldLanguageIds, newLanguageIds)) {
 					validateLanguageIds(newLanguageIds);
+
+					_updateGroupLanguageIds(
+						companyId, newLanguageIds, oldLanguageIds);
 
 					LanguageUtil.resetAvailableLocales(companyId);
 
@@ -2074,6 +2079,73 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		};
 
 		TransactionCommitCallbackUtil.registerCallback(callable);
+	}
+
+	private void _updateGroupLanguageIds(
+		long companyId, String newLanguageIds, String oldLanguageIds) {
+
+		String[] oldLanguageIdsArray = StringUtil.split(oldLanguageIds);
+
+		if (ArrayUtil.isEmpty(oldLanguageIdsArray)) {
+			oldLanguageIdsArray = LocaleUtil.toLanguageIds(
+				LanguageUtil.getCompanyAvailableLocales(companyId));
+		}
+
+		List<String> removedLanguageIds = ListUtil.remove(
+			ListUtil.fromArray(oldLanguageIdsArray),
+			ListUtil.fromArray(StringUtil.split(newLanguageIds)));
+
+		if (ListUtil.isEmpty(removedLanguageIds)) {
+			return;
+		}
+
+		List<Group> groups = groupLocalService.dslQuery(
+			DSLQueryFactoryUtil.selectDistinct(
+				GroupTable.INSTANCE
+			).from(
+				GroupTable.INSTANCE
+			).where(
+				GroupTable.INSTANCE.companyId.eq(
+					companyId
+				).and(
+					GroupTable.INSTANCE.active.eq(true)
+				).and(
+					GroupTable.INSTANCE.site.eq(true)
+				).and(
+					GroupTable.INSTANCE.typeSettings.like(
+						"%inheritLocales=false%")
+				)
+			));
+
+		for (Group group : groups) {
+			UnicodeProperties groupTypeSettingsUnicodeProperties =
+				group.getTypeSettingsProperties();
+
+			String[] groupLanguageIds = StringUtil.split(
+				groupTypeSettingsUnicodeProperties.getProperty(
+					PropsKeys.LOCALES));
+
+			boolean updateLocales = false;
+
+			for (String removedLanguageId : removedLanguageIds) {
+				if (ArrayUtil.contains(groupLanguageIds, removedLanguageId)) {
+					groupLanguageIds = ArrayUtil.remove(
+						groupLanguageIds, removedLanguageId);
+
+					updateLocales = true;
+				}
+			}
+
+			if (updateLocales) {
+				LanguageUtil.resetAvailableGroupLocales(group.getGroupId());
+
+				groupTypeSettingsUnicodeProperties.setProperty(
+					PropsKeys.LOCALES,
+					StringUtil.merge(groupLanguageIds, StringPool.COMMA));
+
+				groupLocalService.updateGroup(group);
+			}
+		}
 	}
 
 	private static final String _DEFAULT_VIRTUAL_HOST = "localhost";

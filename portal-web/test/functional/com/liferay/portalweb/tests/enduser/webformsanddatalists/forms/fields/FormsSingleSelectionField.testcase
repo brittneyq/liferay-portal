@@ -38,18 +38,68 @@ definition {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132189 CanBeCreated pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
 
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection");
+
+		var fieldName = FormFields.getFieldName();
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		FormFields.viewRadioLabel(
+			fieldLabel = "Single Selection",
+			fieldName = "${fieldName}");
 	}
 
 	@description = "Verify that a Single Selection Field can be deleted"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test CanBeDeleted {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132191 CanBeDeleted pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection",
+			formPageNumber = "0");
+
+		FormViewBuilder.closeSidebar();
+
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Numeric",
+			formPageNumber = "0");
+
+		FormsAdminNavigator.gotoDeleteField(fieldName = "Single Selection");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		FormFields.viewDeletedFieldLabel(fieldName = "Single Selection");
 	}
 
 	@description = "Verify that a Single Selection Field can be duplicated"
@@ -60,16 +110,48 @@ definition {
 		property portal.acceptance = "false";
 
 		// TODO LPS-132193 CanBeDuplicated pending implementation
+
 	}
 
 	@description = "Verify that a Single Selection Field can be edited"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test CanBeEdited {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132190 CanBeEdited pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		Click(
+			key_name = "Single Selection",
+			locator1 = "FormFields#FIELD_TARGET_LABEL");
+
+		Form.editFieldLabelMetal(fieldValue = "Test Single Selection");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementPresent(
+			key_name = "Test Single Selection",
+			locator1 = "FormFields#FIELD_TARGET_LABEL");
 	}
 
 	@description = "Verify that a Single Selection Field can be required"
@@ -93,13 +175,78 @@ definition {
 	}
 
 	@description = "Verify that a Form can be submitted with a Single Selection Field"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test CanBeSubmitted {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132201 CanBeSubmitted pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection");
+
+		var fieldSingleSelectionField = FormFields.getFieldName();
+
+		FormFields.editOptionsRow(
+			optionValue = "Option 1",
+			rowNumber = "1");
+
+		FormFields.editOptionsRow(
+			optionValue = "Option 2",
+			rowNumber = "2");
+
+		Click(locator1 = "Button#SAVE");
+
+		Button.clickPublish();
+
+		FormsAdminNavigator.gotoPublishedForm();
+
+		AssertElementPresent(
+			key_rowNumber = "1",
+			locator1 = "FormPortlet#SELECT_SINGLE_SELECTION_ROW");
+
+		AssertElementPresent(
+			key_optionValue = "Option 1",
+			key_rowNumber = "1",
+			locator1 = "FormPortlet#SELECT_SINGLE_SELECTION_ROW_OPTION");
+
+		AssertElementPresent(
+			key_optionValue = "Option 2",
+			key_rowNumber = "1",
+			locator1 = "FormPortlet#SELECT_SINGLE_SELECTION_ROW_OPTION");
+
+		Click(
+			key_optionValue = "Option 1",
+			key_rowNumber = "1",
+			locator1 = "FormPortlet#SELECT_SINGLE_SELECTION_ROW_OPTION");
+
+		Button.clickSubmitButton();
+
+		FormPortlet.viewSuccessPage(
+			successPageDescription = "Your information was successfully received. Thank you for filling out the form.",
+			successPageTitle = "Thank you.");
+
+		Navigator.openSpecificURL(url = "http://localhost:8080");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoViewEntries();
+
+		FormsAdminNavigator.gotoView();
+
+		FormsAdmin.viewRadioEntry(
+			fieldLabel = "Single Selection",
+			fieldName = "${fieldSingleSelectionField}",
+			fieldValue = "Option 1");
 	}
 
 	@description = "Verify that changes to the Field can be canceled"
@@ -113,43 +260,174 @@ definition {
 	}
 
 	@description = "Verify that the Field References for the options can be edited"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test FieldReferencesOfOptionsCanBeEdited {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132208 FieldReferencesOfOptionsCanBeEdited pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Single Selection");
+
+		FormFields.editOptionsRowValueOrFieldReference(
+			fieldReference = "Option1234",
+			optionValue = "Option 1",
+			rowNumber = "1");
+
+		FormFields.editOptionsRowValueOrFieldReference(
+			optionValue = "Option 2",
+			rowNumber = "2");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Single Selection");
+
+		FormFields.viewOptionsRowFieldValueOrFieldReference(
+			fieldReference = "Option1234",
+			fieldValue = "Option 1",
+			rowNumber = "1");
 	}
 
 	@description = "Verify that a Help Text can be added"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test HelpTextCanBeAdded {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132199 HelpTextCanBeAdded pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection",
+			formPageNumber = "0");
+
+		var fieldSingleSelectionField = FormFields.getFieldName();
+
+		FormFields.editOptionsRow(
+			optionName = "Option1",
+			optionValue = "Option 1");
+
+		FormFields.editOptionsRow(
+			optionName = "Option2",
+			optionValue = "Option 2",
+			rowNumber = "2");
+
+		FormViewBuilder.setFieldHelpText(fieldLabel = "Single Selection Help Text");
+
+		Form.save();
+
+		Form.publishForm();
+
+		FormsAdminNavigator.gotoPublishedForm();
+
+		FormPortlet.waitFormRenderer(text = "Submit");
+
+		FormFields.viewRadioLabel(
+			fieldLabel = "Single Selection",
+			fieldName = "${fieldSingleSelectionField}");
+
+		FormViewBuilder.assertHelpTextPresent(
+			fieldName = "${fieldSingleSelectionField}",
+			fieldValue = "Single Selection Help Text");
+
+		FormFields.selectRadioOption(
+			fieldName = "${fieldSingleSelectionField}",
+			radioOption = "Option 1");
+
+		FormPortlet.submitSuccessfully();
 	}
 
 	@description = "Verify that the Field Label can be edited"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test LabelCanBeEdited {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132197 LabelCanBeEdited pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection",
+			formPageNumber = "0");
+
+		Form.editFieldLabelMetal(fieldValue = "Test Single Selection");
+
+		Form.save();
+
+		Form.publishForm();
+
+		FormsAdminNavigator.gotoPublishCopyURLLink();
+
+		var publishedFormPublicURL = Form.getPublishedFormPublicURL(
+			publishedFormPublicURL = "${publishedFormPublicURL}");
+
+		Navigator.openSpecificURL(url = "${publishedFormPublicURL}");
+
+		FormFields.viewRadioLabel(
+			fieldLabel = "Test Single Selection",
+			fieldName = "Test Single Selection");
 	}
 
 	@description = "Verify that the Field Label can be hidden"
-	@ignore = "Test Stub"
 	@priority = "5"
 	test LabelCanBeHidden {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132198 LabelCanBeHidden pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Single Selection");
+
+		Form.gotoAdvancedTab();
+
+		FormViewBuilder.clickShowLabel();
+
+		Form.save();
+
+		Form.publishForm();
+
+		FormsAdminNavigator.gotoPreviewForm();
+
+		AssertElementNotPresent(
+			key_fieldName = "Single Selection",
+			key_fieldValue = "",
+			locator1 = "FormViewBuilder#PREDEFINED_VALUE_AT_FORM_SINGLE_SELECTION");
 	}
 
 	@description = "Verify that options can be added"
@@ -203,13 +481,46 @@ definition {
 	}
 
 	@description = "Verify that after deleting an option that had been selected as the Predefined Value, the Predefined Value is reset to "Choose Options""
-	@ignore = "Test Stub"
 	@priority = "4"
 	test PredefinedValueIsResetWhenSelectedOptionIsDeleted {
 		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-132203 PredefinedValueIsResetWhenSelectedOptionIsDeleted pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		FormViewBuilder.addFieldByDoubleClick(fieldType = "Single Selection");
+
+		FormFields.editOptionsRow(
+			optionName = "Option1",
+			optionValue = "Option 1");
+
+		FormFields.editOptionsRow(
+			optionName = "Option2",
+			optionValue = "Option 2",
+			rowNumber = "2");
+
+		Form.gotoAdvancedTab();
+
+		FormFields.selectSelectOption(
+			fieldName = "Predefined Value",
+			selectOption = "Option 1");
+
+		Form.gotoBasicTab();
+
+		FormFields.deleteOptionsRow(rowNumber = "1");
+
+		Form.gotoAdvancedTab();
+
+		AssertTextEquals(
+			key_definedEntry = "Choose an Option",
+			locator1 = "FormFields#OPTIONS_PREDEFINED_SELECTOR",
+			value1 = "Choose an Option");
 	}
 
 	@description = "Verify that the Field Reference can be Edited"

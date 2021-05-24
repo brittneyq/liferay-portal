@@ -54,6 +54,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHECK_WAREHOUSE_COLLAPSE_OPEN</td>
+	<td>//a[contains(.,'${key_specifiedCollapse}')]/../../..//div[contains(@class,'show')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DESCRIPTION_FIELD</td>
 	<td>//textarea[contains (@id,'description')]</td>
 	<td></td>
@@ -424,6 +429,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PAGINATION_BAR</td>
+	<td>//div[@class='pagination-bar']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENTRY_CONTENT_ROW_NUMBER</td>
 	<td>//table[@class='table table-autofit']/tbody/tr[${key_rowNumber}]</td>
 	<td></td>
@@ -451,6 +461,11 @@
 <tr>
 	<td>TABLE_ENTRY_NAME</td>
 	<td>//h4[contains(.,'${key_table}')]//..//div/a[contains(.,'${key_entryName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ELIGIBILITY_ACCOUNT_GROUPS</td>
+	<td>//div[@class='dnd-td' and contains(text(),'${key_entryName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -549,6 +564,16 @@
 <tr>
 	<td>SEARCH_ORDER_ID</td>
 	<td>//input[@type='text'][contains(@class,'form-control')][contains(@placeholder,'Search Order')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUGGESTION_ACTIVE_ORDER_KEY</td>
+	<td>//div[contains(@class,'commerce-item__content') and contains(.,'${key_value}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ORDER_BY_KEY</td>
+	<td>//dl[contains(@class,'commerce-list') and contains(.,'${key_value}')]</td>
 	<td></td>
 </tr>
 <tr>

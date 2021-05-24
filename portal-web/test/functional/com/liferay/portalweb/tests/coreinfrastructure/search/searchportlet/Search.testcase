@@ -229,7 +229,8 @@ definition {
 
 		SearchPortlets.configureSearchOptions(allowEmptySearches = "true");
 
-		SearchResultPortlet.addToContentPage(
+		PageEditor.addWidget(
+			collectionName = "Search",
 			portletName = "Search Results",
 			targetFragmentName = "Search Options");
 
@@ -1095,13 +1096,8 @@ definition {
 
 		Refresh();
 
-		// Workaround for LPS-120037
-
-		//PageEditor.addWidget(
-		//	portletName = "Search Results",
-		//	targetFragmentName = "Search Bar");
-
-		SearchResultPortlet.addToContentPage(
+		PageEditor.addWidget(
+			collectionName = "Search",
 			portletName = "Search Results",
 			targetFragmentName = "Search Bar");
 

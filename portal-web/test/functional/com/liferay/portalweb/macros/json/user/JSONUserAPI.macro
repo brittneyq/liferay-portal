@@ -34,7 +34,8 @@ definition {
 				-d organizationIds= \
 				-d roleIds= \
 				-d userGroupIds= \
-				-d sendEmail=true
+				-d sendEmail=true \
+				-d serviceContext=${serviceContext}
 		''';
 
 		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
@@ -239,6 +240,21 @@ definition {
 				-d password1=${newPassword} \
 				-d password2=${newPassword} \
 				-d passwordReset=${requireReset}
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
+	}
+
+	macro _updateStatus {
+		Variables.assertDefined(parameterList = "${userId},${status}");
+
+		var portalURL = JSONCompany.getPortalURL();
+
+		var curl = '''
+			${portalURL}/api/jsonws/user/update-status \
+				-u test@liferay.com:test \
+				-d userId=${userId} \
+				-d status=${status}
 		''';
 
 		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");

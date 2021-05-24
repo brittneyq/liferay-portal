@@ -32,49 +32,242 @@ definition {
 	}
 
 	@description = "Verify that a Paragraph Field can be created"
-	@ignore = "true"
 	@priority = "5"
 	test CanBeCreated {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131221 CanBeCreated pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
 
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Form.save();
+
+		Click(locator1 = "Icon#BACK");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementPresent(
+			key_fieldName = "Paragraph",
+			locator1 = "FormFields#PARAGRAPH_BODY_TEXT_CONTENT",
+			value1 = "Test");
 	}
 
 	@description = "Verify that a Paragraph Field can be deleted"
-	@ignore = "true"
 	@priority = "5"
 	test CanBeDeleted {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131223 CanBeDeleted pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Form.closeSidebar();
+
+		Form.addTextField(fieldPositionNumber = "1");
+
+		Form.closeSidebar();
+
+		FormsAdminNavigator.gotoDeleteField(
+			fieldLabel = "Paragraph",
+			fieldName = "Paragraph");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementNotPresent(
+			key_fieldName = "Paragraph",
+			locator1 = "FormFields#PARAGRAPH_BODY_TEXT_CONTENT");
 	}
 
 	@description = "Verify that a Paragraph Field can be duplicated"
-	@ignore = "true"
 	@priority = "5"
 	test CanBeDuplicated {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131224 CanBeDuplicated pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Click(
+			key_name = "Paragraph",
+			locator1 = "FormFields#FIELD_TARGET_LABEL");
+
+		Click(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
+
+		Click(
+			key_selectOption = "Duplicate",
+			locator1 = "FormViewBuilder#SELECT_FIELD_OPTIONS_LIST");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementPresent(
+			key_bodyText = "Test",
+			key_fieldName = "Paragraph",
+			locator1 = "FormFields#FIELD_TARGET_LABEL_AND_BODY_TEXT");
+
+		AssertElementPresent(
+			key_bodyText = "Test",
+			key_fieldName = "Copy of Paragraph",
+			locator1 = "FormFields#FIELD_TARGET_LABEL_AND_BODY_TEXT");
+
+		Click(
+			key_bodyText = "Test",
+			key_fieldName = "Paragraph",
+			locator1 = "FormFields#FIELD_TARGET_LABEL_AND_BODY_TEXT");
+
+		Form.gotoAdvancedTab();
+
+		var reff = selenium.getAttribute("//div[contains(@data-field-name,'fieldReference')]/input@value");
+
+		echo("Creating new Option complete with Values ${reff}...");
+
+		Click(
+			key_bodyText = "Test",
+			key_fieldName = "Copy of Paragraph",
+			locator1 = "FormFields#FIELD_TARGET_LABEL_AND_BODY_TEXT");
+
+		AssertElementNotPresent(
+			key_fieldName = "",
+			key_fieldValue = "${reff}",
+			locator1 = "Translation#TARGET_LANGUAGE_FIELD");
 	}
 
 	@description = "Verify that a Paragraph Field can be edited"
-	@ignore = "true"
 	@priority = "5"
 	test CanBeEdited {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131222 CanBeEdited pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Paragraph body text.");
+
+		Form.save();
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementPresent(
+			key_fieldName = "Paragraph",
+			locator1 = "FormFields#PARAGRAPH_BODY_TEXT_CONTENT",
+			value1 = "Paragraph body text.");
 	}
 
 	@description = "Verify that a Form can be submitted with the Paragraph Field"
-	@ignore = "true"
 	@priority = "5"
 	test CanBeSubmitted {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131229 CanBeSubmitted pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Form.save();
+
+		Form.publishForm();
+
+		FormsAdminNavigator.gotoPublishCopyURLLink();
+
+		var publishedFormPublicURL = Form.getPublishedFormPublicURL(
+			publishedFormPublicURL = "${publishedFormPublicURL}");
+
+		Navigator.openSpecificURL(url = "${publishedFormPublicURL}");
+
+		AssertElementPresent(
+			key_bodyName = "Test",
+			locator1 = "FormFields#PARAGRAPH_SPECIFIC_FIELD_BY_BODY");
+
+		Click(
+			key_text = "Submit",
+			locator1 = "Button#ANY");
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoViewEntries();
+
+		FormsAdminNavigator.gotoView();
+
+		AssertElementPresent(
+			key_bodyName = "Test",
+			locator1 = "FormFields#PARAGRAPH_SPECIFIC_FIELD_BY_BODY");
 	}
 
 	@description = "Verify that a Table can be deleted in the Body Text"
@@ -84,15 +277,82 @@ definition {
 		property portal.acceptance = "false";
 
 		// TODO LPS-131237 CanDeleteATable pending implementation
+
 	}
 
 	@description = "Verify that the Formatting Style can be changed using the predefined style options"
-	@ignore = "true"
 	@priority = "4"
 	test CanEditFormattingStyle {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131235 CanEditFormattingStyle pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Click(
+			key_titleName = "Formatting Styles",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "FormFields#PARAGRAPH_FORMATTING_STYLES");
+
+		Click.clickAt(
+			key_titleName = "Heading 2",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON",
+			value1 = "Heading 2");
+
+		SelectFrame.selectSecondFrame();
+
+		Form.save();
+
+		Alert.viewSuccessMessageText(successMessage = "Your request completed successfully.");
+
+		AssertElementPresent(
+			key_formattingStyle = "h2",
+			locator1 = "FormFields#PARAGRAPH_TEXT_VALUE_STYLE",
+			value = "Test");
+
+		Click(
+			key_fieldName = "Paragraph",
+			locator1 = "FormFields#PARAGRAPH_BODY_TEXT_CONTENT");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Click(
+			key_titleName = "Formatting Styles",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "FormFields#PARAGRAPH_FORMATTING_STYLES");
+
+		Click.clickAt(
+			key_titleName = "Preformatted Text",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON",
+			value1 = "Preformatted Text");
+
+		SelectFrame.selectSecondFrame();
+
+		Form.save();
+
+		Alert.viewSuccessMessageText(successMessage = "Your request completed successfully.");
+
+		FormsAdminNavigator.gotoBack();
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementPresent(
+			key_formattingStyle = "pre",
+			locator1 = "FormFields#PARAGRAPH_TEXT_VALUE_STYLE",
+			value = "Test");
 	}
 
 	@description = "Verify that a Form cannot be saved or published without adding anything in the Body Text"
@@ -186,21 +446,101 @@ definition {
 	}
 
 	@description = "Verify that a link to a URL can be added to the Body Text"
-	@ignore = "true"
 	@priority = "5"
 	test CanSupportALinkToAURL {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131240 CanSupportALinkToAURL pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		Click(
+			key_titleName = "Link",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+
+		Type(
+			fieldLabel = "URL",
+			locator1 = "FormFields#PARAGRAPH_LINK_TEXT_INPUT",
+			value1 = "www.liferay.com");
+
+		Click(locator1 = "CKEditor#OK_BUTTON");
+
+		Click(locator1 = "Button#SAVE");
+
+		Alert.viewSuccessMessage();
+
+		Click(locator1 = "Icon#BACK");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		FormFields.viewParagraphField(
+			fieldTitle = "Paragraph",
+			url = "http://www.liferay.com");
 	}
 
 	@description = "Verify that Bulleted Lists can be added to the Body Text"
-	@ignore = "true"
 	@priority = "5"
 	test CanSupportBulletedLists {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131239 CanSupportBulletedLists pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		CKEditor.addSourceContent(content = "<p>Test A</p><p>Test B</p><p>Test C</p>");
+
+		Click(locator1 = "CKEditor#TOOLBAR_SOURCE_BUTTON");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		SelectFieldText(locator1 = "CKEditor#BODY");
+
+		SelectFrame(value1 = "relative=top");
+
+		Click(
+			key_titleName = "Insert/Remove Bulleted List",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+
+		Form.save();
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		Click(
+			key_formName = "Form 1",
+			locator1 = "FormsAdmin#FORMS_TABLE_NAME");
+
+		AssertElementPresent(
+			key_fieldLabel = "Paragraph",
+			locator1 = "FormFields#LABEL");
+
+		for (var liContent : list "Test A,Test B,Test C") {
+			AssertElementPresent(
+				key_itemName = "${liContent}",
+				key_labelName = "Paragraph",
+				locator1 = "FormFields#PARAGRAPH_CONTENT_UNORDERED_LIST");
+		}
 	}
 
 	@description = "Verify that the Body Text supports HTML"
@@ -231,12 +571,44 @@ definition {
 	}
 
 	@description = "Verify that a Table can be created in the Body Text"
-	@ignore = "true"
 	@priority = "4"
 	test CanSupportTables {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131236 CanSupportTables pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		Click(
+			key_titleName = "Table",
+			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+
+		Click(locator1 = "CKEditor#OK_BUTTON");
+
+		Form.save();
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		Click(locator1 = "Icon#BACK");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		AssertElementPresent(
+			key_fieldLabel = "Paragraph",
+			locator1 = "FormFields#LABEL");
+
+		AssertElementPresent(
+			key_fieldName = "liferay-ddm-form-field-paragraph-text",
+			locator1 = "FormFields#PARAGRAPH_BODY_CONTENT_TABLE");
 	}
 
 	@description = "Verify that a Video can be uploaded to the Body Text"
@@ -396,21 +768,96 @@ definition {
 	}
 
 	@description = "Verify that text in the Body Text can be Bolded, Italicized and Underlined"
-	@ignore = "true"
 	@priority = "5"
 	test TextCanBeBoldedItalicizedAndUnderlined {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131246 TextCanBeBoldedItalicizedAndUnderlined pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		Form.editFieldLabelMetal(fieldValue = "Paragraph");
+
+		FormFields.editTextBodyToolBar(
+			content = "Test",
+			optionTool = "Bold");
+
+		Form.save();
+
+		AssertElementPresent(
+			key_textName = "Test",
+			locator1 = "FormFields#PARAGRAPH_ASSERT_BODY_TEXT_CONTENT_BOLD");
+
+		Click(
+			key_textName = "Test",
+			locator1 = "FormFields#PARAGRAPH_ASSERT_BODY_TEXT_CONTENT_BOLD");
+
+		FormFields.editTextBodyToolBar(
+			content = "Test",
+			optionTool = "Italic");
+
+		Form.save();
+
+		AssertElementPresent(
+			key_textName = "Test",
+			locator1 = "FormFields#PARAGRAPH_ASSERT_BODY_TEXT_CONTENT_ITALIC");
+
+		Click(
+			key_textName = "Test",
+			locator1 = "FormFields#PARAGRAPH_ASSERT_BODY_TEXT_CONTENT_ITALIC");
+
+		FormFields.editTextBodyToolBar(
+			content = "Test",
+			optionTool = "Underline");
+
+		Form.save();
+
+		AssertElementPresent(
+			key_textName = "Test",
+			locator1 = "FormFields#PARAGRAPH_ASSERT_BODY_TEXT_CONTENT_UNDERLINE");
 	}
 
 	@description = "Verify that the Field Title can be edited"
-	@ignore = "true"
 	@priority = "5"
 	test TitleCanBeEdited {
+		property forms.functional = "true";
 		property portal.acceptance = "false";
 
-		// TODO LPS-131226 TitleCanBeEdited pending implementation
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formName = "Form 1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "0",
+			fieldType = "Paragraph");
+
+		FormFields.editParagraphBody(content = "Test");
+
+		Form.editFieldLabelMetal(fieldValue = "Test Paragraph");
+
+		Form.save();
+
+		Click(locator1 = "Icon#BACK");
+
+		FormsAdminNavigator.gotoEditFormByName(formName = "Form 1");
+
+		FormFields.viewParagraphField(
+			fieldName = "Paragraph",
+			fieldTitle = "Test Paragraph",
+			fieldValue = "Test");
 	}
 
 	@description = "Verify that the Field Type can be changed"
