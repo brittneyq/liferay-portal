@@ -14,6 +14,8 @@
 
 package com.liferay.jenkins.results.parser.java.task;
 
+import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -53,8 +55,12 @@ public class ShoppingCart {
 	}
 
 	public static void main(String[] args) throws FileNotFoundException {
-		File basket = new File(
-			"/opt/dev/projects/github/liferay-portal/modules/test/jenkins-results-parser/src/main/java/com/liferay/jenkins/results/parser/java/task/input3.txt");
+		String path = JenkinsResultsParserUtil.combine(
+			"/opt/dev/projects/github/liferay-portal/modules/test/",
+			"jenkins-results-parser/src/main/java/com/liferay/jenkins/results/",
+			"parser/java/task/input3.txt");
+
+		File basket = new File(path);
 
 		Scanner scanner = new Scanner(basket);
 
