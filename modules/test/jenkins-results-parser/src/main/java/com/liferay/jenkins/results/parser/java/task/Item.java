@@ -24,8 +24,13 @@ public class Item {
 	}
 
 	public boolean isExempt() {
-		return name.contains("book") || name.contains("chocolate") ||
-				name.contains("pill");
+		if (name.contains("book") || name.contains("chocolate") ||
+			name.contains("pill")) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean isImported() {
