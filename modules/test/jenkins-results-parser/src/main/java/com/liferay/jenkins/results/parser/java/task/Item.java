@@ -19,27 +19,68 @@ package com.liferay.jenkins.results.parser.java.task;
  */
 public class Item {
 
+	public Item(int quantity, String name, float price) {
+		this.quantity = quantity;
+		this.name = name;
+		this.price = price;
+
+		setImported();
+		setExempt();
+	}
+
+	public String getName() {
+		return name;
+	}
+
 	public float getPrice() {
 		return price;
 	}
 
+	public float getPriceWithTax() {
+		return priceWithTax;
+	}
+
+	public int getQuantity() {
+		return quantity;
+	}
+
+	public float getTax() {
+		return tax;
+	}
+
 	public boolean isExempt() {
-		return name.contains("book") || name.contains("chocolate") ||
-				name.contains("pill");
+		return exempt;
 	}
 
 	public boolean isImported() {
-		return name.contains("imported");
+		return imported;
 	}
 
-	public void setPrice(String price) {
-		this.price = Float.parseFloat(price);
+	public void setExempt() {
+		if (name.contains("book") || name.contains("chocolate") ||
+			name.contains("pill")) {
+
+			exempt = true;
+		}
 	}
 
-	public boolean exempt;
-	public boolean imported;
+	public void setImported() {
+		if (name.contains("imported")) {
+			imported = true;
+		}
+	}
+
+	public void setPriceWithTax(float tax) {
+		priceWithTax = price + tax;
+		this.tax = tax;
+	}
+
+	public boolean exempt = false;
+	public boolean imported = false;
 	public String name;
 	public float price;
+	public float priceWithTax;
 	public int quantity;
+	public float tax;
 
 }
