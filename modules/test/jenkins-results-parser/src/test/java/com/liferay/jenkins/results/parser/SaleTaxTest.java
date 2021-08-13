@@ -14,27 +14,20 @@
 
 package com.liferay.jenkins.results.parser;
 
-import com.liferay.jenkins.results.parser.java.task.Item;
-import com.liferay.jenkins.results.parser.java.task.ItemListParser;
-import com.liferay.jenkins.results.parser.java.task.Receipt;
-import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-
 import java.net.URI;
 import java.net.URL;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import java.util.ArrayList;
-
 import org.apache.commons.io.FileUtils;
-
-import org.junit.Before;
 import org.junit.Test;
+
+import com.liferay.jenkins.results.parser.java.task.ItemListParser;
+import com.liferay.jenkins.results.parser.java.task.Receipt;
+import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
 
 /**
  * @author Brittney Nguyen
@@ -94,24 +87,16 @@ public class SaleTaxTest {
 
 			String path = resourceFile.getPath();
 
-			ItemListParser parser = new ItemListParser(path);
+			ItemListParser itemListParser = new ItemListParser(path);
 
-			ShoppingCart cart = parser.getItems();
+			ShoppingCart cart = new ShoppingCart(itemListParser.getShoppingCartItems());
 
-			ArrayList<Item> items = cart.getShoppingCartItems();
-
-			for (Item item : items) {
-				item.setTax();
-			}
-
-			Receipt receipt = new Receipt();
-
-			String printedReceipt = receipt.printReceipt(cart);
+			Receipt receipt = new Receipt(cart);
 
 			BufferedWriter writer = new BufferedWriter(
 				new FileWriter("output" + count + ".txt"));
 
-			writer.write(printedReceipt);
+			writer.write(receipt.toString());
 
 			writer.close();
 
