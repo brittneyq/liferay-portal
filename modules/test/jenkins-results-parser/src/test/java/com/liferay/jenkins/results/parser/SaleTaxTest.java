@@ -41,11 +41,6 @@ import org.junit.Test;
  */
 public class SaleTaxTest {
 
-	@Before
-	public void setUp() {
-		cart = new ShoppingCart();
-	}
-
 	@Test
 	public void testCompareOutputs() throws Exception {
 		String[] outputs = {"output1.txt", "output2.txt", "output3.txt"};
@@ -101,7 +96,7 @@ public class SaleTaxTest {
 
 			ItemListParser parser = new ItemListParser(path);
 
-			cart = parser.getItems();
+			ShoppingCart cart = parser.getItems();
 
 			ArrayList<Item> items = cart.getShoppingCartItems();
 
@@ -123,7 +118,4 @@ public class SaleTaxTest {
 			count += 1;
 		}
 	}
-
-	protected ShoppingCart cart;
-
 }
