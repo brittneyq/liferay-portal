@@ -20,12 +20,10 @@ package com.liferay.jenkins.results.parser.java.task;
 public class Item {
 
 	public Item(int quantity, String name, float price) {
-		this.quantity = quantity;
-		this.name = name;
-		this.price = price;
+		setName(name);
 
-		setImported();
-		setExempt();
+		this.price = price;
+		this.quantity = quantity;
 	}
 
 	public String getName() {
@@ -36,58 +34,46 @@ public class Item {
 		return price;
 	}
 
-	public float getPriceWithTax() {
-		return priceWithTax;
-	}
-
 	public int getQuantity() {
 		return quantity;
 	}
 
 	public float getTax() {
-		return tax;
+		float taxRate = 1F;
+
+		if (imported) {
+			taxRate = 0.05F;
+		}
+
+		if (!exempt) {
+			taxRate = 0.10F;
+		}
+
+		if (imported && !exempt) {
+			taxRate = 0.15F;
+		}
+
+		return (float)(Math.ceil((taxRate * price) * 20.0) / 20.0);
 	}
 
-	public void setExempt() {
+	protected void setName(String name) {
+		this.name = name;
+
 		if (name.contains("book") || name.contains("chocolate") ||
 			name.contains("pill")) {
 
 			exempt = true;
 		}
-	}
 
-	public void setImported() {
 		if (name.contains("imported")) {
 			imported = true;
 		}
 	}
 
-	public void setTax() {
-		if (imported) {
-			tax = 0.05F;
-		}
-
-		if (!exempt) {
-			tax = 0.10F;
-		}
-
-		if (imported && !exempt) {
-			tax = 0.15F;
-		}
-
-		float updateTax = (float)(Math.ceil((tax * price) * 20.0) / 20.0);
-
-		tax = updateTax;
-
-		priceWithTax = price += tax;
-	}
-
 	protected boolean exempt;
 	protected boolean imported;
-	protected final String name;
+	protected String name;
 	protected float price;
-	protected float priceWithTax;
 	protected final int quantity;
-	protected float tax;
 
 }
