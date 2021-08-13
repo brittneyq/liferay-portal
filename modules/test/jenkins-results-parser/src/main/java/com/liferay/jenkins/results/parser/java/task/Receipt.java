@@ -19,20 +19,31 @@ package com.liferay.jenkins.results.parser.java.task;
  */
 public class Receipt {
 
-	public String printReceipt(ShoppingCart shoppingCart) {
-		String receipt = "";
+	public Receipt(ShoppingCart shoppingCart) {
+		this.shoppingCart = shoppingCart;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
 
 		for (Item item : shoppingCart.getItems()) {
-			receipt += String.format(
-				"%d %s: %.2f\n", item.getQuantity(), item.getName(),
-				item.getPriceWithTax());
+			sb.append(
+				String.format(
+					"%d %s: %.2f\n", item.getQuantity(), item.getName(),
+					item.getPrice() + item.getTax()));
 		}
 
-		receipt += String.format(
-			"Sales Taxes: %.2f\n", shoppingCart.getSalesTax());
-		receipt += String.format("Total: %.2f", shoppingCart.getTotal());
+		sb.append(
+			String.format(
+				"Sales Taxes: %.2f\n", shoppingCart.getSalesTax()));
+
+		sb.append(
+			String.format("Total: %.2f", shoppingCart.getTotal()));
 
 		return receipt;
 	}
+
+	protected ShoppingCart shoppingCart;
 
 }
