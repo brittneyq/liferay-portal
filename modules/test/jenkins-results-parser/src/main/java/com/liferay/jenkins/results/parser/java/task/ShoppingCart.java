@@ -23,21 +23,40 @@ import java.util.List;
 public class ShoppingCart {
 
 	public ShoppingCart() {
-		this(new ArrayList<Item>());
+		this(new ArrayList<ShoppingCartItem>());
 	}
 
-	public ShoppingCart(List<Item> items) {
-		this.items = new ArrayList<>(items);
+	public ShoppingCart(List<ShoppingCartItem>shoppingCartItems) {
+		this.shoppingCartItems = new ArrayList<>(shoppingCartItems);
 	}
 
-	public void addItem(Item item) {
-		items.add(item);
+	public void addShoppingCartItem(ShoppingCartItem shoppingCartItem) {
+		shoppingCartItems.add(shoppingCartItem);
 	}
 
-	public List<Item> getItems() {
-		return items;
+	public List<ShoppingCartItem> getShoppingCartItems() {
+		return shoppingCartItems;
 	}
 
-	protected List<Item> items;
+	protected List<ShoppingCartItem> shoppingCartItems;
+
+	public static class ShoppingCartItem extends Item {
+
+		public ShoppingCartItem(String name, float price, int quantity) {
+			super(name, price);
+
+			this.quantity = quantity;
+		}
+
+		public ShoppingCartItem(Item item, int quantity) {
+			this(item.getName(), item.getPrice(), quantity);
+		}
+
+		public int getQuantity() {
+			return quantity;
+		}
+
+		protected int quantity;
+	}
 
 }

@@ -27,7 +27,7 @@ public class Receipt {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		for (Item item : shoppingCart.getItems()) {
+		for (Item item : shoppingCart.getShoppingCartItems()) {
 			sb.append(
 				String.format(
 					"%d %s: %.2f\n", item.getQuantity(), item.getName(),

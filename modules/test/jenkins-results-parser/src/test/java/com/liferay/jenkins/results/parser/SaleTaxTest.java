@@ -103,7 +103,7 @@ public class SaleTaxTest {
 
 			cart = parser.getItems();
 
-			ArrayList<Item> items = cart.getItems();
+			ArrayList<Item> items = cart.getShoppingCartItems();
 
 			for (Item item : items) {
 				item.setTax();
