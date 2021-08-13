@@ -38,18 +38,18 @@ public class ItemListParser {
 			try (BufferedReader br = new BufferedReader(fr)) {	
 				while (br.ready()) {
 					String line = br.readLine();
-		
+
 					Matcher matcher = pattern.matcher(line);
-		
+
 					while (matcher.find()) {
-						String quantity = matcher.group(1);
 						String itemName = matcher.group(2);
-						String salePrice = matcher.group(3);
-		
-						items.add(
-							new Item(
-								Integer.parseInt(quantity), itemName,
-								Float.parseFloat(salePrice)));
+						float salePrice = Float.parseFloat(matcher.group(3));
+
+						int quantity = Integer.parseInt(matcher.group(1));
+
+						for (int i=1; i<quantity; i++) {
+							items.add(new Item(itemName, salePrice));
+						}
 					}
 				}
 			}

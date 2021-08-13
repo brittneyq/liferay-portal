@@ -19,11 +19,10 @@ package com.liferay.jenkins.results.parser.java.task;
  */
 public class Item {
 
-	public Item(int quantity, String name, float price) {
+	public Item(String name, float price) {
 		setName(name);
 
 		this.price = price;
-		this.quantity = quantity;
 	}
 
 	public String getName() {
@@ -32,10 +31,6 @@ public class Item {
 
 	public float getPrice() {
 		return price;
-	}
-
-	public int getQuantity() {
-		return quantity;
 	}
 
 	public float getTax() {
@@ -74,6 +69,4 @@ public class Item {
 	protected boolean imported;
 	protected String name;
 	protected float price;
-	protected final int quantity;
-
 }
