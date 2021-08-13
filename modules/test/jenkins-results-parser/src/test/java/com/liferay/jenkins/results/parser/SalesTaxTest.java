@@ -32,7 +32,7 @@ import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
 /**
  * @author Brittney Nguyen
  */
-public class SaleTaxTest {
+public class SalesTaxTest {
 
 	@Test
 	public void testCompareOutputs() throws Exception {

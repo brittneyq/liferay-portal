@@ -26,7 +26,7 @@ public class Receipt {
 	}
 
 	public float getItemSalesTax(Item item) {
-		return (float)(Math.ceil((item.getTaxRate() * item.getPrice()) * 20.0) / 20.0);
+		return (float)(Math.ceil((item.getSalesTaxRate() * item.getPrice()) * 20.0) / 20.0);
 	}
 
 	public float getTotal() {

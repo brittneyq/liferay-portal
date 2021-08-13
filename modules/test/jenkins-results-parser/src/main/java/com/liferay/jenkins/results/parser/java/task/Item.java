@@ -33,7 +33,7 @@ public class Item {
 		return price;
 	}
 
-	public float getTaxRate() {
+	public float getSalesTaxRate() {
 		float taxRate = 1F;
 
 		if (imported) {
