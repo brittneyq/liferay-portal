@@ -28,34 +28,32 @@ import java.util.regex.Pattern;
 public class ItemListParser {
 
 	public ItemListParser(String itemListFilePath) throws IOException {
-		FileReader fr = new FileReader(itemListFilePath);
-
-		BufferedReader br = new BufferedReader(fr);
-
 		items = new ArrayList<>();
 
 		String regex = "(\\d+) (\\D+\\s?)+ at (\\d+.\\d+)";
 
 		Pattern pattern = Pattern.compile(regex);
 
-		while (br.ready()) {
-			String line = br.readLine();
-
-			Matcher matcher = pattern.matcher(line);
-
-			while (matcher.find()) {
-				String quantity = matcher.group(1);
-				String itemName = matcher.group(2);
-				String salePrice = matcher.group(3);
-
-				items.add(
-					new Item(
-						Integer.parseInt(quantity), itemName,
-						Float.parseFloat(salePrice)));
+		try (FileReader fr = new FileReader(itemListFilePath)) {
+			try (BufferedReader br = new BufferedReader(fr)) {	
+				while (br.ready()) {
+					String line = br.readLine();
+		
+					Matcher matcher = pattern.matcher(line);
+		
+					while (matcher.find()) {
+						String quantity = matcher.group(1);
+						String itemName = matcher.group(2);
+						String salePrice = matcher.group(3);
+		
+						items.add(
+							new Item(
+								Integer.parseInt(quantity), itemName,
+								Float.parseFloat(salePrice)));
+					}
+				}
 			}
 		}
-
-		br.close();
 	}
 
 	public List<Item> getItems() {
