@@ -15,44 +15,29 @@
 package com.liferay.jenkins.results.parser.java.task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brittney Nguyen
  */
 public class ShoppingCart {
 
-	public Item addItem(int quantity, String name, float price) {
-		Item item = new Item(quantity, name, price);
-
-		items.add(item);
-
-		return item;
+	public ShoppingCart() {
+		this(new ArrayList<Item>());
 	}
 
-	public ArrayList<Item> getItems() {
+	public ShoppingCart(List<Item> items) {
+		this.items = new ArrayList<>(items);
+	}
+
+	public void addItem(Item item) {
+		items.add(item);
+	}
+
+	public List<Item> getItems() {
 		return items;
 	}
 
-	public float getSalesTax() {
-		float salesTax = 0.0F;
-
-		for (Item item : items) {
-			salesTax += item.getTax();
-		}
-
-		return salesTax;
-	}
-
-	public float getTotal() {
-		float total = 0.0F;
-
-		for (Item item : items) {
-			total += item.getPriceWithTax();
-		}
-
-		return total;
-	}
-
-	protected ArrayList<Item> items = new ArrayList<>();
+	protected List<Item> items;
 
 }
