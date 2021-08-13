@@ -14,6 +14,8 @@
 
 package com.liferay.jenkins.results.parser.java.task;
 
+import com.liferay.jenkins.results.parser.java.task.ShoppingCart.ShoppingCartItem;
+
 /**
  * @author Brittney Nguyen
  */
@@ -23,25 +25,61 @@ public class Receipt {
 		this.shoppingCart = shoppingCart;
 	}
 
+	public float getItemSalesTax(Item item) {
+		return (float)(Math.ceil((item.getTaxRate() * item.getPrice()) * 20.0) / 20.0);
+	}
+
+	public float getTotal() {
+		float total = 0.0F;
+
+		for (
+			ShoppingCartItem shoppingCartItem :
+				shoppingCart.getShoppingCartItems()) {
+
+			total +=
+				shoppingCartItem.getPrice() * shoppingCartItem.getQuantity();
+		}
+
+		return total + getSalesTax();
+	}
+
+	public float getSalesTax() {
+		float salesTax = 0.0F;
+
+		for (
+			ShoppingCartItem shoppingCartItem :
+				shoppingCart.getShoppingCartItems()) {
+
+			salesTax += 
+				getItemSalesTax(shoppingCartItem) * shoppingCartItem.getQuantity();
+		}
+
+		return salesTax;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		for (Item item : shoppingCart.getShoppingCartItems()) {
+		for (
+			ShoppingCartItem shoppingCartItem :
+				shoppingCart.getShoppingCartItems()) {
+
 			sb.append(
 				String.format(
-					"%d %s: %.2f\n", item.getQuantity(), item.getName(),
-					item.getPrice() + item.getTax()));
+					"%d %s: %.2f\n", shoppingCartItem.getQuantity(),
+					shoppingCartItem.getName(),
+					shoppingCartItem.getPrice() + getItemSalesTax(shoppingCartItem)));
 		}
 
 		sb.append(
 			String.format(
-				"Sales Taxes: %.2f\n", shoppingCart.getSalesTax()));
+				"Sales Taxes: %.2f\n", getSalesTax()));
 
 		sb.append(
-			String.format("Total: %.2f", shoppingCart.getTotal()));
+			String.format("Total: %.2f", getTotal()));
 
-		return receipt;
+		return sb.toString();
 	}
 
 	protected ShoppingCart shoppingCart;

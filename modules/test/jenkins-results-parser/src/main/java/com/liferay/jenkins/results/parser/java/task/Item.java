@@ -33,7 +33,7 @@ public class Item {
 		return price;
 	}
 
-	public float getTax() {
+	public float getTaxRate() {
 		float taxRate = 1F;
 
 		if (imported) {
@@ -47,8 +47,8 @@ public class Item {
 		if (imported && !exempt) {
 			taxRate = 0.15F;
 		}
-
-		return (float)(Math.ceil((taxRate * price) * 20.0) / 20.0);
+		
+		return taxRate;
 	}
 
 	protected void setName(String name) {
