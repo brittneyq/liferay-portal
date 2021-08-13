@@ -15,7 +15,7 @@
 package com.liferay.jenkins.results.parser;
 
 import com.liferay.jenkins.results.parser.java.task.Item;
-import com.liferay.jenkins.results.parser.java.task.ItemParser;
+import com.liferay.jenkins.results.parser.java.task.ItemListParser;
 import com.liferay.jenkins.results.parser.java.task.Receipt;
 import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
 
@@ -99,9 +99,9 @@ public class SaleTaxTest {
 
 			String path = resourceFile.getPath();
 
-			ItemParser parser = new ItemParser(path);
+			ItemListParser parser = new ItemListParser(path);
 
-			cart = parser.getCart();
+			cart = parser.getItems();
 
 			ArrayList<Item> items = cart.getItems();
 

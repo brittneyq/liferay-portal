@@ -24,9 +24,9 @@ import java.util.regex.Pattern;
 /**
  * @author Brittney Nguyen
  */
-public class ItemParser {
+public class ItemListParser {
 
-	public ItemParser(String file) throws IOException {
+	public ItemListParser(String file) throws IOException {
 		FileReader fr = new FileReader(file);
 
 		BufferedReader br = new BufferedReader(fr);
