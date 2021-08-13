@@ -17,7 +17,8 @@ package com.liferay.jenkins.results.parser.java.task;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
+import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,12 +27,12 @@ import java.util.regex.Pattern;
  */
 public class ItemListParser {
 
-	public ItemListParser(String file) throws IOException {
-		FileReader fr = new FileReader(file);
+	public ItemListParser(String itemListFilePath) throws IOException {
+		FileReader fr = new FileReader(itemListFilePath);
 
 		BufferedReader br = new BufferedReader(fr);
 
-		cart = new ShoppingCart();
+		items = new ArrayList<>();
 
 		String regex = "(\\d+) (\\D+\\s?)+ at (\\d+.\\d+)";
 
@@ -47,19 +48,20 @@ public class ItemListParser {
 				String itemName = matcher.group(2);
 				String salePrice = matcher.group(3);
 
-				cart.addItem(
-					Integer.parseInt(quantity), itemName,
-					Float.parseFloat(salePrice));
+				items.add(
+					new Item(
+						Integer.parseInt(quantity), itemName,
+						Float.parseFloat(salePrice)));
 			}
 		}
 
 		br.close();
 	}
 
-	public ShoppingCart getCart() {
-		return cart;
+	public List<Item> getItems() {
+		return items;
 	}
 
-	protected ShoppingCart cart;
+	protected List<Item> items;
 
 }
