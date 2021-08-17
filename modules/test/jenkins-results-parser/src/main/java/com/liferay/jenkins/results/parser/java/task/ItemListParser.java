@@ -35,14 +35,16 @@ public class ItemListParser {
 		for (String line : itemListFileContent.split("\\s*\\n\\s*")) {
 			Matcher matcher = _PATTERN_INPUT_LIST_LINE.matcher(line);
 
-			if (matcher.find()) {
-				String itemName = matcher.group(2);
-				int quantity = Integer.parseInt(matcher.group(1));
-				float salePrice = Float.parseFloat(matcher.group(3));
-
-				shoppingCartItems.add(
-					new ShoppingCartItem(itemName, salePrice, quantity));
+			if (!matcher.find()) {
+				continue;
 			}
+
+			String itemName = matcher.group(2);
+			int quantity = Integer.parseInt(matcher.group(1));
+			float salePrice = Float.parseFloat(matcher.group(3));
+
+			shoppingCartItems.add(
+				new ShoppingCartItem(itemName, salePrice, quantity));
 		}
 	}
 
