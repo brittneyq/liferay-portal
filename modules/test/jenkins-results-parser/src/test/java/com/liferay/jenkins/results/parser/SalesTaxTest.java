@@ -62,7 +62,7 @@ public class SalesTaxTest {
 	private String readDependencyFile(String dependencyFilename) {
 		Class<?> clazz = SalesTaxTest.class;
 
-		try (InputStream inputStream = clazz.getResourceAsStream("dependencies/SalesTaxTest/" + dependencyFilename)) {
+		try (InputStream inputStream = clazz.getResourceAsStream("/dependencies/SalesTaxTest/" + dependencyFilename)) {
 			return JenkinsResultsParserUtil.readInputStream(inputStream);
 		}
 		catch (IOException ioException) {
