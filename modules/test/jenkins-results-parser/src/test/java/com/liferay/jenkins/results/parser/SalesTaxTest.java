@@ -21,7 +21,9 @@ import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 
 /**
  * @author Brittney Nguyen
@@ -53,11 +55,16 @@ public class SalesTaxTest {
 
 			String errorMessage = JenkinsResultsParserUtil.combine(
 				"String mismatch\nExpected:\n", expected, "\n\nActual:\n",
-				receipt.toString());
+				receipt.toString(), "\n\n");
 
-			throw new RuntimeException(errorMessage);
+			System.out.println(errorMessage);
+
+			errorCollector.addError(new Throwable(errorMessage));
 		}
 	}
+
+	@Rule
+	public ErrorCollector errorCollector = new ErrorCollector();
 
 	private String _readDependencyFile(String dependencyFilename) {
 		Class<?> clazz = SalesTaxTest.class;
