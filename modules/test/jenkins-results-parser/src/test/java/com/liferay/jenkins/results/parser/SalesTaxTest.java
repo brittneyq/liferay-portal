@@ -14,15 +14,9 @@
 
 package com.liferay.jenkins.results.parser;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.liferay.jenkins.results.parser.java.task.ItemListParser;
@@ -35,72 +29,44 @@ import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
 public class SalesTaxTest {
 
 	@Test
-	public void testCompareOutputs() throws Exception {
-		String[] outputs = {"output1.txt", "output2.txt", "output3.txt"};
+	public void testSalesTax() {
+		for (int i=1 ; i<=3 ; i++) {
+			String itemListFileName = 
+				JenkinsResultsParserUtil.combine("input", String.valueOf(i), ".txt");
 
-		String[] expectedOutputs = {
-			"dependencies/expected_output1.txt",
-			"dependencies/expected_output2.txt",
-			"dependencies/expected_output3.txt"
-		};
-		int count = 0;
-		Class<?> clazz = Receipt.class;
+			ItemListParser itemListParser = new ItemListParser(readDependencyFile(itemListFileName));
 
-		for (String file : expectedOutputs) {
-			URL resourceURL = clazz.getResource(file);
+			ShoppingCart shoppingCart = new ShoppingCart(itemListParser.getShoppingCartItems());
 
-			URI resourceURI = resourceURL.toURI();
+			Receipt receipt = new Receipt(shoppingCart);
 
-			Path resourcePath = Paths.get(resourceURI);
+			String expectedOutputFilename =
+				JenkinsResultsParserUtil.combine("expected_output", String.valueOf(i), ".txt");
 
-			File expectedFile = resourcePath.toFile();
+			String receiptString = receipt.toString();
 
-			File output = new File(outputs[count]);
+			String expected = readDependencyFile(expectedOutputFilename);
 
-			boolean areFilesEqual = FileUtils.contentEquals(
-				expectedFile, output);
+			if (receiptString.equals(expected)) {
+				continue;
+			}
 
-			System.out.println(areFilesEqual);
+			String errorMessage = JenkinsResultsParserUtil.combine(
+				"String mismatch\nExpected:", expected, "\nActual:",
+				receiptString);
 
-			count += 1;
+			throw new RuntimeException(errorMessage);
 		}
 	}
 
-	@Test
-	public void testGenerateOutputs() throws Exception {
-		String[] inputs = {
-			"dependencies/input1.txt", "dependencies/input2.txt",
-			"dependencies/input3.txt"
-		};
+	private String readDependencyFile(String dependencyFilename) {
+		Class<?> clazz = SalesTaxTest.class;
 
-		int count = 1;
-		Class<?> clazz = Receipt.class;
-
-		for (String file : inputs) {
-			URL resourceURL = clazz.getResource(file);
-
-			URI resourceURI = resourceURL.toURI();
-
-			Path resourcePath = Paths.get(resourceURI);
-
-			File resourceFile = resourcePath.toFile();
-
-			String path = resourceFile.getPath();
-
-			ItemListParser itemListParser = new ItemListParser(path);
-
-			ShoppingCart cart = new ShoppingCart(itemListParser.getShoppingCartItems());
-
-			Receipt receipt = new Receipt(cart);
-
-			BufferedWriter writer = new BufferedWriter(
-				new FileWriter("output" + count + ".txt"));
-
-			writer.write(receipt.toString());
-
-			writer.close();
-
-			count += 1;
+		try (InputStream inputStream = clazz.getResourceAsStream("dependencies/SalesTaxTest/" + dependencyFilename)) {
+			return JenkinsResultsParserUtil.readInputStream(inputStream);
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException("Unable to read dependency file " + dependencyFilename, ioException);
 		}
 	}
 }
