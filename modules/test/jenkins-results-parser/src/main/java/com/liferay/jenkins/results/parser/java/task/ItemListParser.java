@@ -16,6 +16,7 @@ package com.liferay.jenkins.results.parser.java.task;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +30,8 @@ import com.liferay.jenkins.results.parser.java.task.ShoppingCart.ShoppingCartIte
 public class ItemListParser {
 
 	public ItemListParser(String itemListFileContent) {
+		shoppingCartItems = new ArrayList<>();
+
 		for (String line : itemListFileContent.split("\\s*\\n\\s*")) {
 			Matcher matcher = _PATTERN_INPUT_LIST_LINE.matcher(line);
 
