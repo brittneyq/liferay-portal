@@ -52,7 +52,7 @@ public class SalesTaxTest {
 			}
 
 			String errorMessage = JenkinsResultsParserUtil.combine(
-				"String mismatch\nExpected:", expected, "\nActual:",
+				"String mismatch\nExpected:\n", expected, "\n\nActual:\n",
 				receiptString);
 
 			throw new RuntimeException(errorMessage);
