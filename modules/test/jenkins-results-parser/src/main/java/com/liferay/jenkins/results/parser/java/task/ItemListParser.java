@@ -59,5 +59,5 @@ public class ItemListParser {
 	protected List<ShoppingCartItem> shoppingCartItems;
 
 	private static final Pattern _PATTERN_INPUT_LIST_LINE =
-		Pattern.compile("(\\d+) (\\D+\\s?)+ at (\\d+.\\d+)");
+		Pattern.compile("(\\d+) (\\D+\\s?)+ at (\\d+\\.\\d+)");
 }
