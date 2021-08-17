@@ -15,6 +15,7 @@
 package com.liferay.jenkins.results.parser.java.task;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.java.task.ShoppingCart.ShoppingCartItem;
 
 /**
@@ -29,31 +31,23 @@ import com.liferay.jenkins.results.parser.java.task.ShoppingCart.ShoppingCartIte
  */
 public class ItemListParser {
 
-	public ItemListParser(String itemListFilePath) throws IOException {
-		shoppingCartItems = new ArrayList<>();
+	public ItemListParser(String itemListFileContent) {
+		for (String line : itemListFileContent.split("\\s*\\n\\s*")) {
+			Matcher matcher = _PATTERN_INPUT_LIST_LINE.matcher(line);
 
-		String regex = "(\\d+) (\\D+\\s?)+ at (\\d+.\\d+)";
+			if (matcher.find()) {
+				String itemName = matcher.group(2);
+				int quantity = Integer.parseInt(matcher.group(1));
+				float salePrice = Float.parseFloat(matcher.group(3));
 
-		Pattern pattern = Pattern.compile(regex);
-
-		try (FileReader fr = new FileReader(itemListFilePath)) {
-			try (BufferedReader br = new BufferedReader(fr)) {	
-				while (br.ready()) {
-					String line = br.readLine();
-
-					Matcher matcher = pattern.matcher(line);
-
-					while (matcher.find()) {
-						String itemName = matcher.group(2);
-						int quantity = Integer.parseInt(matcher.group(1));
-						float salePrice = Float.parseFloat(matcher.group(3));
-
-						shoppingCartItems.add(
-							new ShoppingCartItem(itemName, salePrice, quantity));
-					}
-				}
+				shoppingCartItems.add(
+					new ShoppingCartItem(itemName, salePrice, quantity));
 			}
 		}
+	}
+
+	public ItemListParser(File itemListFile) throws IOException {
+		this(JenkinsResultsParserUtil.read(itemListFile));
 	}
 
 	public List<ShoppingCartItem> getShoppingCartItems() {
@@ -62,4 +56,6 @@ public class ItemListParser {
 
 	protected List<ShoppingCartItem> shoppingCartItems;
 
+	private static final Pattern _PATTERN_INPUT_LIST_LINE =
+		Pattern.compile("(\\d+) (\\D+\\s?)+ at (\\d+.\\d+)");
 }
