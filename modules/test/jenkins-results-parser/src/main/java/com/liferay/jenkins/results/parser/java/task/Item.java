@@ -34,20 +34,16 @@ public class Item {
 	}
 
 	public float getSalesTaxRate() {
-		float taxRate = 1F;
+		float taxRate = 0F;
 
 		if (imported) {
-			taxRate = 0.05F;
+			taxRate += 0.05F;
 		}
 
 		if (!exempt) {
-			taxRate = 0.10F;
+			taxRate += 0.10F;
 		}
 
-		if (imported && !exempt) {
-			taxRate = 0.15F;
-		}
-		
 		return taxRate;
 	}
 
