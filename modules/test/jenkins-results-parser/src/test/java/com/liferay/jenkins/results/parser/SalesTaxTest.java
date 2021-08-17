@@ -14,14 +14,14 @@
 
 package com.liferay.jenkins.results.parser;
 
+import com.liferay.jenkins.results.parser.java.task.ItemListParser;
+import com.liferay.jenkins.results.parser.java.task.Receipt;
+import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.Test;
-
-import com.liferay.jenkins.results.parser.java.task.ItemListParser;
-import com.liferay.jenkins.results.parser.java.task.Receipt;
-import com.liferay.jenkins.results.parser.java.task.ShoppingCart;
 
 /**
  * @author Brittney Nguyen
@@ -30,43 +30,48 @@ public class SalesTaxTest {
 
 	@Test
 	public void testSalesTax() {
-		for (int i=1 ; i<=3 ; i++) {
-			String itemListFileName = 
-				JenkinsResultsParserUtil.combine("input", String.valueOf(i), ".txt");
+		for (int i = 1; i <= 3; i++) {
+			String itemListFileName = JenkinsResultsParserUtil.combine(
+				"input", String.valueOf(i), ".txt");
 
-			ItemListParser itemListParser = new ItemListParser(readDependencyFile(itemListFileName));
+			ItemListParser itemListParser = new ItemListParser(
+				_readDependencyFile(itemListFileName));
 
-			ShoppingCart shoppingCart = new ShoppingCart(itemListParser.getShoppingCartItems());
+			ShoppingCart shoppingCart = new ShoppingCart(
+				itemListParser.getShoppingCartItems());
 
 			Receipt receipt = new Receipt(shoppingCart);
 
-			String expectedOutputFilename =
-				JenkinsResultsParserUtil.combine("expected_output", String.valueOf(i), ".txt");
+			String expectedOutputFilename = JenkinsResultsParserUtil.combine(
+				"expected_output", String.valueOf(i), ".txt");
 
-			String receiptString = receipt.toString();
+			String expected = _readDependencyFile(expectedOutputFilename);
 
-			String expected = readDependencyFile(expectedOutputFilename);
-
-			if (receiptString.equals(expected)) {
+			if (expected.equals(receipt.toString())) {
 				continue;
 			}
 
 			String errorMessage = JenkinsResultsParserUtil.combine(
 				"String mismatch\nExpected:\n", expected, "\n\nActual:\n",
-				receiptString);
+				receipt.toString());
 
 			throw new RuntimeException(errorMessage);
 		}
 	}
 
-	private String readDependencyFile(String dependencyFilename) {
+	private String _readDependencyFile(String dependencyFilename) {
 		Class<?> clazz = SalesTaxTest.class;
 
-		try (InputStream inputStream = clazz.getResourceAsStream("/dependencies/SalesTaxTest/" + dependencyFilename)) {
+		try (InputStream inputStream = clazz.getResourceAsStream(
+				"/dependencies/SalesTaxTest/" + dependencyFilename)) {
+
 			return JenkinsResultsParserUtil.readInputStream(inputStream);
 		}
 		catch (IOException ioException) {
-			throw new RuntimeException("Unable to read dependency file " + dependencyFilename, ioException);
+			throw new RuntimeException(
+				"Unable to read dependency file " + dependencyFilename,
+				ioException);
 		}
 	}
+
 }

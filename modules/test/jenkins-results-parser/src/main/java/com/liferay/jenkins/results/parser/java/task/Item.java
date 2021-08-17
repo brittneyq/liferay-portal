@@ -65,4 +65,5 @@ public class Item {
 	protected boolean imported;
 	protected String name;
 	protected float price;
+
 }

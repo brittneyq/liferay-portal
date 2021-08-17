@@ -26,7 +26,7 @@ public class ShoppingCart {
 		this(new ArrayList<ShoppingCartItem>());
 	}
 
-	public ShoppingCart(List<ShoppingCartItem>shoppingCartItems) {
+	public ShoppingCart(List<ShoppingCartItem> shoppingCartItems) {
 		this.shoppingCartItems = new ArrayList<>(shoppingCartItems);
 	}
 
@@ -38,9 +38,11 @@ public class ShoppingCart {
 		return shoppingCartItems;
 	}
 
-	protected List<ShoppingCartItem> shoppingCartItems;
-
 	public static class ShoppingCartItem extends Item {
+
+		public ShoppingCartItem(Item item, int quantity) {
+			this(item.getName(), item.getPrice(), quantity);
+		}
 
 		public ShoppingCartItem(String name, float price, int quantity) {
 			super(name, price);
@@ -48,15 +50,14 @@ public class ShoppingCart {
 			this.quantity = quantity;
 		}
 
-		public ShoppingCartItem(Item item, int quantity) {
-			this(item.getName(), item.getPrice(), quantity);
-		}
-
 		public int getQuantity() {
 			return quantity;
 		}
 
 		protected int quantity;
+
 	}
+
+	protected List<ShoppingCartItem> shoppingCartItems;
 
 }

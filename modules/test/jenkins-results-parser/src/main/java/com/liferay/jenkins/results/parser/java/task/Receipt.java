@@ -14,8 +14,6 @@
 
 package com.liferay.jenkins.results.parser.java.task;
 
-import com.liferay.jenkins.results.parser.java.task.ShoppingCart.ShoppingCartItem;
-
 /**
  * @author Brittney Nguyen
  */
@@ -26,14 +24,29 @@ public class Receipt {
 	}
 
 	public float getItemSalesTax(Item item) {
-		return (float)(Math.ceil((item.getSalesTaxRate() * item.getPrice()) * 20.0) / 20.0);
+		return (float)
+			(Math.ceil((item.getSalesTaxRate() * item.getPrice()) * 20.0) /
+				20.0);
+	}
+
+	public float getSalesTax() {
+		float salesTax = 0.0F;
+
+		for (ShoppingCart.ShoppingCartItem shoppingCartItem :
+				shoppingCart.getShoppingCartItems()) {
+
+			salesTax +=
+				getItemSalesTax(shoppingCartItem) *
+					shoppingCartItem.getQuantity();
+		}
+
+		return salesTax;
 	}
 
 	public float getTotal() {
 		float total = 0.0F;
 
-		for (
-			ShoppingCartItem shoppingCartItem :
+		for (ShoppingCart.ShoppingCartItem shoppingCartItem :
 				shoppingCart.getShoppingCartItems()) {
 
 			total +=
@@ -43,41 +56,24 @@ public class Receipt {
 		return total + getSalesTax();
 	}
 
-	public float getSalesTax() {
-		float salesTax = 0.0F;
-
-		for (
-			ShoppingCartItem shoppingCartItem :
-				shoppingCart.getShoppingCartItems()) {
-
-			salesTax += 
-				getItemSalesTax(shoppingCartItem) * shoppingCartItem.getQuantity();
-		}
-
-		return salesTax;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		for (
-			ShoppingCartItem shoppingCartItem :
+		for (ShoppingCart.ShoppingCartItem shoppingCartItem :
 				shoppingCart.getShoppingCartItems()) {
 
 			sb.append(
 				String.format(
 					"%d %s: %.2f\n", shoppingCartItem.getQuantity(),
 					shoppingCartItem.getName(),
-					shoppingCartItem.getPrice() + getItemSalesTax(shoppingCartItem)));
+					shoppingCartItem.getPrice() +
+						getItemSalesTax(shoppingCartItem)));
 		}
 
-		sb.append(
-			String.format(
-				"Sales Taxes: %.2f\n", getSalesTax()));
+		sb.append(String.format("Sales Taxes: %.2f\n", getSalesTax()));
 
-		sb.append(
-			String.format("Total: %.2f", getTotal()));
+		sb.append(String.format("Total: %.2f", getTotal()));
 
 		return sb.toString();
 	}

@@ -14,26 +14,30 @@
 
 package com.liferay.jenkins.results.parser.java.task;
 
+import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
 import java.io.File;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.java.task.ShoppingCart.ShoppingCartItem;
 
 /**
  * @author Brittney Nguyen
  */
 public class ItemListParser {
 
+	public ItemListParser(File itemListFile) throws IOException {
+		this(JenkinsResultsParserUtil.read(itemListFile));
+	}
+
 	public ItemListParser(String itemListFileContent) {
 		shoppingCartItems = new ArrayList<>();
 
 		for (String line : itemListFileContent.split("\\s*\\n\\s*")) {
-			Matcher matcher = _PATTERN_INPUT_LIST_LINE.matcher(line);
+			Matcher matcher = _inputListLinePattern.matcher(line);
 
 			if (!matcher.find()) {
 				continue;
@@ -44,20 +48,18 @@ public class ItemListParser {
 			float salePrice = Float.parseFloat(matcher.group(3));
 
 			shoppingCartItems.add(
-				new ShoppingCartItem(itemName, salePrice, quantity));
+				new ShoppingCart.ShoppingCartItem(
+					itemName, salePrice, quantity));
 		}
 	}
 
-	public ItemListParser(File itemListFile) throws IOException {
-		this(JenkinsResultsParserUtil.read(itemListFile));
-	}
-
-	public List<ShoppingCartItem> getShoppingCartItems() {
+	public List<ShoppingCart.ShoppingCartItem> getShoppingCartItems() {
 		return shoppingCartItems;
 	}
 
-	protected List<ShoppingCartItem> shoppingCartItems;
+	protected List<ShoppingCart.ShoppingCartItem> shoppingCartItems;
 
-	private static final Pattern _PATTERN_INPUT_LIST_LINE =
-		Pattern.compile("(\\d+) (\\D+\\s?)+ at (\\d+\\.\\d+)");
+	private static final Pattern _inputListLinePattern = Pattern.compile(
+		"(\\d+) (\\D+\\s?)+ at (\\d+\\.\\d+)");
+
 }
