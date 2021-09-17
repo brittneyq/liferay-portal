@@ -1,4 +1,4 @@
-@component-name = "portal-web-forms-and-data-lists"
+@component-name = "portal-workflow-ee"
 definition {
 
 	property portal.smoke = "dummy";
@@ -7,143 +7,147 @@ definition {
 	setUp {
 		TestCase.setUpPortalInstance();
 
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
 		User.firstLoginPG();
+
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
 	}
 
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		BlogsEntry.tearDownCP();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${siteName}");
+
+		Workflow._tearDownWorkflow();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
+
+		WorkflowMetrics.tearDown();
+
+		Workflow.tearDownWorkflowDefinitions();
+
 		if ("${testPortalInstance}" == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				portlet = "Forms");
-
-			FormsAdmin.teardownForms();
-
-			Navigator.gotoNavItem(navItem = "Element Sets");
-
-			FormsAdmin.teardownElementSets();
-
-			Page.tearDownCP();
+			WorkflowMetrics.executeWorkflowScript(scriptName = "DeleteUsersAndRoles.groovy");
 		}
 	}
 
-	@description = "LPS-70446 - Verify that a Rule with 'Autofill' action can be created with Data Providers"
+	@description = "LRQA-53631 Automate LPS-97666: [Performance] View top assignee performance"
 	@priority = "5"
-	test CanUtilizeDataProvidersToCreateAnAutofillRule {
-		property test.name.skip.portal.instance = "DummyTest#CanUtilizeDataProvidersToCreateAnAutofillRule";
+	test ViewTopAsigneePerformance {
+		property test.name.skip.portal.instance = "WorkflowMetrics#ViewTopAsigneePerformance";
 
-		var portalURL = PropsUtil.get("portal.url");
-
-		FormsAdminNavigator.enableLocalNetworkDataProvider();
-
-		Navigator.openURL();
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
 		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Forms");
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${siteName}");
 
-		Navigator.gotoNavItem(navItem = "Data Providers");
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
 
-		FormsAdminNavigator.gotoAddDataProvider();
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry1 Content",
+			entryTitle = "Blogs Entry Title");
 
-		FormsAdmin.editDataProvider(
-			name = "Liferay Countries",
-			outputParameterLabel = "Countries Full Name",
-			outputParameterName = "Country Name",
-			outputParameterPath = "nameCurrentValue",
-			outputParameterType = "List",
-			password = "test",
-			url = "${portalURL}/api/jsonws/country/get-countries",
-			username = "test@liferay.com");
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry1 Content",
+			entryTitle = "Blogs Entry Unapproved");
 
-		FormsAdmin.saveDataProvider();
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
-		FormsAdmin.addForm();
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
 
-		Form.editName();
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
 
-		Form.editDescription();
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Unapproved",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
 
-		Form.addTextField(fieldPositionNumber = "0");
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
 
-		var fieldNameTextField = FormFields.getFieldName();
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
-		Form.editFieldLabelMetal(fieldValue = "Text Field");
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
 
-		Form.closeSidebar();
+		WorkflowMetrics.viewPerformanceByAssignee(
+			assignee = "Test Test",
+			avgCompletionTime = "1min",
+			taskCount = "1");
 
-		Form.gotoAddField(
-			fieldPositionNumber = "1",
-			fieldType = "Select from List");
+		WorkflowMetrics.createUsersAndAssignInstancesWithGroovy(
+			numberOfBlogInstances = "10",
+			numberOfUsers = "10",
+			site = "${siteName}");
 
-		var fieldNameCountries = FormFields.getFieldName();
+		WorkflowMetrics.executeWorkflowScript(scriptName = "CompleteTasksAssignedToUsers.groovy");
 
-		Form.editFieldLabelMetal(fieldValue = "Countries");
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
-		FormFields.editOptionsRow(
-			optionName = "Select1",
-			optionValue = "Select 1");
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
 
-		FormFields.editOptionsRow(
-			optionName = "Select2",
-			optionValue = "Select 2",
-			rowNumber = "2");
+		AssertElementPresent(
+			key_rowNumber = "10",
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_TABLE_POSITION");
 
-		Form.closeSidebar();
+		AssertElementNotPresent(
+			key_rowNumber = "11",
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_TABLE_POSITION");
 
-		FormsAdminNavigator.gotoRules();
+		AssertElementPresent(
+			key_assigneesNumber = "11",
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_VIEW_ALL_ASSIGNEES_LINK");
 
-		FormRules.addRule();
+		WorkflowMetrics.selectDateRangePerformanceByAssignee(
+			completionVelocityDateRange = "Custom Range",
+			endDateRange = "11/11/2018",
+			startDateRange = "09/22/2018");
 
-		FormRules.configureConditionOptions(
-			conditionField = "Text Field",
-			conditionFieldValue = "country",
-			conditionOperator = "Contains",
-			conditionRowNumber = "1",
-			conditionValueType = "Value");
+		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_EMPTY_STATE");
 
-		FormRules.configureActionOptions(
-			action = "Autofill",
-			actionRowNumber = "1",
-			actionTarget = "Liferay Countries");
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
 
-		FormRules.selectAutofillOutput(dataProviderOutput = "Countries");
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
 
-		FormRules.save();
+		WorkflowMetrics.selectStepFilterPerformaceByAssignee(velocityUnit = "REVIEW");
 
-		FormsAdminNavigator.gotoFormBuilder();
+		AssertElementPresent(
+			key_assigneesNumber = "11",
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_VIEW_ALL_ASSIGNEES_LINK");
 
-		Form.publishForm();
+		WorkflowMetrics.selectStepFilterPerformaceByAssignee(velocityUnit = "UPDATE");
 
-		FormsAdminNavigator.gotoPublishedForm();
-
-		FormPortlet.waitFormRenderer(text = "Submit");
-
-		FormFields.viewTextLabel(
-			fieldLabel = "Text Field",
-			fieldName = "${fieldNameTextField}");
-
-		FormFields.editText(
-			fieldName = "${fieldNameTextField}",
-			fieldValue = "test");
-
-		FormFields.viewSelectOptionsList(
-			fieldName = "${fieldNameCountries}",
-			selectOption = "Option");
-
-		FormFields.editText(
-			fieldName = "${fieldNameTextField}",
-			fieldValue = "country");
-
-		FormFields.viewSelectOptionsList(
-			fieldName = "${fieldNameCountries}",
-			selectOption = "Afghanistan");
+		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_NO_RESULTS");
 	}
 
 }
