@@ -539,7 +539,7 @@ public class TestrayAttachmentRecorder {
 						JenkinsResultsParserUtil.write(
 							poshiReportHTMLFile,
 							content.replaceAll(
-								"screenshots/[A-z]+[\\d]+.jpg", "\\.jpg\\.gz"));
+								"screenshot/[A-z]+[\\d]+.jpg", "\\.jpg\\.gz"));
 					}
 					catch (IOException ioException) {
 						throw new RuntimeException(ioException);
