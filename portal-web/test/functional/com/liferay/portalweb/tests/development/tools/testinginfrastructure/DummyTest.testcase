@@ -1,153 +1,208 @@
-@component-name = "portal-workflow-ee"
+@component-name = "portal-commerce"
 definition {
 
 	property portal.smoke = "dummy";
-	property testray.main.component.name = "Forms";
+	property testray.main.component.name = "Shopping Experience";
 
 	setUp {
 		TestCase.setUpPortalInstance();
 
-		var testPortalInstance = PropsUtil.get("test.portal.instance");
-
 		User.firstLoginPG();
 
-		Navigator.openURL();
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "User Authentication",
+			configurationName = "General",
+			configurationScope = "Virtual Instance Scope");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+		Uncheck(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GENERAL_REQUIRE_STRANGERS_TO_VERIFY_THEIR_EMAIL_ADDRESS_CHECKBOX");
+
+		PortletEntry.save();
 	}
 
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		var siteName = TestCase.getSiteName(siteName = "${siteName}");
-
-		BlogsEntry.tearDownCP();
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Workflow",
-			site = "${siteName}");
-
-		Workflow._tearDownWorkflow();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
-
-		WorkflowMetrics.tearDown();
-
-		Workflow.tearDownWorkflowDefinitions();
-
 		if ("${testPortalInstance}" == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
-			WorkflowMetrics.executeWorkflowScript(scriptName = "DeleteUsersAndRoles.groovy");
+			Navigator.openURL();
+
+			if (IsElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE")) {
+				User.logoutPG();
+			}
+
+			User.firstLoginPG();
+
+			CommerceConfiguration.commerceAdminTearDown(userScreenName = "buyer");
+
+			CommerceConfiguration.commerceInitializersTearDown();
+
+			User.logoutPG();
 		}
 	}
 
-	@description = "LRQA-53631 Automate LPS-97666: [Performance] View top assignee performance"
-	@priority = "5"
-	test ViewTopAsigneePerformance {
-		property test.name.skip.portal.instance = "WorkflowMetrics#ViewTopAsigneePerformance";
+	test GuestAccountIsNotCombinedWithExistingUserAccount {
+		property test.name.skip.portal.instance = "GuestCheckout#GuestAccountIsNotCombinedWithExistingUserAccount";
 
-		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Speedwell");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Workflow",
-			site = "${siteName}");
+		CommerceNavigator.gotoPortlet(
+			category = "Store Management",
+			portlet = "Channels");
 
-		Workflow.configureWorkflow(
-			workflowDefinition = "Single Approver",
-			workflowResourceValue = "Blogs Entry");
+		CommerceNavigator.gotoEntry(entryName = "Speedwell Portal");
 
-		JSONBlog.addEntry(
-			entryContent = "Blogs Entry1 Content",
-			entryTitle = "Blogs Entry Title");
+		CommerceChannels.activatePaymentMethod(paymentMethod = "Money Order");
 
-		JSONBlog.addEntry(
-			entryContent = "Blogs Entry1 Content",
-			entryTitle = "Blogs Entry Unapproved");
+		Refresh();
 
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+		Check.checkToggleSwitch(
+			key_toggleSwitchLabel = "Guest Checkout",
+			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Blogs Entry Title",
-			workflowAssetType = "Blogs Entry",
-			workflowTask = "Review");
+		Button.clickSave();
 
-		Workflow.approveTaskByActions(
-			workflowAssetTitle = "Blogs Entry Title",
-			workflowAssetType = "Blogs Entry",
-			workflowTask = "Review");
+		AssertChecked.assertCheckedNotVisible(
+			key_toggleSwitchLabel = "Guest Checkout",
+			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 
-		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Blogs Entry Unapproved",
-			workflowAssetType = "Blogs Entry",
-			workflowTask = "Review");
+		Click(
+			key_fixIssueButtonName = "Guest Checkout Authentication",
+			locator1 = "CommerceEntry#FIX_ISSUE_BUTTON");
+
+		Alert.viewSuccessMessage();
 
 		ApplicationsMenu.gotoPortlet(
-			category = "Workflow",
-			panel = "Applications",
-			portlet = "Metrics");
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+		User.addCP(
+			userEmailAddress = "buyer@liferay.com",
+			userFirstName = "Buyer",
+			userLastName = "User",
+			userScreenName = "buyer");
 
-		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
+		Click(locator1 = "Icon#BACK");
 
-		WorkflowMetrics.viewPerformanceByAssignee(
-			assignee = "Test Test",
-			avgCompletionTime = "1min",
-			taskCount = "1");
+		CommerceLogin.editPasswordCP(
+			newPassword = "ttest",
+			requirePasswordReset = "true",
+			userScreenName = "buyer");
 
-		WorkflowMetrics.createUsersAndAssignInstancesWithGroovy(
-			numberOfBlogInstances = "10",
-			numberOfUsers = "10",
-			site = "${siteName}");
+		Click(locator1 = "Icon#BACK");
 
-		WorkflowMetrics.executeWorkflowScript(scriptName = "CompleteTasksAssignedToUsers.groovy");
+		User.editUserSiteCP(
+			siteName = "Speedwell",
+			userScreenName = "buyer");
 
-		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+		User.logoutPG();
 
-		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
+		CommerceLogin.speedwellLogin(
+			password = "ttest",
+			resetPassword = "test",
+			urlAppend = "web/speedwell",
+			userEmailAddress = "buyer@liferay.com");
+
+		CommerceNavigator.gotoSpeedwellTopbarItem(menuItem = "Catalog");
+
+		FrontStore.addInitializerProductToCart(
+			productName = "U-Joint",
+			productQuantity = "1");
+
+		Pause(locator1 = "5000");
+
+		CommerceNavigator.gotoMiniCart();
+
+		Button.click(button = "Submit");
+
+		CommerceCheckout.initializersCheckout(
+			newAddressAddress = "Test Address",
+			newAddressCity = "Test City",
+			newAddressCountry = "United States",
+			newAddressName = "Address Name",
+			newAddressZipCode = "Test Zip Code",
+			paymentMethod = "Money Order",
+			productName = "U-Joint",
+			productQuantity = "1",
+			productUnitPrice = "24",
+			shippingMethod = "Standard");
+
+		User.logoutPG();
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "web/speedwell");
+
+		CommerceNavigator.gotoSpeedwellTopbarItem(menuItem = "Catalog");
+
+		FrontStore.addInitializerProductToCart(
+			productName = "U-Joint",
+			productQuantity = "1");
+
+		Pause(locator1 = "5000");
+
+		CommerceNavigator.gotoMiniCart();
+
+		Button.click(button = "Submit");
+
+		Button.click(button = "Continue as a Guest");
+
+		CommerceCheckout.initializersCheckout(
+			guestEmail = "buyer@liferay.com",
+			newAddressAddress = "Test Address",
+			newAddressCity = "Test City",
+			newAddressCountry = "United States",
+			newAddressName = "Guest Account",
+			newAddressZipCode = "Test Zip Code",
+			paymentMethod = "Money Order",
+			productName = "U-Joint",
+			productQuantity = "1",
+			productUnitPrice = "24",
+			shippingMethod = "Standard");
+
+		CommerceLogin.speedwellLogin(
+			password = "test",
+			urlAppend = "web/speedwell",
+			userEmailAddress = "buyer@liferay.com");
+
+		CommerceNavigator.gotoSpeedwellTopbarItem(menuItem = "My Account");
+
+		CommerceNavigator.gotoSpeedwellDashboardItem(dashboardItem = "My Orders");
 
 		AssertElementPresent(
-			key_rowNumber = "10",
-			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_TABLE_POSITION");
+			key_accountName = "Buyer User",
+			locator1 = "CommerceAccelerators#SPEEDWELL_MY_ORDERS_ORDER_ACCOUNT");
 
 		AssertElementNotPresent(
-			key_rowNumber = "11",
-			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_TABLE_POSITION");
+			key_accountName = "Guest Account",
+			locator1 = "CommerceAccelerators#SPEEDWELL_MY_ORDERS_ORDER_ACCOUNT");
 
-		AssertElementPresent(
-			key_assigneesNumber = "11",
-			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_VIEW_ALL_ASSIGNEES_LINK");
+		User.logoutPG();
 
-		WorkflowMetrics.selectDateRangePerformanceByAssignee(
-			completionVelocityDateRange = "Custom Range",
-			endDateRange = "11/11/2018",
-			startDateRange = "09/22/2018");
+		User.loginPG();
 
-		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_EMPTY_STATE");
+		ApplicationsMenu.gotoPortlet(
+			category = "Accounts",
+			panel = "Applications",
+			portlet = "Accounts");
 
-		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+		CommerceNavigator.gotoEntry(entryName = "Buyer User");
 
-		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
+		CommerceEntry.viewAccountsEntry(
+			accountEmail = "buyer@liferay.com",
+			accountName = "Buyer User",
+			accountType = "Personal",
+			isAccountActive = "true");
 
-		WorkflowMetrics.selectStepFilterPerformaceByAssignee(velocityUnit = "REVIEW");
+		Click(locator1 = "Icon#BACK");
 
-		AssertElementPresent(
-			key_assigneesNumber = "11",
-			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_VIEW_ALL_ASSIGNEES_LINK");
+		CommerceNavigator.gotoEntry(entryName = "Guest Account");
 
-		WorkflowMetrics.selectStepFilterPerformaceByAssignee(velocityUnit = "UPDATE");
-
-		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_CARD_NO_RESULTS");
+		CommerceEntry.viewAccountsEntry(
+			accountEmail = "buyer@liferay.com",
+			accountName = "Guest Account",
+			accountType = "Guest",
+			isAccountActive = "true");
 	}
 
 }
