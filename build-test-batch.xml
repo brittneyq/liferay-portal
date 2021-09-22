@@ -5454,6 +5454,8 @@ log.sanitizer.enabled=false</echo>
 						<isset property="modules.test.class.group" />
 					</not>
 					<then>
+						<echo>MODULES TEST CLASS GROUP=${modules.test.class.group}</echo>
+
 						<gradle-execute dir="modules" outputproperty="modules.project.paths" task="printProjectPath">
 							<arg value="--quiet" />
 							<arg value="-Dbuild.exclude.dirs=third-party" />
