@@ -7122,6 +7122,12 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 									<propertyresource name="modules.test.class.group" />
 								</loadresource>
 
+								<sequential>
+									<echo>****************************</echo>
+									<echo>Modules build service tasks=${modules.build.service.tasks}</echo>
+									<echo>****************************</echo>
+								</sequential>
+
 								<for list="${modules.build.service.tasks}" param="modules.build.service.task" trim="true">
 									<sequential>
 										<echo>Executing Gradle tasks: @{modules.build.service.task}</echo>
