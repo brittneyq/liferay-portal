@@ -5449,6 +5449,13 @@ log.sanitizer.enabled=false</echo>
 	<target name="modules-compile-jdk8">
 		<run-batch-test>
 			<test-action>
+				<sequential>
+					<echo>*******************</echo>
+					<echo>Modules test class group!</echo>
+					<echo>modules.test.class.group=${modules.test.class.group}</echo>
+					<echo>*******************</echo>
+				</sequential>
+
 				<if>
 					<not>
 						<isset property="modules.test.class.group" />
