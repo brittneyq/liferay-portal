@@ -7076,6 +7076,8 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 				<if>
 					<available file="modules/util/portal-tools-service-builder" />
 					<then>
+						<echo>Executing modules/util/portal-tools-service-builder......</echo>
+
 						<gradle-execute dir="modules/util/portal-tools-service-builder" task="deploy">
 							<arg value="clean" />
 						</gradle-execute>
@@ -7094,6 +7096,8 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 						<equals arg1="${skip.service.builder.full}" arg2="true" />
 					</not>
 					<then>
+						<echo>Calling ant build-services..............</echo>
+
 						<ant dir="portal-impl" target="build-services">
 							<property name="com.liferay.portal.tools.service.builder.ignore.local" value="false" />
 						</ant>
@@ -7104,6 +7108,7 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 								<equals arg1="${skip.service.builder.core}" arg2="true" />
 							</not>
 							<then>
+								<echo>Skip service builder core is true...............</echo>
 								<ant dir="portal-impl" target="build-service-counter" />
 								<ant dir="portal-impl" target="build-service-portal" />
 								<ant dir="portal-impl" target="build-service-portlets" />
