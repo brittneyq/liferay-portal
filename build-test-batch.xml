@@ -7080,11 +7080,19 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 
 				<record action="start" name="${project.dir}/build.services.output.txt" />
 
+				<sequential>
+					<echo>***************************</echo>
+					<echo>modules.test.class.group=${modules.test.class.group}</echo>
+					<echo>***************************</echo>
+				</sequential>
+
 				<if>
 					<not>
 						<equals arg1="${skip.service.builder.full}" arg2="true" />
 					</not>
 					<then>
+						<echo>Calling ant build-services..............</echo>
+
 						<ant dir="portal-impl" target="build-services">
 							<property name="com.liferay.portal.tools.service.builder.ignore.local" value="false" />
 						</ant>
@@ -7095,6 +7103,7 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 								<equals arg1="${skip.service.builder.core}" arg2="true" />
 							</not>
 							<then>
+								<echo>Skip service builder core is not true...............</echo>
 								<ant dir="portal-impl" target="build-service-counter" />
 								<ant dir="portal-impl" target="build-service-portal" />
 								<ant dir="portal-impl" target="build-service-portlets" />
@@ -7104,6 +7113,8 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 						<if>
 							<isset property="modules.test.class.group" />
 							<then>
+								<echo>Modules test class group is set!</echo>
+
 								<loadresource property="modules.build.service.tasks">
 									<filterchain>
 										<tokenfilter>
