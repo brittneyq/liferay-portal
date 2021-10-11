@@ -109,6 +109,7 @@
 					</or>
 				</and>
 				<then>
+					<echo>Hello</echo>
 					<echo append="true" file="${lp.plugins.dir}/build.${user.name}.properties">@{plugins.includes.plugin.dependent-apps},@{plugins.includes.plugin.name},</echo>
 				</then>
 			</if>
