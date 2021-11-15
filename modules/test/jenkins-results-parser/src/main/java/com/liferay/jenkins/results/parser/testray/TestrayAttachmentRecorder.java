@@ -541,6 +541,7 @@ public class TestrayAttachmentRecorder {
 						JenkinsResultsParserUtil.write(
 							poshiReportHTMLFile,
 							content.replaceAll(regex, "$1.jpg.gz"));
+
 					}
 					catch (IOException ioException) {
 						throw new RuntimeException(ioException);
