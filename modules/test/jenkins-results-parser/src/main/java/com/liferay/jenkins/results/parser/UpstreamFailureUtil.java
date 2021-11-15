@@ -38,7 +38,9 @@ public class UpstreamFailureUtil {
 			JSONObject upstreamJobFailuresJSONObject =
 				getUpstreamJobFailuresJSONObject(topLevelBuild);
 
-			System.out.println("get upstream job failures build number: " + upstreamJobFailuresJSONObject.getInt("buildNumber"));
+			System.out.println(
+				"get upstream job failures build number: " +
+					upstreamJobFailuresJSONObject.getInt("buildNumber"));
 
 			return upstreamJobFailuresJSONObject.getInt("buildNumber");
 		}
@@ -350,37 +352,42 @@ public class UpstreamFailureUtil {
 			TopLevelBuild topLevelBuild)
 		throws IllegalStateException {
 
-		System.out.println("Top level build branch name: " + topLevelBuild.getBranchName());
-		System.out.println("Top level git base repository name: " + topLevelBuild.getBaseGitRepositoryName());
-
-		//instead of passing top level build.getbasegitrepositoryname, load build.properties JenkinsResultsparserutil.getbuildproperties
-		//from properties object getproperty portal.dir and pass in branch name
+		System.out.println(
+			"Top level build branch name: " + topLevelBuild.getBranchName());
+		System.out.println(
+			"Top level git base repository name: " +
+				topLevelBuild.getBaseGitRepositoryName());
 
 		Properties buildProperties;
+
 		try {
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 			System.out.println("GETTING BUILD PROPERTIES...");
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(
-					"Unable to get build properties", ioException);
+				"Unable to get build properties", ioException);
 		}
 
-		String portalDir = buildProperties.getProperty(JenkinsResultsParserUtil.combine(
+		String portalDir = buildProperties.getProperty(
+			JenkinsResultsParserUtil.combine(
 				"portal.dir[", topLevelBuild.getBranchName(), "]"));
 
 		System.out.println("PORTAL DIR!!!!!: " + portalDir);
 
-		String baseGitRepository = portalDir.replaceAll("(?:.*)(liferay-portal.*)","$1");
+		String baseGitRepository = portalDir.replaceAll(
+			"(?:.*)(liferay-portal.*)", "$1");
 
 		System.out.println("NEW portal dir: " + baseGitRepository);
 
 		GitWorkingDirectory gitWorkingDirectory =
 			GitWorkingDirectoryFactory.newGitWorkingDirectory(
-				topLevelBuild.getBranchName(), (File)null,
-				baseGitRepository);
+				topLevelBuild.getBranchName(), (File)null, baseGitRepository);
 
-		System.out.println("Top level build acceptance upstream job URL: " + topLevelBuild.getAcceptanceUpstreamJobURL());
+		System.out.println(
+			"Top level build acceptance upstream job URL: " +
+				topLevelBuild.getAcceptanceUpstreamJobURL());
+
 		List<String> buildResultJSONURLs =
 			JenkinsResultsParserUtil.getBuildResultJsonURLs(
 				topLevelBuild.getAcceptanceUpstreamJobURL(), 20);
@@ -420,9 +427,9 @@ public class UpstreamFailureUtil {
 			}
 			catch (IOException ioException) {
 				System.out.println(ioException.toString());
-
 			}
 		}
+
 		throw new IllegalStateException(
 			"Unable to find comparable upstream test results");
 	}
