@@ -140,6 +140,7 @@ public abstract class TopLevelBuild extends BaseBuild {
 		String jobName = getJobName();
 
 		if (jobName.contains("pullrequest")) {
+
 			String acceptanceUpstreamJobURL = JenkinsResultsParserUtil.combine(
 				"https://test-1-1.liferay.com/job/",
 				getAcceptanceUpstreamJobName());
@@ -1714,6 +1715,7 @@ public abstract class TopLevelBuild extends BaseBuild {
 	}
 
 	protected Element getTopGitHubMessageElement() {
+
 		update();
 
 		Element rootElement = Dom4JUtil.getNewElement("html");
@@ -1736,6 +1738,7 @@ public abstract class TopLevelBuild extends BaseBuild {
 				UpstreamFailureUtil.getUpstreamJobFailuresBuildNumber(
 					this, upstreamBranchSHA);
 
+			System.out.println("In gettopgithubmessagelement.... build number: " + buildNumber);
 			if (isEligibleForReevaluation(result, upstreamBranchSHA)) {
 				Dom4JUtil.addToElement(
 					detailsElement, Dom4JUtil.getNewElement("br"),

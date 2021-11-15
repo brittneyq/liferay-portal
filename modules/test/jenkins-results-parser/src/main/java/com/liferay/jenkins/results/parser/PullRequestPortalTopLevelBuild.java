@@ -42,7 +42,8 @@ public class PullRequestPortalTopLevelBuild
 
 		try {
 			String testSuiteName = getTestSuiteName();
-
+			System.out.println("testSuiteName...." + testSuiteName);
+			System.out.println("job name...." + jobName + "branch name...." + branchName);
 			if (testSuiteName.equals("relevant")) {
 				_stableJob = JobFactory.newJob(jobName, "stable", branchName);
 			}
