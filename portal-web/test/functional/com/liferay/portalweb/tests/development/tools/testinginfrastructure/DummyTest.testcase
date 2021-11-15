@@ -1,0 +1,49 @@
+@component-name = "portal-tools"
+definition {
+
+	property portal.smoke = "dummy";
+	property testray.main.component.name = "Tools";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "User Authentication",
+			configurationName = "General",
+			configurationScope = "Virtual Instance Scope");
+
+		Uncheck(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GENERAL_REQUIRE_STRANGERS_TO_VERIFY_THEIR_EMAIL_ADDRESS_CHECKBOX");
+
+		PortletEntry.save();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.openURL();
+
+			if (IsElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE")) {
+				User.logoutPG();
+			}
+
+			User.firstLoginPG();
+
+			CommerceConfiguration.commerceAdminTearDown(userScreenName = "buyer");
+
+			CommerceConfiguration.commerceInitializersTearDown();
+
+			User.logoutPG();
+		}
+	}
+
+	test GuestAccountIsNotCombinedWithExistingUserAccount {
+		property test.name.skip.portal.instance = "GuestCheckout#GuestAccountIsNotCombinedWithExistingUserAccount";
+
+		takeScreenshot();
+	}
