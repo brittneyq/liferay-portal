@@ -29,7 +29,8 @@ public class GitWorkingDirectoryFactory {
 		String upstreamBranchName, File gitRepositoryDir,
 		String gitRepositoryName) {
 
-		System.out.println("************NEW GIT WORKING DIRECTORY ***************");
+		System.out.println(
+			"************NEW GIT WORKING DIRECTORY ***************");
 		System.out.println("UPSTREAM BRANCH NAME: " + upstreamBranchName);
 		System.out.println("gitRepositoryDir: " + gitRepositoryName);
 		System.out.println("GIT REPOSITORY NAME.... " + gitRepositoryName);
@@ -95,7 +96,6 @@ public class GitWorkingDirectoryFactory {
 					gitRepositoryName);
 			}
 			else if (gitRepositoryName.startsWith("liferay-portal")) {
-
 				gitWorkingDirectory = new PortalGitWorkingDirectory(
 					upstreamBranchName, gitRepositoryDirPath,
 					gitRepositoryName);
@@ -104,24 +104,18 @@ public class GitWorkingDirectoryFactory {
 				gitWorkingDirectory = new GitWorkingDirectory(
 					upstreamBranchName, gitRepositoryDirPath,
 					gitRepositoryName);
-
 			}
 
 			_gitWorkingDirectories.put(key, gitWorkingDirectory);
 
-			GitUtil.ExecutionResult executionResult = gitWorkingDirectory.executeBashCommands(
-					GitUtil.RETRIES_SIZE_MAX, GitUtil.MILLIS_RETRY_DELAY, 1000 * 60 * 2,
-					"git branch --show-current");
+			GitUtil.ExecutionResult executionResult =
+				gitWorkingDirectory.executeBashCommands(
+					GitUtil.RETRIES_SIZE_MAX, GitUtil.MILLIS_RETRY_DELAY,
+					1000 * 60 * 2, "git branch --show-current");
 
 			String currentBranch = executionResult.getStandardOut();
 
 			System.out.println("Current Branch checked out: " + currentBranch);
-//			if(!currentBranch.equals(upstreamBranchName))
-//			{
-//				GitUtil.ExecutionResult executionResult2 = gitWorkingDirectory.executeBashCommands(
-//						GitUtil.RETRIES_SIZE_MAX, GitUtil.MILLIS_RETRY_DELAY, 1000 * 60 * 2,
-//						"git checkout " + upstreamBranchName);
-//			}
 
 			return gitWorkingDirectory;
 		}
