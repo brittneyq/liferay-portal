@@ -27,6 +27,8 @@ public class Test {
 
 	protected static void run() {
 		System.out.println("Test");
+
+        System.out.println("Test2");
 	}
 
 }
