@@ -4823,6 +4823,13 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				${database.docker.run.options} \
 			</start-docker-container>
 
+			<echo>*******************</echo>
+			<echo>database host = ${database.host}</echo>
+			<echo>database docker database options = ${database.docker.database.options}</echo>
+			<echo>database docker image  = ${database.docker.image}</echo>
+			<echo>database docker run options = ${database.docker.run.options}</echo>
+			<echo>*******************</echo>
+
 			<if>
 				<equals arg1="${database.type}" arg2="db2" />
 				<then>
@@ -4852,6 +4859,8 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				<elseif>
 					<equals arg1="${database.type}" arg2="sqlserver" />
 					<then>
+						<echo>Database type is sqlserver!!!</echo>
+
 						<get-database-property property.name="database.password" />
 						<get-database-property property.name="database.username" />
 
@@ -4866,6 +4875,10 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				</elseif>
 			</if>
 
+			<echo>**************</echo>
+			<echo>Docker database wait condition = ${docker.database.wait.condition}</echo>
+			<echo>**************</echo>
+			
 			<wait-for-docker-database
 				shell.condition="${docker.database.wait.condition}"
 			/>
@@ -5880,6 +5893,12 @@ war.path=${app.server.portal.dir}/</echo>
 			<get-database-property property.name="database.host" />
 			<get-database-property property.name="database.name" />
 			<get-database-property property.name="database.version" />
+
+			<echo>*****************************</echo>
+			<echo>database host = ${database.host}</echo>
+			<echo>database name = ${database.name}</echo>
+			<echo>database version = ${database.version}</echo>
+			<echo>*******************************</echo>
 
 			<docker-execute container="${database.host}">
 				<![CDATA[
@@ -13683,9 +13702,15 @@ url=${short.hostname}:8080</echo>
 	<target name="start-docker-containers">
 		<get-database-property property.name="database.docker.image" />
 
+		<echo>**************</echo>
+		<echo>database docker image.. ${database.docker.image}</echo>
+		<echo>**************</echo>
+
 		<if>
 			<isset property="database.docker.image" />
 			<then>
+				<echo>database docker image is set...!!</echo>
+
 				<stop-docker-database />
 
 				<start-docker-database />
@@ -13693,6 +13718,10 @@ url=${short.hostname}:8080</echo>
 		</if>
 
 		<get-operating-system-property property.name="operating.system.docker.image" />
+
+		<echo>***************</echo>
+		<echo>operating system docker iamge = ${operating.system.docker.image}</echo>
+		<echo>****************</echo>
 
 		<if>
 			<isset property="operating.system.docker.image" />
