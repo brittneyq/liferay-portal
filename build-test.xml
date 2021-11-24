@@ -4824,9 +4824,10 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			</start-docker-container>
 
 			<echo>*******************</echo>
+			<echo>in start docker database....</echo>
 			<echo>database host = ${database.host}</echo>
 			<echo>database docker database options = ${database.docker.database.options}</echo>
-			<echo>database docker image  = ${database.docker.image}</echo>
+			<echo>database docker image = ${database.docker.image}</echo>
 			<echo>database docker run options = ${database.docker.run.options}</echo>
 			<echo>*******************</echo>
 
@@ -4878,7 +4879,7 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<echo>**************</echo>
 			<echo>Docker database wait condition = ${docker.database.wait.condition}</echo>
 			<echo>**************</echo>
-			
+
 			<wait-for-docker-database
 				shell.condition="${docker.database.wait.condition}"
 			/>
@@ -5231,6 +5232,11 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 	<macrodef name="stop-docker-database">
 		<sequential>
 			<get-database-property property.name="database.host" />
+
+			<echo>******************</echo>
+			<echo>in stop docker database...</echo>
+			<echo>database host = ${database.host}</echo>
+			<echo>*******************</echo>
 
 			<stop-docker-container name="${database.host}" />
 		</sequential>
@@ -13770,9 +13776,15 @@ url=${short.hostname}:8080</echo>
 	<target name="stop-docker-containers">
 		<get-database-property property.name="database.docker.image" />
 
+		<echo>***************</echo>
+		<echo>in stop docker container</echo>
+		<echo>database docker image...${database.docker.image}</echo>
+		<echo>***************</echo>
+
 		<if>
 			<isset property="database.docker.image" />
 			<then>
+				<echo>Database docker image is set... stopping docker database...</echo>
 				<stop-docker-database />
 			</then>
 		</if>
