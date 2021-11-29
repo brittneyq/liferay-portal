@@ -327,6 +327,9 @@ module.framework.properties.osgi.console=11312</echo>
 
 			<echo>********************</echo>
 			<echo>operating system docker shell path: ${operating.system.docker.shell.path}</echo>
+			<echo>script.sh file.... ${script.sh.file}</echo>
+			<echo>container....@{container}</echo>
+			<echo>docker shell path... ${docker.shell.path}</echo>
 			<echo>********************</echo>
 
 			<condition else="/bin/bash" property="docker.shell.path" value="${operating.system.docker.shell.path}">
@@ -337,11 +340,19 @@ module.framework.properties.osgi.console=11312</echo>
 				<![CDATA[
 					docker exec @{container} mkdir -p /tmp
 
+					echo one
+
 					docker cp ${script.sh.file} @{container}:/tmp/script.sh
+
+					echo two
 
 					docker exec @{container} ${docker.shell.path} /tmp/script.sh
 
+					echo three
+
 					docker exec --user root @{container} rm -f /tmp/script.sh
+
+					echo four
 				]]>
 			</execute>
 
