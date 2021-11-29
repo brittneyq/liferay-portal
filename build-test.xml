@@ -4777,9 +4777,20 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<local name="docker.network.run.option" />
 			<local name="docker.start.script" />
 
+			<echo>********</echo>
+			<echo>in start-docker-container</echo>
+			<echo>image...@{image}</echo>
+			<echo>name....@{name}</echo>
+			<echo>options...@{options}</echo>
+			<echo>********</echo>
+
 			<condition else="" property="docker.network.run.option" value="--network=${env.DOCKER_NETWORK_NAME}">
 				<isset property="env.DOCKER_NETWORK_NAME" />
 			</condition>
+
+			<echo>********</echo>
+			<echo>docker netwrok run option .. ${docker.network.run.option}</echo>
+			<echo>********</echo>
 
 			<property name="docker.start.script" value="docker_start.sh" />
 
@@ -4802,6 +4813,8 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				]]>
 			</echo>
 
+			<echo>Finished docker run... and docker ps!</echo>
+			
 			<chmod
 				perm="a+x"
 			>
