@@ -315,11 +315,19 @@ module.framework.properties.osgi.console=11312</echo>
 		<text name="script" />
 
 		<sequential>
+			<echo>*******************************</echo>
+			<echo>In docker execute..............</echo>
+			<echo>*******************************</echo>
+
 			<property location="${project.dir}/script.sh" name="script.sh.file" />
 
 			<echo file="${script.sh.file}"><![CDATA[@{script}]]></echo>
 
 			<get-operating-system-property property.name="operating.system.docker.shell.path" />
+
+			<echo>********************</echo>
+			<echo>operating system docker shell path: ${operating.system.docker.shell.path}</echo>
+			<echo>********************</echo>
 
 			<condition else="/bin/bash" property="docker.shell.path" value="${operating.system.docker.shell.path}">
 				<isset property="operating.system.docker.shell.path" />
@@ -336,6 +344,10 @@ module.framework.properties.osgi.console=11312</echo>
 					docker exec --user root @{container} rm -f /tmp/script.sh
 				]]>
 			</execute>
+
+			<echo>********************</echo>
+			<echo>finishing docker exec commands for container...</echo>
+			<echo>********************</echo>
 
 			<delete file="${script.sh.file}" />
 		</sequential>
@@ -5909,6 +5921,8 @@ war.path=${app.server.portal.dir}/</echo>
 			<docker-execute container="${database.host}">
 				<![CDATA[
 					#!/bin/bash
+
+					echo @{shell.condition}
 
 					until @{shell.condition}
 
