@@ -4784,6 +4784,7 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<echo>image...@{image}</echo>
 			<echo>name....@{name}</echo>
 			<echo>options...@{options}</echo>
+			<echo>run options..@{run.options}</echo>
 			<echo>********</echo>
 
 			<condition else="" property="docker.network.run.option" value="--network=${env.DOCKER_NETWORK_NAME}">
