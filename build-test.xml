@@ -4820,8 +4820,11 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				]]>
 			</echo>
 
+			<loadfile property="contents2" srcFile="${docker.start.script}"/>
+
 			<echo>*********</echo>
 			<echo>dockr start script.. ${docker.start.script}</echo>
+			<echo message="${contents2}"/>
 			<echo>Finished docker run... and docker ps!</echo>
 			<echo>**********</echo>
 
