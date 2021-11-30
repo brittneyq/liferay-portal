@@ -4803,6 +4803,8 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 
 			<echo file="${docker.start.script}">
 				<![CDATA[
+					#!/bin/bash
+					
 					docker run \
 						--detach \
 						--hostname=@{name} \
