@@ -4797,6 +4797,10 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 
 			<property name="docker.start.script" value="docker_start.sh" />
 
+			<echo>*******</echo>
+			<echo>DOCKER START SCRIPT ${docker.start.script}</echo>
+			<echo>*******</echo>
+
 			<echo file="${docker.start.script}">
 				<![CDATA[
 					docker run \
@@ -4816,7 +4820,10 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				]]>
 			</echo>
 
+			<echo>*********</echo>
+			<echo>dockr start script.. ${docker.start.script}</echo>
 			<echo>Finished docker run... and docker ps!</echo>
+			<echo>**********</echo>
 
 			<chmod
 				perm="a+x"
@@ -4833,12 +4840,14 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				<arg value="${docker.start.script}" />
 			</exec>
 
+			<echo>Docker start error 1... ${docker.start.error}</echo>
+
 			<exec errorproperty="docker.start.error" executable="cmd.exe" os="${os.windows}">
 				<arg value="${docker.start.script}" />
 			</exec>
 
-			<echo>Docker start error... ${docker.start.error}</echo>
-			
+			<echo>Docker start error 2... ${docker.start.error}</echo>
+
 			<if>
 				<contains string="${docker.start.error}" substring="repository does not exist or may require 'docker login': denied: requested access to the resource is denied." />
 				<then>
