@@ -315,11 +315,22 @@ module.framework.properties.osgi.console=11312</echo>
 		<text name="script" />
 
 		<sequential>
+			<echo>*******************************</echo>
+			<echo>In docker execute..............</echo>
+			<echo>*******************************</echo>
+
 			<property location="${project.dir}/script.sh" name="script.sh.file" />
 
 			<echo file="${script.sh.file}"><![CDATA[@{script}]]></echo>
 
 			<get-operating-system-property property.name="operating.system.docker.shell.path" />
+
+			<echo>********************</echo>
+			<echo>operating system docker shell path: ${operating.system.docker.shell.path}</echo>
+			<echo>script.sh file.... ${script.sh.file}</echo>
+			<echo>container....@{container}</echo>
+			<echo>docker shell path... ${docker.shell.path}</echo>
+			<echo>********************</echo>
 
 			<condition else="/bin/bash" property="docker.shell.path" value="${operating.system.docker.shell.path}">
 				<isset property="operating.system.docker.shell.path" />
@@ -327,15 +338,29 @@ module.framework.properties.osgi.console=11312</echo>
 
 			<execute>
 				<![CDATA[
+					echo zero
+
 					docker exec @{container} mkdir -p /tmp
+
+					echo one
 
 					docker cp ${script.sh.file} @{container}:/tmp/script.sh
 
+					echo two
+
 					docker exec @{container} ${docker.shell.path} /tmp/script.sh
 
+					echo three
+
 					docker exec --user root @{container} rm -f /tmp/script.sh
+
+					echo four
 				]]>
 			</execute>
+
+			<echo>********************</echo>
+			<echo>finishing docker exec commands for container...</echo>
+			<echo>********************</echo>
 
 			<delete file="${script.sh.file}" />
 		</sequential>
@@ -4754,14 +4779,32 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<local name="docker.network.run.option" />
 			<local name="docker.start.script" />
 
+			<echo>********</echo>
+			<echo>in start-docker-container</echo>
+			<echo>image...@{image}</echo>
+			<echo>name....@{name}</echo>
+			<echo>options...@{options}</echo>
+			<echo>run options..@{run.options}</echo>
+			<echo>********</echo>
+
 			<condition else="" property="docker.network.run.option" value="--network=${env.DOCKER_NETWORK_NAME}">
 				<isset property="env.DOCKER_NETWORK_NAME" />
 			</condition>
 
+			<echo>********</echo>
+			<echo>docker netwrok run option .. ${docker.network.run.option}</echo>
+			<echo>********</echo>
+
 			<property name="docker.start.script" value="docker_start.sh" />
+
+			<echo>*******</echo>
+			<echo>DOCKER START SCRIPT ${docker.start.script}</echo>
+			<echo>*******</echo>
 
 			<echo file="${docker.start.script}">
 				<![CDATA[
+					#!/bin/bash
+					
 					docker run \
 						--detach \
 						--hostname=@{name} \
@@ -4779,6 +4822,14 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				]]>
 			</echo>
 
+			<loadfile property="contents2" srcFile="${docker.start.script}"/>
+
+			<echo>*********</echo>
+			<echo>dockr start script.. ${docker.start.script}</echo>
+			<echo message="${contents2}"/>
+			<echo>Finished docker run... and docker ps!</echo>
+			<echo>**********</echo>
+
 			<chmod
 				perm="a+x"
 			>
@@ -4794,9 +4845,13 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				<arg value="${docker.start.script}" />
 			</exec>
 
+			<echo>Docker start error 1... ${docker.start.error}</echo>
+
 			<exec errorproperty="docker.start.error" executable="cmd.exe" os="${os.windows}">
 				<arg value="${docker.start.script}" />
 			</exec>
+
+			<echo>Docker start error 2... ${docker.start.error}</echo>
 
 			<if>
 				<contains string="${docker.start.error}" substring="repository does not exist or may require 'docker login': denied: requested access to the resource is denied." />
@@ -4819,9 +4874,21 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<property name="database.docker.database.options" value="" />
 			<property name="database.docker.run.options" value="" />
 
+			<echo>*******************</echo>
+			<echo>in start docker database....</echo>
+			<echo>database host = ${database.host}</echo>
+			<echo>database docker database options = ${database.docker.database.options}</echo>
+			<echo>database docker image = ${database.docker.image}</echo>
+			<echo>database docker run options = ${database.docker.run.options}</echo>
+			<echo>*******************</echo>
+
 			<start-docker-container image="${database.docker.image}" name="${database.host}" options="${database.docker.database.options}">\
 				${database.docker.run.options} \
 			</start-docker-container>
+
+			<echo>***********</echo>
+			<echo>In start-docker-database... finished start-docker-container</echo>
+			<echo>************</echo>
 
 			<if>
 				<equals arg1="${database.type}" arg2="db2" />
@@ -4852,6 +4919,8 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 				<elseif>
 					<equals arg1="${database.type}" arg2="sqlserver" />
 					<then>
+						<echo>Database type is sqlserver!!!</echo>
+
 						<get-database-property property.name="database.password" />
 						<get-database-property property.name="database.username" />
 
@@ -4865,6 +4934,10 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 					</then>
 				</elseif>
 			</if>
+
+			<echo>**************</echo>
+			<echo>Docker database wait condition = ${docker.database.wait.condition}</echo>
+			<echo>**************</echo>
 
 			<wait-for-docker-database
 				shell.condition="${docker.database.wait.condition}"
@@ -5174,11 +5247,19 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 			<local name="docker.network.name" />
 			<local name="docker.stop.script" />
 
+			<echo>**********</echo>
+			<echo>in stop-docker-container</echo>
+			<echo>**********</echo>
+
 			<condition else="" property="docker.network.name" value="${env.DOCKER_NETWORK_NAME}">
 				<isset property="env.DOCKER_NETWORK_NAME" />
 			</condition>
 
 			<property name="docker.stop.script" value="docker_stop.sh" />
+
+			<echo>*******</echo>
+			<echo>about to execute docker.stop.script....</echo>
+			<echo>*********</echo>
 
 			<echo file="${docker.stop.script}">
 				<![CDATA[
@@ -5191,6 +5272,10 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 					docker network disconnect -f ${docker.network.name} @{name} 2>/dev/null || true
 				]]>
 			</echo>
+
+			<echo>*******</echo>
+			<echo>finished executing docker.stop.script....</echo>
+			<echo>*********</echo>
 
 			<chmod
 				perm="a+x"
@@ -5218,6 +5303,11 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 	<macrodef name="stop-docker-database">
 		<sequential>
 			<get-database-property property.name="database.host" />
+
+			<echo>******************</echo>
+			<echo>in stop docker database...</echo>
+			<echo>database host = ${database.host}</echo>
+			<echo>*******************</echo>
 
 			<stop-docker-container name="${database.host}" />
 		</sequential>
@@ -5881,9 +5971,17 @@ war.path=${app.server.portal.dir}/</echo>
 			<get-database-property property.name="database.name" />
 			<get-database-property property.name="database.version" />
 
+			<echo>*****************************</echo>
+			<echo>database host = ${database.host}</echo>
+			<echo>database name = ${database.name}</echo>
+			<echo>database version = ${database.version}</echo>
+			<echo>*******************************</echo>
+
 			<docker-execute container="${database.host}">
 				<![CDATA[
 					#!/bin/bash
+
+					echo @{shell.condition}
 
 					until @{shell.condition}
 
@@ -13683,9 +13781,16 @@ url=${short.hostname}:8080</echo>
 	<target name="start-docker-containers">
 		<get-database-property property.name="database.docker.image" />
 
+		<echo>**************</echo>
+		<echo>in start docker containers....</echo>
+		<echo>database docker image.. ${database.docker.image}</echo>
+		<echo>**************</echo>
+
 		<if>
 			<isset property="database.docker.image" />
 			<then>
+				<echo>database docker image is set...!!</echo>
+
 				<stop-docker-database />
 
 				<start-docker-database />
@@ -13693,6 +13798,10 @@ url=${short.hostname}:8080</echo>
 		</if>
 
 		<get-operating-system-property property.name="operating.system.docker.image" />
+
+		<echo>***************</echo>
+		<echo>operating system docker iamge = ${operating.system.docker.image}</echo>
+		<echo>****************</echo>
 
 		<if>
 			<isset property="operating.system.docker.image" />
@@ -13741,9 +13850,15 @@ url=${short.hostname}:8080</echo>
 	<target name="stop-docker-containers">
 		<get-database-property property.name="database.docker.image" />
 
+		<echo>***************</echo>
+		<echo>in stop docker container</echo>
+		<echo>database docker image...${database.docker.image}</echo>
+		<echo>***************</echo>
+
 		<if>
 			<isset property="database.docker.image" />
 			<then>
+				<echo>Database docker image is set... stopping docker database...</echo>
 				<stop-docker-database />
 			</then>
 		</if>
