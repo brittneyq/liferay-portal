@@ -1583,6 +1583,8 @@ public class TestrayImporter {
 	}
 
 	private String _replaceEnvVars(String string) {
+		System.out.println("STRING 1: \n" + string);
+
 		string = _replaceEnvVarsControllerBuild(string);
 		string = _replaceEnvVarsPluginsBranchInformationBuild(string);
 		string = _replaceEnvVarsPluginsTopLevelBuild(string);
@@ -1592,6 +1594,9 @@ public class TestrayImporter {
 		string = _replaceEnvVarsPullRequestBuild(string);
 		string = _replaceEnvVarsQAWebsitesTopLevelBuild(string);
 		string = _replaceEnvVarsTopLevelBuild(string);
+		string = _replaceEnvVarsSubrepository(string);
+
+		System.out.println("STRING 2:\n" + string);
 
 		return string;
 	}
@@ -1863,6 +1868,12 @@ public class TestrayImporter {
 			"$(qa.websites.project.name)",
 			JenkinsResultsParserUtil.join(
 				",", qaWebsitesTopLevelBuild.getProjectNames()));
+	}
+
+	private String _replaceEnvVarsSubrepository(String string) {
+		return string.replace(
+			"$(github.upstream.branch.name)",
+			_topLevelBuild.getParameterValue("GITHUB_UPSTREAM_BRANCH_NAME"));
 	}
 
 	private String _replaceEnvVarsTopLevelBuild(String string) {
