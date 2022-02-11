@@ -19,6 +19,7 @@ import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.TestClassResult;
 import com.liferay.jenkins.results.parser.TestResult;
 import com.liferay.jenkins.results.parser.TopLevelBuild;
+import com.liferay.jenkins.results.parser.test.clazz.JUnitTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 
@@ -38,7 +39,7 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 		super(testrayBuild, topLevelBuild, axisTestClassGroup);
 
-		_testClass = testClass;
+		_testClass = (JUnitTestClass)testClass;
 	}
 
 	@Override
@@ -121,10 +122,14 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 	@Override
 	public String getName() {
+		System.out.println("JUNIT BATCH TESTRAY CASE RESULT GET NAME....");
+
 		String testClassName = JenkinsResultsParserUtil.getCanonicalPath(
 			_testClass.getTestClassFile());
 
 		testClassName = testClassName.replaceAll(".*/(com/.*)\\.java", "$1");
+
+		System.out.println("TEST CLASS NAME IN GETNAME() : " + testClassName);
 
 		return testClassName.replace("/", ".");
 	}
@@ -159,6 +164,8 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 	}
 
 	private List<TestClassResult> _getTestClassResults() {
+		System.out.println("GET TEST CLASS RESULTS IN JUNITBATCHTESTRAY...");
+
 		if (_testClassResults != null) {
 			return _testClassResults;
 		}
@@ -180,6 +187,8 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 				_testClassResults.add(testClassResult);
 			}
 		}
+
+		System.out.println("TEST CLASS RESULTS LIST : " + _testClassResults);
 
 		return _testClassResults;
 	}
@@ -204,7 +213,7 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 		return false;
 	}
 
-	private final TestClass _testClass;
+	private final JUnitTestClass _testClass;
 	private List<TestClassResult> _testClassResults;
 
 }
