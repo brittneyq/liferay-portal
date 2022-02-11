@@ -21,6 +21,7 @@ import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -207,16 +208,15 @@ public class JUnitTestClass extends BaseTestClass {
 		if (propertiesFile.exists()) {
 			System.out.println("PROPERTIES FILE EXISTS! ");
 
-			try {
-				String fileContent = JenkinsResultsParserUtil.read(
-					propertiesFile);
+			Properties properties = JenkinsResultsParserUtil.getProperties(
+				propertiesFile);
 
-				System.out.println(
-					"file content for properties file : " + fileContent);
-			}
-			catch (IOException ioException) {
-				ioException.printStackTrace();
-			}
+			System.out.println("PROPERTIES OF PROPERTY FILE : " + properties);
+
+			String testrayName = JenkinsResultsParserUtil.getProperty(
+				properties, "testray.main.component.name");
+
+			System.out.println("TESTRAY MAIN COMPONENT NAME : " + testrayName);
 		}
 
 		return canonicalFile;
