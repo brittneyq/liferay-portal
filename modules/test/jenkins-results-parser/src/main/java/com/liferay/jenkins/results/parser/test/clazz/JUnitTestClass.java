@@ -54,6 +54,9 @@ public class JUnitTestClass extends BaseTestClass {
 		try {
 			_fileContent = JenkinsResultsParserUtil.read(getTestClassFile());
 
+			System.out.println(
+				"FILE CONTENT FOR " + testClassFileName + ":" + _fileContent);
+
 			_initTestClassMethods();
 		}
 		catch (IOException ioException) {
@@ -116,6 +119,8 @@ public class JUnitTestClass extends BaseTestClass {
 	private String _getParentFullClassName() {
 		String parentClassName = _getParentClassName();
 
+		System.out.println("******PARENT CLASS NAME : " + parentClassName);
+
 		if (parentClassName == null) {
 			return null;
 		}
@@ -131,6 +136,8 @@ public class JUnitTestClass extends BaseTestClass {
 		}
 
 		String parentPackageName = _getParentPackageName(parentClassName);
+
+		System.out.println("*******PARENT PACKAGE NAME : " + parentPackageName);
 
 		if (parentPackageName == null) {
 			return null;
@@ -168,15 +175,16 @@ public class JUnitTestClass extends BaseTestClass {
 		}
 
 		System.out.println(
-			"GET WORKING DIRECTORY IN JUNIT TEST CLASS.... for file : " + file);
+			"*********GET WORKING DIRECTORY IN JUNIT TEST CLASS FOR FILE :" +
+				file);
 
 		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
 
-		System.out.println("CANONICAL FILE : " + canonicalFile);
+		System.out.println("*******CANONICAL FILE : " + canonicalFile);
 
 		File parentFile = canonicalFile.getParentFile();
 
-		System.out.println("PARENT FILE : " + parentFile);
+		System.out.println("******PARENT FILE : " + parentFile);
 
 		if ((parentFile == null) || !parentFile.exists()) {
 			return file;
