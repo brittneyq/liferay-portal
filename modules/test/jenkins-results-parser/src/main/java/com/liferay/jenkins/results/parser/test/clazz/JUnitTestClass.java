@@ -54,9 +54,6 @@ public class JUnitTestClass extends BaseTestClass {
 		try {
 			_fileContent = JenkinsResultsParserUtil.read(getTestClassFile());
 
-			System.out.println(
-				"FILE CONTENT FOR " + testClassFileName + ":" + _fileContent);
-
 			_initTestClassMethods();
 		}
 		catch (IOException ioException) {
@@ -202,6 +199,25 @@ public class JUnitTestClass extends BaseTestClass {
 
 		System.out.println(
 			"CANONICAL FILE IN GET WORKING DIRECTORY " + canonicalFile);
+
+		File propertiesFile = new File(canonicalFile + "/test.properties");
+
+		System.out.println("*****PROPERTIES FILE!!!!: " + propertiesFile);
+
+		if (propertiesFile.exists()) {
+			System.out.println("PROPERTIES FILE EXISTS! ");
+
+			try {
+				String fileContent = JenkinsResultsParserUtil.read(
+					propertiesFile);
+
+				System.out.println(
+					"file content for properties file : " + fileContent);
+			}
+			catch (IOException ioException) {
+				ioException.printStackTrace();
+			}
+		}
 
 		return canonicalFile;
 	}
