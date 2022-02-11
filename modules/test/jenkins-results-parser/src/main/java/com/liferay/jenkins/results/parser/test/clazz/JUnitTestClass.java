@@ -41,6 +41,10 @@ public class JUnitTestClass extends BaseTestClass {
 
 		String testClassFileName = testClassFile.getName();
 
+		System.out.println(
+			"TEST CLASS FILE NAME IN JUNIT TEST CLASS INIITALIZER : " +
+				testClassFileName);
+
 		if (!testClassFileName.endsWith(".java")) {
 			_fileContent = "";
 
@@ -158,7 +162,45 @@ public class JUnitTestClass extends BaseTestClass {
 		return _getPackageName();
 	}
 
+	private File _getWorkingDirectory(File file) {
+		if (file == null) {
+			return null;
+		}
+
+		System.out.println(
+			"GET WORKING DIRECTORY IN JUNIT TEST CLASS.... for file : " + file);
+
+		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
+
+		System.out.println("CANONICAL FILE : " + canonicalFile);
+
+		File parentFile = canonicalFile.getParentFile();
+
+		System.out.println("PARENT FILE : " + parentFile);
+
+		if ((parentFile == null) || !parentFile.exists()) {
+			return file;
+		}
+
+		if (!canonicalFile.isDirectory()) {
+			return _getWorkingDirectory(parentFile);
+		}
+
+		File testPropertiesFile = new File(canonicalFile, "test.properties");
+
+		if (!testPropertiesFile.exists()) {
+			return _getWorkingDirectory(parentFile);
+		}
+
+		System.out.println(
+			"CANONICAL FILE IN GET WORKING DIRECTORY " + canonicalFile);
+
+		return canonicalFile;
+	}
+
 	private void _initTestClassMethods() {
+		System.out.println("init test class methods ....");
+
 		Matcher classHeaderMatcher = _classHeaderPattern.matcher(_fileContent);
 
 		_classIgnored = false;
@@ -192,6 +234,9 @@ public class JUnitTestClass extends BaseTestClass {
 
 		String parentFullClassName = _getParentFullClassName();
 
+		System.out.println(
+			"parent full class name .... " + parentFullClassName);
+
 		if (parentFullClassName == null) {
 			return;
 		}
@@ -203,12 +248,18 @@ public class JUnitTestClass extends BaseTestClass {
 			portalGitWorkingDirectory.getJavaFileFromFullClassName(
 				parentFullClassName);
 
+		System.out.println("PARENT JAVA FILE : " + parentJavaFile);
+
 		if (parentJavaFile == null) {
 			System.out.println(
 				"No matching files found for " + parentFullClassName);
 
 			return;
 		}
+
+		File canonicalFile = _getWorkingDirectory(parentJavaFile);
+
+		System.out.println("CANONICAL FILE : " + canonicalFile);
 
 		TestClass parentTestClass = TestClassFactory.newTestClass(
 			getBatchTestClassGroup(), parentJavaFile);
