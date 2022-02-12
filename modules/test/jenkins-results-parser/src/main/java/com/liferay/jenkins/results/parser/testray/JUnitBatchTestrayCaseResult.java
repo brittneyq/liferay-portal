@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Michael Hashimoto
@@ -40,6 +41,18 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 		super(testrayBuild, topLevelBuild, axisTestClassGroup);
 
 		_testClass = (JUnitTestClass)testClass;
+	}
+
+	@Override
+	public String getComponentName() {
+		Properties properties = _testClass.getTestProperties();
+
+		if (!properties.isEmpty()) {
+			return JenkinsResultsParserUtil.getProperty(
+				_testClass.getTestProperties(), "testray.main.component.name");
+		}
+
+		return "Modules Integration Tests!";
 	}
 
 	@Override
