@@ -30,6 +30,10 @@ import java.util.regex.Pattern;
  */
 public class JUnitTestClass extends BaseTestClass {
 
+	public Properties getTestProperties() {
+		return _testProperties;
+	}
+
 	@Override
 	public boolean isIgnored() {
 		return _classIgnored;
@@ -211,6 +215,8 @@ public class JUnitTestClass extends BaseTestClass {
 			Properties properties = JenkinsResultsParserUtil.getProperties(
 				propertiesFile);
 
+			_testProperties = properties;
+
 			System.out.println("PROPERTIES OF PROPERTY FILE : " + properties);
 
 			String testrayName = JenkinsResultsParserUtil.getProperty(
@@ -310,5 +316,6 @@ public class JUnitTestClass extends BaseTestClass {
 
 	private boolean _classIgnored;
 	private final String _fileContent;
+	private Properties _testProperties;
 
 }
