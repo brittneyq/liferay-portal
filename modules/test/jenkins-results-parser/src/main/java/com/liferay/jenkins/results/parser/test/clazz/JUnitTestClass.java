@@ -56,6 +56,11 @@ public class JUnitTestClass extends BaseTestClass {
 			return;
 		}
 
+
+		File filePath = JenkinsResultsParserUtil.getCanonicalFile(getTestClassFile());
+
+		System.out.println("GET CANONICAL FILE path: " + filePath);
+
 		try {
 			_fileContent = JenkinsResultsParserUtil.read(getTestClassFile());
 
@@ -268,22 +273,6 @@ public class JUnitTestClass extends BaseTestClass {
 			"parent full class name .... " + parentFullClassName);
 
 		if (parentFullClassName == null) {
-			System.out.println("PARENT FULL CLASS NAME IS NULL...");
-
-			PortalGitWorkingDirectory portalGitWorkingDirectory2 =
-				getPortalGitWorkingDirectory();
-
-			System.out.println(
-				"CLASS NAME FOR REGULAR JAVA FILE : " + _getClassName());
-
-			File regularJavaFile =
-				portalGitWorkingDirectory2.getJavaFileFromFullClassName(
-					_getClassName());
-
-			File canonicalFile2 = _getWorkingDirectory(regularJavaFile);
-
-			System.out.println("CANONICAL FILE 2 : " + canonicalFile2);
-
 			return;
 		}
 
