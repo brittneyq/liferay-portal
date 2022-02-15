@@ -56,10 +56,14 @@ public class JUnitTestClass extends BaseTestClass {
 			return;
 		}
 
-
-		File filePath = JenkinsResultsParserUtil.getCanonicalFile(getTestClassFile());
+		File filePath = JenkinsResultsParserUtil.getCanonicalFile(
+			getTestClassFile());
 
 		System.out.println("GET CANONICAL FILE path: " + filePath);
+
+		File canonicalFile = _getWorkingDirectory(filePath);
+
+		System.out.println("***CANONICAL FILE**** : " + canonicalFile);
 
 		try {
 			_fileContent = JenkinsResultsParserUtil.read(getTestClassFile());
@@ -291,10 +295,6 @@ public class JUnitTestClass extends BaseTestClass {
 
 			return;
 		}
-
-		File canonicalFile = _getWorkingDirectory(parentJavaFile);
-
-		System.out.println("CANONICAL FILE : " + canonicalFile);
 
 		TestClass parentTestClass = TestClassFactory.newTestClass(
 			getBatchTestClassGroup(), parentJavaFile);
