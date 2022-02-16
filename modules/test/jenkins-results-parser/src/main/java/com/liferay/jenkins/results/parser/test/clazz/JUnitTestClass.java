@@ -65,6 +65,8 @@ public class JUnitTestClass extends BaseTestClass {
 
 		System.out.println("***CANONICAL FILE**** : " + canonicalFile);
 
+		_setTestProperties(canonicalFile);
+
 		try {
 			_fileContent = JenkinsResultsParserUtil.read(getTestClassFile());
 
@@ -214,26 +216,6 @@ public class JUnitTestClass extends BaseTestClass {
 		System.out.println(
 			"CANONICAL FILE IN GET WORKING DIRECTORY " + canonicalFile);
 
-		File propertiesFile = new File(canonicalFile + "/test.properties");
-
-		System.out.println("*****PROPERTIES FILE!!!!: " + propertiesFile);
-
-		if (propertiesFile.exists()) {
-			System.out.println("PROPERTIES FILE EXISTS! ");
-
-			Properties properties = JenkinsResultsParserUtil.getProperties(
-				propertiesFile);
-
-			_testProperties = properties;
-
-			System.out.println("PROPERTIES OF PROPERTY FILE : " + properties);
-
-			String testrayName = JenkinsResultsParserUtil.getProperty(
-				properties, "testray.main.component.name");
-
-			System.out.println("TESTRAY MAIN COMPONENT NAME : " + testrayName);
-		}
-
 		return canonicalFile;
 	}
 
@@ -308,6 +290,17 @@ public class JUnitTestClass extends BaseTestClass {
 
 			addTestClassMethod(_classIgnored, testClassMethod.getName());
 		}
+	}
+
+	private void _setTestProperties(File canonicalFile) {
+		File propertiesFile = new File(canonicalFile + "/test.properties");
+
+		Properties properties = JenkinsResultsParserUtil.getProperties(
+			propertiesFile);
+
+		_testProperties = properties;
+
+		System.out.println("SET TEST PROPERTY!!!");
 	}
 
 	private static final Pattern _classHeaderPattern = Pattern.compile(

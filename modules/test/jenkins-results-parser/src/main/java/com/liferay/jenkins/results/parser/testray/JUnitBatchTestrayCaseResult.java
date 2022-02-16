@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author Michael Hashimoto
@@ -45,14 +44,8 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 	@Override
 	public String getComponentName() {
-		Properties properties = _testClass.getTestProperties();
-
-		if (!properties.isEmpty()) {
-			return JenkinsResultsParserUtil.getProperty(
-				_testClass.getTestProperties(), "testray.main.component.name");
-		}
-
-		return "Modules Integration Tests!";
+		return JenkinsResultsParserUtil.getProperty(
+			_testClass.getTestProperties(), "testray.main.component.name");
 	}
 
 	@Override
@@ -135,14 +128,10 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 	@Override
 	public String getName() {
-		System.out.println("JUNIT BATCH TESTRAY CASE RESULT GET NAME....");
-
 		String testClassName = JenkinsResultsParserUtil.getCanonicalPath(
 			_testClass.getTestClassFile());
 
 		testClassName = testClassName.replaceAll(".*/(com/.*)\\.java", "$1");
-
-		System.out.println("TEST CLASS NAME IN GETNAME() : " + testClassName);
 
 		return testClassName.replace("/", ".");
 	}
@@ -177,8 +166,6 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 	}
 
 	private List<TestClassResult> _getTestClassResults() {
-		System.out.println("GET TEST CLASS RESULTS IN JUNITBATCHTESTRAY...");
-
 		if (_testClassResults != null) {
 			return _testClassResults;
 		}
@@ -200,8 +187,6 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 				_testClassResults.add(testClassResult);
 			}
 		}
-
-		System.out.println("TEST CLASS RESULTS LIST : " + _testClassResults);
 
 		return _testClassResults;
 	}
