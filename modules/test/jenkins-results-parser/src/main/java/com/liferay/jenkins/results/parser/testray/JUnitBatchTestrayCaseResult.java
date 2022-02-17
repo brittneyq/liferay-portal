@@ -178,6 +178,9 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 	@Override
 	public String getTeamName() {
+		System.out.println(
+			"IN GET TEAM NAME IN JUNIT BATCH TESTRAY CASE RESULT");
+
 		TopLevelBuild topLevelBuild = getTopLevelBuild();
 
 		Job job = topLevelBuild.getJob();
@@ -193,6 +196,8 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 		String componentName = getComponentName();
 
+		System.out.println("****COMPONENT NAME : " + componentName);
+
 		for (String teamName : teamNames.split(",")) {
 			JobProperty teamComponentNamesJobProperty =
 				JobPropertyFactory.newJobProperty(
@@ -201,6 +206,8 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 			String teamComponentNames =
 				teamComponentNamesJobProperty.getValue();
 
+			System.out.println("TEAM COMPONENT NAMES " + teamComponentNames);
+
 			if (JenkinsResultsParserUtil.isNullOrEmpty(teamComponentNames)) {
 				continue;
 			}
@@ -208,6 +215,9 @@ public class JUnitBatchTestrayCaseResult extends BatchTestrayCaseResult {
 			for (String teamComponentName : teamComponentNames.split(",")) {
 				if (teamComponentName.equals(componentName)) {
 					teamName = teamName.replace("-", " ");
+
+					System.out.println(
+						"TEAM NAME EQUALS COMPONENT NAME : " + teamName);
 
 					return WordUtils.capitalize(teamName);
 				}
