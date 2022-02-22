@@ -18,7 +18,10 @@ import com.liferay.jenkins.results.parser.AxisBuild;
 import com.liferay.jenkins.results.parser.Build;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.TopLevelBuild;
+import com.liferay.jenkins.results.parser.job.property.JobProperty;
+import com.liferay.jenkins.results.parser.job.property.JobPropertyFactory;
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 
 import java.io.IOException;
@@ -29,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.lang.WordUtils;
 
 /**
  * @author Michael Hashimoto
@@ -160,6 +165,46 @@ public class BatchTestrayCaseResult extends TestrayCaseResult {
 	@Override
 	public String getTeamName() {
 		try {
+			TopLevelBuild topLevelBuild = getTopLevelBuild();
+
+			Job job = topLevelBuild.getJob();
+
+			JobProperty teamNamesJobProperty =
+				JobPropertyFactory.newJobProperty(job, "testray.team.names");
+
+			String teamNames = teamNamesJobProperty.getValue();
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(teamNames)) {
+				return JenkinsResultsParserUtil.getProperty(
+					JenkinsResultsParserUtil.getBuildProperties(),
+					"testray.case.team", getBatchName());
+			}
+
+			String componentName = getComponentName();
+
+			for (String teamName : teamNames.split(",")) {
+				JobProperty teamComponentNamesJobProperty =
+					JobPropertyFactory.newJobProperty(
+						job, "testray.team." + teamName + ".component.names");
+
+				String teamComponentNames =
+					teamComponentNamesJobProperty.getValue();
+
+				if (JenkinsResultsParserUtil.isNullOrEmpty(
+						teamComponentNames)) {
+
+					continue;
+				}
+
+				for (String teamComponentName : teamComponentNames.split(",")) {
+					if (teamComponentName.equals(componentName)) {
+						teamName = teamName.replace("-", " ");
+
+						return WordUtils.capitalize(teamName);
+					}
+				}
+			}
+
 			return JenkinsResultsParserUtil.getProperty(
 				JenkinsResultsParserUtil.getBuildProperties(),
 				"testray.case.team", getBatchName());
