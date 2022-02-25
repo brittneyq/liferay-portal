@@ -164,47 +164,50 @@ public class BatchTestrayCaseResult extends TestrayCaseResult {
 
 	@Override
 	public String getTeamName() {
-		try {
-			TopLevelBuild topLevelBuild = getTopLevelBuild();
+		TopLevelBuild topLevelBuild = getTopLevelBuild();
 
-			Job job = topLevelBuild.getJob();
+		Job job = topLevelBuild.getJob();
 
-			JobProperty teamNamesJobProperty =
-				JobPropertyFactory.newJobProperty(job, "testray.team.names");
+		JobProperty teamNamesJobProperty = JobPropertyFactory.newJobProperty(
+			job, "testray.team.names");
 
-			String teamNames = teamNamesJobProperty.getValue();
+		String teamNames = teamNamesJobProperty.getValue();
 
-			if (JenkinsResultsParserUtil.isNullOrEmpty(teamNames)) {
+		if (JenkinsResultsParserUtil.isNullOrEmpty(teamNames)) {
+			try {
 				return JenkinsResultsParserUtil.getProperty(
 					JenkinsResultsParserUtil.getBuildProperties(),
 					"testray.case.team", getBatchName());
 			}
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
+			}
+		}
 
-			String componentName = getComponentName();
+		String componentName = getComponentName();
 
-			for (String teamName : teamNames.split(",")) {
-				JobProperty teamComponentNamesJobProperty =
-					JobPropertyFactory.newJobProperty(
-						job, "testray.team." + teamName + ".component.names");
+		for (String teamName : teamNames.split(",")) {
+			JobProperty teamComponentNamesJobProperty =
+				JobPropertyFactory.newJobProperty(
+					job, "testray.team." + teamName + ".component.names");
 
-				String teamComponentNames =
-					teamComponentNamesJobProperty.getValue();
+			String teamComponentNames =
+				teamComponentNamesJobProperty.getValue();
 
-				if (JenkinsResultsParserUtil.isNullOrEmpty(
-						teamComponentNames)) {
-
-					continue;
-				}
-
-				for (String teamComponentName : teamComponentNames.split(",")) {
-					if (teamComponentName.equals(componentName)) {
-						teamName = teamName.replace("-", " ");
-
-						return WordUtils.capitalize(teamName);
-					}
-				}
+			if (JenkinsResultsParserUtil.isNullOrEmpty(teamComponentNames)) {
+				continue;
 			}
 
+			for (String teamComponentName : teamComponentNames.split(",")) {
+				if (teamComponentName.equals(componentName)) {
+					teamName = teamName.replace("-", " ");
+
+					return WordUtils.capitalize(teamName);
+				}
+			}
+		}
+
+		try {
 			return JenkinsResultsParserUtil.getProperty(
 				JenkinsResultsParserUtil.getBuildProperties(),
 				"testray.case.team", getBatchName());
