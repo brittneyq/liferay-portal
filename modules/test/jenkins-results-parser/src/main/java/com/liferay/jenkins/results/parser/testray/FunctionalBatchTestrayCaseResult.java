@@ -59,6 +59,12 @@ public class FunctionalBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 	@Override
 	public String getComponentName() {
+		String componentName = JenkinsResultsParserUtil.getProperty(
+			_functionalTestClass.getPoshiProperties(),
+			"testray.main.component.name");
+
+		System.out.println("GET COMPONENT NAME : " + componentName);
+
 		return JenkinsResultsParserUtil.getProperty(
 			_functionalTestClass.getPoshiProperties(),
 			"testray.main.component.name");
