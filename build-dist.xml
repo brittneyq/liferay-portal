@@ -289,6 +289,8 @@
 			app.server.type=weblogic
 		</app-server-properties-update>
 
+		<echo>APP SERVER WEBLOGIC VERSION : ${app.server.weblogic.version}</echo>
+		
 		<if>
 			<equals arg1="${app.server.weblogic.version}" arg2="12.2.1" />
 			<then>
@@ -1418,7 +1420,7 @@ closeTemplate()
 						<else>
 							<mirrors-get
 								dest="${app.server.parent.dir}/${app.server.weblogic.custom.zip.name}"
-								src="http://files.liferay.com/private/apps/oracle/weblogicas/14/${app.server.weblogic.custom.zip.name}"
+								src="${app.server.weblogic.zip.url}"
 								verbose="true"
 							/>
 						</else>
