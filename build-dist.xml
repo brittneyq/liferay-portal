@@ -1406,6 +1406,10 @@ closeTemplate()
 				<trycatch>
 					<try>
 						<mkdir dir="${app.server.parent.dir}" />
+						
+						<echo>APP SERVER PARENT DIR : ${app.server.parent.dir}</echo>
+
+						<echo>APP SERVER WEBLOGIC VERSION BUILD : ${app.server.weblogic.version.build}</echo>
 
 						<if>
 							<equals arg1="${app.server.weblogic.version.build}" arg2="12213" />
@@ -1418,10 +1422,10 @@ closeTemplate()
 							/>
 						</then>
 						<elseif>
-							<equals arg1="${app.server.weblogic.version.build" arg2="14110" />
+							<equals arg1="${app.server.weblogic.version.build}" arg2="14110" />
 							<then>
 								<mirrors-get
-									dest="${app.server.parent.dir}/${app.server.weblogic.custom.zip.name}"
+									dest="${app.server.parent.dir}/${app.server.weblogic.zip.name}"
 									src="http://files.liferay.com/private/apps/oracle/weblogicas/14/${app.server.weblogic.zip.name}"
 									verbose="true"
 								/>
