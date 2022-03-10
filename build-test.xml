@@ -4034,7 +4034,16 @@ tell application "Safari" to quit
 				<equals arg1="@{app.server.type}" arg2="weblogic" />
 				<then>
 					<var name="app.server.dir" value="${app.server.parent.dir}/weblogic-@{app.server.version}" />
-					<var name="app.server.zip.name" value="fmw_@{app.server.version}.3.0_wls_quick_Disk1_1of1.zip" />
+
+					<if>
+						<equals arg1="@{app.server.version}" arg2="12.2.1" />
+						<then>
+							<var name="app.server.zip.name" value="fmw_@{app.server.version}.3.0_wls_quick_Disk1_1of1.zip" />
+						</then>
+						<else>
+							<var name="app.server.zip.name" value="fmw_${app.server.version}.0.0_wls_lite_Disk1_1of1.zip" />
+						</else>
+					</if>
 
 					<var name="app.server.bin.dir" value="${app.server.dir}/domains/liferay/bin" />
 					<var name="app.server.classes.portal.dir" value="${app.server.dir}/domains/liferay/autodeploy/ROOT/WEB-INF/classes" />
