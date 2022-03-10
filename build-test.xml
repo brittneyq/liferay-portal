@@ -4041,7 +4041,7 @@ tell application "Safari" to quit
 							<var name="app.server.zip.name" value="fmw_@{app.server.version}.3.0_wls_quick_Disk1_1of1.zip" />
 						</then>
 						<else>
-							<var name="app.server.zip.name" value="fmw_${app.server.version}.0.0_wls_lite_Disk1_1of1.zip" />
+							<var name="app.server.zip.name" value="fmw_@{app.server.version}.0.0_wls_lite_Disk1_1of1.zip" />
 						</else>
 					</if>
 
