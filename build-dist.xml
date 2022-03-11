@@ -969,11 +969,22 @@ org.apache.level=WARNING]]>
 			</not>
 			<then>
 				<mkdir dir="${app.server.parent.dir}" />
-
-				<mirrors-get
-					dest="${app.server.parent.dir}"
-					src="${app.server.weblogic.zip.url}"
-				/>
+				<if>
+					<equals arg1="${app.server.weblogic.version" arg2="14.1.1" />
+					<then>
+						<mirrors-get
+							dest="${app.server.parent.dir}"
+							src="http://files.liferay.com/private/apps/oracle/weblogicas/14/${app.server.weblogic.zip.name}"
+							verbose="true"
+						/>
+					</then>
+					<else>
+						<mirrors-get
+							dest="${app.server.parent.dir}"
+							src="${app.server.weblogic.zip.url}"
+						/>
+					</else>
+				</if>
 			</then>
 		</if>
 
