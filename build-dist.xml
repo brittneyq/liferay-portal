@@ -970,7 +970,7 @@ org.apache.level=WARNING]]>
 			<then>
 				<mkdir dir="${app.server.parent.dir}" />
 				<if>
-					<equals arg1="${app.server.weblogic.version" arg2="14.1.1" />
+					<equals arg1="${app.server.weblogic.version}" arg2="14.1.1" />
 					<then>
 						<mirrors-get
 							dest="${app.server.parent.dir}"
