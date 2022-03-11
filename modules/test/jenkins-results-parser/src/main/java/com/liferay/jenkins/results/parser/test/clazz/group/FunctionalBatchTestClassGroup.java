@@ -316,6 +316,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
+		System.out.println(
+			"**********GET TEST BATCH RUN PROPERTY QUERY**********");
+
 		if (!testRelevantChanges) {
 			return getDefaultTestBatchRunPropertyQuery(
 				testBaseDir, testSuiteName);
@@ -326,6 +329,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		try {
 			modifiedDirsList.addAll(
 				portalGitWorkingDirectory.getModifiedModuleDirsList());
+
+			System.out.println(
+				"*********MODIFIED DIRS LIST : " + modifiedDirsList);
 		}
 		catch (IOException ioException) {
 			File workingDirectory =
@@ -341,6 +347,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		File modulesDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
+		System.out.println("***********MODULES DIR : " + modulesDir);
+
 		modifiedDirsList.addAll(
 			portalGitWorkingDirectory.getModifiedDirsList(
 				false,
@@ -349,12 +357,18 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 					JenkinsResultsParserUtil.getCanonicalPath(modulesDir)),
 				null));
 
+		System.out.println("****MODIFIED DIRS LIST 2 : " + modifiedDirsList);
+
 		modifiedDirsList.addAll(
 			getRequiredModuleDirs(Lists.newArrayList(modifiedDirsList)));
+
+		System.out.println("****MODIFIED DIRS LIST 3 : " + modifiedDirsList);
 
 		modifiedDirsList.addAll(
 			_getFunctionalRequiredModuleDirs(
 				Lists.newArrayList(modifiedDirsList)));
+
+		System.out.println("****MODIFIED DIRS LIST 4 : " + modifiedDirsList);
 
 		StringBuilder sb = new StringBuilder();
 
@@ -421,10 +435,17 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		String testBatchRunPropertyQuery = sb.toString();
 
+		System.out.println(
+			"****TEST BATCH RUN PROPERTY QUERY : " + testBatchRunPropertyQuery);
+
 		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.global.query");
 
+		System.out.println("****JOB PROPERTY : " + jobProperty);
+
 		String jobPropertyValue = jobProperty.getValue();
+
+		System.out.println("****JOB PROPERTY VALUE : " + jobPropertyValue);
 
 		if (jobPropertyValue != null) {
 			recordJobProperty(jobProperty);
