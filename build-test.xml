@@ -11482,11 +11482,6 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 					</else>
 				</if>
 
-				<echo>*************APP SERVER TYPE : ${app.server.type}</echo>
-				<echo>*************APP SERVER VERSION : ${app.server.version}</echo>
-				<echo>*************APP SERVER WEBLOGIC VERISON : ${app.server.weblogic.version}</echo>
-				
-
 				<if>
 					<equals arg1="${app.server.type}" arg2="weblogic"/>
 					<then>
@@ -11496,6 +11491,10 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 								<prepare-test-app-server-custom />
 							</then>
 							<else>
+								<echo>*************APP SERVER TYPE : ${app.server.type}</echo>
+								<echo>*************APP SERVER VERSION : ${app.server.version}</echo>
+								<echo>*************APP SERVER WEBLOGIC VERISON : ${app.server.weblogic.version}</echo>
+								
 								<ant antfile="build-dist.xml" inheritAll="false" target="unzip-${app.server.type}" />
 
 								<ant antfile="build.xml" inheritAll="false" target="deploy-additional-jars" />
