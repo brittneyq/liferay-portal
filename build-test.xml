@@ -11471,10 +11471,7 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 			</then>
 			<else>
 				<if>
-					<or>
-						<equals arg1="${app.server.type}" arg2="weblogic" />
-						<equals arg1="${app.server.type}" arg2="websphere" />
-					</or>
+					<equals arg1="${app.server.type}" arg2="websphere" />
 					<then>
 						<prepare-test-app-server-custom />
 					</then>
@@ -11484,6 +11481,22 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 						<ant antfile="build.xml" inheritAll="false" target="deploy-additional-jars" />
 					</else>
 				</if>
+
+				<if>
+					<equals arg1="${app.server.type}" arg2="weblogic"/>
+					<then>
+						<if>
+							<equals arg1="${app.server.version}" arg2="12.2.1"/>
+							<then>
+								<prepare-test-app-server-custom />
+							</then>
+							<else>
+								<ant antfile="build-dist.xml" inheritAll="false" target="unzip-${app.server.type}" />
+
+								<ant antfile="build.xml" inheritAll="false" target="deploy-additional-jars" />
+							</else>
+						</if>
+					</then>
 
 				<mkdir dir="dist" />
 
