@@ -11497,7 +11497,8 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 							</else>
 						</if>
 					</then>
-
+				</if>
+				
 				<mkdir dir="dist" />
 
 				<if>
