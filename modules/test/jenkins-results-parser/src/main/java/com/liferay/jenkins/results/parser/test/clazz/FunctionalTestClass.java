@@ -112,6 +112,8 @@ public class FunctionalTestClass extends BaseTestClass {
 		_poshiProperties = PoshiContext.getNamespacedClassCommandNameProperties(
 			getTestClassMethodName());
 
+		System.out.println("******TEST CLASS METHOD NAME ***** : " + _testClassMethodName);
+
 		String testProperties = _concatPQL(
 			_getTestClassFile(_testClassMethodName));
 
