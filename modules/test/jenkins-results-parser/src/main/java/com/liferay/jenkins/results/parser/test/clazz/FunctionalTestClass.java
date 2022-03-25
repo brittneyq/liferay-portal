@@ -15,6 +15,7 @@
 package com.liferay.jenkins.results.parser.test.clazz;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 import com.liferay.poshi.core.PoshiContext;
 
@@ -110,6 +111,11 @@ public class FunctionalTestClass extends BaseTestClass {
 
 		_poshiProperties = PoshiContext.getNamespacedClassCommandNameProperties(
 			getTestClassMethodName());
+
+		String testProperties = _concatPQL(
+			_getTestClassFile(_testClassMethodName));
+
+		System.out.println("_TEST PROPERTIES******* " + testProperties);
 	}
 
 	private static File _getTestClassFile(String testClassMethodName) {
@@ -138,6 +144,73 @@ public class FunctionalTestClass extends BaseTestClass {
 
 		return testClassFile;
 	}
+
+	private String _concatPQL(File file) {
+		if (file == null) {
+			return null;
+		}
+
+		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
+
+		File parentFile = canonicalFile.getParentFile();
+
+		if ((parentFile == null) || !parentFile.exists()) {
+			return "";
+		}
+
+		if (!canonicalFile.isDirectory()) {
+			return _concatPQL(parentFile);
+		}
+
+		File testPropertiesFile = new File(canonicalFile, "test.properties");
+
+		if (!testPropertiesFile.exists()) {
+			return _concatPQL(parentFile);
+		}
+
+		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
+		System.out.println(
+			"CANONICAL FILE FOR TEST PROPERTIES FILE: " + canonicalFile);
+
+		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
+
+		System.out.println(
+			"***BATCH TEST CLASS GROUP*****: " + batchTestClassGroup);
+
+		String batchName = batchTestClassGroup.getBatchName();
+
+		System.out.println("*****BATCH NAME*****: " + batchName);
+
+		String testSuiteName = batchTestClassGroup.getTestSuiteName();
+
+		System.out.println("*******TEST SUITE NAME*****: " + testSuiteName);
+
+		JobProperty jobProperty = batchTestClassGroup.getJobProperty(
+			"test.batch.run.property.query", testSuiteName, batchName);
+
+		System.out.println(
+			"********JOB PROPERTIES MAP 1*****: " +
+				batchTestClassGroup.getJobPropertiesMap());
+
+		batchTestClassGroup.recordJobProperty(jobProperty);
+
+		System.out.println(
+			"********JOB PROPERTIES MAP 2*****: " +
+				batchTestClassGroup.getJobPropertiesMap());
+
+		//if the file exists, extract the PQL...
+		//concat the PQL to a string..? or property
+		//once it hits the modules base dir... stop...
+		//if it hits the modules base dir and the string/property is empty
+
+		// ... return the default test.properties pql
+
+		return "test";
+	}
+
+	//	private void getPQLQuery(File propertiesFile){
+	//
+	//	}
 
 	private static final Pattern _poshiTestCasePattern = Pattern.compile(
 		"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#(?<methodName>.*)");
