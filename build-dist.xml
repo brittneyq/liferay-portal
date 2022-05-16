@@ -1478,7 +1478,11 @@ closeTemplate()
 		<delete dir="${tstamp.value}" />
 	</target>
 
-	<target name="unzip-weblogic-custom-1221">
+	<target name="unzip-weblogic-custom">
+		<antcall target="unzip-weblogic-custom-${app.server.weblogic.version.build}" />
+	</target>
+
+	<target name="unzip-weblogic-custom-12213">
 		<if>
 			<not>
 				<available file="${app.server.parent.dir}/${app.server.weblogic.custom.zip.name}" />
