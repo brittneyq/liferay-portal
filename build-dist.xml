@@ -408,6 +408,10 @@ else
 fi
 
 su appserver
+
+whoami
+
+java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -silent ORACLE_BASE=${app.server.weblogic.dir} ORACLE_HOME=${app.server.weblogic.dir}/oracle JAVA_HOME=/opt/java/jdk8-x64 INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory INSTALL_TYPE='Weblogic Server' -invPtrLoc ${app.server.weblogic.dir}/oraInst.loc
 			]]>
 		</echo>
 
@@ -1664,9 +1668,9 @@ this task.
 
 		<echo>${app.server.weblogic.dir}</echo>
 
-		<antcall target="create-weblogic14-setup-files"/>
+		<antcall target="create-weblogic14-setup-files" />
 
-		<java
+		<!-- 	<java
 			dir="${app.server.weblogic.dir}"
 			failonerror="true"
 			fork="true"
@@ -1678,7 +1682,7 @@ this task.
 			<arg line="INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory" />
 			<arg line="INSTALL_TYPE='Weblogic Server'" />
 			<arg line="-invPtrLoc ${app.server.weblogic.dir}/oraInst.loc" />
-		</java>
+		</java>-->
 
 		<echo>done installing weblogic 14!</echo>
 
