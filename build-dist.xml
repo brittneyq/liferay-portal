@@ -1677,7 +1677,7 @@ this task.
 			<arg line="JAVA_HOME=/opt/java/jdk8-x64" />
 			<arg line="INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory" />
 			<arg line="INSTALL_TYPE='Weblogic Server'" />
-			<arg line="-invPtrLoc ${app.server.weblogic.dir}/oraInst.loc'" />
+			<arg line="-invPtrLoc ${app.server.weblogic.dir}/oraInst.loc" />
 		</java>
 
 		<echo>done installing weblogic 14!</echo>
