@@ -1664,7 +1664,7 @@ this task.
 
 		<echo>${app.server.weblogic.dir}</echo>
 
-		<create-weblogic14-setup-files/>
+		<antcall target="create-weblogic14-setup-files"/>
 
 		<java
 			dir="${app.server.weblogic.dir}"
