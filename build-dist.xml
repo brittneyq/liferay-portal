@@ -295,7 +295,7 @@
 				<equals arg1="${app.server.weblogic.version}" arg2="14.1.1" />
 			</or>
 			<then>
-				<antcall target="unzip-weblogic-custom-${app.server.weblogic.version}" />
+				<antcall target="unzip-weblogic-custom" />
 			</then>
 			<else>
 				<antcall target="unzip-weblogic" />
@@ -1729,7 +1729,6 @@ this task.
 		</exec>
 
 		<echo>Created Domain!!!!</echo>
-
 	</target>
 
 	<target name="unzip-websphere">
