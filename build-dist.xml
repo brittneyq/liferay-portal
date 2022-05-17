@@ -1632,6 +1632,11 @@ this task.
 					<try>
 						<mkdir dir="${app.server.parent.dir}" />
 
+						<echo>APP SERVER PARENT DIR: ${app.server.parent.dir}</echo>
+						<echo>APP SERVER WEBLOGICZIP NAME: ${app.server.weblogic.zip.name}</echo>
+						<echo>APP SERVER WEBLOGIC CUSTOM ZIP NAME: ${app.server.weblogic.custom.zip.name}</echo>
+						<echo>APP SERVER WEBLOGIC VERSION BUIILD: ${app.server.weblogic.version.build}</echo>
+
 						<mirrors-get
 							dest="${app.server.parent.dir}/${app.server.weblogic.custom.zip.name}"
 							src="http://files.liferay.com/private/apps/oracle/weblogicas/14/${app.server.weblogic.zip.name}"
