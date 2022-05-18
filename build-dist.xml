@@ -408,13 +408,18 @@ else
 fi
 
 whoami
+			]]>
+		</echo>
 
-su - appserver -c "export JAVA_HOME=/opt/java/jdk8-x64"
-su - appserver -c "export PATH=$JAVA_HOME/bin:$PATH"
+		<echo file="${app.server.weblogic.dir}/install_weblogic.sh">
+			<![CDATA[
+#!/bin/bash
+export JAVA_HOME=/opt/java/jdk8-x64
+export PATH=$JAVA_HOME/bin:$PATH
 
 echo 'exported java_HOME and PATH'
 
-su - appserver -c "java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -silent ORACLE_BASE=${app.server.weblogic.dir} ORACLE_HOME=${app.server.weblogic.dir}/oracle JAVA_HOME=/opt/java/jdk8-x64 INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory INSTALL_TYPE='Weblogic Server' -invPtrLoc ${app.server.weblogic.dir}/oraInst.loc"
+java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -silent ORACLE_BASE=${app.server.weblogic.dir} ORACLE_HOME=${app.server.weblogic.dir}/oracle JAVA_HOME=/opt/java/jdk8-x64 INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory INSTALL_TYPE='Weblogic Server' -invPtrLoc ${app.server.weblogic.dir}/oraInst.loc
 
 echo 'weblogic installed!'
 			]]>
@@ -426,6 +431,10 @@ echo 'weblogic installed!'
 
 		<exec executable="/bin/bash">
 			<arg value="${app.server.weblogic.dir}/create_user.sh" />
+		</exec>
+
+		<exec executable="su">
+			<arg value="- appserver -c “/bin/sh ${app.server.weblogic.dir}/install_weblogic.sh”" />
 		</exec>
 	</target>
 
