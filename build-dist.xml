@@ -409,8 +409,8 @@ fi
 
 whoami
 
-export JAVA_HOME=/opt/java/jdk8-x64
-export PATH=$JAVA_HOME/bin:$PATH
+su - appserver -c "export JAVA_HOME=/opt/java/jdk8-x64"
+su - appserver -c "export PATH=$JAVA_HOME/bin:$PATH"
 
 echo 'exported java_HOME and PATH'
 
@@ -419,10 +419,6 @@ su - appserver -c "java -jar ${app.server.weblogic.dir}/${app.server.weblogic.ja
 echo 'weblogic installed!'
 			]]>
 		</echo>
-
-		<exec executable="/bin/bash">
-			<arg value="${app.server.weblogic.dir}/delete_swap.sh" />
-		</exec>
 
 		<exec executable="/bin/bash">
 			<arg value="${app.server.weblogic.dir}/create_swap.sh" />
