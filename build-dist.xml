@@ -433,9 +433,9 @@ echo 'weblogic installed!'
 			<arg value="${app.server.weblogic.dir}/create_user.sh" />
 		</exec>
 
-		<exec dir="${app.server.weblogic.dir}" executable="su">
-			<arg value="appserver -c '/bin/sh install_weblogic.sh'" />
-		</exec>
+		<execute dir="${app.server.weblogic.dir}">
+		    su appserver -c "/bin/sh install_weblogic.sh"
+		</execute>
 	</target>
 
 	<target name="dist">
