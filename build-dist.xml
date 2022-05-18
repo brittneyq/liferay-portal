@@ -407,11 +407,19 @@ else
         echo 'appserver user created'
 fi
 
-su appserver
+whoami
+
+export JAVA_HOME=/opt/java/jdk8-x64
+export PATH=$JAVA_HOME/bin:$PATH
+
+echo 'exported java_HOME and PATH'
+su - appserver
+
+echo 'su - app server!'
 
 whoami
 
-su - appserver -c "java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -silent ORACLE_BASE=${app.server.weblogic.dir} ORACLE_HOME=${app.server.weblogic.dir}/oracle JAVA_HOME=/opt/java/jdk8-x64 INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory INSTALL_TYPE='Weblogic Server' -invPtrLoc ${app.server.weblogic.dir}/oraInst.loc"
+java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -silent ORACLE_BASE=${app.server.weblogic.dir} ORACLE_HOME=${app.server.weblogic.dir}/oracle JAVA_HOME=/opt/java/jdk8-x64 INVENTORY_LOCATION=${app.server.weblogic.dir}/oraInventory INSTALL_TYPE='Weblogic Server' -invPtrLoc ${app.server.weblogic.dir}/oraInst.loc
 
 echo 'weblogic installed!'
 			]]>
