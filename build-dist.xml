@@ -413,7 +413,7 @@ export JAVA_HOME=/opt/java/jdk8-x64
 export PATH=$JAVA_HOME/bin:$PATH
 
 echo 'exported java_HOME and PATH'
-su - appserver
+su - appserver -s /bin/bash
 
 echo 'su - app server!'
 
@@ -424,6 +424,10 @@ java -jar ${app.server.weblogic.dir}/${app.server.weblogic.jar.name} -silent ORA
 echo 'weblogic installed!'
 			]]>
 		</echo>
+
+		<exec executable="/bin/bash">
+			<arg value="${app.server.weblogic.dir}/delete_swap.sh" />
+		</exec>
 
 		<exec executable="/bin/bash">
 			<arg value="${app.server.weblogic.dir}/create_swap.sh" />
