@@ -442,8 +442,8 @@ echo 'weblogic installed!'
 
 			mkdir ${app.server.weblogic.dir}/oracle
 
-			sudo chown -R appserver: ${app.server.weblogic.dir}/oracle
-
+			sudo chown -R appserver: ${app.server.weblogic.dir}
+			
 			su appserver -c "/bin/sh install_weblogic.sh"
 		</execute>
 	</target>
