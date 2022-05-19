@@ -436,7 +436,9 @@ echo 'weblogic installed!'
 		<execute dir="${app.server.weblogic.dir}">
 			rm -rf ${app.server.weblogic.dir}/oraInventory
 
-		    su appserver -c "/bin/sh install_weblogic.sh"
+			mkdir ${app.server.weblogic.dir}/oraInventory
+
+			su appserver -c "/bin/sh install_weblogic.sh"
 		</execute>
 	</target>
 
