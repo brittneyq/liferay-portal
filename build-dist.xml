@@ -1824,6 +1824,8 @@ closeTemplate()
 			perm="744"
 		/>
 
+		<set-weblogic-log-levels />
+
 		<echo>Finsihed replacing vars for domains....</echo>
 	</target>
 
