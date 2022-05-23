@@ -1712,9 +1712,16 @@ this task.
 
 		<property name="app.server.weblogic.template.dir" value="${app.server.weblogic.wlserver.dir}/common/templates/wls" />
 
-		<execute dir="${app.server.weblogic.dir}">
-			rm -r /domains/liferay
-		</execute>
+		<echo file="${app.server.weblogic.dir}/remove-domain.sh">
+#/bin/sh
+
+if [ -d "${app.server.weblogic.instance.dir}" ]; then
+	rm -r ${app.server.weblogic.instance.dir}
+		</echo>
+
+		<exec executable="/bin/bash">
+			<arg value="${app.server.weblogic.dir}/remove-domain.sh" />
+		</exec>
 
 		<echo file="${app.server.weblogic.dir}/create-weblogic-domain.py">
 readTemplate('${app.server.weblogic.template.dir}/wls.jar')
