@@ -1797,7 +1797,7 @@ closeTemplate()
 			/>
 		</replace>
 
-		<copy
+		<!--<copy
 			file="${app.server.weblogic.instance.dir}/bin/startWebLogic.sh"
 			tofile="${app.server.weblogic.instance.dir}/bin/stopWebLogic.sh"
 		/>
@@ -1809,7 +1809,7 @@ closeTemplate()
 				token="startWebLogic"
 				value="stopWebLogic"
 			/>
-		</replace>
+		</replace>-->
 
 		<replace
 			file="${app.server.weblogic.instance.dir}/bin/setDomainEnv.sh"
