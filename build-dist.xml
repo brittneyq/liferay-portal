@@ -1712,6 +1712,10 @@ this task.
 
 		<property name="app.server.weblogic.template.dir" value="${app.server.weblogic.wlserver.dir}/common/templates/wls" />
 
+		<execute dir="${app.server.weblogic.dir}">
+			rm -r /domains/liferay
+		</execute>
+
 		<echo file="${app.server.weblogic.dir}/create-weblogic-domain.py">
 readTemplate('${app.server.weblogic.template.dir}/wls.jar')
 
@@ -1796,6 +1800,36 @@ closeTemplate()
 				value="${app.server.weblogic.dir}"
 			/>
 		</replace>
+
+		<replace
+			dir="${app.server.weblogic.dir}"
+			includes="**/*.cmd,**/*.domains,**/*.properties,**/*.sh,**/*.xml"
+		>
+			<replacefilter
+				token="@env.JAVA_HOME@"
+				value="${env.JAVA_HOME}"
+			/>
+		</replace>
+
+		<replace
+			dir="${app.server.weblogic.dir}"
+			includes="**/*.cmd,**/*.domains,**/*.py,**/*.properties,**/*.sh,**/*.txt,**/*.xml"
+		>
+			<replacefilter
+				token="/opt/dev/projects/github/liferay-portal/bundles"
+				value="${app.server.parent.dir}"
+			/>
+		</replace>
+
+		<chmod
+			perm="a+x"
+		>
+			<fileset
+				dir="${app.server.weblogic.bin.dir}"
+			>
+				<include name="**/*.sh" />
+			</fileset>
+		</chmod>
 
 		<!--<copy
 			file="${app.server.weblogic.instance.dir}/bin/startWebLogic.sh"
