@@ -142,6 +142,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		super(batchName, portalTestClassJob);
 
+		// SET TEST BATCH RUN PROPERTY QUERIES need to be modified
+
 		_setTestBatchRunPropertyQueries();
 
 		setAxisTestClassGroups();
@@ -275,6 +277,71 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
+	private String _concatPQL(File file) {
+		if (file == null) {
+			return null;
+		}
+
+		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
+
+		File parentFile = canonicalFile.getParentFile();
+
+		if ((parentFile == null) || !parentFile.exists()) {
+			return "";
+		}
+
+		if (!canonicalFile.isDirectory()) {
+			return _concatPQL(parentFile);
+		}
+
+		File testPropertiesFile = new File(canonicalFile, "test.properties");
+
+		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
+
+		System.out.println(
+			"CANONICAL FILE FOR TEST PROPERTIES FILE: " + canonicalFile);
+
+		String batchName = getBatchName();
+
+		System.out.println("*****BATCH NAME*****: " + batchName);
+
+		JobProperty jobProperty = getJobProperty(
+			"test.batch.run.property.query", getTestSuiteName(),
+			testPropertiesFile, JobProperty.Type.DEFAULT_TEST_DIR);
+
+		String testBatchPropertyQuery = jobProperty.getValue();
+
+		System.out.println("********PQL:*****: " + testBatchPropertyQuery);
+
+		if (!testBatchPropertyQuery.isEmpty()) {
+			_combinedTestBatchRunPropertyQuery =
+				JenkinsResultsParserUtil.combine(
+					"(", testBatchPropertyQuery, ") AND (",
+					_combinedTestBatchRunPropertyQuery, ")");
+		}
+
+		System.out.println(
+			"COMBINED TEST BATCH RUN PROPERTY QUERY : " +
+				_combinedTestBatchRunPropertyQuery);
+
+		System.out.println(
+			"********JOB PROPERTIES MAP 2*****: " + getJobPropertiesMap());
+
+		if (!testPropertiesFile.exists()) {
+			return _concatPQL(parentFile);
+		}
+
+		//if the file exists, extract the PQL...
+		//concat the PQL to a string..? or property
+		//once it hits the modules base dir... stop...
+
+		// if it hits the modules base dir and the string/property is empty
+
+		// ... return the default test.properties pql
+
+		return _combinedTestBatchRunPropertyQuery;
+	}
+
 	private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
 		List<File> functionalRequiredModuleDirs = Lists.newArrayList(
 			moduleDirs);
@@ -372,20 +439,21 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		StringBuilder sb = new StringBuilder();
 
+		// NEED TO EDIT THIS!!!
+
 		for (File modifiedDir : modifiedDirsList) {
-			JobProperty jobProperty = getJobProperty(
-				"test.batch.run.property.query", modifiedDir,
-				JobProperty.Type.MODULE_TEST_DIR, false);
+			String testBatchPQL = _concatPQL(modifiedDir);
 
-			String jobPropertyValue = jobProperty.getValue();
+			System.out.println(
+				"TEST BATCH PQL FOR " + modifiedDir + ": " + testBatchPQL);
 
-			if (JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue) ||
-				jobPropertyValue.equals("false")) {
+			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
+				testBatchPQL.equals("false")) {
 
 				continue;
 			}
 
-			recordJobProperty(jobProperty);
+			//			recordJobProperty(jobProperty);
 
 			if (sb.length() > 0) {
 				sb.append(" OR (");
@@ -394,7 +462,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				sb.append("(");
 			}
 
-			sb.append(jobPropertyValue);
+			sb.append(testBatchPQL);
 			sb.append(")");
 		}
 
@@ -477,6 +545,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	private static final Pattern _poshiTestCasePattern = Pattern.compile(
 		"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#(?<methodName>.*)");
 
+	private String _combinedTestBatchRunPropertyQuery = new String();
 	private final Map<File, String> _testBatchRunPropertyQueries =
 		new HashMap<>();
 
