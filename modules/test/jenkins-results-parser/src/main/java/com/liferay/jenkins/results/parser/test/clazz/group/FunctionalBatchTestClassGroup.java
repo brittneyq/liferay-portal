@@ -87,6 +87,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
 
+		List<File> gitWorkingDirectories = Arrays.asList(
+			new File(
+				portalGitWorkingDirectory.getWorkingDirectory(),
+				"portal-web/test/functional/portalweb"));
+
+		System.out.println("GET TEST BASE DIRS : " + gitWorkingDirectories);
+
 		return Arrays.asList(
 			new File(
 				portalGitWorkingDirectory.getWorkingDirectory(),
@@ -385,6 +392,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
 		System.out.println(
 			"**********GET TEST BATCH RUN PROPERTY QUERY**********");
+
+		System.out.println("**********TEST BASE DIR******** : " + testBaseDir);
 
 		if (!testRelevantChanges) {
 			return getDefaultTestBatchRunPropertyQuery(
