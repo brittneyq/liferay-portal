@@ -316,7 +316,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		if (!testBatchPropertyQuery.isEmpty()) {
 			_combinedTestBatchRunPropertyQuery =
 				JenkinsResultsParserUtil.combine(
-					"(", testBatchPropertyQuery, ") AND (",
+					"(", testBatchPropertyQuery, ") OR (",
 					_combinedTestBatchRunPropertyQuery, ")");
 		}
 
