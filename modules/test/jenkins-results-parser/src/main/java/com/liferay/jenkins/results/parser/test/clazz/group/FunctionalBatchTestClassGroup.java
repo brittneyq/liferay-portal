@@ -314,7 +314,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(),
-			testPropertiesFile, JobProperty.Type.DEFAULT_TEST_DIR);
+			testPropertiesFile, JobProperty.Type.DEFAULT);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
@@ -456,8 +456,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		List<File> gitWorkingDirectories =
 			portalGitWorkingDirectory.getModifiedFilesList();
 
+		System.out.println("MODIFIED FILES LIST : " + gitWorkingDirectories);
+
 		for (File modifiedFile : gitWorkingDirectories) {
+			System.out.println("MODIFIED FILESSSSSSSSSSSS before concat");
+
 			_concatPQL(modifiedFile);
+
+			System.out.println(
+				"************DONE MODIFYING FILE CONCAT*********");
 		}
 
 		for (File modifiedDir : modifiedDirsList) {
