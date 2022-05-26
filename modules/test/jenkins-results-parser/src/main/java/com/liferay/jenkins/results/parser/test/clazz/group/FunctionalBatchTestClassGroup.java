@@ -450,6 +450,16 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		// NEED TO EDIT THIS!!!
 
+		PortalGitWorkingDirectory portalGitWorkingDirectory =
+			getPortalGitWorkingDirectory();
+
+		List<File> gitWorkingDirectories =
+			portalGitWorkingDirectory.getModifiedFilesList();
+
+		for (File modifiedFile : gitWorkingDirectories) {
+			_concatPQL(modifiedFile);
+		}
+
 		for (File modifiedDir : modifiedDirsList) {
 			String testBatchPQL = _concatPQL(modifiedDir);
 
