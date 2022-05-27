@@ -324,13 +324,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		JobProperty jobProperty1 = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(),
-			testPropertiesFile, JobProperty.Type.DEFAULT);
+			testPropertiesFile, JobProperty.Type.MODULE_TEST_DIR);
 
 		String testBatchPropertyQuery1 = jobProperty1.getValue();
 
 		JobProperty jobProperty2 = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(), canonicalFile,
-			JobProperty.Type.DEFAULT);
+			JobProperty.Type.MODULE_TEST_DIR);
 
 		System.out.println("********PQL:*****: " + testBatchPropertyQuery1);
 
@@ -482,6 +482,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		for (File modifiedDir : modifiedDirsList) {
+			System.out.println("MODIFIED DIR@@@@ : " + modifiedDir);
+
 			String testBatchPQL = _concatPQL(modifiedDir);
 
 			System.out.println(
