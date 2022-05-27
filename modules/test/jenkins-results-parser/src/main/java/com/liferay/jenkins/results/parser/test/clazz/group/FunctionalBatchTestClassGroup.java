@@ -305,6 +305,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
+		if (!testPropertiesFile.exists()) {
+			return _concatPQL(parentFile);
+		}
+
 		System.out.println(
 			"CANONICAL FILE FOR TEST PROPERTIES FILE: " + canonicalFile);
 
@@ -312,18 +316,26 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("*****BATCH NAME*****: " + batchName);
 
-		JobProperty jobProperty = getJobProperty(
+		JobProperty jobProperty1 = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(),
 			testPropertiesFile, JobProperty.Type.DEFAULT);
 
-		String testBatchPropertyQuery = jobProperty.getValue();
+		String testBatchPropertyQuery1 = jobProperty1.getValue();
 
-		System.out.println("********PQL:*****: " + testBatchPropertyQuery);
+		JobProperty jobProperty2 = getJobProperty(
+			"test.batch.run.property.query", getTestSuiteName(), canonicalFile,
+			JobProperty.Type.DEFAULT);
 
-		if (!testBatchPropertyQuery.isEmpty()) {
+		System.out.println("********PQL:*****: " + testBatchPropertyQuery1);
+
+		String testBatchPropertyQuery2 = jobProperty2.getValue();
+
+		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery2);
+
+		if (!testBatchPropertyQuery1.isEmpty()) {
 			_combinedTestBatchRunPropertyQuery =
 				JenkinsResultsParserUtil.combine(
-					"(", testBatchPropertyQuery, ") OR (",
+					"(", testBatchPropertyQuery1, ") OR (",
 					_combinedTestBatchRunPropertyQuery, ")");
 		}
 
@@ -333,10 +345,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println(
 			"********JOB PROPERTIES MAP 2*****: " + getJobPropertiesMap());
-
-		if (!testPropertiesFile.exists()) {
-			return _concatPQL(parentFile);
-		}
 
 		//if the file exists, extract the PQL...
 		//concat the PQL to a string..? or property
