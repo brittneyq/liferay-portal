@@ -326,7 +326,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery);
 
-		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery)) {
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
+			!testBatchPropertyQuery.equals(false)) {
+
 			System.out.println("PQL IS NOT EMPTY!!!");
 
 			if (!_combinedTestBatchRunPropertyQuery.isEmpty()) {
@@ -353,17 +355,24 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		Path modulesBaseDirPath = modulesBaseDir.toPath();
 
-		System.out.println("MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
+		System.out.println(
+			"MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
 
-		Path canonicalFilePath = canonicalFile.toPath();
+		Path parentFilePath = parentFile.toPath();
 
-		System.out.println("CANONICAL FILE PATH ... : " + canonicalFilePath);
+		System.out.println("CANONICAL FILE PATH ... : " + parentFilePath);
 
-		if (!canonicalFilePath.equals(modulesBaseDirPath)) {
-			System.out.println(
-				"Canonical file does not equal modules base dir!");
+		if (!parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println("Parent file does not equal modules base dir!");
 
 			_concatPQL(parentFile);
+		}
+		else {
+			System.out.println(
+				"Parent file equals modules base dir!! combined PQL : " +
+					_combinedTestBatchRunPropertyQuery);
+
+			return _combinedTestBatchRunPropertyQuery;
 		}
 
 		//if the file exists, extract the PQL...
@@ -481,27 +490,18 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
 
-		List<File> gitWorkingDirectories =
+		List<File> modifiedFilesList =
 			portalGitWorkingDirectory.getModifiedFilesList();
 
-		System.out.println("MODIFIED FILES LIST : " + gitWorkingDirectories);
+		System.out.println("MODIFIED FILES LIST : " + modifiedFilesList);
 
-		for (File modifiedFile : gitWorkingDirectories) {
-			System.out.println("MODIFIED FILESSSSSSSSSSSS before concat");
+		for (File modifiedFile : modifiedFilesList) {
+			System.out.println("MODIFIED DIR@@@@ : " + modifiedFile);
 
-			_concatPQL(modifiedFile);
-
-			System.out.println(
-				"************DONE MODIFYING FILE CONCAT*********");
-		}
-
-		for (File modifiedDir : modifiedDirsList) {
-			System.out.println("MODIFIED DIR@@@@ : " + modifiedDir);
-
-			String testBatchPQL = _concatPQL(modifiedDir);
+			String testBatchPQL = _concatPQL(modifiedFile);
 
 			System.out.println(
-				"TEST BATCH PQL FOR " + modifiedDir + ": " + testBatchPQL);
+				"TEST BATCH PQL FOR " + modifiedFile + ": " + testBatchPQL);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
@@ -532,6 +532,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName));
 
 		sb.append(")");
+
+		System.out.println(
+			"STRING BUILDER WITH DEFAULT PQL : " + sb.toString());
 
 		if (!NAME_STABLE_TEST_SUITE.equals(getTestSuiteName())) {
 			String batchName = getBatchName();
