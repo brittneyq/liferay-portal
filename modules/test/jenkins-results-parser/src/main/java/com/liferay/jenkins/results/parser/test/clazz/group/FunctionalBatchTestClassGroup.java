@@ -316,14 +316,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println(
 			"CANONICAL FILE FOR TEST PROPERTIES FILE: " + canonicalFile);
 
-		String testPQL = JenkinsResultsParserUtil.getProperty(
-			JenkinsResultsParserUtil.getProperties(testPropertiesFile),
-			"test.batch.run.property.query");
-
-		System.out.println("TEST PQL!!!!! : " + testPQL);
-
-		String batchName = getBatchName();
-
 		System.out.println("*****BATCH NAME*****: " + batchName);
 
 		JobProperty jobProperty = getJobProperty(
@@ -339,8 +331,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			_combinedTestBatchRunPropertyQuery =
 				JenkinsResultsParserUtil.combine(
-					"(", testPQL, ") OR (", _combinedTestBatchRunPropertyQuery,
-					")");
+					"(", testBatchPropertyQuery, ") OR (",
+					_combinedTestBatchRunPropertyQuery, ")");
 		}
 
 		System.out.println(
