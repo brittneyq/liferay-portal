@@ -326,10 +326,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery);
 
-		if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery)) {
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery)) {
 			System.out.println("PQL IS NOT EMPTY!!!");
 
-			_combinedTestBatchRunPropertyQuery =
+			_combinedTestBatchRunPropertyQuery +=
 				JenkinsResultsParserUtil.combine(
 					"(", testBatchPropertyQuery, ") OR (",
 					_combinedTestBatchRunPropertyQuery, ")");
@@ -349,7 +349,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		Path canonicalFilePath = canonicalFile.toPath();
 
-		if (canonicalFilePath.equals(modulesBaseDirPath)) {
+		if (!canonicalFilePath.equals(modulesBaseDirPath)) {
 			System.out.println(
 				"Canonical file does not equal modules base dir!");
 
