@@ -30,6 +30,8 @@ import com.liferay.poshi.core.util.PropsUtil;
 import java.io.File;
 import java.io.IOException;
 
+import java.nio.file.Path;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -297,6 +299,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return "";
 		}
 
+		System.out.println("PARENT FILE : " + parentFile);
+
 		if (!canonicalFile.isDirectory()) {
 			return _concatPQL(parentFile);
 		}
@@ -322,23 +326,17 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("*****BATCH NAME*****: " + batchName);
 
-		JobProperty jobProperty1 = getJobProperty(
-			"test.batch.run.property.query", getTestSuiteName(),
-			testPropertiesFile, JobProperty.Type.MODULE_TEST_DIR);
-
-		String testBatchPropertyQuery1 = jobProperty1.getValue();
-
-		JobProperty jobProperty2 = getJobProperty(
+		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(), canonicalFile,
 			JobProperty.Type.MODULE_TEST_DIR);
 
-		System.out.println("********PQL:*****: " + testBatchPropertyQuery1);
+		String testBatchPropertyQuery = jobProperty.getValue();
 
-		String testBatchPropertyQuery2 = jobProperty2.getValue();
+		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery);
 
-		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery2);
+		if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery)) {
+			System.out.println("PQL IS NOT EMPTY!!!");
 
-		if (!testBatchPropertyQuery1.isEmpty()) {
 			_combinedTestBatchRunPropertyQuery =
 				JenkinsResultsParserUtil.combine(
 					"(", testPQL, ") OR (", _combinedTestBatchRunPropertyQuery,
@@ -352,6 +350,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println(
 			"********JOB PROPERTIES MAP 2*****: " + getJobPropertiesMap());
 
+		File modulesBaseDir = new File(
+			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
+
+		Path modulesBaseDirPath = modulesBaseDir.toPath();
+
+		Path canonicalFilePath = canonicalFile.toPath();
+
+		if (canonicalFilePath.equals(modulesBaseDirPath)) {
+			System.out.println(
+				"Canonical file does not equal modules base dir!");
+
+			_concatPQL(parentFile);
+		}
 		//if the file exists, extract the PQL...
 		//concat the PQL to a string..? or property
 		//once it hits the modules base dir... stop...
