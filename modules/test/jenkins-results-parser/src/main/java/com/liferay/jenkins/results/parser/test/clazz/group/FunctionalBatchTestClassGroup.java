@@ -329,10 +329,14 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery)) {
 			System.out.println("PQL IS NOT EMPTY!!!");
 
-			_combinedTestBatchRunPropertyQuery +=
-				JenkinsResultsParserUtil.combine(
-					"(", testBatchPropertyQuery, ") OR (",
-					_combinedTestBatchRunPropertyQuery, ")");
+			if (!_combinedTestBatchRunPropertyQuery.isEmpty()) {
+				_combinedTestBatchRunPropertyQuery +=
+					JenkinsResultsParserUtil.combine(
+						" OR (", testBatchPropertyQuery, ")");
+			}
+			else {
+				_combinedTestBatchRunPropertyQuery += testBatchPropertyQuery;
+			}
 		}
 
 		System.out.println(
@@ -345,9 +349,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
+		System.out.println("modules base dir !@#!@#!#!#! : " + modulesBaseDir);
+
 		Path modulesBaseDirPath = modulesBaseDir.toPath();
 
+		System.out.println("MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
+
 		Path canonicalFilePath = canonicalFile.toPath();
+
+		System.out.println("CANONICAL FILE PATH ... : " + canonicalFilePath);
 
 		if (!canonicalFilePath.equals(modulesBaseDirPath)) {
 			System.out.println(
@@ -355,6 +365,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			_concatPQL(parentFile);
 		}
+
 		//if the file exists, extract the PQL...
 		//concat the PQL to a string..? or property
 		//once it hits the modules base dir... stop...
