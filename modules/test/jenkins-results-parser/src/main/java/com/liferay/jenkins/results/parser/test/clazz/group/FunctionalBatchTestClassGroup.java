@@ -522,7 +522,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			String sbToString = sb.toString();
 
-			if (!sbToString.contains(testBatchPQL)) {
+			System.out.println("SB TO STRING : " + sbToString);
+
+			if (!sbToString.contains(testBatchPQL) &&
+				!testBatchPQL.equals("false")) {
+
+				System.out.println(
+					"SB TO STRING does not contain a tbatch tbPQL is not " +
+						"FALSE");
+
 				sb.append(testBatchPQL);
 				sb.append(")");
 			}
