@@ -347,7 +347,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
-			!testBatchPropertyQuery.equals("false")) {
+			!testBatchPropertyQuery.equals("false") &&
+			!_combinedTestBatchRunPropertyQuery.contains(
+				testBatchPropertyQuery)) {
 
 			System.out.println("PQL IS NOT EMPTY!!!");
 
