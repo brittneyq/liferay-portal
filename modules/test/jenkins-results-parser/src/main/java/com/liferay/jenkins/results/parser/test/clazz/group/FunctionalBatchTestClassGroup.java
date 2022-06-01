@@ -286,7 +286,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
-	private String _concatPQL(File file) {
+	private String _concatPQL(File file, File testBaseDir) {
 		if (file == null) {
 			return null;
 		}
@@ -299,37 +299,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return "";
 		}
 
-		File modulesBaseDir = new File(
-			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
-
-		System.out.println("modules base dir !@#!@#!#!#! : " + modulesBaseDir);
-
-		Path modulesBaseDirPath = modulesBaseDir.toPath();
-
-		System.out.println(
-			"MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
-
-		Path parentFilePath = parentFile.toPath();
-
-		System.out.println("PARENT FILE PATH ... : " + parentFilePath);
-
-		if (!parentFilePath.equals(modulesBaseDirPath)) {
-			System.out.println("Parent file does not equal modules base dir!");
-
-			_concatPQL(parentFile);
-		}
-		else {
-			System.out.println(
-				"Parent file equals modules base dir!! combined PQL : " +
-					_combinedTestBatchRunPropertyQuery);
-
-			return _combinedTestBatchRunPropertyQuery;
-		}
-
 		System.out.println("PARENT FILE : " + parentFile);
 
 		if (!canonicalFile.isDirectory()) {
-			return _concatPQL(parentFile);
+			return _concatPQL(parentFile, testBaseDir);
 		}
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
@@ -337,7 +310,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
 		if (!testPropertiesFile.exists()) {
-			return _concatPQL(parentFile);
+			return _concatPQL(parentFile, testBaseDir);
 		}
 
 		System.out.println(
@@ -364,16 +337,37 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 						" OR (", testBatchPropertyQuery, ")");
 			}
 			else {
+				System.out.println(
+					"combined Test Batch run property query is not empty");
+
 				_combinedTestBatchRunPropertyQuery += testBatchPropertyQuery;
 			}
 		}
 
-		System.out.println(
-			"COMBINED TEST BATCH RUN PROPERTY QUERY : " +
-				_combinedTestBatchRunPropertyQuery);
+		File modulesBaseDir = new File(
+			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
+
+		Path modulesBaseDirPath = modulesBaseDir.toPath();
 
 		System.out.println(
-			"********JOB PROPERTIES MAP 2*****: " + getJobPropertiesMap());
+			"MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
+
+		Path parentFilePath = parentFile.toPath();
+
+		System.out.println("PARENT FILE PATH ... : " + parentFilePath);
+
+		if (!parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println("Parent file does not equal modules base dir!");
+
+			_concatPQL(parentFile, testBaseDir);
+		}
+		else {
+			System.out.println(
+				"Parent file equals modules base dir!! combined PQL : " +
+					_combinedTestBatchRunPropertyQuery);
+
+			return _combinedTestBatchRunPropertyQuery;
+		}
 
 		//if the file exists, extract the PQL...
 		//concat the PQL to a string..? or property
@@ -383,7 +377,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		// ... return the default test.properties pql
 
-		return _combinedTestBatchRunPropertyQuery;
+		return getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName);
 	}
 
 	private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
@@ -498,7 +492,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		for (File modifiedFile : modifiedFilesList) {
 			System.out.println("MODIFIED DIR@@@@ : " + modifiedFile);
 
-			String testBatchPQL = _concatPQL(modifiedFile);
+			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
 			System.out.println(
 				"TEST BATCH PQL FOR " + modifiedFile + ": " + testBatchPQL);
