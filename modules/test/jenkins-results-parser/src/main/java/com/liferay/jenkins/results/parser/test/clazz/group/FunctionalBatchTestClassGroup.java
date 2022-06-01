@@ -542,6 +542,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		sb.append("(");
 
+		String defaultPQL = getDefaultTestBatchRunPropertyQuery(
+			testBaseDir, testSuiteName);
+
+		System.out.println(
+			"*****GET DEFAULT TEST BATCH RUN PROP QUERY : " + defaultPQL);
+
 		sb.append(
 			getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName));
 
@@ -553,6 +559,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		if (!NAME_STABLE_TEST_SUITE.equals(getTestSuiteName())) {
 			String batchName = getBatchName();
 
+			System.out.println(
+				"*******STABLE SUITE DOES NOT EQUAL TEST SUITE NAME*****");
+
 			if (!batchName.endsWith("_stable")) {
 				batchName += "_stable";
 			}
@@ -563,11 +572,16 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			String jobPropertyValue = jobProperty.getValue();
 
+			System.out.println(
+				"TEST BATCH RUN PROPERTY QUERY FOR STABEL SUITE : " +
+					jobPropertyValue);
+
 			if ((jobPropertyValue != null) && includeStableTestSuite &&
 				isStableTestSuiteBatch(batchName)) {
 
 				recordJobProperty(jobProperty);
 
+				System.out.println("ADDING MORE ORs......");
 				sb.append(" OR (");
 				sb.append(jobPropertyValue);
 				sb.append(")");

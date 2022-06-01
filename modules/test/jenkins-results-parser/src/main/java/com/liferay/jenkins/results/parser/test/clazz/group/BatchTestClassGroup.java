@@ -628,6 +628,8 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		String jobPropertyValue = jobProperty.getValue();
 
+		System.out.println("IS STABLE TEST SUITE BATCH : " + jobPropertyValue);
+
 		if (jobPropertyValue != null) {
 			Collections.addAll(testBatchNames, jobPropertyValue.split(","));
 		}
