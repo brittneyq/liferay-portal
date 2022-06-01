@@ -520,8 +520,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				sb.append("(");
 			}
 
-			sb.append(testBatchPQL);
-			sb.append(")");
+			String sbToString = sb.toString();
+
+			if (!sbToString.contains(testBatchPQL)) {
+				sb.append(testBatchPQL);
+				sb.append(")");
+			}
 		}
 
 		if (sb.length() > 0) {
