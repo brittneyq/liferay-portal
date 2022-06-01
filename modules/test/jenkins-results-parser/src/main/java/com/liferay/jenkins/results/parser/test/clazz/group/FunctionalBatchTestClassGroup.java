@@ -299,6 +299,33 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return "";
 		}
 
+		File modulesBaseDir = new File(
+			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
+
+		System.out.println("modules base dir !@#!@#!#!#! : " + modulesBaseDir);
+
+		Path modulesBaseDirPath = modulesBaseDir.toPath();
+
+		System.out.println(
+			"MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
+
+		Path parentFilePath = parentFile.toPath();
+
+		System.out.println("PARENT FILE PATH ... : " + parentFilePath);
+
+		if (!parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println("Parent file does not equal modules base dir!");
+
+			_concatPQL(parentFile);
+		}
+		else {
+			System.out.println(
+				"Parent file equals modules base dir!! combined PQL : " +
+					_combinedTestBatchRunPropertyQuery);
+
+			return _combinedTestBatchRunPropertyQuery;
+		}
+
 		System.out.println("PARENT FILE : " + parentFile);
 
 		if (!canonicalFile.isDirectory()) {
@@ -347,33 +374,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println(
 			"********JOB PROPERTIES MAP 2*****: " + getJobPropertiesMap());
-
-		File modulesBaseDir = new File(
-			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
-
-		System.out.println("modules base dir !@#!@#!#!#! : " + modulesBaseDir);
-
-		Path modulesBaseDirPath = modulesBaseDir.toPath();
-
-		System.out.println(
-			"MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
-
-		Path parentFilePath = parentFile.toPath();
-
-		System.out.println("CANONICAL FILE PATH ... : " + parentFilePath);
-
-		if (!parentFilePath.equals(modulesBaseDirPath)) {
-			System.out.println("Parent file does not equal modules base dir!");
-
-			_concatPQL(parentFile);
-		}
-		else {
-			System.out.println(
-				"Parent file equals modules base dir!! combined PQL : " +
-					_combinedTestBatchRunPropertyQuery);
-
-			return _combinedTestBatchRunPropertyQuery;
-		}
 
 		//if the file exists, extract the PQL...
 		//concat the PQL to a string..? or property
