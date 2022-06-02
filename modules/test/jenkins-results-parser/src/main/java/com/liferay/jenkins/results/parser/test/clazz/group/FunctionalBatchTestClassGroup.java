@@ -515,9 +515,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			if (sb.length() > 0) {
 				sb.append(" OR (");
+
+				System.out.println("FIRST OR.........: " + sb.toString());
 			}
 			else {
 				sb.append("(");
+
+				System.out.println("ADDING ( : " + sb.toString());
 			}
 
 			String sbToString = sb.toString();
@@ -532,12 +536,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 						"FALSE");
 
 				sb.append(testBatchPQL);
+
+				System.out.println(
+					"SB AFTER ADDING TEST BATCH PQL : " + sb.toString());
+
 				sb.append(")");
 			}
 		}
 
 		if (sb.length() > 0) {
+			System.out.println("ADDING THIRD OR....");
 			sb.append(" OR ");
+
+			System.out.println("THIRD OR SB : " + sb.toString());
 		}
 
 		sb.append("(");
@@ -573,8 +584,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			String jobPropertyValue = jobProperty.getValue();
 
 			System.out.println(
-				"TEST BATCH RUN PROPERTY QUERY FOR STABEL SUITE : " +
-					jobPropertyValue);
+				"JOB PROPERTY VALUE FOR STABLE PQL : " + jobPropertyValue);
 
 			if ((jobPropertyValue != null) && includeStableTestSuite &&
 				isStableTestSuiteBatch(batchName)) {
@@ -608,6 +618,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			testBatchRunPropertyQuery = JenkinsResultsParserUtil.combine(
 				"(", jobPropertyValue, ") AND (", testBatchRunPropertyQuery,
 				")");
+
+			System.out.println(
+				"ADDING JOB PROP VAL AND TPQL: " + testBatchRunPropertyQuery);
 		}
 
 		return testBatchRunPropertyQuery;
