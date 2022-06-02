@@ -513,16 +513,17 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			//			recordJobProperty(jobProperty);
 
-			if (sb.length() > 0) {
-				sb.append(" OR (");
-
-				System.out.println("FIRST OR.........: " + sb.toString());
-			}
-			else {
-				sb.append("(");
-
-				System.out.println("ADDING ( : " + sb.toString());
-			}
+			//			if (sb.length() > 0) {
+			//				sb.append(" OR (");
+			//
+			//				System.out.println("FIRST OR.........:
+			//				" + sb.toString());
+			//			}
+			//			else {
+			//				sb.append("(");
+			//
+			//				System.out.println("ADDING ( : " + sb.toString());
+			//			}
 
 			String sbToString = sb.toString();
 
@@ -535,23 +536,28 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 					"SB TO STRING does not contain a tbatch tbPQL is not " +
 						"FALSE");
 
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
+					sb.append(" OR ");
+				}
+
+				sb.append("(");
 				sb.append(testBatchPQL);
+
+				sb.append(")");
 
 				System.out.println(
 					"SB AFTER ADDING TEST BATCH PQL : " + sb.toString());
-
-				sb.append(")");
 			}
 		}
 
-		if (sb.length() > 0) {
-			System.out.println("ADDING THIRD OR....");
-			sb.append(" OR ");
-
-			System.out.println("THIRD OR SB : " + sb.toString());
-		}
-
-		sb.append("(");
+		//		if (sb.length() > 0) {
+		//			System.out.println("ADDING THIRD OR....");
+		//			sb.append(" OR ");
+		//
+		//			System.out.println("THIRD OR SB : " + sb.toString());
+		//		}
+		//
+		//		sb.append("(");
 
 		String defaultPQL = getDefaultTestBatchRunPropertyQuery(
 			testBaseDir, testSuiteName);
@@ -559,10 +565,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println(
 			"*****GET DEFAULT TEST BATCH RUN PROP QUERY : " + defaultPQL);
 
-		sb.append(
-			getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName));
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(defaultPQL)) {
+			sb.append(" OR (");
 
-		sb.append(")");
+			sb.append(
+				getDefaultTestBatchRunPropertyQuery(
+					testBaseDir, testSuiteName));
+
+			sb.append(")");
+		}
 
 		System.out.println(
 			"STRING BUILDER WITH DEFAULT PQL : " + sb.toString());
