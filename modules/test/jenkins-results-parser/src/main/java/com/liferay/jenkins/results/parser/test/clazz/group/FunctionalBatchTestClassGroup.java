@@ -339,8 +339,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println("*****BATCH NAME*****: " + batchName);
 
 		JobProperty jobProperty = getJobProperty(
-			"test.batch.run.property.query", getTestSuiteName(), canonicalFile,
-			JobProperty.Type.MODULE_TEST_DIR);
+			"test.batch.run.property.query", getTestSuiteName(), batchName,
+			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
