@@ -497,6 +497,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("MODIFIED FILES LIST : " + modifiedFilesList);
 
+		String sbToString = sb.toString();
+
 		for (File modifiedFile : modifiedFilesList) {
 			System.out.println("MODIFIED DIR@@@@ : " + modifiedFile);
 
@@ -524,8 +526,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			//
 			//				System.out.println("ADDING ( : " + sb.toString());
 			//			}
-
-			String sbToString = sb.toString();
 
 			System.out.println("SB TO STRING : " + sbToString);
 
@@ -578,7 +578,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			sb.append(")");
 
-			sbtoString = sb.toString();
+			sbToString = sb.toString();
 		}
 
 		System.out.println(
