@@ -545,8 +545,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				sb.append(")");
 
+				sbToString = sb.toString();
+
 				System.out.println(
-					"SB AFTER ADDING TEST BATCH PQL : " + sb.toString());
+					"SB AFTER ADDING TEST BATCH PQL : " + sbToString);
 			}
 		}
 
@@ -565,7 +567,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println(
 			"*****GET DEFAULT TEST BATCH RUN PROP QUERY : " + defaultPQL);
 
-		if (!JenkinsResultsParserUtil.isNullOrEmpty(defaultPQL)) {
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(defaultPQL) &&
+			!sbToString.contains(defaultPQL)) {
+
 			sb.append(" OR (");
 
 			sb.append(
@@ -573,6 +577,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 					testBaseDir, testSuiteName));
 
 			sb.append(")");
+
+			sbtoString = sb.toString();
 		}
 
 		System.out.println(
@@ -598,7 +604,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				"JOB PROPERTY VALUE FOR STABLE PQL : " + jobPropertyValue);
 
 			if ((jobPropertyValue != null) && includeStableTestSuite &&
-				isStableTestSuiteBatch(batchName)) {
+				isStableTestSuiteBatch(batchName) &&
+				!sbToString.contains(jobPropertyValue)) {
 
 				recordJobProperty(jobProperty);
 
