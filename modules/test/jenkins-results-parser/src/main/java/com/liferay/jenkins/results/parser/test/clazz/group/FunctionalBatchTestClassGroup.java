@@ -14,8 +14,6 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.google.common.collect.Lists;
-
 import com.liferay.jenkins.results.parser.AntException;
 import com.liferay.jenkins.results.parser.AntUtil;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -388,10 +386,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		return getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName);
 	}
 
-	private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
+	/*private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
 		List<File> functionalRequiredModuleDirs = Lists.newArrayList(
 			moduleDirs);
-
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
@@ -426,7 +423,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		return Lists.newArrayList(functionalRequiredModuleDirs);
-	}
+	}*/
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
 		System.out.println(
@@ -459,31 +456,25 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				ioException);
 		}
 
-		File modulesDir = new File(
-			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
+		/*		File modulesDir = new File(
+					portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
-		System.out.println("***********MODULES DIR : " + modulesDir);
+				System.out.println("***********MODULES DIR : " + modulesDir);
 
-		modifiedDirsList.addAll(
-			portalGitWorkingDirectory.getModifiedDirsList(
-				false,
-				JenkinsResultsParserUtil.toPathMatchers(
-					null,
-					JenkinsResultsParserUtil.getCanonicalPath(modulesDir)),
-				null));
+				modifiedDirsList.addAll(
+					portalGitWorkingDirectory.getModifiedDirsList(
+						false,
+						JenkinsResultsParserUtil.toPathMatchers(
+							null,
+							JenkinsResultsParserUtil.getCanonicalPath(modulesDir)),
+						null));
 
-		System.out.println("****MODIFIED DIRS LIST 2 : " + modifiedDirsList);
+				modifiedDirsList.addAll(
+					getRequiredModuleDirs(Lists.newArrayList(modifiedDirsList)));
 
-		modifiedDirsList.addAll(
-			getRequiredModuleDirs(Lists.newArrayList(modifiedDirsList)));
-
-		System.out.println("****MODIFIED DIRS LIST 3 : " + modifiedDirsList);
-
-		modifiedDirsList.addAll(
-			_getFunctionalRequiredModuleDirs(
-				Lists.newArrayList(modifiedDirsList)));
-
-		System.out.println("****MODIFIED DIRS LIST 4 : " + modifiedDirsList);
+				modifiedDirsList.addAll(
+					_getFunctionalRequiredModuleDirs(
+						Lists.newArrayList(modifiedDirsList)));*/
 
 		StringBuilder sb = new StringBuilder();
 
