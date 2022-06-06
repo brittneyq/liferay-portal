@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author Eudaldo Alonso
+ * @author Brittney Nguyen
  */
 @RunWith(Arquillian.class)
 public class BlogsEntrySearchTest extends BaseSearchTestCase {
