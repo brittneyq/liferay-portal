@@ -26,7 +26,6 @@ import com.liferay.poshi.core.PoshiContext;
 import com.liferay.poshi.core.util.PropsUtil;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.nio.file.Path;
 
@@ -436,25 +435,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				testBaseDir, testSuiteName);
 		}
 
-		Set<File> modifiedDirsList = new HashSet<>();
+		Set<File> modifiedFilesList = new HashSet<>();
 
-		try {
-			modifiedDirsList.addAll(
-				portalGitWorkingDirectory.getModifiedModuleDirsList());
+		modifiedFilesList.addAll(
+			portalGitWorkingDirectory.getModifiedFilesList());
 
-			System.out.println(
-				"*********MODIFIED DIRS LIST : " + modifiedDirsList);
-		}
-		catch (IOException ioException) {
-			File workingDirectory =
-				portalGitWorkingDirectory.getWorkingDirectory();
-
-			throw new RuntimeException(
-				JenkinsResultsParserUtil.combine(
-					"Unable to get module directories in ",
-					workingDirectory.getPath()),
-				ioException);
-		}
+		System.out.println(
+			"*********MODIFIED DIRS LIST : " + modifiedFilesList);
 
 		/*		File modulesDir = new File(
 					portalGitWorkingDirectory.getWorkingDirectory(), "modules");
@@ -479,12 +466,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		StringBuilder sb = new StringBuilder();
 
 		// NEED TO EDIT THIS!!!
-
-		PortalGitWorkingDirectory portalGitWorkingDirectory =
-			getPortalGitWorkingDirectory();
-
-		List<File> modifiedFilesList =
-			portalGitWorkingDirectory.getModifiedFilesList();
 
 		System.out.println("MODIFIED FILES LIST : " + modifiedFilesList);
 
