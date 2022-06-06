@@ -348,6 +348,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			!_combinedTestBatchRunPropertyQuery.contains(
 				testBatchPropertyQuery)) {
 
+			recordJobProperty(jobProperty);
+
 			System.out.println("PQL IS NOT EMPTY!!!");
 
 			if (!_combinedTestBatchRunPropertyQuery.isEmpty()) {
