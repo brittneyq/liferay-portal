@@ -287,14 +287,25 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return "";
 		}
 
+		System.out.println("PARENT FILE : " + parentFile);
+
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
 		Path modulesBaseDirPath = modulesBaseDir.toPath();
 
+		System.out.println(
+			"MODUELES BASE DIR PATH.... : " + modulesBaseDirPath);
+
 		Path parentFilePath = parentFile.toPath();
 
 		if (parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println(
+				"PARENT FILE IS EQUAL TO MODULES ... return combined PQL ");
+
+			System.out.println(
+				"COMBINED PQL : " + _combinedTestBatchRunPropertyQuery);
+
 			return _combinedTestBatchRunPropertyQuery;
 		}
 
@@ -304,15 +315,24 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
+		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
+
 		if (!testPropertiesFile.exists()) {
 			return _concatPQL(parentFile, testBaseDir);
 		}
+
+		System.out.println(
+			"CANONICAL FILE FOR TEST PROPERTIES FILE: " + canonicalFile);
+
+		System.out.println("*****BATCH NAME*****: " + batchName);
 
 		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(), batchName,
 			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
+
+		System.out.println("******PQL 2 ***** :" + testBatchPropertyQuery);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
@@ -321,17 +341,29 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			recordJobProperty(jobProperty);
 
+			System.out.println("PQL IS NOT EMPTY!!!");
+
 			if (!_combinedTestBatchRunPropertyQuery.isEmpty()) {
 				_combinedTestBatchRunPropertyQuery +=
 					JenkinsResultsParserUtil.combine(
 						" OR (", testBatchPropertyQuery, ")");
 			}
 			else {
+				System.out.println(
+					"combined Test Batch run property query is not empty");
+
 				_combinedTestBatchRunPropertyQuery += testBatchPropertyQuery;
 			}
 		}
 
+		System.out.println(
+			"COMBINED TEST PQL : " + _combinedTestBatchRunPropertyQuery);
+
+		System.out.println("PARENT FILE PATH ... : " + parentFilePath);
+
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println("Parent file does not equal modules base dir!");
+
 			_concatPQL(parentFile, testBaseDir);
 		}
 
@@ -354,6 +386,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String sbToString = sb.toString();
 
 		for (File modifiedFile : modifiedFilesList) {
+			System.out.println("CONCAT PQL ....!");
+
 			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
