@@ -163,6 +163,39 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return portalTestClassJob;
 	}
 
+	public Map<String, Properties> getJobPropertiesMap() {
+		Map<String, Properties> batchProperties = new TreeMap<>();
+
+		for (JobProperty jobProperty : jobProperties) {
+			String jobPropertyValue = jobProperty.getValue();
+
+			if (jobPropertyValue == null) {
+				continue;
+			}
+
+			String propertiesFilePath = jobProperty.getPropertiesFilePath();
+
+			Properties properties = batchProperties.get(propertiesFilePath);
+
+			if (properties == null) {
+				properties = new Properties();
+			}
+
+			properties.setProperty(jobProperty.getName(), jobPropertyValue);
+
+			batchProperties.put(propertiesFilePath, properties);
+		}
+
+		return batchProperties;
+	}
+
+	public JobProperty getJobProperty(
+		String basePropertyName, String testSuiteName, String testBatchName) {
+
+		return _getJobProperty(
+			basePropertyName, testSuiteName, testBatchName, null, null, true);
+	}
+
 	public JSONObject getJSONObject() {
 		if (jsonObject != null) {
 			return jsonObject;
@@ -182,7 +215,7 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		jsonObject.put("batch_name", getBatchName());
 		jsonObject.put("include_stable_test_suite", includeStableTestSuite);
-		jsonObject.put("job_properties", _getJobPropertiesMap());
+		jsonObject.put("job_properties", getJobPropertiesMap());
 		jsonObject.put("test_release_bundle", testReleaseBundle);
 		jsonObject.put("test_relevant_changes", testRelevantChanges);
 		jsonObject.put(
@@ -268,6 +301,22 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		return sb.toString();
 	}
+
+	public String getTestSuiteName() {
+		return testSuiteName;
+	}
+
+	public void recordJobProperty(JobProperty jobProperty) {
+		if ((jobProperty == null) || (jobProperty.getValue() == null) ||
+			jobProperties.contains(jobProperty)) {
+
+			return;
+		}
+
+		jobProperties.add(jobProperty);
+	}
+
+	public final List<JobProperty> jobProperties = new ArrayList<>();
 
 	protected BatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
@@ -407,13 +456,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		return _getJobProperty(
 			basePropertyName, testSuiteName, null, testBaseDir, type, true);
-	}
-
-	protected JobProperty getJobProperty(
-		String basePropertyName, String testSuiteName, String testBatchName) {
-
-		return _getJobProperty(
-			basePropertyName, testSuiteName, testBatchName, null, null, true);
 	}
 
 	protected JobProperty getJobProperty(
@@ -559,10 +601,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return _SEGMENT_MAX_CHILDREN_DEFAULT;
 	}
 
-	protected String getTestSuiteName() {
-		return testSuiteName;
-	}
-
 	protected boolean isIntegrationUnitTestFileModifiedOnly() {
 		List<PathMatcher> relevantIntegrationUnitIncludePathMatchers =
 			getRelevantIntegrationUnitIncludePathMatchers();
@@ -599,6 +637,8 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		String jobPropertyValue = jobProperty.getValue();
 
+		System.out.println("IS STABLE TEST SUITE BATCH : " + jobPropertyValue);
+
 		if (jobPropertyValue != null) {
 			Collections.addAll(testBatchNames, jobPropertyValue.split(","));
 		}
@@ -614,16 +654,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		for (JobProperty jobProperty : jobProperties) {
 			recordJobProperty(jobProperty);
 		}
-	}
-
-	protected void recordJobProperty(JobProperty jobProperty) {
-		if ((jobProperty == null) || (jobProperty.getValue() == null) ||
-			_jobProperties.contains(jobProperty)) {
-
-			return;
-		}
-
-		_jobProperties.add(jobProperty);
 	}
 
 	protected void setAxisTestClassGroups() {
@@ -762,32 +792,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		private List<Row> _csvReportRows = new ArrayList<>();
 
-	}
-
-	private Map<String, Properties> _getJobPropertiesMap() {
-		Map<String, Properties> batchProperties = new TreeMap<>();
-
-		for (JobProperty jobProperty : _jobProperties) {
-			String jobPropertyValue = jobProperty.getValue();
-
-			if (jobPropertyValue == null) {
-				continue;
-			}
-
-			String propertiesFilePath = jobProperty.getPropertiesFilePath();
-
-			Properties properties = batchProperties.get(propertiesFilePath);
-
-			if (properties == null) {
-				properties = new Properties();
-			}
-
-			properties.setProperty(jobProperty.getName(), jobPropertyValue);
-
-			batchProperties.put(propertiesFilePath, properties);
-		}
-
-		return batchProperties;
 	}
 
 	private JobProperty _getJobProperty(
@@ -994,7 +998,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 	private static final Pattern _jobNamePattern = Pattern.compile(
 		"(?<jobBaseName>.*)(?<jobVariant>\\([^\\)]+\\))");
 
-	private final List<JobProperty> _jobProperties = new ArrayList<>();
 	private final List<SegmentTestClassGroup> _segmentTestClassGroups =
 		new ArrayList<>();
 
