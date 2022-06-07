@@ -163,6 +163,32 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return portalTestClassJob;
 	}
 
+	public Map<String, Properties> getJobPropertiesMap() {
+		Map<String, Properties> batchProperties = new TreeMap<>();
+
+		for (JobProperty jobProperty : jobProperties) {
+			String jobPropertyValue = jobProperty.getValue();
+
+			if (jobPropertyValue == null) {
+				continue;
+			}
+
+			String propertiesFilePath = jobProperty.getPropertiesFilePath();
+
+			Properties properties = batchProperties.get(propertiesFilePath);
+
+			if (properties == null) {
+				properties = new Properties();
+			}
+
+			properties.setProperty(jobProperty.getName(), jobPropertyValue);
+
+			batchProperties.put(propertiesFilePath, properties);
+		}
+
+		return batchProperties;
+	}
+
 	public JobProperty getJobProperty(
 		String basePropertyName, String testSuiteName, String testBatchName) {
 
@@ -189,7 +215,7 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		jsonObject.put("batch_name", getBatchName());
 		jsonObject.put("include_stable_test_suite", includeStableTestSuite);
-		jsonObject.put("job_properties", _getJobPropertiesMap());
+		jsonObject.put("job_properties", getJobPropertiesMap());
 		jsonObject.put("test_release_bundle", testReleaseBundle);
 		jsonObject.put("test_relevant_changes", testRelevantChanges);
 		jsonObject.put(
@@ -274,6 +300,20 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		}
 
 		return sb.toString();
+	}
+
+	public String getTestSuiteName() {
+		return testSuiteName;
+	}
+
+	public void recordJobProperty(JobProperty jobProperty) {
+		if ((jobProperty == null) || (jobProperty.getValue() == null) ||
+			jobProperties.contains(jobProperty)) {
+
+			return;
+		}
+
+		jobProperties.add(jobProperty);
 	}
 
 	public final List<JobProperty> jobProperties = new ArrayList<>();
@@ -561,10 +601,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return _SEGMENT_MAX_CHILDREN_DEFAULT;
 	}
 
-	protected String getTestSuiteName() {
-		return testSuiteName;
-	}
-
 	protected boolean isIntegrationUnitTestFileModifiedOnly() {
 		List<PathMatcher> relevantIntegrationUnitIncludePathMatchers =
 			getRelevantIntegrationUnitIncludePathMatchers();
@@ -618,16 +654,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		for (JobProperty jobProperty : jobProperties) {
 			recordJobProperty(jobProperty);
 		}
-	}
-
-	protected void recordJobProperty(JobProperty jobProperty) {
-		if ((jobProperty == null) || (jobProperty.getValue() == null) ||
-			jobProperties.contains(jobProperty)) {
-
-			return;
-		}
-
-		jobProperties.add(jobProperty);
 	}
 
 	protected void setAxisTestClassGroups() {
@@ -766,32 +792,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		private List<Row> _csvReportRows = new ArrayList<>();
 
-	}
-
-	private Map<String, Properties> _getJobPropertiesMap() {
-		Map<String, Properties> batchProperties = new TreeMap<>();
-
-		for (JobProperty jobProperty : jobProperties) {
-			String jobPropertyValue = jobProperty.getValue();
-
-			if (jobPropertyValue == null) {
-				continue;
-			}
-
-			String propertiesFilePath = jobProperty.getPropertiesFilePath();
-
-			Properties properties = batchProperties.get(propertiesFilePath);
-
-			if (properties == null) {
-				properties = new Properties();
-			}
-
-			properties.setProperty(jobProperty.getName(), jobPropertyValue);
-
-			batchProperties.put(propertiesFilePath, properties);
-		}
-
-		return batchProperties;
 	}
 
 	private JobProperty _getJobProperty(
