@@ -276,8 +276,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return sb.toString();
 	}
 
-	public final List<JobProperty> jobProperties = new ArrayList<>();
-
 	protected BatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
@@ -622,12 +620,12 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 	protected void recordJobProperty(JobProperty jobProperty) {
 		if ((jobProperty == null) || (jobProperty.getValue() == null) ||
-			jobProperties.contains(jobProperty)) {
+			_jobProperties.contains(jobProperty)) {
 
 			return;
 		}
 
-		jobProperties.add(jobProperty);
+		_jobProperties.add(jobProperty);
 	}
 
 	protected void setAxisTestClassGroups() {
@@ -771,7 +769,7 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 	private Map<String, Properties> _getJobPropertiesMap() {
 		Map<String, Properties> batchProperties = new TreeMap<>();
 
-		for (JobProperty jobProperty : jobProperties) {
+		for (JobProperty jobProperty : _jobProperties) {
 			String jobPropertyValue = jobProperty.getValue();
 
 			if (jobPropertyValue == null) {
@@ -998,6 +996,7 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 	private static final Pattern _jobNamePattern = Pattern.compile(
 		"(?<jobBaseName>.*)(?<jobVariant>\\([^\\)]+\\))");
 
+	private final List<JobProperty> _jobProperties = new ArrayList<>();
 	private final List<SegmentTestClassGroup> _segmentTestClassGroups =
 		new ArrayList<>();
 
