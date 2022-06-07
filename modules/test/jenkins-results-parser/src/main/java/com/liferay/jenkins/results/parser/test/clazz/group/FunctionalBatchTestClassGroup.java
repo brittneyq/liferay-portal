@@ -439,11 +439,14 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		Set<File> modifiedFilesList = new HashSet<>();
 
+		PortalGitWorkingDirectory portalGitWorkingDirectory =
+			getPortalGitWorkingDirectory();
+
 		modifiedFilesList.addAll(
 			portalGitWorkingDirectory.getModifiedFilesList());
 
 		System.out.println(
-			"*********MODIFIED DIRS LIST : " + modifiedFilesList);
+			"*********MODIFIED FILES LIST : " + modifiedFilesList);
 
 		/*		File modulesDir = new File(
 					portalGitWorkingDirectory.getWorkingDirectory(), "modules");
@@ -466,10 +469,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 						Lists.newArrayList(modifiedDirsList)));*/
 
 		StringBuilder sb = new StringBuilder();
-
-		// NEED TO EDIT THIS!!!
-
-		System.out.println("MODIFIED FILES LIST : " + modifiedFilesList);
 
 		String sbToString = sb.toString();
 
