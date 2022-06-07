@@ -20,7 +20,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-151552. This asserts saving edits in one permissions tab in Account Roles does not clear related permissions from the other tab."
-	@priority = "4"
+	@priority = "5"
 	test CanSavePermissionsWithoutDeletingOthers {
 		task ("Given an account role is created") {
 			Role.openRolesAdmin();
