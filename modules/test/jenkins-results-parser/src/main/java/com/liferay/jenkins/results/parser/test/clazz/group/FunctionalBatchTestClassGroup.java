@@ -32,11 +32,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -432,18 +430,20 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("**********TEST BASE DIR******** : " + testBaseDir);
 
-		if (!testRelevantChanges) {
-			return getDefaultTestBatchRunPropertyQuery(
-				testBaseDir, testSuiteName);
-		}
+		// UNCOMMENT LATER!!!
 
-		Set<File> modifiedFilesList = new HashSet<>();
+		//		if (!testRelevantChanges) {
+		//			return getDefaultTestBatchRunPropertyQuery(
+		//				testBaseDir, testSuiteName);
+		//		}
+
+		//Set<File> modifiedFilesList = new HashSet<>();
 
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
 
-		modifiedFilesList.addAll(
-			portalGitWorkingDirectory.getModifiedFilesList());
+		List<File> modifiedFilesList =
+			portalGitWorkingDirectory.getModifiedFilesList();
 
 		System.out.println(
 			"*********MODIFIED FILES LIST : " + modifiedFilesList);
@@ -619,8 +619,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 	private void _setTestBatchRunPropertyQueries() {
 		for (File testBaseDir : getTestBaseDirs()) {
+			System.out.println("IN SET TEST BATCH RUN PROPERTY QUERIES");
+			System.out.println("TEST BASE DIR : " + testBaseDir);
+
 			String testBatchRunPropertyQuery = _getTestBatchRunPropertyQuery(
 				testBaseDir);
+
+			System.out.println(
+				"TEST BATCH RUN PROPERTY QUERY IN SETPQL :" +
+					testBatchRunPropertyQuery);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(
 					testBatchRunPropertyQuery)) {
