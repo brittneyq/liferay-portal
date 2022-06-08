@@ -1440,7 +1440,7 @@ public class GitWorkingDirectory {
 
 		sb.append("git log --author=");
 		sb.append(_gitSenderUsername);
-		sb.append(" --format='' --name-only");
+		sb.append(" --format='' --name-only ");
 
 		System.out.println(
 			"UPSTREAM BRANCH NAME : " +
@@ -1455,26 +1455,12 @@ public class GitWorkingDirectory {
 			currentLocalGitBranch,
 			getLocalGitBranch(getUpstreamBranchName(), true));
 
-		System.out.println("MERGE BASE COMMIT SHA : " + mergeBaseCommitSHA);
+		sb.append(mergeBaseCommitSHA);
 
-		String[] mergeBaseCommitSHAs = mergeBaseCommitSHA.split(" ");
-
-		int count = 0;
-
-		for (String commitSHA : mergeBaseCommitSHAs) {
-			commitSHA = commitSHA.replaceAll("\\s+", "");
-
-			sb.append(commitSHA);
-
-			if (count == 0) {
-				sb.append("..");
-			}
-
-			count++;
-		}
+		sb.append("..");
 
 		if (!checkUnstagedFiles) {
-			sb.append(" ");
+			//sb.append(" ");
 			sb.append(currentLocalGitBranch.getSHA());
 		}
 
