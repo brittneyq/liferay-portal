@@ -1409,6 +1409,8 @@ public class GitWorkingDirectory {
 			1, getModifiedFilesList(checkUnstagedFiles, null, null),
 			rootDirectory);
 
+		System.out.println("SUBDIRECTORIESSSSSSSS : " + subdirectories);
+
 		return JenkinsResultsParserUtil.getIncludedFiles(
 			excludesPathMatchers, includesPathMatchers, subdirectories);
 	}
@@ -1436,6 +1438,10 @@ public class GitWorkingDirectory {
 
 		sb.append("git diff --diff-filter=ADMR --name-only ");
 
+		System.out.println(
+			"UPSTREAM BRANCH NAME : " +
+				getLocalGitBranch(getUpstreamBranchName()));
+
 		sb.append(
 			getMergeBaseCommitSHA(
 				currentLocalGitBranch,
@@ -1447,6 +1453,8 @@ public class GitWorkingDirectory {
 		}
 
 		String gitDiffCommandString = sb.toString();
+
+		System.out.println("GIT DIFF COMMAND STRING : " + gitDiffCommandString);
 
 		List<File> modifiedFiles = _modifiedFilesMap.get(gitDiffCommandString);
 

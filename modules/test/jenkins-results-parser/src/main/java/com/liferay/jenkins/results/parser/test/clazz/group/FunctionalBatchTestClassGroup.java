@@ -26,6 +26,7 @@ import com.liferay.poshi.core.PoshiContext;
 import com.liferay.poshi.core.util.PropsUtil;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.nio.file.Path;
 
@@ -441,6 +442,16 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
+
+		try {
+			List<File> modifiedDirsList =
+				portalGitWorkingDirectory.getModifiedModuleDirsList();
+
+			System.out.println("MODIFIED DIRS LIST : " + modifiedDirsList);
+		}
+		catch (IOException ioException) {
+			ioException.printStackTrace();
+		}
 
 		List<File> modifiedFilesList =
 			portalGitWorkingDirectory.getModifiedFilesList();
