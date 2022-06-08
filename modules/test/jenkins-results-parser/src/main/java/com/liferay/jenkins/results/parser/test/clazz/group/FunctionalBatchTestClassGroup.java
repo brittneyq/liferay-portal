@@ -14,8 +14,6 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.google.common.collect.Lists;
-
 import com.liferay.jenkins.results.parser.AntException;
 import com.liferay.jenkins.results.parser.AntUtil;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -340,7 +338,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		return getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName);
 	}
 
-	private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
+	/*private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
 		List<File> functionalRequiredModuleDirs = Lists.newArrayList(
 			moduleDirs);
 
@@ -378,7 +376,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		return Lists.newArrayList(functionalRequiredModuleDirs);
-	}
+	}*/
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
 		if (!testRelevantChanges) {
