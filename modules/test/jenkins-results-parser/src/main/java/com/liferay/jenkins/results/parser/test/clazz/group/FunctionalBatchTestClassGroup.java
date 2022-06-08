@@ -328,6 +328,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			else {
 				_combinedTestBatchRunPropertyQuery += testBatchPropertyQuery;
 			}
+
+			System.out.println(
+				"COMBINED TEST BATCH RUN PROPERTY QUERY : " +
+					_combinedTestBatchRunPropertyQuery);
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
@@ -370,7 +374,11 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				sb.append("(");
 				sb.append(testBatchPQL);
+
 				_combinedPQL = _combinedPQL.concat(testBatchPQL);
+
+				System.out.println("COMBINED PQL!!!! : " + _combinedPQL);
+
 				sb.append(")");
 
 				sbToString = sb.toString();
