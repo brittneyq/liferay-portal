@@ -316,8 +316,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
-			!_combinedTestBatchRunPropertyQuery.contains(
-				testBatchPropertyQuery)) {
+			!_combinedPQL.contains(testBatchPropertyQuery)) {
 
 			recordJobProperty(jobProperty);
 
@@ -371,7 +370,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				sb.append("(");
 				sb.append(testBatchPQL);
-
+				_combinedPQL = _combinedPQL.concat(testBatchPQL);
 				sb.append(")");
 
 				sbToString = sb.toString();
@@ -455,6 +454,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	private static final Pattern _poshiTestCasePattern = Pattern.compile(
 		"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#(?<methodName>.*)");
 
+	private String _combinedPQL = new String();
 	private String _combinedTestBatchRunPropertyQuery = new String();
 	private final Map<File, String> _testBatchRunPropertyQueries =
 		new HashMap<>();
