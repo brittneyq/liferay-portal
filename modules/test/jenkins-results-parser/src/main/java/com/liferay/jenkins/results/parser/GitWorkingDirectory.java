@@ -1439,8 +1439,8 @@ public class GitWorkingDirectory {
 		//sb.append("git diff --diff-filter=ADMR --name-only ");
 
 		sb.append("git log --author=");
-		sb.append(_gitRepositoryUsername);
-		sb.append("--format='' --name-only");
+		sb.append(_gitSenderUsername);
+		sb.append(" --format='' --name-only");
 
 		System.out.println(
 			"UPSTREAM BRANCH NAME : " +
@@ -2158,6 +2158,10 @@ public class GitWorkingDirectory {
 		}
 	}
 
+	public void setGithubSenderUsername(String senderUsername) {
+		_gitSenderUsername = senderUsername;
+	}
+
 	public void stageFileInCurrentLocalGitBranch(String fileName) {
 		String command = "git stage " + fileName;
 
@@ -2812,6 +2816,7 @@ public class GitWorkingDirectory {
 	private final Map<String, GitRemote> _gitRemotes = new HashMap<>();
 	private final String _gitRepositoryName;
 	private final String _gitRepositoryUsername;
+	private String _gitSenderUsername;
 	private Set<String> _javaDirPaths;
 	private final String _upstreamBranchName;
 	private File _workingDirectory;

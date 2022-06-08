@@ -1010,6 +1010,8 @@ public class GitHubDevSyncUtil {
 
 		File gitRepositoryDirectory = gitWorkingDirectory.getWorkingDirectory();
 
+		gitWorkingDirectory.setGithubSenderUsername(senderUsername);
+
 		LocalGitBranch currentLocalGitBranch =
 			gitWorkingDirectory.getCurrentLocalGitBranch();
 
