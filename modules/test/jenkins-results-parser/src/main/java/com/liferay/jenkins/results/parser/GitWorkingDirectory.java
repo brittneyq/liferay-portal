@@ -1436,21 +1436,47 @@ public class GitWorkingDirectory {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("git diff --diff-filter=ADMR --name-only ");
+		//sb.append("git diff --diff-filter=ADMR --name-only ");
+
+		sb.append("git log --author=");
+		sb.append(_gitRepositoryUsername);
+		sb.append("--format='' --name-only");
 
 		System.out.println(
 			"UPSTREAM BRANCH NAME : " +
 				getLocalGitBranch(getUpstreamBranchName()));
 
-		sb.append(
-			getMergeBaseCommitSHA(
-				currentLocalGitBranch,
-				getLocalGitBranch(getUpstreamBranchName(), true)));
+		//		sb.append(
+		//			getMergeBaseCommitSHA(
+		//				currentLocalGitBranch,
+		//				getLocalGitBranch(getUpstreamBranchName(), true)));
+
+		String mergeBaseCommitSHA = getMergeBaseCommitSHA(
+			currentLocalGitBranch,
+			getLocalGitBranch(getUpstreamBranchName(), true));
+
+		System.out.println("MERGE BASE COMMIT SHA : " + mergeBaseCommitSHA);
+
+		String[] mergeBaseCommitSHAs = mergeBaseCommitSHA.split(" ");
+
+		int count = 0;
+
+		for (String commitSHA : mergeBaseCommitSHAs) {
+			sb.append(commitSHA);
+
+			if (count == 0) {
+				sb.append("..");
+			}
+
+			count++;
+		}
 
 		if (!checkUnstagedFiles) {
 			sb.append(" ");
 			sb.append(currentLocalGitBranch.getSHA());
 		}
+
+		sb.append(" | sort -u");
 
 		String gitDiffCommandString = sb.toString();
 
