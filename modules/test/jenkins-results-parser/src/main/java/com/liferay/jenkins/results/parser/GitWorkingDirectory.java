@@ -1462,6 +1462,8 @@ public class GitWorkingDirectory {
 		int count = 0;
 
 		for (String commitSHA : mergeBaseCommitSHAs) {
+			commitSHA = commitSHA.replaceAll("\\s+", "");
+
 			sb.append(commitSHA);
 
 			if (count == 0) {

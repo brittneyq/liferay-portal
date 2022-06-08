@@ -1010,8 +1010,6 @@ public class GitHubDevSyncUtil {
 
 		File gitRepositoryDirectory = gitWorkingDirectory.getWorkingDirectory();
 
-		gitWorkingDirectory.setGithubSenderUsername(senderUsername);
-
 		LocalGitBranch currentLocalGitBranch =
 			gitWorkingDirectory.getCurrentLocalGitBranch();
 
@@ -1196,6 +1194,13 @@ public class GitHubDevSyncUtil {
 
 		String cacheBranchName =
 			workspaceGitRepository.getGitHubDevBranchName();
+
+		String senderUsername =
+			workspaceGitRepository.getSenderBranchUsername();
+
+		gitWorkingDirectory.setGithubSenderUsername(senderUsername);
+		System.out.println(
+			"SYNC TO GITHUB DEV SENDER USERNAME: " + senderUsername);
 
 		System.out.println(
 			JenkinsResultsParserUtil.combine(
