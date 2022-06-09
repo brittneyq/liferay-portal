@@ -354,8 +354,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String sbToString = sb.toString();
 
 		for (File modifiedFile : modifiedFilesList) {
-			_combinedTestBatchRunPropertyQuery = new String();
-
 			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
@@ -416,7 +414,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				recordJobProperty(jobProperty);
 
-				System.out.println("ADDING MORE ORs......");
 				sb.append(" OR (");
 				sb.append(jobPropertyValue);
 				sb.append(")");
