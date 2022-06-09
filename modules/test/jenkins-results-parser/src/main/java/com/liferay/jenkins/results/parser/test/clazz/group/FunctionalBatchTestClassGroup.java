@@ -329,6 +329,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				_combinedTestBatchRunPropertyQuery += testBatchPropertyQuery;
 			}
 
+			_combinedPQL = _combinedPQL + _combinedTestBatchRunPropertyQuery;
+
+			System.out.println("COMBINED PQL : " + _combinedPQL);
+
 			System.out.println(
 				"COMBINED TEST BATCH RUN PROPERTY QUERY : " +
 					_combinedTestBatchRunPropertyQuery);
@@ -361,6 +365,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
+			System.out.println(
+				"COMBINED PQL 2!!!!!!!!!!!!!!!!!: " + _combinedPQL);
+
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
 
@@ -374,11 +381,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				sb.append("(");
 				sb.append(testBatchPQL);
-
-				_combinedPQL = _combinedPQL + testBatchPQL;
-
-				System.out.println("COMBINED PQL!!!! : " + _combinedPQL);
-
 				sb.append(")");
 
 				sbToString = sb.toString();
