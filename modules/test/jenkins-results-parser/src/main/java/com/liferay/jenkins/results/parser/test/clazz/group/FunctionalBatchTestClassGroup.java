@@ -304,15 +304,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
-		if (!testPropertiesFile.exists() ||
-			_modifiedFilesSet.contains(testPropertiesFile)) {
-
+		if (!testPropertiesFile.exists()) {
 			return _concatPQL(parentFile, testBaseDir);
 		}
-
-		_modifiedFilesSet.add(testPropertiesFile);
-
-		System.out.println("MODIFIED FILE SET : " + _modifiedFilesSet);
 
 		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(), batchName,
@@ -322,8 +316,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
-			!_combinedTestBatchRunPropertyQuery.contains(
-				testBatchPropertyQuery)) {
+			!_combinedPQL.contains(testBatchPropertyQuery)) {
 
 			recordJobProperty(jobProperty);
 
@@ -360,12 +353,22 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String sbToString = sb.toString();
 
 		for (File modifiedFile : modifiedFilesList) {
+			_combinedTestBatchRunPropertyQuery = new String();
+
 			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
 
 				continue;
+			}
+
+			if (!_combinedPQL.isEmpty()) {
+				_combinedPQL += JenkinsResultsParserUtil.combine(
+					" OR (", testBatchPQL, ")");
+			}
+			else {
+				_combinedPQL += testBatchPQL;
 			}
 
 			if (!sbToString.contains(testBatchPQL)) {
@@ -459,8 +462,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	private static final Pattern _poshiTestCasePattern = Pattern.compile(
 		"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#(?<methodName>.*)");
 
+	private String _combinedPQL = new String();
 	private String _combinedTestBatchRunPropertyQuery = new String();
-	private final Set<File> _modifiedFilesSet = new HashSet<>();
 	private final Map<File, String> _testBatchRunPropertyQueries =
 		new HashMap<>();
 
