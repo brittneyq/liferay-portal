@@ -331,10 +331,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
-			_concatPQL(parentFile, testBaseDir);
+			return _concatPQL(parentFile, testBaseDir);
 		}
 
-		return getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName);
+		return "";
 	}
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
@@ -353,7 +353,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String sbToString = sb.toString();
 
 		for (File modifiedFile : modifiedFilesList) {
-			_combinedTestBatchRunPropertyQuery = new String();
+			System.out.println("MODIFIED FILE : " + modifiedFile);
+
+			_combinedTestBatchRunPropertyQuery = "";
 
 			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
@@ -370,6 +372,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			else {
 				_combinedPQL += testBatchPQL;
 			}
+
+			System.out.println("COMBINED PQL : " + _combinedPQL);
 
 			if (!sbToString.contains(testBatchPQL)) {
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
