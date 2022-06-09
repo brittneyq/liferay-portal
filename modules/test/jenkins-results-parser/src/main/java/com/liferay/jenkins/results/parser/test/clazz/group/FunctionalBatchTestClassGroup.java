@@ -362,9 +362,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				continue;
 			}
 
-			if (!sbToString.contains(testBatchPQL) &&
-				!testBatchPQL.equals("false")) {
-
+			if (!sbToString.contains(testBatchPQL)) {
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
 					sb.append(" OR ");
 				}
@@ -386,9 +384,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			sb.append(" OR (");
 
-			sb.append(
-				getDefaultTestBatchRunPropertyQuery(
-					testBaseDir, testSuiteName));
+			sb.append(defaultPQL);
 
 			sb.append(")");
 
