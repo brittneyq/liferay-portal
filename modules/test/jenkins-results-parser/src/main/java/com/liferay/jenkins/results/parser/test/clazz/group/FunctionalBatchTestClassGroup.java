@@ -304,9 +304,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
-		if (!testPropertiesFile.exists()) {
+		if (!testPropertiesFile.exists() ||
+			_modifiedFilesSet.contains(testPropertiesFile)) {
+
 			return _concatPQL(parentFile, testBaseDir);
 		}
+
+		_modifiedFilesSet.add(testPropertiesFile);
 
 		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(), batchName,
@@ -464,6 +468,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#(?<methodName>.*)");
 
 	private String _combinedTestBatchRunPropertyQuery = new String();
+	private final Set<File> _modifiedFilesSet = new HashSet<>();
 	private final Map<File, String> _testBatchRunPropertyQueries =
 		new HashMap<>();
 
