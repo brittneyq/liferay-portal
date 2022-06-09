@@ -375,7 +375,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				sb.append("(");
 				sb.append(testBatchPQL);
 
-				_combinedPQL = _combinedPQL.concat(testBatchPQL);
+				_combinedPQL = _combinedPQL + testBatchPQL;
 
 				System.out.println("COMBINED PQL!!!! : " + _combinedPQL);
 
