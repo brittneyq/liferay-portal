@@ -314,10 +314,20 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
+		System.out.println(
+			"TEST BATCH PROPERTY QUERY : " + testBatchPropertyQuery);
+
+		System.out.println(
+			"COMBINED TEST BATCH RUN PROPERTY QUERY : " +
+				_combinedTestBatchRunPropertyQuery);
+
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
 			!_combinedTestBatchRunPropertyQuery.contains(
 				testBatchPropertyQuery)) {
+
+			System.out.println(
+				"COMBINED TEST BATCH RUN PROPERTY DOESNT CONTAINS TESTPQL...");
 
 			recordJobProperty(jobProperty);
 
