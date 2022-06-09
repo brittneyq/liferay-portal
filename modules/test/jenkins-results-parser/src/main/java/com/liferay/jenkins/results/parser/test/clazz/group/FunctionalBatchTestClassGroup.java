@@ -338,46 +338,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		return getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName);
 	}
 
-	/*private List<File> _getFunctionalRequiredModuleDirs(List<File> moduleDirs) {
-		List<File> functionalRequiredModuleDirs = Lists.newArrayList(
-			moduleDirs);
-
-		File modulesBaseDir = new File(
-			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
-
-		for (File moduleDir : moduleDirs) {
-			JobProperty jobProperty = getJobProperty(
-				"modules.includes.required.functional", moduleDir,
-				JobProperty.Type.MODULE_TEST_DIR);
-
-			String jobPropertyValue = jobProperty.getValue();
-
-			if (jobPropertyValue == null) {
-				continue;
-			}
-
-			recordJobProperty(jobProperty);
-
-			for (String functionalRequiredModuleDirPath :
-					jobPropertyValue.split(",")) {
-
-				File functionalRequiredModuleDir = new File(
-					modulesBaseDir, functionalRequiredModuleDirPath);
-
-				if (!functionalRequiredModuleDir.exists() ||
-					functionalRequiredModuleDirs.contains(
-						functionalRequiredModuleDir)) {
-
-					continue;
-				}
-
-				functionalRequiredModuleDirs.add(functionalRequiredModuleDir);
-			}
-		}
-
-		return Lists.newArrayList(functionalRequiredModuleDirs);
-	}*/
-
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
 		if (!testRelevantChanges) {
 			return getDefaultTestBatchRunPropertyQuery(
