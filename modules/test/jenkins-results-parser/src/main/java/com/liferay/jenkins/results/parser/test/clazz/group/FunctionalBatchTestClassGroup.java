@@ -349,10 +349,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
-		if (!testRelevantChanges) {
-			return getDefaultTestBatchRunPropertyQuery(
-				testBaseDir, testSuiteName);
-		}
+//		if (!testRelevantChanges) {
+//			return getDefaultTestBatchRunPropertyQuery(
+//				testBaseDir, testSuiteName);
+//		}
 
 		Set<File> modifiedFilesList = new HashSet<>();
 
