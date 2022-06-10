@@ -320,17 +320,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
-		System.out.println(
-			"TEST BATCH PROPERTY QUERY : " + testBatchPropertyQuery);
-
-		System.out.println("TEST STRING : " + testString);
-
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
 			!testString.contains(testBatchPropertyQuery)) {
-
-			System.out.println(
-				"COMBINED TEST BATCH RUN PROPERTY DOESNT CONTAINS TESTPQL...");
 
 			recordJobProperty(jobProperty);
 
@@ -369,11 +361,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			String testBatchPQL = _concatPQL(
 				modifiedFile, testBaseDir, new String());
 
-			System.out.println("TEST BATCH PQL !!!!! : " + testBatchPQL);
-
-			System.out.println("MODIFIED FILE : " + modifiedFile);
-			System.out.println("CURRENT STRING BUILDER : " + sb);
-
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
 
@@ -381,11 +368,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			}
 
 			if (!(sb.indexOf(testBatchPQL) > -1)) {
-				if (!JenkinsResultsParserUtil.isNullOrEmpty(sb.toString())) {
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
 					sb.append(" OR ");
 				}
-
-				System.out.println("ADDING TEST BATCH PQL TO SB!!!!");
 
 				sb.append("(");
 				sb.append(testBatchPQL);
@@ -398,8 +383,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		String defaultPQL = getDefaultTestBatchRunPropertyQuery(
 			testBaseDir, testSuiteName);
-
-		System.out.println("DEFAULT PQL : " + defaultPQL);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(defaultPQL) &&
 			!(sb.indexOf(defaultPQL) > -1)) {
