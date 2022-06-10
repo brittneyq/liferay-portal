@@ -375,7 +375,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			}
 
 			if (!(sb.indexOf(testBatchPQL) > -1)) {
-				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(sb.toString())) {
 					sb.append(" OR ");
 				}
 
@@ -398,7 +398,11 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(defaultPQL) &&
 			!(sb.indexOf(defaultPQL) > -1)) {
 
-			sb.append(" OR (");
+			if (!JenkinsResultsParserUtil.isNullOrEmpty(sb.toString())) {
+				sb.append(" OR ");
+			}
+
+			sb.append("(");
 
 			sb.append(defaultPQL);
 
@@ -426,7 +430,11 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				recordJobProperty(jobProperty);
 
-				sb.append(" OR (");
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(sb.toString())) {
+					sb.append(" OR ");
+				}
+
+				sb.append("(");
 				sb.append(jobPropertyValue);
 				sb.append(")");
 			}
