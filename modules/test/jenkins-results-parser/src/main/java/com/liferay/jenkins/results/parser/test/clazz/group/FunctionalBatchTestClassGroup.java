@@ -372,7 +372,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				continue;
 			}
 
-			if (!sbToString.contains(testBatchPQL)) {
+			if (!(sb.indexOf(testBatchPQL) > -1)) {
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
 					sb.append(" OR ");
 				}
@@ -389,8 +389,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String defaultPQL = getDefaultTestBatchRunPropertyQuery(
 			testBaseDir, testSuiteName);
 
+		System.out.println("DEFAULT PQL : " + defaultPQL);
+
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(defaultPQL) &&
-			!sbToString.contains(defaultPQL)) {
+			!(sb.indexOf(defaultPQL) > -1)) {
 
 			sb.append(" OR (");
 
