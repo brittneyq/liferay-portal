@@ -274,7 +274,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
-	private String _concatPQL(File file, File testBaseDir, StringBuilder sb) {
+	private String _concatPQL(File file, File testBaseDir) {
 		if (file == null) {
 			return null;
 		}
@@ -299,13 +299,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (!canonicalFile.isDirectory()) {
-			return _concatPQL(parentFile, testBaseDir, sb);
+			return _concatPQL(parentFile, testBaseDir);
 		}
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
 		if (!testPropertiesFile.exists()) {
-			return _concatPQL(parentFile, testBaseDir, sb);
+			return _concatPQL(parentFile, testBaseDir);
 		}
 
 		JobProperty jobProperty = getJobProperty(
@@ -313,12 +313,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
-
-		String sbToString = sb.toString();
-
-		if (sbToString.contains(testBatchPropertyQuery)) {
-			return _combinedTestBatchRunPropertyQuery;
-		}
 
 		System.out.println(
 			"TEST BATCH PROPERTY QUERY : " + testBatchPropertyQuery);
@@ -348,10 +342,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
-			_concatPQL(parentFile, testBaseDir, sb);
+			_concatPQL(parentFile, testBaseDir);
 		}
 
-		return "";
+		return getDefaultTestBatchRunPropertyQuery(testBaseDir, testSuiteName);
 	}
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
@@ -370,7 +364,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		String sbToString = sb.toString();
 
 		for (File modifiedFile : modifiedFilesList) {
-			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir, sb);
+			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
