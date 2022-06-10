@@ -274,6 +274,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
+	private boolean _checkIgnoreFlag(File file) {
+		Properties propertyFile = JenkinsResultsParserUtil.getProperties(file);
+
+		String ignoreFlag = JenkinsResultsParserUtil.getProperty(
+			propertyFile, "ignore.parents");
+
+		return Boolean.parseBoolean(ignoreFlag);
+	}
+
 	private String _concatPQL(File file, File testBaseDir, String concatedPQL) {
 		if (file == null) {
 			return null;
@@ -333,6 +342,14 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			else {
 				concatedPQL += testBatchPropertyQuery;
 			}
+		}
+
+		if (_checkIgnoreFlag(testPropertiesFile)) {
+			System.out.println("IGNORE FLAG IN : " + testPropertiesFile);
+
+			System.out.println("CONCATED PQL : " + concatedPQL);
+
+			return concatedPQL;
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
