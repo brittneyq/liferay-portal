@@ -366,6 +366,11 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		for (File modifiedFile : modifiedFilesList) {
 			String testBatchPQL = _concatPQL(modifiedFile, testBaseDir);
 
+			System.out.println("TEST BATCH PQL !!!!! : " + testBatchPQL);
+
+			System.out.println("MODIFIED FILE : " + modifiedFile);
+			System.out.println("CURRENT STRING BUILDER : " + sb);
+
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
 
@@ -376,6 +381,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(sbToString)) {
 					sb.append(" OR ");
 				}
+
+				System.out.println("ADDING TEST BATCH PQL TO SB!!!!");
 
 				sb.append("(");
 				sb.append(testBatchPQL);
