@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author Eudaldo Alonso
+ * @author Eudaldo Alonsos
  */
 @RunWith(Arquillian.class)
 public class BlogsEntryAssetSearchTest extends BaseAssetSearchTestCase {
