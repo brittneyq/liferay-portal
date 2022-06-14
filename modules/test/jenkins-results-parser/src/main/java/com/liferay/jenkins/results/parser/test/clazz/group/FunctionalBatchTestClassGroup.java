@@ -378,6 +378,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				continue;
 			}
 
+			System.out.println("MODIFIED FILE : " + modifiedFile);
+
+			System.out.println("TEST BATCH PQL : " + testBatchPQL);
+
 			if (sb.indexOf(testBatchPQL) == -1) {
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(sb.toString())) {
 					sb.append(" OR ");
