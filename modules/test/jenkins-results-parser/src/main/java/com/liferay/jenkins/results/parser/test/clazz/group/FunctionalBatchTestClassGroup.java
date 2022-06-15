@@ -274,7 +274,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
-	private boolean _checkIgnoreFlag(File file) {
+	private boolean _checkIgnoreParentFiles(File file) {
 		Properties propertyFile = JenkinsResultsParserUtil.getProperties(file);
 
 		String ignoreFlag = JenkinsResultsParserUtil.getProperty(
@@ -295,8 +295,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		if ((parentFile == null) || !parentFile.exists()) {
 			return "";
 		}
-
-		System.out.println("CANONICAL FILE : " + canonicalFile);
 
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
@@ -320,12 +318,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
-			System.out.println(
-				"TEST PROPERTY FILE TRAVERSED : " + testPropertiesFile);
-
-			System.out.println(
-				"TRAVERSED PROPERTY FILES: " + _traversedPropertyFiles);
-
 			return concatedPQL;
 		}
 
@@ -352,9 +344,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			}
 		}
 
-		System.out.println("CONCATED PQL after adding query : " + concatedPQL);
-
-		if (_checkIgnoreFlag(testPropertiesFile)) {
+		if (_checkIgnoreParentFiles(testPropertiesFile)) {
 			System.out.println("IGNORE FLAG IN : " + testPropertiesFile);
 
 			System.out.println("CONCATED PQL : " + concatedPQL);
@@ -380,25 +370,17 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
-			System.out.println("MODIFIED FILE : " + modifiedFile);
-
-			String modifiedFileName = modifiedFile.getName();
-
-			if (modifiedFileName.contains("test.properties")) {
-				System.out.println("MODIFIED FILE IS TEST PROPERTY");
-
-				continue;
-			}
-
 			String testBatchPQL = _concatPQL(modifiedFile, "");
+
+			System.out.println(
+				"TEST BATCH PQL FOR MODIFIED FILE " + modifiedFile + ": " +
+					testBatchPQL);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
 
 				continue;
 			}
-
-			System.out.println("TEST BATCH PQL : " + testBatchPQL);
 
 			if (sb.indexOf(testBatchPQL) == -1) {
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(sb.toString())) {
@@ -409,8 +391,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				sb.append(testBatchPQL);
 				sb.append(")");
 			}
-
-			System.out.println("SB : " + sb.toString());
 		}
 
 		String defaultPQL = getDefaultTestBatchRunPropertyQuery(
