@@ -318,6 +318,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
+			System.out.println(
+				"TEST PROPERTY FILE TRAVERSED : " + testPropertiesFile);
+
+			System.out.println(
+				"TRAVERSED PROPERTY FILES: " + _traversedPropertyFiles);
+
 			return concatedPQL;
 		}
 
