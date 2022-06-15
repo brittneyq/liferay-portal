@@ -296,6 +296,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return "";
 		}
 
+		System.out.println("CANONICAL FILE : " + canonicalFile);
+
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
@@ -349,6 +351,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				concatedPQL += testBatchPropertyQuery;
 			}
 		}
+
+		System.out.println("CONCATED PQL after adding query : " + concatedPQL);
 
 		if (_checkIgnoreFlag(testPropertiesFile)) {
 			System.out.println("IGNORE FLAG IN : " + testPropertiesFile);
