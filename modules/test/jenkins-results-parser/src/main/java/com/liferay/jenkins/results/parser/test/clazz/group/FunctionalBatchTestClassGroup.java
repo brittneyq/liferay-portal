@@ -380,6 +380,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
+			System.out.println("MODIFIED FILE : " + modifiedFile);
+
 			String testBatchPQL = _concatPQL(modifiedFile, "");
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
@@ -387,8 +389,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				continue;
 			}
-
-			System.out.println("MODIFIED FILE : " + modifiedFile);
 
 			System.out.println("TEST BATCH PQL : " + testBatchPQL);
 
