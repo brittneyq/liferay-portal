@@ -274,15 +274,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
-	private boolean _checkIgnoreParentFiles(File file) {
-		Properties propertyFile = JenkinsResultsParserUtil.getProperties(file);
-
-		String ignoreFlag = JenkinsResultsParserUtil.getProperty(
-			propertyFile, "ignore.parents");
-
-		return Boolean.parseBoolean(ignoreFlag);
-	}
-
 	private String _concatPQL(File file, String concatedPQL) {
 		if (file == null) {
 			return null;
@@ -344,7 +335,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			}
 		}
 
-		if (_checkIgnoreParentFiles(testPropertiesFile)) {
+		if (_ignoreParentFiles(testPropertiesFile)) {
 			System.out.println("IGNORE FLAG IN : " + testPropertiesFile);
 
 			System.out.println("CONCATED PQL : " + concatedPQL);
@@ -453,6 +444,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		return testBatchRunPropertyQuery;
+	}
+
+	private boolean _ignoreParentFiles(File file) {
+		Properties propertyFile = JenkinsResultsParserUtil.getProperties(file);
+
+		String ignoreFlag = JenkinsResultsParserUtil.getProperty(
+			propertyFile, "ignore.parents");
+
+		return Boolean.parseBoolean(ignoreFlag);
 	}
 
 	private void _setTestBatchRunPropertyQueries() {
