@@ -401,6 +401,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				sb.append(testBatchPQL);
 				sb.append(")");
 			}
+
+			System.out.println("SB : " + sb.toString());
 		}
 
 		String defaultPQL = getDefaultTestBatchRunPropertyQuery(
