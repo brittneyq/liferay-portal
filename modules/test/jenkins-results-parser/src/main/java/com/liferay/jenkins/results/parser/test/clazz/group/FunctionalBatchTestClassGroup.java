@@ -382,6 +382,14 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			System.out.println("MODIFIED FILE : " + modifiedFile);
 
+			String modifiedFileName = modifiedFile.getName();
+
+			if (modifiedFileName.contains("test.properties")) {
+				System.out.println("MODIFIED FILE IS TEST PROPERTY");
+
+				continue;
+			}
+
 			String testBatchPQL = _concatPQL(modifiedFile, "");
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
