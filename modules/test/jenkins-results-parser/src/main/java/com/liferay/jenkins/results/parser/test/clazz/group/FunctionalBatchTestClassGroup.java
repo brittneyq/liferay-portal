@@ -453,6 +453,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		String ignoreFlag = jobProperty.getValue();
 
+		System.out.println("IGNORE FLAG : " + ignoreFlag + " FOR " + file);
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(ignoreFlag)) {
 			return false;
 		}
