@@ -453,7 +453,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		JobProperty jobProperty = getJobProperty(
 			"ignore.parents[" + getTestSuiteName() + "]", file,
-			JobProperty.Type.MODULE_TEST_DIR);
+			JobProperty.Type.DEFAULT);
 
 		String ignoreFlag = jobProperty.getValue();
 
