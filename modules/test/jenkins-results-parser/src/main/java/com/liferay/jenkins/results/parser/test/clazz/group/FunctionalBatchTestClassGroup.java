@@ -447,8 +447,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private boolean _ignoreParentFiles(File file) {
+		//		JobProperty jobProperty = getJobProperty(
+		//			"ignore.parents", getTestSuiteName(), batchName, file,
+		//			JobProperty.Type.MODULE_TEST_DIR);
+
 		JobProperty jobProperty = getJobProperty(
-			"ignore.parents", getTestSuiteName(), batchName, file,
+			"ignore.parents[" + getTestSuiteName() + "]", file,
 			JobProperty.Type.MODULE_TEST_DIR);
 
 		String ignoreFlag = jobProperty.getValue();
