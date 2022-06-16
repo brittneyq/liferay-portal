@@ -1,0 +1,74 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1655412841159
+Bundle-ManifestVersion: 2
+Bundle-Name: Liferay Frontend JS Components Sample Web
+Bundle-SymbolicName: com.liferay.frontend.js.components.sample.web
+Bundle-Vendor: Liferay, Inc.
+Bundle-Version: 1.0.0
+Created-By: 1.8.0_312 (Private Build)
+Import-Package: com.liferay.portal.kernel.json;version="10.1",com.life
+ ray.portal.kernel.language;version="10.0",com.liferay.portal.kernel.p
+ ortlet.bridges.mvc;version="6.0",com.liferay.portal.kernel.util;versi
+ on="37.0",javax.portlet,javax.servlet,javax.servlet.http
+Javac-Debug: on
+Javac-Deprecation: off
+Javac-Encoding: UTF-8
+Liferay-Releng-App-Title: Liferay Frontend Js
+Liferay-Releng-Bundle: true
+Liferay-Releng-Category: Utility
+Liferay-Releng-Deprecated: false
+Liferay-Releng-Fix-Delivery-Method: core
+Liferay-Releng-Labs: false
+Liferay-Releng-Marketplace: true
+Liferay-Releng-Portal-Required: true
+Liferay-Releng-Public: false
+Liferay-Releng-Restart-Required: true
+Liferay-Releng-Suite: foundation
+Liferay-Releng-Suite-Description: Apps and Features: System Settings, 
+ Web Content Editors, Web Content Template Languages, Theme Tools, Mob
+ ile Device Rules, Facebook Authentication, LDAP Authentication, OpenI
+ D Authentication, OpenSSO Authentication, Remote Authentication (Auth
+ Verifiers), SSO-based Authentication, Token-based Authentication, Por
+ tal Scripting, Elasticsearch Support, Solr Support, Documents and Med
+ ia Store Implementations, and more.<br /><br />The Foundation suite p
+ rovides applications and features that extend the functionality provi
+ ded by Liferay's core. Much of the functionality that belonged to Lif
+ eray's core prior to Liferay 7 has been extracted into the modules of
+  the Foundation suite. The authentication modules provide a variety o
+ f mechanisms for allowing users and remote applications to authentica
+ te to Liferay. The LDAP Authentication module allows administrators t
+ o establish connections to one or more LDAP directories from which us
+ ers can be imported or exported. The SSO modules allow users to authe
+ nticate to Liferay using a variety of single-sign on solutions. The T
+ oken-based Authentication module allows users or remote applications 
+ to authenticate to Liferay without a password. The Scripting module a
+ llows scripts to be written in Groovy to invoke Liferay's API.<br /><
+ br />This suite is available in the Liferay bundle.
+Liferay-Releng-Suite-Title: Liferay Foundation
+Liferay-Releng-Support-Url: http://www.liferay.com
+Liferay-Releng-Supported: true
+Private-Package: com.liferay.frontend.js.components.sample.web.interna
+ l.constants,com.liferay.frontend.js.components.sample.web.internal.di
+ splay.context,com.liferay.frontend.js.components.sample.web.internal.
+ portlet
+Provide-Capability: osgi.webresource;osgi.webresource="@liferay/fronte
+ nd-js-components-sample-web";version:Version="1.0.0",osgi.service;obj
+ ectClass:List<String>="javax.portlet.Portlet";uses:="javax.portlet"
+Require-Capability: osgi.extender;filter:="(&(osgi.extender=jsp.taglib
+ )(uri=http://liferay.com/tld/aui))",osgi.extender;filter:="(&(osgi.ex
+ tender=jsp.taglib)(uri=http://liferay.com/tld/clay))",osgi.extender;f
+ ilter:="(&(osgi.extender=jsp.taglib)(uri=http://liferay.com/tld/react
+ ))",osgi.extender;filter:="(&(osgi.extender=jsp.taglib)(uri=http://li
+ feray.com/tld/theme))",osgi.extender;filter:="(&(osgi.extender=jsp.ta
+ glib)(uri=http://liferay.com/tld/ui))",osgi.extender;filter:="(&(osgi
+ .extender=jsp.taglib)(uri=http://liferay.com/tld/util))",osgi.service
+ ;filter:="(objectClass=com.liferay.portal.kernel.util.Portal)";effect
+ ive:=active,osgi.extender;filter:="(&(osgi.extender=osgi.component)(v
+ ersion>=1.4.0)(!(version>=2.0.0)))",osgi.contract;osgi.contract=JavaP
+ ortlet;filter:="(&(osgi.contract=JavaPortlet)(version=3.0.0))",osgi.e
+ e;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Service-Component: OSGI-INF/com.liferay.frontend.js.components.sample.
+ web.internal.portlet.FrontendJSComponentsSampleWebPortlet.xml
+Tool: Bnd-4.3.0.201909301554
+Web-ContextPath: /frontend-js-components-sample-web
+

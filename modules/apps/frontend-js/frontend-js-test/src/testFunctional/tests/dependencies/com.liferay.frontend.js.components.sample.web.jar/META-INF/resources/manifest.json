@@ -1,0 +1,35 @@
+{
+	"packages": {
+		"/": {
+			"dest": {
+				"dir": "./build/node/packageRunBuild/resources",
+				"id": "/",
+				"name": "@liferay/frontend-js-components-sample-web",
+				"version": "1.0.0"
+			},
+			"modules": {
+				"js/ManagementToolbarSamples.js": {
+					"flags": {
+						"esModule": true
+					}
+				},
+				"js/SampleWalkthrough.js": {
+					"flags": {
+						"esModule": true
+					}
+				},
+				"js/TranslationManagerSamples.js": {
+					"flags": {
+						"esModule": true
+					}
+				}
+			},
+			"src": {
+				"dir": ".",
+				"id": "/",
+				"name": "@liferay/frontend-js-components-sample-web",
+				"version": "1.0.0"
+			}
+		}
+	}
+}

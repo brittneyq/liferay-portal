@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<scr:component immediate="true" name="com.liferay.frontend.js.components.sample.web.internal.portlet.FrontendJSComponentsSampleWebPortlet" xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0">
+	<property name="javax.portlet.init-param.view-template" type="String" value="/view.jsp" />
+	<property name="javax.portlet.security-role-ref" type="String" value="power-user,user" />
+	<property name="javax.portlet.resource-bundle" type="String" value="content.Language" />
+	<property name="javax.portlet.init-param.template-path" type="String" value="/META-INF/resources/" />
+	<property name="javax.portlet.name" type="String" value="com_liferay_frontend_js_components_sample_web_portlet_FrontendJSComponentsSampleWebPortlet" />
+	<property name="com.liferay.portlet.header-portlet-css" type="String" value="/css/main.css" />
+	<property name="javax.portlet.display-name" type="String" value="JS Components Sample" />
+	<property name="javax.portlet.version" type="String" value="3.0" />
+	<property name="com.liferay.portlet.display-category" type="String" value="category.sample" />
+	<service>
+		<provide interface="javax.portlet.Portlet" />
+	</service>
+	<reference field="_portal" interface="com.liferay.portal.kernel.util.Portal" name="_portal" />
+	<implementation class="com.liferay.frontend.js.components.sample.web.internal.portlet.FrontendJSComponentsSampleWebPortlet" />
+</scr:component>

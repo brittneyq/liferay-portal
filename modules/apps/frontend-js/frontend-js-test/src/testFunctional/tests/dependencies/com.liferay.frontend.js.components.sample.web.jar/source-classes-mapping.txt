@@ -1,0 +1,10 @@
+org/apache/jsp/init_jsp.java
+ org.apache.jsp.init_jsp
+org/apache/jsp/partials/translation_005fmanager_jsp.java
+ org.apache.jsp.partials.translation_005fmanager_jsp
+org/apache/jsp/view_jsp.java
+ org.apache.jsp.view_jsp
+org/apache/jsp/partials/management_005ftoolbar_jsp.java
+ org.apache.jsp.partials.management_005ftoolbar_jsp
+org/apache/jsp/partials/walkable_jsp.java
+ org.apache.jsp.partials.walkable_jsp
