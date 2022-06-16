@@ -447,15 +447,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private boolean _ignoreParentFiles(File file) {
-		//		JobProperty jobProperty = getJobProperty(
-		//			"ignore.parents", getTestSuiteName(), batchName, file,
-		//			JobProperty.Type.MODULE_TEST_DIR);
+		Properties propertyFile = JenkinsResultsParserUtil.getProperties(file);
 
-		JobProperty jobProperty = getJobProperty(
-			"ignore.parents[" + getTestSuiteName() + "]", file,
-			JobProperty.Type.DEFAULT);
-
-		String ignoreFlag = jobProperty.getValue();
+		String ignoreFlag = JenkinsResultsParserUtil.getProperty(
+			propertyFile, "ignore.parents[" + getTestSuiteName() + "]");
 
 		System.out.println("IGNORE FLAG : " + ignoreFlag + " FOR " + file);
 
