@@ -361,6 +361,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
+			String fileName = modifiedFile.getName();
+
+			if (fileName.contains("test.properties")) {
+				continue;
+			}
+
 			String testBatchPQL = _concatPQL(modifiedFile, "");
 
 			System.out.println(
