@@ -464,6 +464,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return false;
 		}
 
+		System.out.println(
+			"Boolean.parseBoolean(ignoreFlag) : " +
+				Boolean.parseBoolean(ignoreFlag));
+
 		return Boolean.parseBoolean(ignoreFlag);
 	}
 
