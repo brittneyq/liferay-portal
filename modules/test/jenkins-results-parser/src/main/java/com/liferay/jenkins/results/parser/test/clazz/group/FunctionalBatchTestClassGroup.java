@@ -342,7 +342,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			JenkinsResultsParserUtil.getProperty(
 				testProperties, "ignoreParents", false, getTestSuiteName()));
 
+		System.out.println(
+			"IGNORE PARENTS FOR " + testPropertiesFile + " : " + ignoreParents);
+
 		if (ignoreParents) {
+			System.out.println("IGNORING PARENTS OF TEST PROPERTY FILE");
+
 			return concatedPQL;
 		}
 
