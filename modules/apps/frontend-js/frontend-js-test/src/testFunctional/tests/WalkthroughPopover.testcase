@@ -240,34 +240,6 @@ definition {
 		}
 	}
 
-	@description = "LPS-154649. Assert hotspot can transition back to previous step if next element doesn't exist on the page."
-	@priority = "5"
-	test CanReturnToPreviousStepIfElementDoesNotExist {
-		property test.name.skip.portal.instance = "WalkthroughPopover#CanReturnToPreviousStepIfElementDoesNotExist";
-
-		task ("Given JSON file includes an element that does not exist on the page/sample portlet") {
-			FileInstall.deployFileOnServer(jarFile = "com.liferay.frontend.js.components.sample.web.jar");
-
-			Refresh();
-
-			Navigator.gotoNavTab(navTab = "Walkable");
-		}
-
-		task ("When popover mode transistions to the step that has no element") {
-			Walkthrough.enablePopoverMode();
-
-			Walkthrough.goToSpecificStep(key_step = "5");
-
-			Click(locator1 = "Button#OK");
-		}
-
-		task ("Then hotspot returns to last element") {
-			WalkthroughPopover.viewCoordinatePositionMatchesElementStep(
-				hotspotElementClass = "lfr-walkthrough-hotspot-inner",
-				stepElementId = "step5");
-		}
-	}
-
 	@description = "LPS-154646. Assert 1st step popover does not contain a button to transition to previous step."
 	@priority = "5"
 	test FirstStepDoesNotHavePreviousStepButton {
