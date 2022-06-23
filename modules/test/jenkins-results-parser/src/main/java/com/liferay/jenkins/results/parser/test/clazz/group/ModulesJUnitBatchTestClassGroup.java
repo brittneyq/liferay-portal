@@ -274,14 +274,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		_traversedPropertyFiles.add(testPropertiesFile);
 
 		JobProperty jobProperty = getJobProperty(
-			basePropertyName, getTestSuiteName(), batchName, canonicalFile,
-			jobType);
+			basePropertyName, getTestSuiteName(), canonicalFile, jobType);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
 			!concatedPQL.contains(testBatchPropertyQuery)) {
+
+			System.out.println("JOB PROPERTY : " + testBatchPropertyQuery);
 
 			recordJobProperty(jobProperty);
 
