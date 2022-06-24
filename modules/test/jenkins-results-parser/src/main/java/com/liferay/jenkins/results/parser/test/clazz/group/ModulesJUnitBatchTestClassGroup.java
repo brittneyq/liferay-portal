@@ -222,7 +222,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		JobProperty.Type jobType, List<JobProperty> propertiesList) {
 
 		if (file == null) {
-			return null;
+			return "";
 		}
 
 		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
@@ -244,11 +244,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			return concatedPQL;
 		}
 
+		System.out.println("TEST 1");
+
 		if (!canonicalFile.isDirectory()) {
 			return _concatPQL(
 				parentFile, concatedPQL, basePropertyName, jobType,
 				propertiesList);
 		}
+
+		System.out.println("TEST 2");
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
@@ -261,13 +265,21 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
 		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
+			System.out.println("TEST 3");
+
 			return concatedPQL;
 		}
 
+		System.out.println("TEST 4");
+
 		_traversedPropertyFiles.add(testPropertiesFile);
+
+		System.out.println("TEST 5");
 
 		Properties testProperties = JenkinsResultsParserUtil.getProperties(
 			testPropertiesFile);
+
+		System.out.println("TEST 6");
 
 		String testProperty = JenkinsResultsParserUtil.getProperty(
 			testProperties, basePropertyName, false, getTestSuiteName());
