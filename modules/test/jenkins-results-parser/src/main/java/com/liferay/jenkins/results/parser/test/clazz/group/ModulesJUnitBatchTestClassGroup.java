@@ -178,9 +178,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 		}
 
-		for (File modifiedModuleDir : modifiedModuleDirsList) {
+		System.out.println(
+			"MODIFIED FILES LIST : " +
+				portalGitWorkingDirectory.getModifiedFilesList());
+
+		for (File modifiedFile :
+				portalGitWorkingDirectory.getModifiedFilesList()) {
+
 			String modifiedModuleAbsolutePath =
-				JenkinsResultsParserUtil.getCanonicalPath(modifiedModuleDir);
+				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
 
 			String modifiedModuleRelativePath =
 				modifiedModuleAbsolutePath.substring(
@@ -191,22 +197,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 				continue;
 			}
-
-			includesJobProperties.add(
-				getJobProperty(
-					"test.batch.class.names.includes.modules",
-					modifiedModuleDir, JobProperty.Type.INCLUDE_GLOB));
-
-			includesJobProperties.add(
-				getJobProperty(
-					"modules.includes.required.test.batch.class.names.includes",
-					modifiedModuleDir, JobProperty.Type.MODULE_INCLUDE_GLOB));
-		}
-
-		for (File modifiedFile :
-				portalGitWorkingDirectory.getModifiedFilesList()) {
-
-			System.out.println("MODIFIED FILE IN INCLUDES: " + modifiedFile);
 
 			String testBatchIncludesProperties = _concatPQL(
 				modifiedFile, "", "test.batch.class.names.includes.modules",
@@ -267,6 +257,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				propertiesList);
 		}
 
+		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
+
 		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
 			return concatedPQL;
 		}
@@ -277,6 +269,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			basePropertyName, getTestSuiteName(), canonicalFile, jobType);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
+
+		System.out.println(
+			"TEST BATCH PROPERTY QUERY : " + testBatchPropertyQuery);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
