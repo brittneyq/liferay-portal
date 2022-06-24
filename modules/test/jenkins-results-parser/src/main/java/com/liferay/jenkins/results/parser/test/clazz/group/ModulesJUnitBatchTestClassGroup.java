@@ -20,6 +20,7 @@ import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
+import com.liferay.jenkins.results.parser.job.property.JobPropertyFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -265,8 +266,23 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		_traversedPropertyFiles.add(testPropertiesFile);
 
-		JobProperty jobProperty = getJobProperty(
-			basePropertyName, getTestSuiteName(), canonicalFile, jobType);
+		Properties testProperties = JenkinsResultsParserUtil.getProperties(
+			testPropertiesFile);
+
+		String testProperty = JenkinsResultsParserUtil.getProperty(
+			testProperties, basePropertyName, false, getTestSuiteName());
+
+		System.out.println("TEST PROPERTY 1 : " + testProperty);
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(testProperty)) {
+			return _concatPQL(
+				parentFile, concatedPQL, basePropertyName, jobType,
+				propertiesList);
+		}
+
+		JobProperty jobProperty = JobPropertyFactory.newJobProperty(
+			basePropertyName, getTestSuiteName(), getJob(), canonicalFile,
+			jobType);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
@@ -291,9 +307,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		propertiesList.add(jobProperty);
-
-		Properties testProperties = JenkinsResultsParserUtil.getProperties(
-			testPropertiesFile);
 
 		boolean ignoreParents = Boolean.valueOf(
 			JenkinsResultsParserUtil.getProperty(
