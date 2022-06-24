@@ -177,10 +177,6 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 				"modules.excludes." + portalTestClassJob.getBuildProfile(),
 				modulesDir, JobProperty.Type.EXCLUDE_GLOB));
 
-		System.out.println(
-			"PORTAL TEST CLASS JOB GET BUILD PROFILE : " +
-				portalTestClassJob.getBuildProfile());
-
 		recordJobProperties(excludesJobProperties);
 
 		return excludesJobProperties;
