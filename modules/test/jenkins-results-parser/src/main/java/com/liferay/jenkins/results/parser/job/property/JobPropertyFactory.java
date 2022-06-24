@@ -42,6 +42,15 @@ public class JobPropertyFactory {
 	}
 
 	public static JobProperty newJobProperty(
+		String basePropertyName, String testSuiteName, Job job,
+		File testBaseDir, JobProperty.Type type) {
+
+		return newJobProperty(
+			basePropertyName, testSuiteName, null, job, testBaseDir, type,
+			true);
+	}
+
+	public static JobProperty newJobProperty(
 		String basePropertyName, String testSuiteName, String testBatchName,
 		Job job, File testBaseDir, JobProperty.Type type,
 		boolean useBasePropertyName) {
