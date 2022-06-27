@@ -244,15 +244,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			return concatedPQL;
 		}
 
-		System.out.println("TEST 1");
-
 		if (!canonicalFile.isDirectory()) {
 			return _concatPQL(
 				parentFile, concatedPQL, basePropertyName, jobType,
 				propertiesList);
 		}
-
-		System.out.println("TEST 2");
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
@@ -264,7 +260,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		if (!_traversedPropertyFiles.isEmpty() &&
+		/*if (!_traversedPropertyFiles.isEmpty() &&
 			_traversedPropertyFiles.contains(testPropertiesFile)) {
 
 			System.out.println("TEST 3");
@@ -275,7 +271,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println("TEST 4");
 
 		_traversedPropertyFiles.add(testPropertiesFile);
-
+*/
 		System.out.println("TEST 5");
 
 		Properties testProperties = JenkinsResultsParserUtil.getProperties(
@@ -436,6 +432,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	private static final Pattern _singleModuleBatchNamePattern =
 		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
 
-	private final Set<File> _traversedPropertyFiles = new HashSet<>();
+	//	private final Set<File> _traversedPropertyFiles = new HashSet<>();
 
 }
