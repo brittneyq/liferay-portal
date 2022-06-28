@@ -120,25 +120,6 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 		String upstreamBranchName =
 			portalGitWorkingDirectory.getUpstreamBranchName();
 
-		if (testRelevantChanges) {
-			for (File modifiedFile :
-					portalGitWorkingDirectory.getModifiedFilesList()) {
-
-				String excludePrivateProperties = _concatPQL(
-					modifiedFile, "", "modules.excludes.private",
-					JobProperty.Type.EXCLUDE_GLOB, excludesJobProperties);
-				String excludePublicProperties = _concatPQL(
-					modifiedFile, "", "modules.excludes.private",
-					JobProperty.Type.EXCLUDE_GLOB, excludesJobProperties);
-
-				System.out.println(
-					"exclude private properties : " + excludePrivateProperties);
-
-				System.out.println(
-					"exclude private properties : " + excludePublicProperties);
-			}
-		}
-
 		if (upstreamBranchName.startsWith("ee-") ||
 			upstreamBranchName.endsWith("-private")) {
 
