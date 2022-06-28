@@ -262,15 +262,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		if (traversedPropertyFiles.contains(testPropertiesFile)) {
-			System.out.println("TEST 3");
-
-			return concatedPQL;
-		}
-
-		System.out.println("TEST 4");
-
-		traversedPropertyFiles.add(testPropertiesFile);
+		//		if (traversedPropertyFiles.contains(testPropertiesFile)) {
+		//			System.out.println("TEST 3");
+		//
+		//			return concatedPQL;
+		//		}
+		//
+		//		System.out.println("TEST 4");
+		//
+		//		traversedPropertyFiles.add(testPropertiesFile);
 
 		System.out.println("TEST 5");
 
