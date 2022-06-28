@@ -217,6 +217,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return includesJobProperties;
 	}
 
+	protected Set<File> traversedPropertyFiles = new HashSet<>();
+
 	private String _concatPQL(
 		File file, String concatedPQL, String basePropertyName,
 		JobProperty.Type jobType, List<JobProperty> propertiesList) {
@@ -260,9 +262,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		/*if (!_traversedPropertyFiles.isEmpty() &&
-			_traversedPropertyFiles.contains(testPropertiesFile)) {
-
+		if (traversedPropertyFiles.contains(testPropertiesFile)) {
 			System.out.println("TEST 3");
 
 			return concatedPQL;
@@ -270,8 +270,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 4");
 
-		_traversedPropertyFiles.add(testPropertiesFile);
-*/
+		traversedPropertyFiles.add(testPropertiesFile);
+
 		System.out.println("TEST 5");
 
 		Properties testProperties = JenkinsResultsParserUtil.getProperties(
@@ -431,7 +431,5 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 	private static final Pattern _singleModuleBatchNamePattern =
 		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
-
-	//	private final Set<File> _traversedPropertyFiles = new HashSet<>();
 
 }
