@@ -123,7 +123,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			String excludePrivateProperties = _concatPQL(
 				modifiedFile, "",
 				"modules.includes.required.test.batch.class.names.excludes",
-				JobProperty.Type.EXCLUDE_GLOB, excludesJobProperties);
+				JobProperty.Type.MODULE_EXCLUDE_GLOB, excludesJobProperties);
 
 			System.out.println(
 				"exclude private properties : " + excludePrivateProperties);
