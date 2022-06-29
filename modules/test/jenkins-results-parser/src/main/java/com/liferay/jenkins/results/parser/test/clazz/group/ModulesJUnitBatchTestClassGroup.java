@@ -279,6 +279,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 6");
 
+		JobProperty oneProperty = getJobProperty(
+			basePropertyName, canonicalFile, jobType);
+
+		System.out.println("ONE PROPERTY 3: " + oneProperty.getValue());
+
 		String testProperty = JenkinsResultsParserUtil.getProperty(
 			testProperties, basePropertyName, false, getTestSuiteName());
 
