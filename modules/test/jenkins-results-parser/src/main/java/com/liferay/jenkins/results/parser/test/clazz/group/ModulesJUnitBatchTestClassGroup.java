@@ -20,7 +20,6 @@ import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
-import com.liferay.jenkins.results.parser.job.property.JobPropertyFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -279,26 +278,27 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 6");
 
-		JobProperty oneProperty = getJobProperty(
+		JobProperty jobProperty = getJobProperty(
 			basePropertyName, canonicalFile, jobType);
 
-		System.out.println("ONE PROPERTY 3: " + oneProperty.getValue());
+		System.out.println("ONE PROPERTY 3: " + jobProperty.getValue());
 
-		String testProperty = JenkinsResultsParserUtil.getProperty(
-			testProperties, basePropertyName, false, getTestSuiteName());
+		/*		String testProperty = JenkinsResultsParserUtil.getProperty(
+					testProperties, basePropertyName, false, getTestSuiteName());
 
-		System.out.println("TEST PROPERTY 1 : " + testProperty);
+				System.out.println("TEST PROPERTY 1 : " + testProperty);
 
-		if (JenkinsResultsParserUtil.isNullOrEmpty(testProperty)) {
-			return _concatPQL(
-				parentFile, concatedPQL, basePropertyName, jobType,
-				propertiesList);
-		}
+				if (JenkinsResultsParserUtil.isNullOrEmpty(testProperty)) {
+					return _concatPQL(
+						parentFile, concatedPQL, basePropertyName, jobType,
+						propertiesList);
+				}
 
-		JobProperty jobProperty = JobPropertyFactory.newJobProperty(
-			basePropertyName, getTestSuiteName(), getJob(), canonicalFile,
-			jobType);
+				JobProperty jobProperty = JobPropertyFactory.newJobProperty(
+					basePropertyName, getTestSuiteName(), getJob(), canonicalFile,
+					jobType);
 
+*/
 		String testBatchPropertyQuery = jobProperty.getValue();
 
 		System.out.println(
