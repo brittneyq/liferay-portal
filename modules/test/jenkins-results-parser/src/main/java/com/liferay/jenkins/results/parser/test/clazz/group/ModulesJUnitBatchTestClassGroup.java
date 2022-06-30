@@ -266,6 +266,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
+		System.out.println(
+			"TRAVERSED PROPERTY FILES : " + _traversedPropertyFiles);
+
 		if (!_traversedPropertyFiles.isEmpty() &&
 			_traversedPropertyFiles.contains(testPropertiesFile)) {
 
