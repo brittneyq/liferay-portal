@@ -41,6 +41,8 @@ import org.json.JSONObject;
  */
 public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
+	public Set<File> traversedPropertyFiles = new HashSet<>();
+
 	protected ModulesJUnitBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
@@ -97,9 +99,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
 		System.out.println(
-			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles1);
+			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
 
-		if (traversedPropertyFiles1.contains(testPropertiesFile)) {
+		if (traversedPropertyFiles.contains(testPropertiesFile)) {
 			System.out.println("TEST 3");
 
 			return concatedPQL;
@@ -107,7 +109,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 4");
 
-		traversedPropertyFiles1.add(testPropertiesFile);
+		traversedPropertyFiles.add(testPropertiesFile);
 
 		System.out.println("TEST 5");
 
@@ -333,8 +335,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		return includesJobProperties;
 	}
-
-	protected Set<File> traversedPropertyFiles1 = new HashSet<>();
 
 	private String _getAppTitle(File appBndFile) {
 		Properties appBndProperties = JenkinsResultsParserUtil.getProperties(
