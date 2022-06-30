@@ -99,6 +99,13 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println(
 			"TRAVERSED PROPERTY FILES : " + traversedPropertyFiles);
 
+		if (traversedPropertyFiles == null) {
+			traversedPropertyFiles = new HashSet<>();
+		}
+
+		System.out.println(
+			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
+
 		if (traversedPropertyFiles.contains(testPropertiesFile)) {
 			System.out.println("TEST 3");
 
