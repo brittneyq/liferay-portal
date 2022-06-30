@@ -178,10 +178,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 		}
 
-		System.out.println(
-			"MODIFIED FILES LIST : " +
-				portalGitWorkingDirectory.getModifiedFilesList());
-
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
@@ -190,7 +186,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 			String fileName = modifiedFile.getName();
 
-			System.out.println(" FILE NAME : " + fileName);
+			System.out.println(
+				" FILE NAME : " + fileName + "FOR : " + modifiedFile);
 
 			if (fileName.contains("test.properties")) {
 				System.out.println("SKIPPED FILE TEST PROPERTIES");
@@ -322,6 +319,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				testProperties, "ignoreParents", false, getTestSuiteName()));
 
 		if (ignoreParents) {
+			System.out.println("IGNORE PARENTS FOR " + canonicalFile);
+
 			return concatedPQL;
 		}
 
