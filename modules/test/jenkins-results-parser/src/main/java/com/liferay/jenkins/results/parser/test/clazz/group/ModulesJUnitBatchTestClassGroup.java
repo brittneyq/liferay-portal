@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -97,6 +98,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
+
+		System.out.println("H!!!!!!! ARRAYYYYYY : " + _h);
 
 		System.out.println(
 			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
@@ -432,5 +435,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 	private static final Pattern _singleModuleBatchNamePattern =
 		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
+
+	private final Set<String> _h = new HashSet<>(Arrays.asList("a", "b"));
 
 }
