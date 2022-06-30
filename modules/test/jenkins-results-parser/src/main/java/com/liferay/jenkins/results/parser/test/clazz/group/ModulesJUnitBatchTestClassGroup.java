@@ -216,8 +216,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return includesJobProperties;
 	}
 
-	protected Set<File> traversedPropertyFiles = new HashSet<>();
-
 	private String _concatPQL(
 		File file, String concatedPQL, String basePropertyName,
 		JobProperty.Type jobType, List<JobProperty> propertiesList) {
@@ -261,15 +259,17 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		//		if (traversedPropertyFiles.contains(testPropertiesFile)) {
-		//			System.out.println("TEST 3");
-		//
-		//			return concatedPQL;
-		//		}
-		//
-		//		System.out.println("TEST 4");
-		//
-		//		traversedPropertyFiles.add(testPropertiesFile);
+		if (!_traversedPropertyFiles.isEmpty() &&
+			_traversedPropertyFiles.contains(testPropertiesFile)) {
+
+			System.out.println("TEST 3");
+
+			return concatedPQL;
+		}
+
+		System.out.println("TEST 4");
+
+		_traversedPropertyFiles.add(testPropertiesFile);
 
 		System.out.println("TEST 5");
 
@@ -283,22 +283,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("ONE PROPERTY 3: " + jobProperty.getValue());
 
-		/*		String testProperty = JenkinsResultsParserUtil.getProperty(
-					testProperties, basePropertyName, false, getTestSuiteName());
-
-				System.out.println("TEST PROPERTY 1 : " + testProperty);
-
-				if (JenkinsResultsParserUtil.isNullOrEmpty(testProperty)) {
-					return _concatPQL(
-						parentFile, concatedPQL, basePropertyName, jobType,
-						propertiesList);
-				}
-
-				JobProperty jobProperty = JobPropertyFactory.newJobProperty(
-					basePropertyName, getTestSuiteName(), getJob(), canonicalFile,
-					jobType);
-
-*/
 		String testBatchPropertyQuery = jobProperty.getValue();
 
 		System.out.println(
@@ -436,5 +420,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 	private static final Pattern _singleModuleBatchNamePattern =
 		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
+
+	private final Set<File> _traversedPropertyFiles = new HashSet<>();
 
 }
