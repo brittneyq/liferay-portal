@@ -266,7 +266,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		/*if (!_traversedPropertyFiles.isEmpty() &&
+		if (!_traversedPropertyFiles.isEmpty() &&
 			_traversedPropertyFiles.contains(testPropertiesFile)) {
 
 			System.out.println("TEST 3");
@@ -276,7 +276,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 4");
 
-		_traversedPropertyFiles.add(testPropertiesFile);*/
+		_traversedPropertyFiles.add(testPropertiesFile);
 
 		System.out.println("TEST 5");
 
@@ -430,6 +430,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	private static final Pattern _singleModuleBatchNamePattern =
 		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
 
-	//private final Set<File> _traversedPropertyFiles = new HashSet<>();
+	private final Set<File> _traversedPropertyFiles = new HashSet<>();
 
 }
