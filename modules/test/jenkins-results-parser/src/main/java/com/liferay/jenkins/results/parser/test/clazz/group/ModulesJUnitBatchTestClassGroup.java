@@ -97,16 +97,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
 		System.out.println(
-			"TRAVERSED PROPERTY FILES : " + traversedPropertyFiles);
+			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles1);
 
-		if (traversedPropertyFiles == null) {
-			traversedPropertyFiles = new HashSet<>();
-		}
-
-		System.out.println(
-			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
-
-		if (traversedPropertyFiles.contains(testPropertiesFile)) {
+		if (traversedPropertyFiles1.contains(testPropertiesFile)) {
 			System.out.println("TEST 3");
 
 			return concatedPQL;
@@ -114,7 +107,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 4");
 
-		traversedPropertyFiles.add(testPropertiesFile);
+		traversedPropertyFiles1.add(testPropertiesFile);
 
 		System.out.println("TEST 5");
 
@@ -341,7 +334,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return includesJobProperties;
 	}
 
-	protected Set<File> traversedPropertyFiles = new HashSet<>();
+	protected Set<File> traversedPropertyFiles1 = new HashSet<>();
 
 	private String _getAppTitle(File appBndFile) {
 		Properties appBndProperties = JenkinsResultsParserUtil.getProperties(
