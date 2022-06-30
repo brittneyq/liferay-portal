@@ -188,6 +188,16 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			String modifiedModuleAbsolutePath =
 				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
 
+			String fileName = modifiedFile.getName();
+
+			System.out.println(" FILE NAME : " + fileName);
+
+			if (fileName.contains("test.properties")) {
+				System.out.println("SKIPPED FILE TEST PROPERTIES");
+
+				continue;
+			}
+
 			String modifiedModuleRelativePath =
 				modifiedModuleAbsolutePath.substring(
 					modifiedModuleAbsolutePath.indexOf("modules/"));
@@ -259,7 +269,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		if (!_traversedPropertyFiles.isEmpty() &&
+		/*if (!_traversedPropertyFiles.isEmpty() &&
 			_traversedPropertyFiles.contains(testPropertiesFile)) {
 
 			System.out.println("TEST 3");
@@ -269,7 +279,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST 4");
 
-		_traversedPropertyFiles.add(testPropertiesFile);
+		_traversedPropertyFiles.add(testPropertiesFile);*/
 
 		System.out.println("TEST 5");
 
@@ -421,6 +431,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	private static final Pattern _singleModuleBatchNamePattern =
 		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
 
-	private final Set<File> _traversedPropertyFiles = new HashSet<>();
+	//private final Set<File> _traversedPropertyFiles = new HashSet<>();
 
 }
