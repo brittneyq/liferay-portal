@@ -46,7 +46,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		super(jsonObject, portalTestClassJob);
 
-		traversedPropertyFiles = new HashSet<>();
+		if (traversedPropertyFiles == null) {
+			traversedPropertyFiles = new HashSet<>();
+		}
 	}
 
 	protected ModulesJUnitBatchTestClassGroup(
@@ -54,7 +56,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		super(batchName, portalTestClassJob);
 
-		traversedPropertyFiles = new HashSet<>();
+		if (traversedPropertyFiles == null) {
+			traversedPropertyFiles = new HashSet<>();
+		}
 	}
 
 	@Override
