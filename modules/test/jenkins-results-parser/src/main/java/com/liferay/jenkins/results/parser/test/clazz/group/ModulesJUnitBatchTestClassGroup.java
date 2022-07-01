@@ -184,7 +184,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println(
 			"INCLUDE JOB PROPERTIES FIRST: " + includesJobProperties);
 
-		Set<File> traversedPropertyFiles = new HashSet<>();
+		Set<File> traversedTestBatchProperties = new HashSet<>();
+		Set<File> traversedModulesProperties = new HashSet<>();
 
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
@@ -205,13 +206,13 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			String testBatchIncludesProperties = _concatPQL(
 				modifiedFile, "", "test.batch.class.names.includes.modules",
 				JobProperty.Type.MODULE_INCLUDE_GLOB, includesJobProperties,
-				traversedPropertyFiles);
+				traversedTestBatchProperties);
 
 			String modulesIncludesProperties = _concatPQL(
 				modifiedFile, "",
 				"modules.includes.required.test.batch.class.names.includes",
 				JobProperty.Type.MODULE_INCLUDE_GLOB, includesJobProperties,
-				traversedPropertyFiles);
+				traversedModulesProperties);
 
 			System.out.println(
 				"testBatchIncludesProperties: " + testBatchIncludesProperties);
