@@ -318,6 +318,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 			System.out.println("JOB PROPERTY : " + testBatchPropertyQuery);
 
+			propertiesList.add(jobProperty);
+
 			recordJobProperty(jobProperty);
 
 			if (!concatedPQL.isEmpty()) {
@@ -327,9 +329,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			else {
 				concatedPQL += testBatchPropertyQuery;
 			}
-		}
 
-		propertiesList.add(jobProperty);
+			System.out.println("CONCATED PQL TEST: " + concatedPQL);
+		}
 
 		boolean ignoreParents = Boolean.valueOf(
 			JenkinsResultsParserUtil.getProperty(
