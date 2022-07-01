@@ -121,23 +121,12 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 			System.out.println("MODIFIED FILE IN EXCLUDES: " + modifiedFile);
 
-			String excludePrivateProperties = _concatPQL(
+			_concatPQL(
 				modifiedFile, "",
 				"modules.includes.required.test.batch.class.names.excludes",
 				JobProperty.Type.MODULE_EXCLUDE_GLOB, excludesJobProperties,
 				traversedModulesProperties);
-
-			System.out.println(
-				"exclude private properties : " + excludePrivateProperties);
 		}
-
-		/*		for (File modifiedModuleDir : modifiedModuleDirsList) {
-					excludesJobProperties.add(
-						getJobProperty(
-							"modules.includes.required.test.batch.
-							class.names.excludes",
-							modifiedModuleDir, JobProperty.Type.MODULE_EXCLUDE_GLOB));
-				}*/
 
 		return excludesJobProperties;
 	}
@@ -203,21 +192,16 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				continue;
 			}
 
-			String testBatchIncludesProperties = _concatPQL(
+			_concatPQL(
 				modifiedFile, "", "test.batch.class.names.includes.modules",
 				JobProperty.Type.MODULE_INCLUDE_GLOB, includesJobProperties,
 				traversedTestBatchProperties);
 
-			String modulesIncludesProperties = _concatPQL(
+			_concatPQL(
 				modifiedFile, "",
 				"modules.includes.required.test.batch.class.names.includes",
 				JobProperty.Type.MODULE_INCLUDE_GLOB, includesJobProperties,
 				traversedModulesProperties);
-
-			System.out.println(
-				"testBatchIncludesProperties: " + testBatchIncludesProperties);
-			System.out.println(
-				"modulesIncludesProperties: " + modulesIncludesProperties);
 		}
 
 		System.out.println(
@@ -225,8 +209,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		return includesJobProperties;
 	}
-
-	//protected Set<File> traversedPropertyFiles = new HashSet<>();
 
 	private String _concatPQL(
 		File file, String concatedPQL, String basePropertyName,
