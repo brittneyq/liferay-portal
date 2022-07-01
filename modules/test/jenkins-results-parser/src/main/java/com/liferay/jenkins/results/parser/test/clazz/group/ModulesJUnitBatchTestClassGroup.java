@@ -302,7 +302,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
-			!concatedPQL.contains(testBatchPropertyQuery)) {
+			!concatedPQL.contains(testBatchPropertyQuery) &&
+			!propertiesList.contains(jobProperty)) {
 
 			System.out.println("JOB PROPERTY : " + testBatchPropertyQuery);
 
