@@ -117,15 +117,10 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
-			System.out.println("MODIFIED FILE IN EXCLUDES: " + modifiedFile);
-
-			String excludePrivateProperties = _concatPQL(
+			_concatPQL(
 				modifiedFile, "",
 				"modules.includes.required.test.batch.class.names.excludes",
 				JobProperty.Type.MODULE_EXCLUDE_GLOB, excludesJobProperties);
-
-			System.out.println(
-				"exclude private properties : " + excludePrivateProperties);
 		}
 
 		/*		for (File modifiedModuleDir : modifiedModuleDirsList) {
@@ -178,19 +173,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 		}
 
-		System.out.println(
-			"INCLUDE JOB PROPERTIES FIRST: " + includesJobProperties);
-
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
 			String modifiedModuleAbsolutePath =
 				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
-
-			String fileName = modifiedFile.getName();
-
-			System.out.println(
-				" FILE NAME : " + fileName + "FOR : " + modifiedFile);
 
 			String modifiedModuleRelativePath =
 				modifiedModuleAbsolutePath.substring(
@@ -202,35 +189,27 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				continue;
 			}
 
-			String testBatchIncludesProperties = _concatPQL(
+			_concatPQL(
 				modifiedFile, "", "test.batch.class.names.includes.modules",
 				JobProperty.Type.MODULE_INCLUDE_GLOB, includesJobProperties);
 
-			String modulesIncludesProperties = _concatPQL(
+			_concatPQL(
 				modifiedFile, "",
 				"modules.includes.required.test.batch.class.names.includes",
 				JobProperty.Type.MODULE_INCLUDE_GLOB, includesJobProperties);
-
-			System.out.println(
-				"testBatchIncludesProperties: " + testBatchIncludesProperties);
-			System.out.println(
-				"modulesIncludesProperties: " + modulesIncludesProperties);
 		}
-
-		System.out.println(
-			"INCLUDE JOB PROPERTIES!!!! : " + includesJobProperties);
 
 		return includesJobProperties;
 	}
 
 	//protected Set<File> traversedPropertyFiles = new HashSet<>();
 
-	private String _concatPQL(
+	private void _concatPQL(
 		File file, String concatedPQL, String basePropertyName,
 		JobProperty.Type jobType, List<JobProperty> propertiesList) {
 
 		if (file == null) {
-			return "";
+			return;
 		}
 
 		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
@@ -238,7 +217,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		File parentFile = canonicalFile.getParentFile();
 
 		if ((parentFile == null) || !parentFile.exists()) {
-			return "";
+			return;
 		}
 
 		File modulesBaseDir = new File(
@@ -249,11 +228,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		Path parentFilePath = parentFile.toPath();
 
 		if (parentFilePath.equals(modulesBaseDirPath)) {
-			return concatedPQL;
+			return;
 		}
 
 		if (!canonicalFile.isDirectory()) {
-			return _concatPQL(
+			_concatPQL(
 				parentFile, concatedPQL, basePropertyName, jobType,
 				propertiesList);
 		}
@@ -261,12 +240,10 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
 		if (!testPropertiesFile.exists()) {
-			return _concatPQL(
+			_concatPQL(
 				parentFile, concatedPQL, basePropertyName, jobType,
 				propertiesList);
 		}
-
-		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
 		/*	System.out.println(
 				"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
@@ -283,28 +260,17 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				"ADDED TO TRAVERSED PROPERTY FILE : "
 				+ traversedPropertyFiles);*/
 
-		System.out.println("TEST 5");
-
 		Properties testProperties = JenkinsResultsParserUtil.getProperties(
 			testPropertiesFile);
-
-		System.out.println("TEST 6");
 
 		JobProperty jobProperty = getJobProperty(
 			basePropertyName, canonicalFile, jobType);
 
-		System.out.println("ONE PROPERTY 3: " + jobProperty.getValue());
-
 		String testBatchPropertyQuery = jobProperty.getValue();
-
-		System.out.println(
-			"TEST BATCH PROPERTY QUERY : " + testBatchPropertyQuery);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
 			!concatedPQL.contains(testBatchPropertyQuery)) {
-
-			System.out.println("JOB PROPERTY : " + testBatchPropertyQuery);
 
 			recordJobProperty(jobProperty);
 
@@ -324,18 +290,14 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				testProperties, "ignoreParents", false, getTestSuiteName()));
 
 		if (ignoreParents) {
-			System.out.println("IGNORE PARENTS FOR " + canonicalFile);
-
-			return concatedPQL;
+			return;
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
-			return _concatPQL(
+			_concatPQL(
 				parentFile, concatedPQL, basePropertyName, jobType,
 				propertiesList);
 		}
-
-		return concatedPQL;
 	}
 
 	private String _getAppTitle(File appBndFile) {
