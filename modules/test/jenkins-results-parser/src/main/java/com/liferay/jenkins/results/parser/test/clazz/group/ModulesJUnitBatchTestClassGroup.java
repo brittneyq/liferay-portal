@@ -293,6 +293,12 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		JobProperty jobProperty = getJobProperty(
 			basePropertyName, canonicalFile, jobType);
 
+		if (propertiesList.contains(jobProperty)) {
+			System.out.println("PROPERTIES LIST contains JOB PROPERTY!");
+
+			return concatedPQL;
+		}
+
 		System.out.println("ONE PROPERTY 3: " + jobProperty.getValue());
 
 		String testBatchPropertyQuery = jobProperty.getValue();
@@ -302,8 +308,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
-			!concatedPQL.contains(testBatchPropertyQuery) &&
-			!propertiesList.contains(jobProperty)) {
+			!concatedPQL.contains(testBatchPropertyQuery)) {
 
 			System.out.println("JOB PROPERTY : " + testBatchPropertyQuery);
 
