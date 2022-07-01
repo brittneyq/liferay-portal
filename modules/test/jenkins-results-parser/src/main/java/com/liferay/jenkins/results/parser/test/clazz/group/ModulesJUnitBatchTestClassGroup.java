@@ -45,20 +45,12 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
 		super(jsonObject, portalTestClassJob);
-
-		if (traversedPropertyFiles == null) {
-			traversedPropertyFiles = new HashSet<>();
-		}
 	}
 
 	protected ModulesJUnitBatchTestClassGroup(
 		String batchName, PortalTestClassJob portalTestClassJob) {
 
 		super(batchName, portalTestClassJob);
-
-		if (traversedPropertyFiles == null) {
-			traversedPropertyFiles = new HashSet<>();
-		}
 	}
 
 	@Override
@@ -197,12 +189,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			System.out.println(
 				" FILE NAME : " + fileName + "FOR : " + modifiedFile);
 
-			if (fileName.contains("test.properties")) {
-				System.out.println("SKIPPED FILE TEST PROPERTIES");
-
-				continue;
-			}
-
 			String modifiedModuleRelativePath =
 				modifiedModuleAbsolutePath.substring(
 					modifiedModuleAbsolutePath.indexOf("modules/"));
@@ -231,7 +217,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return includesJobProperties;
 	}
 
-	protected Set<File> traversedPropertyFiles = new HashSet<>();
+	//protected Set<File> traversedPropertyFiles = new HashSet<>();
 
 	private String _concatPQL(
 		File file, String concatedPQL, String basePropertyName,
@@ -276,21 +262,20 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("TEST PROPERTIES FILE : " + testPropertiesFile);
 
-		System.out.println(
-			"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
+		/*	System.out.println(
+				"TRAVERSED PROPERTY FILES 2 : " + traversedPropertyFiles);
 
-		if (traversedPropertyFiles.contains(testPropertiesFile)) {
-			System.out.println("TEST 3");
+			if (traversedPropertyFiles.contains(testPropertiesFile)) {
+				System.out.println("TEST 3");
 
-			return concatedPQL;
-		}
+				return concatedPQL;
+			}
 
-		System.out.println("TEST 4");
-
-		traversedPropertyFiles.add(testPropertiesFile);
-
-		System.out.println(
-			"ADDED TO TRAVERSED PROPERTY FILE : " + traversedPropertyFiles);
+			System.out.println("TEST 4");
+			traversedPropertyFiles.add(testPropertiesFile);
+			System.out.println(
+				"ADDED TO TRAVERSED PROPERTY FILE : "
+				+ traversedPropertyFiles);*/
 
 		System.out.println("TEST 5");
 
