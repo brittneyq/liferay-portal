@@ -178,6 +178,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 		}
 
+		System.out.println(
+			"INCLUDE JOB PROPERTIES FIRST: " + includesJobProperties);
+
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
@@ -213,6 +216,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			System.out.println(
 				"modulesIncludesProperties: " + modulesIncludesProperties);
 		}
+
+		System.out.println(
+			"INCLUDE JOB PROPERTIES!!!! : " + includesJobProperties);
 
 		return includesJobProperties;
 	}
