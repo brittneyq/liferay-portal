@@ -200,7 +200,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		Set<File> traversedPropertiesList) {
 
 		if (file == null) {
-			return "";
+			return JenkinsResultsParserUtil.join(
+				_DELIMITER_CONCATENATED_PROPERTIES, propertyStrings);
 		}
 
 		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
@@ -208,7 +209,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		File parentFile = canonicalFile.getParentFile();
 
 		if ((parentFile == null) || !parentFile.exists()) {
-			return "";
+			return JenkinsResultsParserUtil.join(
+				_DELIMITER_CONCATENATED_PROPERTIES, propertyStrings);
 		}
 
 		File modulesBaseDir = new File(
