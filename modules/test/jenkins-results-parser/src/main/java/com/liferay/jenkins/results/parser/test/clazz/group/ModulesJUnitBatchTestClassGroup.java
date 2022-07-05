@@ -175,12 +175,13 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			String modifiedModuleAbsolutePath =
 				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
 
-			String modifiedModuleRelativePath =
-				modifiedModuleAbsolutePath.substring(
-					modifiedModuleAbsolutePath.indexOf("modules/"));
+			/*			String modifiedModuleRelativePath =
+							modifiedModuleAbsolutePath.substring(
+								modifiedModuleAbsolutePath.
+								indexOf("modules/"));*/
 
 			if ((moduleName != null) &&
-				!modifiedModuleRelativePath.contains("/" + moduleName)) {
+				!modifiedModuleAbsolutePath.contains("/" + moduleName)) {
 
 				continue;
 			}
