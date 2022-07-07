@@ -236,13 +236,13 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	private Set<JobProperty> _getJobProperties(
 		File file, String basePropertyName, JobProperty.Type jobType) {
 
-		Set<JobProperty> jobPropertiesList = new HashSet<>();
+		Set<JobProperty> jobPropertiesSet = new HashSet<>();
 
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
 		if ((file == null) || file.equals(modulesBaseDir)) {
-			return jobPropertiesList;
+			return jobPropertiesSet;
 		}
 
 		if (!file.isDirectory()) {
@@ -259,7 +259,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			JobProperty jobProperty = getJobProperty(
 				basePropertyName, file, jobType);
 
-			jobPropertiesList.add(jobProperty);
+			jobPropertiesSet.add(jobProperty);
 		}
 
 		JobProperty ignoreParentsJobProperty = getJobProperty(
@@ -272,16 +272,18 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		boolean ignoreParents = Boolean.valueOf(
 			ignoreParentsJobProperty.getValue());
 
+		System.out.println("IGNORE PARENTS BOOLEAN VALUE : " + ignoreParents);
+
 		if (ignoreParents) {
 			System.out.println("Ignore parents in : " + file);
 
-			return jobPropertiesList;
+			return jobPropertiesSet;
 		}
 
-		jobPropertiesList.addAll(
+		jobPropertiesSet.addAll(
 			_getJobProperties(file.getParentFile(), basePropertyName, jobType));
 
-		return jobPropertiesList;
+		return jobPropertiesSet;
 	}
 
 	private File _getLiferayHome() {
