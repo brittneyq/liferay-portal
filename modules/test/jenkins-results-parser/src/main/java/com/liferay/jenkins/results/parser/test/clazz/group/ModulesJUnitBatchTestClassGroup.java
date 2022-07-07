@@ -233,10 +233,10 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return bundledAppNames;
 	}
 
-	private List<JobProperty> _getJobProperties(
+	private Set<JobProperty> _getJobProperties(
 		File file, String basePropertyName, JobProperty.Type jobType) {
 
-		List<JobProperty> jobPropertiesList = new ArrayList<>();
+		Set<JobProperty> jobPropertiesList = new HashSet<>();
 
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
