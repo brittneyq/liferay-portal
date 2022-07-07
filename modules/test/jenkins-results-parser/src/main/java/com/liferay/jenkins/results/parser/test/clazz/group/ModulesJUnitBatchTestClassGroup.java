@@ -106,7 +106,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				ioException);
 		}
 
-		List<JobProperty> excludesJobProperties = new ArrayList<>();
+		Set<JobProperty> excludesJobProperties = new HashSet<>();
 
 		excludesJobProperties.addAll(getDefaultExcludesJobProperties());
 
@@ -122,7 +122,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("exclude job properties : " + excludesJobProperties);
 
-		return excludesJobProperties;
+		return new ArrayList<>(excludesJobProperties);
 	}
 
 	@Override
@@ -154,7 +154,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				getRequiredModuleDirs(new ArrayList<>(modifiedFilesList)));
 		}
 
-		List<JobProperty> includesJobProperties = new ArrayList<>();
+		Set<JobProperty> includesJobProperties = new HashSet<>();
 
 		Matcher matcher = _singleModuleBatchNamePattern.matcher(batchName);
 
@@ -188,7 +188,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("include job properties : " + includesJobProperties);
 
-		return includesJobProperties;
+		return new ArrayList<>(includesJobProperties);
 	}
 
 	private String _getAppTitle(File appBndFile) {
@@ -263,7 +263,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		JobProperty ignoreParentsJobProperty = getJobProperty(
-			"ignoreParents", file, JobProperty.Type.DEFAULT);
+			"ignoreParents[" + getTestSuiteName() + "]", file,
+			JobProperty.Type.MODULE_TEST_DIR);
 
 		System.out.println(
 			"ignore parents value : " + ignoreParentsJobProperty.getValue());
