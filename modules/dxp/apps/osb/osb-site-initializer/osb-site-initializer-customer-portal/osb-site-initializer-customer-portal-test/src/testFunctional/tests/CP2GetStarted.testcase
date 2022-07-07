@@ -77,7 +77,7 @@ definition {
 		CustomerPortal.viewSubcriptionsPage();
 	}
 
-	@description = "LPS-143374 - Verify if the button 'Start Project Setup' is present."
+	@description = "LPS-143374 - Verify if the button 'Start Project Setup' is presents."
 	@priority = "4"
 	test IsStartProjectButtonPresent {
 		CustomerPortal.changeUserRole(
