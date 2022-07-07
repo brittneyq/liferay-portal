@@ -110,6 +110,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		excludesJobProperties.addAll(getDefaultExcludesJobProperties());
 
+		Set<File> traversedModulesExcludeFileSet = new HashSet<>();
+
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
@@ -117,7 +119,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				_getJobProperties(
 					modifiedFile,
 					"modules.includes.required.test.batch.class.names.excludes",
-					JobProperty.Type.MODULE_EXCLUDE_GLOB));
+					JobProperty.Type.MODULE_EXCLUDE_GLOB,
+					traversedModulesExcludeFileSet));
 		}
 
 		return excludesJobProperties;
@@ -162,6 +165,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 		}
 
+		Set<File> traversedTestBatchFileSet = new HashSet<>();
+		Set<File> traversedModulesIncludeFileSet = new HashSet<>();
+
 		for (File modifiedFile : modifiedFilesList) {
 			String modifiedModuleAbsolutePath =
 				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
@@ -175,13 +181,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			includesJobProperties.addAll(
 				_getJobProperties(
 					modifiedFile, "test.batch.class.names.includes.modules",
-					JobProperty.Type.MODULE_INCLUDE_GLOB));
+					JobProperty.Type.MODULE_INCLUDE_GLOB,
+					traversedTestBatchFileSet));
 
 			includesJobProperties.addAll(
 				_getJobProperties(
 					modifiedFile,
 					"modules.includes.required.test.batch.class.names.includes",
-					JobProperty.Type.MODULE_INCLUDE_GLOB));
+					JobProperty.Type.MODULE_INCLUDE_GLOB,
+					traversedModulesIncludeFileSet));
 		}
 
 		return includesJobProperties;
@@ -230,7 +238,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	}
 
 	private List<JobProperty> _getJobProperties(
-		File file, String basePropertyName, JobProperty.Type jobType) {
+		File file, String basePropertyName, JobProperty.Type jobType,
+		Set<File> traversedPropertySet) {
 
 		List<JobProperty> jobPropertiesList = new ArrayList<>();
 
@@ -247,11 +256,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		File testPropertiesFile = new File(file, "test.properties");
 
-		if (testPropertiesFile.exists()) {
+		if (testPropertiesFile.exists() &&
+			!traversedPropertySet.contains(testPropertiesFile)) {
+
 			JobProperty jobProperty = getJobProperty(
 				basePropertyName, file, jobType);
 
 			jobPropertiesList.add(jobProperty);
+
+			traversedPropertySet.add(testPropertiesFile);
 		}
 
 		JobProperty ignoreParentsJobProperty = getJobProperty(
@@ -271,7 +284,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		jobPropertiesList.addAll(
-			_getJobProperties(file.getParentFile(), basePropertyName, jobType));
+			_getJobProperties(
+				file.getParentFile(), basePropertyName, jobType,
+				traversedPropertySet));
 
 		return jobPropertiesList;
 	}
