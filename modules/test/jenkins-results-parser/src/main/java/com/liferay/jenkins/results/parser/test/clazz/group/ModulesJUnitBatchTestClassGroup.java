@@ -269,8 +269,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		System.out.println(
 			"ignore parents value : " + ignoreParentsJobProperty.getValue());
 
-		boolean ignoreParents = Boolean.valueOf(
-			ignoreParentsJobProperty.getValue());
+		String ignoreParentsString = ignoreParentsJobProperty.getValue();
+
+		boolean ignoreParents = Boolean.valueOf(ignoreParentsString.trim());
 
 		System.out.println("IGNORE PARENTS BOOLEAN VALUE : " + ignoreParents);
 
