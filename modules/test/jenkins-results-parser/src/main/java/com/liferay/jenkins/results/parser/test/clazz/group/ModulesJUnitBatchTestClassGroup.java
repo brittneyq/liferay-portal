@@ -123,6 +123,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 					traversedModulesExcludeFileSet));
 		}
 
+		System.out.println("exclude job properties : " + excludesJobProperties);
+
 		return excludesJobProperties;
 	}
 
@@ -191,6 +193,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 					JobProperty.Type.MODULE_INCLUDE_GLOB,
 					traversedModulesIncludeFileSet));
 		}
+
+		System.out.println("include job Properties : " + includesJobProperties);
 
 		return includesJobProperties;
 	}
@@ -271,13 +275,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			"ignoreParents[" + getTestSuiteName() + "]", file,
 			JobProperty.Type.MODULE_TEST_DIR);
 
-		String ignoreParentsString = ignoreParentsJobProperty.getValue();
-
-		boolean ignoreParents = false;
-
-		if (ignoreParentsString != null) {
-			ignoreParents = Boolean.valueOf(ignoreParentsString.trim());
-		}
+		boolean ignoreParents = Boolean.valueOf(
+			ignoreParentsJobProperty.getValue());
 
 		if (ignoreParents) {
 			return jobPropertiesList;
