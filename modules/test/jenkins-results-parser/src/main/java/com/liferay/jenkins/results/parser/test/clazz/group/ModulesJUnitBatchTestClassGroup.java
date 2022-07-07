@@ -120,6 +120,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 					JobProperty.Type.MODULE_EXCLUDE_GLOB));
 		}
 
+		System.out.println("exclude job properties : " + excludesJobProperties);
+
 		return excludesJobProperties;
 	}
 
@@ -184,6 +186,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 					JobProperty.Type.MODULE_INCLUDE_GLOB));
 		}
 
+		System.out.println("include job properties : " + includesJobProperties);
+
 		return includesJobProperties;
 	}
 
@@ -242,7 +246,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		if (!file.isDirectory()) {
+			System.out.println("file 1 : " + file);
+
 			file = file.getParentFile();
+
+			System.out.println("file 2 : " + file);
 		}
 
 		File testPropertiesFile = new File(file, "test.properties");
@@ -257,10 +265,15 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		JobProperty ignoreParentsJobProperty = getJobProperty(
 			"ignoreParents", file, JobProperty.Type.DEFAULT);
 
+		System.out.println(
+			"ignore parents value : " + ignoreParentsJobProperty.getValue());
+
 		boolean ignoreParents = Boolean.valueOf(
 			ignoreParentsJobProperty.getValue());
 
 		if (ignoreParents) {
+			System.out.println("Ignore parents in : " + file);
+
 			return jobPropertiesList;
 		}
 
