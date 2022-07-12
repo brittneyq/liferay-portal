@@ -184,20 +184,17 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 					JobProperty.Type.MODULE_INCLUDE_GLOB, null));
 		}
 
-		if (includesJobProperties.isEmpty()) {
-			File workingDirectory =
-				portalGitWorkingDirectory.getWorkingDirectory();
+		File workingDirectory = portalGitWorkingDirectory.getWorkingDirectory();
 
-			includesJobProperties.add(
-				getJobProperty(
-					"test.batch.class.names.includes.modules", workingDirectory,
-					JobProperty.Type.INCLUDE_GLOB));
+		includesJobProperties.add(
+			getJobProperty(
+				"test.batch.class.names.includes.modules", workingDirectory,
+				JobProperty.Type.INCLUDE_GLOB));
 
-			includesJobProperties.add(
-				getJobProperty(
-					"modules.includes.required.test.batch.class.names.includes",
-					workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));
-		}
+		includesJobProperties.add(
+			getJobProperty(
+				"modules.includes.required.test.batch.class.names.includes",
+				workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));
 
 		return includesJobProperties;
 	}
