@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * @author Raymond Augé
+ * @author Raymond Augés
  */
 @FunctionalInterface
 public interface PortalK8sConfigMapModifier {
