@@ -238,6 +238,18 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		File modulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
+		System.out.println("MODULES BASE DIR : " + modulesBaseDir);
+
+		System.out.println(
+			"PORTAL GIT WORKING DIRECTORY : " +
+				portalGitWorkingDirectory.getWorkingDirectory());
+
+		File defaultTestPropertiesFile = new File(
+			portalGitWorkingDirectory.getWorkingDirectory(), "test.properties");
+
+		System.out.println(
+			"DEFAULT TEST PROPERTIES FILE : " + defaultTestPropertiesFile);
+
 		if ((file == null) || file.equals(modulesBaseDir)) {
 			return jobPropertiesList;
 		}
