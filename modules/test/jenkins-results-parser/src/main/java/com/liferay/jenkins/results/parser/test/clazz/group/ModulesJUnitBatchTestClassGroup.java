@@ -162,7 +162,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 		}
 
+		System.out.println("MODIFIED FILES LIST : " + modifiedFilesList);
+
 		for (File modifiedFile : modifiedFilesList) {
+			System.out.println("MODIFIED FILE : " + modifiedFile);
+
 			String modifiedModuleAbsolutePath =
 				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
 
@@ -279,9 +283,14 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 			String jobPropertyValue = jobProperty.getValue();
 
-			if (JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue)
-					&& !jobPropertiesList.contains(jobProperty)) {
+			System.out.println("JOB PROPERTY VALUE : " + jobPropertyValue);
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue) &&
+				!jobPropertiesList.contains(jobProperty)) {
+
 				jobPropertiesList.add(jobProperty);
+
+				System.out.println("ADDING TO JOB PROPERTIES LIST...");
 			}
 
 			traversedPropertyFileSet.add(testPropertiesFile);
