@@ -49,6 +49,34 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		super(batchName, portalTestClassJob);
 	}
 
+	protected void compareJobProperties() {
+		File workingDirectory = portalGitWorkingDirectory.getWorkingDirectory();
+
+		JobProperty jobProperty1 = getJobProperty(
+			"test.batch.class.names.includes.modules", workingDirectory,
+			JobProperty.Type.INCLUDE_GLOB);
+
+		JobProperty jobProperty2 = getJobProperty(
+			"test.batch.class.names.includes.modules", workingDirectory,
+			JobProperty.Type.INCLUDE_GLOB);
+
+		System.out.println("JOB PROPERTY 1 : " + jobProperty1);
+
+		System.out.println("JOB PROPERTY 2 : " + jobProperty2);
+
+		List<JobProperty> jobPropertyList = new ArrayList<>();
+
+		jobPropertyList.add(jobProperty1);
+
+		System.out.println("JOB PROPERTY LIST : " + jobPropertyList);
+
+		if (jobPropertyList.contains(jobProperty2)) {
+			System.out.println("JOB PROPERTY 2 IS IN JOB PROPERTY LIST!!!");
+		}
+
+		System.out.println("COMPARE JOB PROPERTIES DONE");
+	}
+
 	@Override
 	protected List<JobProperty> getDefaultExcludesJobProperties() {
 		List<JobProperty> excludesJobProperties = new ArrayList<>();
@@ -128,6 +156,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		if (includeStableTestSuite && isStableTestSuiteBatch()) {
 			return super.getRelevantIncludesJobProperties();
 		}
+
+		compareJobProperties();
 
 		List<File> modifiedFilesList =
 			portalGitWorkingDirectory.getModifiedFilesList();
