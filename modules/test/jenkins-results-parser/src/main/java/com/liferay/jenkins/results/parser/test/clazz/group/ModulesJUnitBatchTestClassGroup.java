@@ -190,20 +190,17 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		System.out.println("INCLUDE JOB PROPERTIES : " + includesJobProperties);
 
-		if (includesJobProperties.isEmpty()) {
-			File workingDirectory =
-				portalGitWorkingDirectory.getWorkingDirectory();
+		File workingDirectory = portalGitWorkingDirectory.getWorkingDirectory();
 
-			includesJobProperties.add(
-				getJobProperty(
-					"test.batch.class.names.includes.modules", workingDirectory,
-					JobProperty.Type.INCLUDE_GLOB));
+		includesJobProperties.add(
+			getJobProperty(
+				"test.batch.class.names.includes.modules", workingDirectory,
+				JobProperty.Type.INCLUDE_GLOB));
 
-			includesJobProperties.add(
-				getJobProperty(
-					"modules.includes.required.test.batch.class.names.includes",
-					workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));
-		}
+		includesJobProperties.add(
+			getJobProperty(
+				"modules.includes.required.test.batch.class.names.includes",
+				workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));
 
 		System.out.println("INCLUDE JOB PROPERTIES 2 " + includesJobProperties);
 
@@ -289,8 +286,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				!jobPropertiesList.contains(jobProperty)) {
 
 				jobPropertiesList.add(jobProperty);
-
-				System.out.println("ADDING TO JOB PROPERTIES LIST...");
 			}
 
 			traversedPropertyFileSet.add(testPropertiesFile);
