@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -182,7 +183,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				getRequiredModuleDirs(new ArrayList<>(modifiedFilesList)));
 		}
 
-		Set<JobProperty> includesJobProperties = new HashSet<>();
+		List<JobProperty> includesJobProperties = new ArrayList<>();
 
 		Matcher matcher = _singleModuleBatchNamePattern.matcher(batchName);
 
@@ -232,9 +233,11 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				"modules.includes.required.test.batch.class.names.includes",
 				workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));
 
+		includesJobProperties.removeAll(Collections.singleton(null));
+
 		System.out.println("INCLUDE JOB PROPERTIES 2 " + includesJobProperties);
 
-		return new ArrayList<>(includesJobProperties);
+		return includesJobProperties;
 	}
 
 	private String _getAppTitle(File appBndFile) {
