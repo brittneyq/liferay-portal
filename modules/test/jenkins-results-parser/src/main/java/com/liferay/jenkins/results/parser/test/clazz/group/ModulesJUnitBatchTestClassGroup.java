@@ -75,6 +75,10 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			System.out.println("JOB PROPERTY 2 IS IN JOB PROPERTY LIST!!!");
 		}
 
+		if (jobProperty1.equals(jobProperty2)) {
+			System.out.println("JOB PROPERTY 1 IS EQUAL TO JOB PROPERTY 2");
+		}
+
 		System.out.println("COMPARE JOB PROPERTIES DONE");
 	}
 
