@@ -285,7 +285,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 			System.out.println("JOB PROPERTY VALUE : " + jobPropertyValue);
 
-			if (JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue) &&
+			if (!JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue) &&
 				!jobPropertiesList.contains(jobProperty)) {
 
 				jobPropertiesList.add(jobProperty);
