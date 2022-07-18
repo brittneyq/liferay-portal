@@ -135,6 +135,10 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		try {
 			modifiedFilesList.addAll(
 				portalGitWorkingDirectory.getModifiedModuleDirsList());
+
+			System.out.println(
+				"modified modules dirs : " +
+					portalGitWorkingDirectory.getModifiedModuleDirsList());
 		}
 		catch (IOException ioException) {
 			File workingDirectory =
@@ -160,14 +164,23 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		if (matcher.find()) {
 			moduleName = matcher.group("moduleName");
+
+			System.out.println("module name : " + moduleName);
 		}
 
 		for (File modifiedFile : modifiedFilesList) {
 			String modifiedModuleAbsolutePath =
 				JenkinsResultsParserUtil.getCanonicalPath(modifiedFile);
 
+			System.out.println(
+				"MODIFIED MODULE ABSOLUTE PATH : " +
+					modifiedModuleAbsolutePath);
+
 			if ((moduleName != null) &&
 				!modifiedModuleAbsolutePath.contains("/" + moduleName)) {
+
+				System.out.println(
+					"modified module absolute path contains module!!!");
 
 				continue;
 			}
