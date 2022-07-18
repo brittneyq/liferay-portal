@@ -159,6 +159,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			modifiedModuleDirsList.addAll(
 				getRequiredModuleDirs(
 					Lists.newArrayList(modifiedModuleDirsList)));
+
+			System.out.println(
+				"modified modules dir 2 : " + modifiedModuleDirsList);
 		}
 
 		Set<JobProperty> includesJobProperties = new HashSet<>();
@@ -214,9 +217,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 				"MODIFIED MODULE ABSOLUTE PATH : " +
 					modifiedModuleAbsolutePath);
 
-			if ((moduleName != null) &&
-				!modifiedModuleAbsolutePath.contains("/" + moduleName)) {
-
+			if (!modifiedModuleAbsolutePath.contains("modules")) {
 				System.out.println(
 					"modified module absolute path contains module!!!");
 
