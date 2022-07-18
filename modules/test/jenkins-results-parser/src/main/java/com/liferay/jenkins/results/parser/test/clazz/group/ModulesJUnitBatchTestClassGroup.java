@@ -14,6 +14,8 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
+import com.google.common.collect.Lists;
+
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
@@ -132,8 +134,10 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		List<File> modifiedFilesList =
 			portalGitWorkingDirectory.getModifiedFilesList();
 
+		Set<File> modifiedModuleDirsList = new HashSet<>();
+
 		try {
-			modifiedFilesList.addAll(
+			modifiedModuleDirsList.addAll(
 				portalGitWorkingDirectory.getModifiedModuleDirsList());
 
 			System.out.println(
@@ -152,8 +156,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		if (testRelevantChanges) {
-			modifiedFilesList.addAll(
-				getRequiredModuleDirs(new ArrayList<>(modifiedFilesList)));
+			modifiedModuleDirsList.addAll(
+				getRequiredModuleDirs(
+					Lists.newArrayList(modifiedModuleDirsList)));
 		}
 
 		Set<JobProperty> includesJobProperties = new HashSet<>();
@@ -166,6 +171,39 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			moduleName = matcher.group("moduleName");
 
 			System.out.println("module name : " + moduleName);
+		}
+
+		for (File modifiedModuleDir : modifiedModuleDirsList) {
+			String modifiedModuleAbsolutePath =
+				JenkinsResultsParserUtil.getCanonicalPath(modifiedModuleDir);
+
+			System.out.println(
+				"MODIFIED MODULE ABSOLUTE PATH 1 : " +
+					modifiedModuleAbsolutePath);
+
+			String modifiedModuleRelativePath =
+				modifiedModuleAbsolutePath.substring(
+					modifiedModuleAbsolutePath.indexOf("modules/"));
+
+			System.out.println(
+				"MODIFIED MODULE RELATIVE PATH 1 : " +
+					modifiedModuleRelativePath);
+
+			if ((moduleName != null) &&
+				!modifiedModuleRelativePath.contains("/" + moduleName)) {
+
+				continue;
+			}
+
+			includesJobProperties.add(
+				getJobProperty(
+					"test.batch.class.names.includes.modules",
+					modifiedModuleDir, JobProperty.Type.INCLUDE_GLOB));
+
+			includesJobProperties.add(
+				getJobProperty(
+					"modules.includes.required.test.batch.class.names.includes",
+					modifiedModuleDir, JobProperty.Type.MODULE_INCLUDE_GLOB));
 		}
 
 		for (File modifiedFile : modifiedFilesList) {
@@ -197,7 +235,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 					JobProperty.Type.MODULE_INCLUDE_GLOB, null));
 		}
 
-		File workingDirectory = portalGitWorkingDirectory.getWorkingDirectory();
+		/*File workingDirectory = portalGitWorkingDirectory.getWorkingDirectory();
 
 		includesJobProperties.add(
 			getJobProperty(
@@ -207,7 +245,7 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		includesJobProperties.add(
 			getJobProperty(
 				"modules.includes.required.test.batch.class.names.includes",
-				workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));
+				workingDirectory, JobProperty.Type.MODULE_INCLUDE_GLOB));*/
 
 		return new ArrayList<>(includesJobProperties);
 	}
