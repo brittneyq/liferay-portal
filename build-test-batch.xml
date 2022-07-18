@@ -4909,12 +4909,6 @@ log.sanitizer.enabled=false</echo>
 		<run-functional-test app.server.type="weblogic" database.type="mysql" database.version="5.7" />
 	</target>
 
-	<target name="functional-upgrade-weblogic141-mysql56-jdk8">
-		<set-app-server-version-number app.server.type="weblogic" app.server.version="14.1.1" />
-
-		<run-functional-test app.server.type="weblogic" database.type="mysql" />
-	</target>
-
 	<target name="functional-upgrade-weblogic141-mysql57-jdk8">
 		<set-app-server-version-number app.server.type="weblogic" app.server.version="14.1.1" />
 
