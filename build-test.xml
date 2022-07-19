@@ -12581,28 +12581,9 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 		</if>
 
 		<if>
-			<and>
-				<equals arg1="${app.server.type}" arg2="weblogic" />
-				<equals arg1="${app.server.weblogic.version.build}" arg2="12213" />
-			</and>
+			<equals arg1="${app.server.type}" arg2="weblogic" />	
 			<then>
 				<ant antfile="build-test-elasticsearch7.xml" target="get-sidecar-binaries" />
-			</then>
-		</if>
-
-		<if>
-			<and>
-				<equals arg1="${app.server.type}" arg2="weblogic" />
-				<equals arg1="${app.server.weblogic.version.build}" arg2="14110" />
-			</and>
-			<then>
-				<ant antfile="build-test-elasticsearch7.xml" target="get-sidecar-binaries" />
-
-				<echo file="${liferay.home}/tools/portal-tools-db-upgrade-client/app-server.properties">dir=${app.server.dir}
-extra.lib.dirs=wlserver/modules
-global.lib.dir=domains/liferay/lib
-portal.dir=domains/liferay/autodeploy/ROOT
-server.detector.server.id=weblogic</echo>
 			</then>
 		</if>
 
