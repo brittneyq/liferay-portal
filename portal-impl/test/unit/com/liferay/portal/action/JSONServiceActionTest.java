@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
- * @author Igor Spasic
+ * @author Igor Spasics
  */
 public class JSONServiceActionTest {
 
