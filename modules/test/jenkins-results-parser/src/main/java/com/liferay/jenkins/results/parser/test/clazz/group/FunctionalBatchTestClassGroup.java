@@ -334,6 +334,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
 
+		String canonicalFilePath = canonicalFile.getPath();
+
+		System.out.println("CANONICAL FILE : " + canonicalFile);
+
 		File parentFile = canonicalFile.getParentFile();
 
 		if ((parentFile == null) || !parentFile.exists()) {
@@ -356,6 +360,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
+
+		if (canonicalFilePath.contains("test.properties")) {
+			testPropertiesFile = canonicalFile;
+		}
+
+		System.out.println("test properties file : " + testPropertiesFile);
 
 		if (!testPropertiesFile.exists()) {
 			return _concatPQL(parentFile, concatedPQL);
