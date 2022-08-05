@@ -338,6 +338,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("CANONICAL FILE : " + canonicalFile);
 
+		System.out.println("CANONICAL FILE PATH : " + canonicalFilePath);
+
 		File parentFile = canonicalFile.getParentFile();
 
 		if ((parentFile == null) || !parentFile.exists()) {
@@ -362,16 +364,22 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
 		if (canonicalFilePath.contains("test.properties")) {
+			System.out.println("canoical file contains test.properties!");
+
 			testPropertiesFile = canonicalFile;
 		}
 
 		System.out.println("test properties file : " + testPropertiesFile);
 
 		if (!testPropertiesFile.exists()) {
+			System.out.println("hello 1");
+
 			return _concatPQL(parentFile, concatedPQL);
 		}
 
 		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
+			System.out.println("hello 2");
+
 			return concatedPQL;
 		}
 
@@ -383,11 +391,16 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
+		System.out.println(
+			"test batch property query : " + testBatchPropertyQuery);
+
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
 			!concatedPQL.contains(testBatchPropertyQuery)) {
 
 			recordJobProperty(jobProperty);
+
+			System.out.println("recorded job property...");
 
 			if (!concatedPQL.isEmpty()) {
 				concatedPQL += JenkinsResultsParserUtil.combine(
@@ -396,6 +409,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			else {
 				concatedPQL += testBatchPropertyQuery;
 			}
+
+			System.out.println("CONCATED PQL : " + concatedPQL);
 		}
 
 		Properties testProperties = JenkinsResultsParserUtil.getProperties(
@@ -427,7 +442,11 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
 
+			System.out.println("MODIFIED FILE !!!! : " + modifiedFile);
+
 			String testBatchPQL = _concatPQL(modifiedFile, "");
+
+			System.out.println("TEST BATCH PQL : " + testBatchPQL);
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(testBatchPQL) ||
 				testBatchPQL.equals("false")) {
