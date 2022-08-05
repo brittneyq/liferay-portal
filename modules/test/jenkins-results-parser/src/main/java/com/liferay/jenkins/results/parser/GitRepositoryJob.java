@@ -173,6 +173,8 @@ public abstract class GitRepositoryJob extends BaseJob {
 					modifiedFile, workingDirectory));
 		}
 
+		System.out.println("****MODIFIED FILES****:" + modifiedFiles);
+
 		branchJSONObject.put("modified_files", modifiedFiles);
 
 		if (gitWorkingDirectory instanceof PortalGitWorkingDirectory) {
@@ -189,6 +191,9 @@ public abstract class GitRepositoryJob extends BaseJob {
 						JenkinsResultsParserUtil.getPathRelativeTo(
 							modifiedModuleDir, workingDirectory));
 				}
+
+				System.out.println(
+					"****MODIFIED MODULES**** : " + modifiedModuleDirs);
 
 				branchJSONObject.put("modified_modules", modifiedModuleDirs);
 			}
