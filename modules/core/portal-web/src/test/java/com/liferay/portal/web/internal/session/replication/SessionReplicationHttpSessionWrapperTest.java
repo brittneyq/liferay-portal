@@ -44,7 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * @author Tina Tian
+ * @author Tina Tians
  */
 public class SessionReplicationHttpSessionWrapperTest {
 
