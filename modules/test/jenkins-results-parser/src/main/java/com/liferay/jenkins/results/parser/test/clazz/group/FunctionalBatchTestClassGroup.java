@@ -363,11 +363,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
-		if (canonicalFilePath.contains("test.properties")) {
-			System.out.println("canoical file contains test.properties!");
-
-			testPropertiesFile = canonicalFile;
-		}
+		/*	if (canonicalFilePath.contains("test.properties")) {
+				System.out.println("canoical file contains test.properties!");
+				testPropertiesFile = canonicalFile;
+			}*/
 
 		System.out.println("test properties file : " + testPropertiesFile);
 
