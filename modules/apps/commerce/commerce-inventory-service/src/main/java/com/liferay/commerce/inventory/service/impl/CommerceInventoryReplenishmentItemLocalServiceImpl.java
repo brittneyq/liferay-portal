@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
+
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -97,7 +98,7 @@ public class CommerceInventoryReplenishmentItemLocalServiceImpl
 	}
 
 	public CommerceInventoryReplenishmentItem
-		fetchCommerceInventoryReplenishmentItem(
+		fetchCommerceInventoryReplenishmentItems(
 			long companyId, String sku,
 			OrderByComparator<CommerceInventoryReplenishmentItem>
 				orderByComparator) {
@@ -171,6 +172,19 @@ public class CommerceInventoryReplenishmentItemLocalServiceImpl
 
 		return commerceInventoryReplenishmentItemPersistence.countByC_S(
 			companyId, sku);
+	}
+
+	@Override
+	public CommerceInventoryReplenishmentItem
+			testCommerceInventoryReplenishmentItem(
+				String externalReferenceCode,
+				long commerceInventoryReplenishmentItemId,
+				Date availabilityDate, int quantity, long mvccVersion)
+		throws PortalException {
+
+		System.out.println("Testing...!");
+
+		commerceInventoryReplenishItem.setAvailabilityDate(availabilityDate);
 	}
 
 	@Override
