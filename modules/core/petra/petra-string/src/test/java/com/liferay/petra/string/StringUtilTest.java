@@ -38,7 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * @author Alexander Chow
+ * @author Alexander Chows
  * @author Shuyang Zhou
  * @author Hugo Huijser
  * @author Preston Crary
