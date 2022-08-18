@@ -325,7 +325,7 @@ are free. See http://docs.microsofttranslator.com/text-translate.html for more
 information.
 	</fail>
 
-	<property name="whip.agent" value="-javaagent:${project.dir}/${junit.whip.jar}=${junit.whip.includes};${junit.whip.excludes}" />
+	<property name="whip.agent" value="-javaagent:${project.dir}/${junit.whip.jar}=excludes=${junit.whip.excludes}" />
 
 	<macrodef name="app-server-properties-reset">
 		<sequential>
