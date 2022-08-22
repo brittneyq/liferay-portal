@@ -336,7 +336,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File parentFile = canonicalFile.getParentFile();
 
+		System.out.println("canonical file is : " + canonicalFile);
+
+		System.out.println("parent file is : " + parentFile);
+
 		if ((parentFile == null) || !parentFile.exists()) {
+			System.out.println("parent file is null or does not exist");
+
 			return "";
 		}
 
@@ -347,21 +353,36 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		Path parentFilePath = parentFile.toPath();
 
+		System.out.println("modules base dir path : " + modulesBaseDirPath);
+
+		System.out.println("parent file path : " + parentFilePath);
+
 		if (parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println("parent file path equals modules base dir path");
+
 			return concatedPQL;
 		}
 
 		if (!canonicalFile.isDirectory()) {
+			System.out.println("canonical file is not a directory");
+
 			return _concatPQL(parentFile, concatedPQL);
 		}
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
 		if (!testPropertiesFile.exists()) {
+			System.out.println("test properties file does not exist");
+
 			return _concatPQL(parentFile, concatedPQL);
 		}
 
 		if (_traversedPropertyFiles.contains(testPropertiesFile)) {
+			System.out.println(
+				"traversed property file contains test property file");
+			System.out.println(
+				"traversed property files list : " + _traversedPropertyFiles);
+
 			return concatedPQL;
 		}
 
@@ -372,6 +393,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
 
 		String testBatchPropertyQuery = jobProperty.getValue();
+
+		System.out.println(
+			"test batch property query : " + testBatchPropertyQuery);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testBatchPropertyQuery) &&
 			!testBatchPropertyQuery.equals("false") &&
@@ -386,6 +410,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			else {
 				concatedPQL += testBatchPropertyQuery;
 			}
+
+			System.out.println("recorded concated pql : " + concatedPQL);
 		}
 
 		Properties testProperties = JenkinsResultsParserUtil.getProperties(
@@ -396,10 +422,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 				testProperties, "ignoreParents", false, getTestSuiteName()));
 
 		if (ignoreParents) {
+			System.out.println("Ignored parents");
+
 			return concatedPQL;
 		}
 
 		if (!parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println(
+				"parent file does not equal modules base dir path");
+
 			return _concatPQL(parentFile, concatedPQL);
 		}
 
@@ -416,6 +447,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
+
+			System.out.println("modified file is : " + modifiedFile);
 
 			String testBatchPQL = _concatPQL(modifiedFile, "");
 
