@@ -357,12 +357,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("parent file path : " + parentFilePath);
 
-		if (parentFilePath.equals(modulesBaseDirPath)) {
-			System.out.println("parent file path equals modules base dir path");
-
-			return concatedPQL;
-		}
-
 		if (!canonicalFile.isDirectory()) {
 			System.out.println("canonical file is not a directory");
 
@@ -451,6 +445,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 			return _concatPQL(parentFile, concatedPQL);
 		}
+
+		System.out.println("Returning concated pql!!!!!");
 
 		return concatedPQL;
 	}
