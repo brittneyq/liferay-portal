@@ -396,21 +396,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			"test.batch.run.property.query", getTestSuiteName(), batchName,
 			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
 
-		String canonicalFilePath = canonicalFile.getPath();
-
-		System.out.println("canonical file path is : " + canonicalFilePath);
-
-		if (!canonicalFilePath.contains("modules")) {
-			System.out.println("canonical file path does not contain modules!");
-
-			JobProperty testJobProperty = getJobProperty(
-				"test.batch.run.property.query", getTestSuiteName(), batchName,
-				canonicalFile, JobProperty.Type.DEFAULT_TEST_DIR);
-
-			System.out.println(
-				"JOB PROPERTY 2 : " + testJobProperty.getValue());
-		}
-
 		String testBatchPropertyQuery = jobProperty.getValue();
 
 		System.out.println(
@@ -450,6 +435,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		if (parentFile.equals(
 				portalGitWorkingDirectory.getWorkingDirectory())) {
+
+			System.out.println("PARENT FILE equals get working directory");
+
+			System.out.println(
+				"PARENT FILE : " + parentFile + " WORKING DIRECTORY : " +
+					portalGitWorkingDirectory.getWorkingDirectory());
 
 			return concatedPQL;
 		}
