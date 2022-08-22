@@ -403,9 +403,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		if (!canonicalFilePath.contains("modules")) {
 			System.out.println("canonical file path does not contain modules!");
 
-			jobProperty = getJobProperty(
+			JobProperty testJobProperty = getJobProperty(
 				"test.batch.run.property.query", getTestSuiteName(), batchName,
 				canonicalFile, JobProperty.Type.DEFAULT_TEST_DIR);
+
+			System.out.println(
+				"JOB PROPERTY 2 : " + testJobProperty.getValue());
 		}
 
 		String testBatchPropertyQuery = jobProperty.getValue();
@@ -418,6 +421,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			!concatedPQL.contains(testBatchPropertyQuery)) {
 
 			recordJobProperty(jobProperty);
+
+			System.out.println("RECORDED JOB PROPERTY!");
 
 			if (!concatedPQL.isEmpty()) {
 				concatedPQL += JenkinsResultsParserUtil.combine(
@@ -439,6 +444,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		if (ignoreParents) {
 			System.out.println("Ignored parents");
+
+			return concatedPQL;
+		}
+
+		if (parentFile.equals(
+				portalGitWorkingDirectory.getWorkingDirectory())) {
 
 			return concatedPQL;
 		}
