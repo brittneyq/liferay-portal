@@ -142,6 +142,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		super(batchName, portalTestClassJob);
 
+		_traversedPropertyFiles.clear();
+
 		_setTestBatchRunPropertyQueries();
 
 		setAxisTestClassGroups();
@@ -395,18 +397,6 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		JobProperty jobProperty = getJobProperty(
 			"test.batch.run.property.query", getTestSuiteName(), batchName,
 			canonicalFile, JobProperty.Type.MODULE_TEST_DIR);
-
-		String canonicalFilePath = canonicalFile.getPath();
-
-		System.out.println("CANONICAL FILE PATH : " + canonicalFilePath);
-
-		if (!canonicalFilePath.contains("modules")) {
-			System.out.println("canonical file does not contain modules...");
-
-			jobProperty = getJobProperty(
-				"test.batch.run.property.query", getTestSuiteName(), batchName,
-				canonicalFile, JobProperty.Type.DEFAULT_TEST_DIR);
-		}
 
 		String testBatchPropertyQuery = jobProperty.getValue();
 
