@@ -371,6 +371,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
+		System.out.println(
+			"TEST PROPERTIES FILE : " + testPropertiesFile + " FOR " +
+				canonicalFile);
+
 		if (!testPropertiesFile.exists()) {
 			System.out.println("test properties file does not exist");
 
