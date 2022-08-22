@@ -357,13 +357,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("parent file path : " + parentFilePath);
 
+		File testPropertiesFile = new File(canonicalFile, "test.properties");
+
+		if (modulesBaseDirPath.equals(parentFilePath) &&
+			!testPropertiesFile.exists()) {
+
+			return concatedPQL;
+		}
+
 		if (!canonicalFile.isDirectory()) {
 			System.out.println("canonical file is not a directory");
 
 			return _concatPQL(parentFile, concatedPQL);
 		}
-
-		File testPropertiesFile = new File(canonicalFile, "test.properties");
 
 		System.out.println(
 			"TEST PROPERTIES FILE : " + testPropertiesFile + " FOR " +
@@ -439,15 +445,16 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return concatedPQL;
 		}
 
-		if (parentFilePath.equals(modulesBaseDirPath)) {
-			System.out.println("parent file does equal modules base dir path");
+		if (!parentFilePath.equals(modulesBaseDirPath)) {
+			System.out.println(
+				"parent file does not equal modules base dir path");
 
 			System.out.println("Returning concated pql!!!!!");
 
-			return concatedPQL;
+			return _concatPQL(parentFile, concatedPQL);
 		}
 
-		return _concatPQL(parentFile, concatedPQL);
+		return concatedPQL;
 	}
 
 	private String _getTestBatchRunPropertyQuery(File testBaseDir) {
