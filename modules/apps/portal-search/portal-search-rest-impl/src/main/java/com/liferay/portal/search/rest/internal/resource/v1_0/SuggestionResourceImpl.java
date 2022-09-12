@@ -58,7 +58,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 /**
- * @author Petteri Karttunen
+ * @author Petteri Karttunens
  */
 @Component(
 	configurationPid = "com.liferay.portal.search.rest.configuration.SearchSuggestionsCompanyConfiguration",

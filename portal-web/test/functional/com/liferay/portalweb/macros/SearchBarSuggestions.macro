@@ -72,6 +72,10 @@ definition {
 			locator1 = "SearchBarSuggestions#RESULTS_LIST_ITEM_TITLE");
 	}
 
+	macro showMoreSuggestion {
+		Click.mouseDownMouseUp(locator1 = "Button#SHOW_MORE");
+	}
+
 	macro showMoreSuggestions {
 		Click.mouseDownMouseUp(locator1 = "Button#SHOW_MORE");
 	}
