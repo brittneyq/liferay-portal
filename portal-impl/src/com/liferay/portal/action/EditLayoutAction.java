@@ -48,7 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Ming-Gih Lam
- * @author Hugo Huijser
+ * @author Hugo Huijsers
  */
 public class EditLayoutAction extends JSONAction {
 

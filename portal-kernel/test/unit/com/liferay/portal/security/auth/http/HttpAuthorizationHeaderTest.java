@@ -23,7 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Tomas Polesovsky
+ * @author Tomas Polesovskys
  */
 public class HttpAuthorizationHeaderTest {
 
