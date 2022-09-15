@@ -171,6 +171,12 @@ definition {
 			value1 = "${contentBody}");
 	}
 
+	macro viewUserDetail {
+		AssertTextEquals.assertPartialText(
+			locator1 = "WorkflowSubmissionsTask#PREVIEW_USER",
+			value1 = "${userEmailAddress}");
+	}
+
 	macro viewUserDetails {
 		AssertTextEquals.assertPartialText(
 			locator1 = "WorkflowSubmissionsTask#PREVIEW_USER",
