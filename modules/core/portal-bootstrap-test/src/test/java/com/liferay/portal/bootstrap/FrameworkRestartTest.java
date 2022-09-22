@@ -63,7 +63,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
- * @author Matthew Tambara
+ * @author Matthew Tambaras
  */
 public class FrameworkRestartTest {
 
