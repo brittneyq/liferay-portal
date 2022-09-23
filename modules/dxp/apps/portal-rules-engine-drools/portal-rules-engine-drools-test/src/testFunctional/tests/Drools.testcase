@@ -24,7 +24,7 @@ definition {
 		}
 	}
 
-	@priority = "4"
+	@priority = "5"
 	test ViewWebContentInSampleDrools {
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 

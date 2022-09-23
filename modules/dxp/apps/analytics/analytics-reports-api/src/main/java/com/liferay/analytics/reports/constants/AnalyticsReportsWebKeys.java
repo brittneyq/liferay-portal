@@ -15,7 +15,7 @@
 package com.liferay.analytics.reports.constants;
 
 /**
- * @author Cristina González
+ * @author Cristina Gonzálezs
  */
 public class AnalyticsReportsWebKeys {
 

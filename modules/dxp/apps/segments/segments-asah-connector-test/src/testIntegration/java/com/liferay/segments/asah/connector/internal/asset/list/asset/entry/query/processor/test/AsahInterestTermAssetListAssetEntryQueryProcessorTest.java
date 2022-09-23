@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author David Arques
+ * @author David Arquess
  */
 @RunWith(Arquillian.class)
 public class AsahInterestTermAssetListAssetEntryQueryProcessorTest {
