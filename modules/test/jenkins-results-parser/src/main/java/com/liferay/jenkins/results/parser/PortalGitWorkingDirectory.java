@@ -90,6 +90,8 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 						getWorkingDirectory(), modulesMatcher.group());
 
 					modifiedNonPoshiDirs.add(modifiedDir);
+
+					continue;
 				}
 
 				Matcher longerModulesMatcher =
@@ -141,6 +143,8 @@ public class PortalGitWorkingDirectory extends GitWorkingDirectory {
 						getWorkingDirectory(), modulesMatcher.group());
 
 					modifiedPoshiDirs.add(modifiedDir);
+
+					continue;
 				}
 
 				Matcher longerModulesMatcher =
