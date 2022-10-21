@@ -295,38 +295,19 @@ public class Dom4JUtil {
 			return saxReader.read(new StringReader(xml));
 		}
 		catch (Exception exception1) {
-			DocumentBuilderFactory documentBuilderFactory =
-				DocumentBuilderFactory.newInstance();
+			org.w3c.dom.Document orgW3CDomDocument;
 
 			try {
-				DocumentBuilder documentBuilder =
-					documentBuilderFactory.newDocumentBuilder();
-
-				org.w3c.dom.Document orgW3CDomDocument;
-
-				if (!xml.contains("<!DOCTYPE definition")) {
-					String documentTypeDefinition =
-						"<!DOCTYPE definition [\n<!ENTITY micro" +
-							"  \"&#181;\">\n]>\n";
-
-					orgW3CDomDocument = documentBuilder.parse(
-						new InputSource(
-							new StringReader(documentTypeDefinition + xml)));
-				}
-				else {
-					orgW3CDomDocument = documentBuilder.parse(
-						new InputSource(new StringReader(xml)));
-				}
-
-				DOMReader domReader = new DOMReader();
-
-				return domReader.read(orgW3CDomDocument);
+				orgW3CDomDocument = _documentBuilder.parse(
+					new InputSource(new StringReader(xml)));
 			}
-			catch (IOException | ParserConfigurationException | SAXException
-						exception2) {
-
+			catch (IOException | SAXException exception2) {
 				throw new RuntimeException(exception2);
 			}
+
+			DOMReader domReader = new DOMReader();
+
+			return domReader.read(orgW3CDomDocument);
 		}
 	}
 
@@ -405,5 +386,27 @@ public class Dom4JUtil {
 			truncateElement(iterator.next(), size);
 		}
 	}
+
+	private static DocumentBuilder _createDocumentBuilder() {
+		DocumentBuilderFactory documentBuilderFactory =
+			DocumentBuilderFactory.newInstance();
+
+		documentBuilderFactory.setAttribute(
+			"http://apache.org/xml/features/nonvalidating/load-external-dtd",
+			Boolean.FALSE);
+		documentBuilderFactory.setValidating(false);
+
+		try {
+			return documentBuilderFactory.newDocumentBuilder();
+		}
+		catch (ParserConfigurationException parserConfigurationException) {
+			throw new RuntimeException(
+				"Unable to create document builder",
+				parserConfigurationException);
+		}
+	}
+
+	private static final DocumentBuilder _documentBuilder =
+		_createDocumentBuilder();
 
 }
