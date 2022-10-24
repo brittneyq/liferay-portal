@@ -23,7 +23,11 @@ definition {
 	}
 
 	@description = "This test asserts that a user can view all the Account Groups an account is assigned to via Account details page"
+<<<<<<< HEAD:modules/apps/account/account-test/src/testFunctional/tests/Account.testcase
 	@priority = 4
+=======
+	@priority = "3"
+>>>>>>> a7021018cde3 (LRCI-2735 Add extra paranthesis):modules/apps/account/account-test/src/testFunctional/tests/Accounts.testcase
 	test AccountGroupsAreDisplayedInAccountDetailsPage {
 		property portal.acceptance = "true";
 
