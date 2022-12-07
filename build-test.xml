@@ -10738,6 +10738,8 @@ send_user $expect_out(buffer)]]></echo>
 
 						String content = JenkinsResultsParserUtil.read(testResultsFile);
 
+						System.out.println("CONTENT OF TEST RESULT FILES : " + content);
+
 						try {
 							Document document = Dom4JUtil.parse(content);
 
