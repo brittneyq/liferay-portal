@@ -105,7 +105,7 @@ public class UpgradePortletPreferencesTest {
 	public void testUpgradeDLDateFieldsValues() throws Exception {
 		Date date = new Date();
 
-		String dateString = _oldDateFormat.format(date);
+		Date dateString = _oldDateFormat.format(date);
 
 		PortletPreferences portletPreferences = updatePortletPreferences(
 			getPortletId(),
