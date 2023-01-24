@@ -180,6 +180,39 @@ public class UpstreamFailureUtil {
 		return null;
 	}
 
+	public static boolean isBuildFailingInUpstreamJob(Build build) {
+		if (!_upstreamComparisonAvailable || !build.isCompareToUpstream()) {
+			return false;
+		}
+
+		try {
+			List<TestResult> testResults = new ArrayList<>();
+
+			testResults.addAll(build.getTestResults("FAILED"));
+			testResults.addAll(build.getTestResults("REGRESSION"));
+
+			if (testResults.isEmpty() && build.isFailing()) {
+				return false;
+			}
+
+			for (TestResult testResult : testResults) {
+				if (testResult.isUniqueFailure()) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+		catch (Exception exception) {
+			System.out.println(
+				"Unable to get upstream acceptance failure data.");
+
+			exception.printStackTrace();
+
+			return false;
+		}
+	}
+
 	public static boolean isTestFailingInUpstreamJob(TestResult testResult) {
 		Build build = testResult.getBuild();
 

@@ -1896,10 +1896,10 @@ public abstract class BaseBuild implements Build {
 		}
 
 		if (!Objects.equals(getStatus(), "completed")) {
-			return isFailing();
+			return !UpstreamFailureUtil.isBuildFailingInUpstreamJob(this);
 		}
 
-		_uniqueFailure = isFailing();
+		_uniqueFailure = !UpstreamFailureUtil.isBuildFailingInUpstreamJob(this);
 
 		return _uniqueFailure;
 	}
