@@ -1899,7 +1899,7 @@ public abstract class BaseBuild implements Build {
 
 		testResults.addAll(getTestResults());
 
-		if (testResults.isEmpty() && isFailing()) {
+		if (testResults.isEmpty()) {
 			return true;
 		}
 
@@ -1909,7 +1909,7 @@ public abstract class BaseBuild implements Build {
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	@Override
