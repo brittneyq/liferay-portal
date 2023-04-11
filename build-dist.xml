@@ -2398,11 +2398,23 @@ this task.
 			<then>
 				<mkdir dir="${app.server.parent.dir}" />
 
-				<mirrors-get
-					dest="${app.server.parent.dir}/${app.server.wildfly.zip.name}"
-					src="${app.server.wildfly.zip.url}"
-					verbose="true"
-				/>
+				<if>
+					<equals arg1="${app.server.wildfly.version}" arg2="26.1.0" />
+					<then>
+						<mirrors-get
+							dest="${app.server.parent.dir}/${app.server.wildfly.custom.zip.name}"
+							src="${app.server.wildfly.custom.zip.url}"
+							verbose="true"
+						/>
+					</then>
+					<else>
+						<mirrors-get
+							dest="${app.server.parent.dir}/${app.server.wildfly.zip.name}"
+							src="${app.server.wildfly.zip.url}"
+							verbose="true"
+						/>
+					</else>
+				</if>
 			</then>
 		</if>
 
