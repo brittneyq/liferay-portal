@@ -9,10 +9,24 @@
 
 			<delete file="${analytics.cloud.asah.dir}/docker-compose.test.yml" />
 
-			<copy
-				file="${analytics.cloud.asah.dir}/docker-compose.yml"
-				tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
-			/>
+			<if>
+				<and>
+					<equals arg1="${analytics.cloud.asah.build}" arg2="true" />
+					<equals arg1="${env.CI_TEST_SUITE}" arg2="analytics-cloud-integration" />
+				</and>
+				<then>
+					<copy
+						file="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml"
+						tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
+					/>
+				</then>
+				<else>
+					<copy
+						file="${analytics.cloud.asah.dir}/docker-compose.yml"
+						tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
+					/>
+				</else>
+			</if>
 
 			<property location="${analytics.cloud.asah.dir}/docker-compose.test.yml" name="analytics.cloud.docker.test.yaml" />
 
