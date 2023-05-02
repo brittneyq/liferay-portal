@@ -12,7 +12,7 @@
 			<if>
 				<and>
 					<equals arg1="${analytics.cloud.asah.build}" arg2="true" />
-					<equals arg1="${env.CI_TEST_SUITE}" arg2="analytics-cloud-integration" />
+					<equals arg1="${test.analytics.cloud.integration}" arg2="true" />
 				</and>
 				<then>
 					<copy
