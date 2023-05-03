@@ -290,6 +290,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		System.out.println("JOB PROPERTY NAME : " + jobProperty.getName());
 
+		System.out.println("JOB PROPERTY VALUE : " + jobProperty.getValue());
+
 		includesJobProperties.add(
 			getJobProperty(
 				"test.batch.class.names.includes",
