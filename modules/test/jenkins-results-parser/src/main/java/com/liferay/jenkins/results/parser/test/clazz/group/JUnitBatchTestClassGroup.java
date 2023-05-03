@@ -281,6 +281,15 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	protected List<JobProperty> getDefaultIncludesJobProperties() {
 		List<JobProperty> includesJobProperties = new ArrayList<>();
 
+		JobProperty jobProperty = getJobProperty(
+			"test.batch.class.names.includes", JobProperty.Type.INCLUDE_GLOB);
+
+		System.out.println(
+			"JOB PROPERTY PROPERTIES FILE PATH : " +
+				jobProperty.getPropertiesFilePath());
+
+		System.out.println("JOB PROPERTY NAME : " + jobProperty.getName());
+
 		includesJobProperties.add(
 			getJobProperty(
 				"test.batch.class.names.includes",
