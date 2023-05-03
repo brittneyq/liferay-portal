@@ -3054,6 +3054,12 @@ log.sanitizer.enabled=false</echo>
 		</sequential>
 	</macrodef>
 
+	<target name="analytics-cloud-integration-mysql57-jdk8">
+		<fail message="Please set the property ${subrepository.name}." unless="subrepository.name" />
+
+		<run-modules-integration-test database.type="mysql" database.version="5.7" refreshdependencies="true" subrepository.name="com-liferay-osb-asah-private" />
+	</target>
+
 	<target name="archived-module-smoke-mysql57-jdk8">
 		<run-archived-module-smoke />
 	</target>
