@@ -3057,7 +3057,7 @@ log.sanitizer.enabled=false</echo>
 	<target name="analytics-cloud-integration">
 		<run-batch-test>
 			<test-action>
-				<local name="analytics.cloud.asah.dir.dir" />
+				<local name="analytics.cloud.asah.dir" />
 
 				<property name="analytics.cloud.asah.dir" value="../com-liferay-osb-asah-private" />
 

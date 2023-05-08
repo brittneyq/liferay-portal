@@ -9,18 +9,28 @@
 
 			<delete file="${analytics.cloud.asah.dir}/docker-compose.test.yml" />
 
+			<local name="analytics.cloud.integration" />
+
+			<property name="analytics.cloud.integration" value="${test.analytics.cloud.integration}" />
+
+			<echo>analytics.cloud.integration ${analytics.cloud.integration}</echo>
+
 			<if>
 				<and>
 					<equals arg1="${analytics.cloud.asah.build}" arg2="true" />
-					<equals arg1="${test.analytics.cloud.integration}" arg2="true" />
+					<equals arg1="${analytics.cloud.integration}" arg2="true" />
 				</and>
 				<then>
+					<echo>Using docker compose integration test!!!</echo>
+
 					<copy
 						file="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml"
 						tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
 					/>
 				</then>
 				<else>
+					<echo>Using docker compose regular test!!</echo>
+
 					<copy
 						file="${analytics.cloud.asah.dir}/docker-compose.yml"
 						tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
