@@ -3062,11 +3062,11 @@ log.sanitizer.enabled=false</echo>
 				<property name="analytics.cloud.asah.dir" value="../com-liferay-osb-asah-private" />
 
 				<if>
-					<available file="${analytics.cloud.asah.dir.dir}" />
+					<available file="${analytics.cloud.asah.dir}" />
 					<then>
 						<echo></echo>
 						<echo>#</echo>
-						<echo># Executing asah integration tests..</echo>
+						<echo># Executing asah integration tests.. at ${analytics.cloud.asah.dir}</echo>
 						<echo>#</echo>
 						<echo></echo>
 
