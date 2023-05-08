@@ -3078,7 +3078,7 @@ log.sanitizer.enabled=false</echo>
 			</test-action>
 
 			<test-set-up>
-				<ant antfile="build-test-analytics-cloud.xml" target="start-analytics-cloud" />
+				<ant antfile="build-test-analytics-cloud.xml" target="start-analytics-cloud-integration" />
 			</test-set-up>
 
 			<test-tear-down>

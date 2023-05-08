@@ -383,6 +383,78 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 		</sequential>
 	</macrodef>
 
+	<macrodef name="start-analytics-cloud-integration">
+		<sequential>
+			<fail message="Please set the property ${env.DOCKER_ENABLED}." unless="env.DOCKER_ENABLED" />
+
+			<create-analytics-cloud-docker-compose />
+
+			<property location="${analytics.cloud.asah.dir}/docker-compose.test.yml" name="analytics.cloud.docker.test.yaml" />
+
+			<property location="${analytics.cloud.asah.dir}/start_analytics_cloud.sh" name="analytics.cloud.start.sh" />
+
+			<echo file="${analytics.cloud.start.sh}">
+				#!/bin/bash
+
+				touch local.env
+
+				docker-compose --file=${analytics.cloud.docker.test.yaml} --project-name=${analytics.cloud.project.name} up --detach
+
+				while [[ -n $(docker ps | grep "health: starting") ]] || [[ -n $(docker ps | grep "unhealthy") ]]
+				do
+					echo "Waiting for docker compose to be healthy."
+
+					sleep 30
+				done
+
+				docker container prune -f
+				docker image prune -f
+				docker volume prune -f
+			</echo>
+
+			<trycatch>
+				<try>
+					<retry retrycount="${analytics.cloud.retry.count}" retrydelay="30000">
+						<sequential>
+							<trycatch property="analytics.cloud.error">
+								<try>
+									<local name="analytics.cloud.start.result" />
+
+									<exec dir="${analytics.cloud.asah.dir}" executable="/bin/bash" resultproperty="analytics.cloud.start.result" timeout="${analytics.cloud.start.timeout}">
+										<arg value="${analytics.cloud.start.sh}" />
+									</exec>
+
+									<if>
+										<not>
+											<equals arg1="${analytics.cloud.start.result}" arg2="0" />
+										</not>
+										<then>
+											<fail message="Failed to start Analytics Cloud with error code ${analytics.cloud.start.result}." />
+										</then>
+									</if>
+								</try>
+								<catch>
+									<print-analytics-cloud-logs />
+
+									<stop-analytics-cloud />
+
+									<fail message="${analytics.cloud.error}" />
+								</catch>
+							</trycatch>
+						</sequential>
+					</retry>
+				</try>
+				<catch>
+					<echo>Failed to create Analytics Cloud demo data.</echo>
+
+					<fail message="${analytics.cloud.error}" />
+				</catch>
+			</trycatch>
+
+			<delete file="${analytics.cloud.start.sh}" />
+		</sequential>
+	</macrodef>
+
 	<macrodef name="stop-analytics-cloud">
 		<sequential>
 			<fail message="Please set the property ${env.DOCKER_ENABLED}." unless="env.DOCKER_ENABLED" />
@@ -409,6 +481,12 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 		<stop-analytics-cloud />
 
 		<start-analytics-cloud />
+	</target>
+
+	<target name="start-analytics-cloud-integration">
+		<stop-analytics-cloud />
+
+		<start-analytics-cloud-integration />
 	</target>
 
 	<target name="stop-analytics-cloud">
