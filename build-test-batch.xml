@@ -3054,6 +3054,39 @@ log.sanitizer.enabled=false</echo>
 		</sequential>
 	</macrodef>
 
+	<target name="analytics-cloud-integration">
+		<run-batch-test>
+			<test-action>
+				<local name="analytics.cloud.asah.dir.dir" />
+
+				<property name="analytics.cloud.asah.dir" value="../com-liferay-osb-asah-private" />
+
+				<if>
+					<available file="${analytics.cloud.asah.dir.dir}" />
+					<then>
+						<echo></echo>
+						<echo>#</echo>
+						<echo># Executing asah integration tests..</echo>
+						<echo>#</echo>
+						<echo></echo>
+
+						<execute dir="${analytics.cloud.asah.dir.dir}">
+							./gradlew testIntegration
+						</execute>
+					</then>
+				</if>
+			</test-action>
+
+			<test-set-up>
+				<ant antfile="build-test-analytics-cloud.xml" target="start-analytics-cloud" />
+			</test-set-up>
+
+			<test-tear-down>
+				<ant antfile="build-test-analytics-cloud.xml" target="stop-analytics-cloud" />
+			</test-tear-down>
+		</run-batch-test>
+	</target>
+
 	<target name="archived-module-smoke-mysql57-jdk8">
 		<run-archived-module-smoke />
 	</target>
