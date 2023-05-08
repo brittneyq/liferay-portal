@@ -3070,7 +3070,7 @@ log.sanitizer.enabled=false</echo>
 						<echo>#</echo>
 						<echo></echo>
 
-						<execute dir="${analytics.cloud.asah.dir.dir}">
+						<execute dir="${analytics.cloud.asah.dir}">
 							./gradlew testIntegration
 						</execute>
 					</then>
