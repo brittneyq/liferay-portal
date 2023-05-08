@@ -18,7 +18,7 @@
 			<if>
 				<and>
 					<equals arg1="${analytics.cloud.asah.build}" arg2="true" />
-					<equals arg1="${analytics.cloud.integration}" arg2="true" />
+					<contains string="${env.CI_TEST_SUITE}" substring="integration" />
 				</and>
 				<then>
 					<echo>Using docker compose integration test!!!</echo>
