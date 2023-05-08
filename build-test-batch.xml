@@ -3059,7 +3059,7 @@ log.sanitizer.enabled=false</echo>
 			<test-action>
 				<local name="analytics.cloud.asah.dir" />
 
-				<property name="analytics.cloud.asah.dir" value="../com-liferay-osb-asah-private" />
+				<property name="analytics.cloud.asah.dir" value="${project.dir}/../com-liferay-osb-asah-private" />
 
 				<if>
 					<available file="${analytics.cloud.asah.dir}" />
