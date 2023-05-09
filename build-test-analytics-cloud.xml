@@ -25,6 +25,7 @@
 						file="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml"
 						tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
 					/>
+
 				</then>
 				<else>
 					<echo>Using docker compose regular test!!</echo>
@@ -38,6 +39,18 @@
 
 			<property location="${analytics.cloud.asah.dir}/docker-compose.test.yml" name="analytics.cloud.docker.test.yaml" />
 
+			<replaceregexp
+				file="${analytics.cloud.docker.test.yaml}"
+				match="container_name: test_postgresql"
+				replace="container_name: postgresql"
+			/>
+
+			<replaceregexp
+				file="${analytics.cloud.docker.test.yaml}"
+				match="test_postgresql:"
+				replace="postgresql:"
+			/>
+			
 			<replaceregexp
 				file="${analytics.cloud.docker.test.yaml}"
 				match="container_name: faro"
