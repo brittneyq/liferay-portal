@@ -441,15 +441,6 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 					sleep 30
 				done
 
-				while [[ -z $(docker logs ${analytics.cloud.faro.container.name} | grep "Completed demo data creation") ]]
-				do
-					echo "Waiting for faro to startup."
-
-					sleep 15
-				done
-
-				docker logs ${analytics.cloud.faro.container.name}
-
 				docker container prune -f
 				docker image prune -f
 				docker volume prune -f
