@@ -25,7 +25,6 @@
 						file="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml"
 						tofile="${analytics.cloud.asah.dir}/docker-compose.test.yml"
 					/>
-
 				</then>
 				<else>
 					<echo>Using docker compose regular test!!</echo>
@@ -39,18 +38,6 @@
 
 			<property location="${analytics.cloud.asah.dir}/docker-compose.test.yml" name="analytics.cloud.docker.test.yaml" />
 
-			<replaceregexp
-				file="${analytics.cloud.docker.test.yaml}"
-				match="container_name: test_postgresql"
-				replace="container_name: postgresql"
-			/>
-
-			<replaceregexp
-				file="${analytics.cloud.docker.test.yaml}"
-				match="test_postgresql:"
-				replace="postgresql:"
-			/>
-			
 			<replaceregexp
 				file="${analytics.cloud.docker.test.yaml}"
 				match="container_name: faro"
@@ -430,7 +417,9 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 			<echo file="${analytics.cloud.asah.dir}/local.env">OSB_ASAH_BACKEND_URL=${analytics.cloud.asah.backend.url}
 OSB_ASAH_POSTGRESQL_ENABLED=false
 OSB_ASAH_PUBLISHER_URL=${analytics.cloud.asah.publisher.url}
-OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
+OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}
+POSTGRESQL_SERVER_IP=test_postgresql
+			</echo>
 
 			<pull-docker-image-dependencies
 				analytics.cloud.image.names.excludes="${analytics.cloud.asah.image.names.excludes}"
