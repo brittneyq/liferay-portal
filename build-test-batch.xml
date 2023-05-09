@@ -3071,8 +3071,6 @@ log.sanitizer.enabled=false</echo>
 						<echo></echo>
 
 						<execute dir="${analytics.cloud.asah.dir}">
-							docker-compose -f docker-compose.integration-test.yml up -d
-
 							docker ps
 
 							./gradlew testIntegration
