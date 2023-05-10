@@ -49,6 +49,14 @@
 	<td>//div[contains(@class,'lfr-tooltip-scope')][./input[contains(@name,'favicon')]]//img[@alt='Liferay Sample Theme Favicon']</td>
 	<td></td>
 </tr>
+
+<!-- Liferay Sample Theme Spritemap 1 -->
+
+<tr>
+	<td>THEME_SPRITEMAP_1_PAGE_PENCIL_ICON</td>
+	<td>//li[@class='control-menu-nav-item']//*[contains(@href,'/o/liferay-sample-theme-spritemap-1/spritemap.svg#pencil')]</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>
