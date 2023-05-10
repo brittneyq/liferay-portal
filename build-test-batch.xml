@@ -3073,6 +3073,16 @@ log.sanitizer.enabled=false</echo>
 						<execute dir="${analytics.cloud.asah.dir}">
 							docker ps
 
+							export POSTGRESQL_SERVER_IP=${env.HOSTNAME}
+
+							echo hello testing postgres server hostname
+
+							echo ${POSTGRESL_SERVER_IP}
+
+							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${env.HOSTNAME}/g' common.env
+
+							cat common.env
+
 							./gradlew testIntegration
 						</execute>
 					</then>
