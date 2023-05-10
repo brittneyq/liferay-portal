@@ -40,6 +40,12 @@
 
 			<replaceregexp
 				file="${analytics.cloud.docker.test.yaml}"
+				match="9200:9200;"
+				replace="${analytics.cloud.asah.elasticsearch.port}:9200;"
+			/>
+
+			<replaceregexp
+				file="${analytics.cloud.docker.test.yaml}"
 				match="container_name: faro"
 				replace="container_name: ${analytics.cloud.faro.container.name}"
 			/>
@@ -418,7 +424,6 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 OSB_ASAH_POSTGRESQL_ENABLED=false
 OSB_ASAH_PUBLISHER_URL=${analytics.cloud.asah.publisher.url}
 OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}
-POSTGRESQL_SERVER_IP=${env.HOSTNAME}
 			</echo>
 
 			<pull-docker-image-dependencies
@@ -440,6 +445,10 @@ POSTGRESQL_SERVER_IP=${env.HOSTNAME}
 				#!/bin/bash
 
 				touch local.env
+
+				export POSTGRESQL_SERVER_IP=postgresql
+
+				echo ${POSTGRESL_SERVER_IP}
 
 				docker-compose --file=${analytics.cloud.docker.test.yaml} --project-name=${analytics.cloud.project.name} up --detach
 
