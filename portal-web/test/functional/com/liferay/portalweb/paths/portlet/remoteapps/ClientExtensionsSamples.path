@@ -41,6 +41,14 @@
 	<td>//button[.//i[contains(@class,'fa-plus-circle')]]</td>
 	<td></td>
 </tr>
+
+<!-- Liferay Sample Theme Favicon -->
+
+<tr>
+	<td>THEME_FAVICON_CONFIGURATION_IMAGE</td>
+	<td>//div[contains(@class,'lfr-tooltip-scope')][./input[contains(@name,'favicon')]]//img[@alt='Liferay Sample Theme Favicon']</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>
