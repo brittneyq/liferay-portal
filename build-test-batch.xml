@@ -3061,6 +3061,14 @@ log.sanitizer.enabled=false</echo>
 
 				<property name="analytics.cloud.asah.dir" value="${project.dir}/../com-liferay-osb-asah-private" />
 
+				<propertyregex
+					input="${env.HOSTNAME}"
+					override="true"
+					property="short.hostname"
+					regexp="(cloud-[^\.]+|test-\d+-\d+-\d+)(\.lax\.liferay\.com)?"
+					replace="\1"
+				/>
+
 				<if>
 					<available file="${analytics.cloud.asah.dir}" />
 					<then>
@@ -3073,13 +3081,15 @@ log.sanitizer.enabled=false</echo>
 						<execute dir="${analytics.cloud.asah.dir}">
 							docker ps
 
-							export POSTGRESQL_SERVER_IP=${env.HOSTNAME}
+							export POSTGRESQL_SERVER_IP=${short.hostname}
 
 							echo hello testing postgres server hostname
 
 							echo ${POSTGRESL_SERVER_IP}
 
-							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${env.HOSTNAME}/g' common.env
+							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${short.hostname}/g' common.env
+
+							touch common.env
 
 							cat common.env
 

@@ -446,14 +446,6 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}
 
 				touch local.env
 
-				export POSTGRESQL_SERVER_IP=${env.HOSTNAME}
-
-				echo hello testing postgres server ip
-
-				echo ${POSTGRESL_SERVER_IP}
-
-				sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${env.HOSTNAME}/g' common.env
-
 				docker-compose --file=${analytics.cloud.docker.test.yaml} --project-name=${analytics.cloud.project.name} up --detach
 
 				while [[ -n $(docker ps | grep "health: starting") ]] || [[ -n $(docker ps | grep "unhealthy") ]]
