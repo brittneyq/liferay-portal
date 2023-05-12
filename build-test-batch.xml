@@ -3087,9 +3087,9 @@ log.sanitizer.enabled=false</echo>
 
 							echo hello testing postgres server hostname
 
-							echo ${POSTGRESL_SERVER_IP}
+							echo ${POSTGRESQL_SERVER_IP}
 
-							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${test_postgresql}/g' common.env
+							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=test_postgresql/g' common.env
 
 							touch common.env
 
