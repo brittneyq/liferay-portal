@@ -3081,13 +3081,15 @@ log.sanitizer.enabled=false</echo>
 						<execute dir="${analytics.cloud.asah.dir}">
 							docker ps
 
-							export POSTGRESQL_SERVER_IP=${short.hostname}
+							docker network ls
+
+							export POSTGRESQL_SERVER_IP=test_postgresql
 
 							echo hello testing postgres server hostname
 
 							echo ${POSTGRESL_SERVER_IP}
 
-							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${short.hostname}/g' common.env
+							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${test_postgresql}/g' common.env
 
 							touch common.env
 
