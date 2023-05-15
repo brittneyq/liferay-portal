@@ -7,7 +7,7 @@ definition {
 	property test.liferay.virtual.instance = "true";
 	property testray.main.component.name = "Liferay Sample Workspace";
 
-	static var clientExtensionName = "";
+	static var clientExtensionSamples = "";
 	static var companyWebId = "";
 
 	setUp {
@@ -15,20 +15,18 @@ definition {
 
 		User.firstLoginPG();
 
-		var testLiferayVirtualInstance = PropsUtil.get("test.liferay.virtual.instance");
-
-		if (${testLiferayVirtualInstance} == "true") {
-			var companyWebId = JSONCompany.getWebId();
-		}
+		var companyWebId = JSONCompany.getWebId();
 	}
 
 	tearDown {
-		if (isSet(clientExtensionName)) {
-			AntCommand(
-				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "undeploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+		if (isSet(clientExtensionSamples)) {
+			for (var clientExtension : list ${clientExtensionSamples}) {
+				AntCommand(
+					locator1 = "build-test-liferay-sample-workspace.xml",
+					value1 = "undeploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtension}");
+			}
 
-			var clientExtensionName = "";
+			var clientExtensionSamples = "";
 		}
 
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
@@ -41,15 +39,13 @@ definition {
 	@description = "Assert all deployed Client Extensions Samples have startup logs in the console and are present in the admin page with the correct table values"
 	@priority = 4
 	test AssertSamplesInConsoleAndAdminPage {
-		property workspaces.client.extension.names = "liferay-sample-custom-element-1,liferay-sample-custom-element-2,liferay-sample-global-css,liferay-sample-global-js,liferay-sample-iframe-1,liferay-sample-theme-css-1,liferay-sample-theme-favicon,liferay-sample-theme-spritemap-1";
-
 		task ("Deploy multiple Client Extension samples into into the current virtual instance") {
-			for (var clientExtension : list "liferay-sample-custom-element-1,liferay-sample-custom-element-2,liferay-sample-global-css,liferay-sample-global-js,liferay-sample-iframe-1,liferay-sample-theme-css-1,liferay-sample-theme-favicon,liferay-sample-theme-spritemap-1") {
-				var clientExtensionName = ${clientExtension};
+			var clientExtensionSamples = "liferay-sample-custom-element-1,liferay-sample-custom-element-2,liferay-sample-global-css,liferay-sample-global-js,liferay-sample-iframe-1,liferay-sample-theme-css-1,liferay-sample-theme-favicon,liferay-sample-theme-spritemap-1";
 
+			for (var clientExtension : list ${clientExtensionSamples}) {
 				AntCommand(
 					locator1 = "build-test-liferay-sample-workspace.xml",
-					value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+					value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtension}");
 			}
 		}
 
@@ -95,11 +91,11 @@ definition {
 	@priority = 4
 	test LiferaySampleCustomElement1Smoke {
 		task ("Deploy Liferay Sample Custom Element 1 into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-custom-element-1";
+			var clientExtensionSamples = "liferay-sample-custom-element-1";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Create a new widget page") {
@@ -118,31 +114,31 @@ definition {
 
 		task ("Assert the widget's increment button works") {
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_COUNTER",
+				locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_COUNTER",
 				value1 = 0);
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
 
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_COUNTER",
+				locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_COUNTER",
 				value1 = 3);
 		}
 
 		task ("Assert the widget's increment button works") {
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_COUNTER",
+				locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_COUNTER",
 				value1 = "-1");
 		}
 	}
@@ -151,11 +147,11 @@ definition {
 	@priority = 4
 	test LiferaySampleCustomElement2Smoke {
 		task ("Deploy Liferay Sample Custom Element 2 into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-custom-element-2";
+			var clientExtensionSamples = "liferay-sample-custom-element-2";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Given: The Liferay Sample Custom Element 2 is added to a page") {
@@ -285,15 +281,16 @@ definition {
 		}
 	}
 
+
 	@description = "Smoke test Liferay Sample Global CSS"
 	@priority = 4
 	test LiferaySampleGlobalCSSSmoke {
 		task ("Deploy Liferay Sample Global CSS into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-global-css";
+			var clientExtensionSamples = "liferay-sample-global-css";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Given: A new widget page is created") {
@@ -346,11 +343,11 @@ definition {
 	@priority = 4
 	test LiferaySampleGlobalJSSmoke {
 		task ("Deploy Liferay Sample Global JS into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-global-js";
+			var clientExtensionSamples = "liferay-sample-global-js";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Go to the Site Pages configuration screen in Page Admin") {
@@ -384,11 +381,12 @@ definition {
 	@priority = 4
 	test LiferaySampleIFrame1Smoke {
 		task ("Deploy Liferay Sample IFrame 1 into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-iframe-1";
+
+			var clientExtensionSamples = "liferay-sample-iframe-1";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Given: A user is on a widget page") {
@@ -410,10 +408,10 @@ definition {
 
 			Click(
 				key_row = 1,
-				locator1 = "ClientExtensionsSamples#IFRAME_1_COUNTER_INCREMENT_BUTTON");
+				locator1 = "ClientExtension#SAMPLE_IFRAME_1_COUNTER_INCREMENT_BUTTON");
 
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#IFRAME_1_COUNTER_CART_TOTAL",
+				locator1 = "ClientExtension#SAMPLE_IFRAME_1_COUNTER_CART_TOTAL",
 				value1 = 1);
 		}
 	}
@@ -422,11 +420,11 @@ definition {
 	@priority = 4
 	test LiferaySampleThemeCSS1Smoke {
 		task ("Deploy Liferay Sample Theme CSS 1 into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-theme-css-1";
+			var clientExtensionSamples = "liferay-sample-theme-css-1";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Go to the Site Pages configuration screen in Page Admin") {
@@ -460,11 +458,11 @@ definition {
 	@priority = 4
 	test LiferaySampleThemeFaviconSmoke {
 		task ("Deploy Liferay Sample Theme Favicon into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-theme-favicon";
+			var clientExtensionSamples = "liferay-sample-theme-favicon";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Go to the Site Pages configuration screen in Page Admin") {
@@ -482,7 +480,7 @@ definition {
 		}
 
 		task ("Assert the sample favicon image is used in the configuration page") {
-			AssertElementPresent(locator1 = "ClientExtensionsSamples#THEME_FAVICON_CONFIGURATION_IMAGE");
+			AssertElementPresent(locator1 = "ClientExtension#SAMPLE_THEME_FAVICON_CONFIGURATION_IMAGE");
 		}
 
 		task ("Save the configuration and navigate to the Home page") {
@@ -502,11 +500,11 @@ definition {
 	@priority = 4
 	test LiferaySampleThemeSpritemap1Smoke {
 		task ("Deploy Liferay Sample Theme Spritemap 1 into the current virtual instance") {
-			var clientExtensionName = "liferay-sample-theme-spritemap-1";
+			var clientExtensionSamples = "liferay-sample-theme-spritemap-1";
 
 			AntCommand(
 				locator1 = "build-test-liferay-sample-workspace.xml",
-				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionName}");
+				value1 = "deploy-workspace-client-extension -Dvirtual.instance.id=${companyWebId} -Dworkspace.client.extension.name=${clientExtensionSamples}");
 		}
 
 		task ("Navigate to Page Admin") {
@@ -522,7 +520,7 @@ definition {
 		}
 
 		task ("Assert the pencil icon on the page is using the source image from Liferay Sample Theme Spritemap 1 ") {
-			AssertElementPresent(locator1 = "ClientExtensionsSamples#THEME_SPRITEMAP_1_PAGE_PENCIL_ICON");
+			AssertElementPresent(locator1 = "ClientExtension#SAMPLE_THEME_SPRITEMAP_1_PAGE_PENCIL_ICON");
 		}
 	}
 

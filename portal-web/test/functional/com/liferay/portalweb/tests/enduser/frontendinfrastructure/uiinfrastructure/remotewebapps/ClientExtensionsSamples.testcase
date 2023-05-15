@@ -85,31 +85,31 @@ definition {
 
 		task ("Assert the widget's increment button works") {
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_COUNTER",
+				locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_COUNTER",
 				value1 = 0);
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_INCREMENT_BUTTON");
 
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_COUNTER",
+				locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_COUNTER",
 				value1 = 3);
 		}
 
 		task ("Assert the widget's increment button works") {
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
-			Click(locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
+			Click(locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_DECREMENT_BUTTON");
 
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#CUSTOM_ELEMENT_1_COUNTER",
+				locator1 = "ClientExtension#SAMPLE_CUSTOM_ELEMENT_1_COUNTER",
 				value1 = "-1");
 		}
 	}
@@ -263,10 +263,10 @@ definition {
 
 			Click(
 				key_row = 1,
-				locator1 = "ClientExtensionsSamples#IFRAME_1_COUNTER_INCREMENT_BUTTON");
+				locator1 = "ClientExtension#SAMPLE_IFRAME_1_COUNTER_INCREMENT_BUTTON");
 
 			AssertTextEquals.assertPartialText(
-				locator1 = "ClientExtensionsSamples#IFRAME_1_COUNTER_CART_TOTAL",
+				locator1 = "ClientExtension#SAMPLE_IFRAME_1_COUNTER_CART_TOTAL",
 				value1 = 1);
 		}
 	}
@@ -323,7 +323,7 @@ definition {
 		}
 
 		task ("Assert the sample favicon image is used in the configuration page") {
-			AssertElementPresent(locator1 = "ClientExtensionsSamples#THEME_FAVICON_CONFIGURATION_IMAGE");
+			AssertElementPresent(locator1 = "ClientExtension#SAMPLE_THEME_FAVICON_CONFIGURATION_IMAGE");
 		}
 
 		task ("Save the configuration and navigate to the Home page") {
@@ -357,7 +357,7 @@ definition {
 		}
 
 		task ("Assert the pencil icon on the page is using the source image from Liferay Sample Theme Spritemap 1 ") {
-			AssertElementPresent(locator1 = "ClientExtensionsSamples#THEME_SPRITEMAP_1_PAGE_PENCIL_ICON");
+			AssertElementPresent(locator1 = "ClientExtension#SAMPLE_THEME_SPRITEMAP_1_PAGE_PENCIL_ICON");
 		}
 	}
 

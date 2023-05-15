@@ -401,6 +401,33 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 			getUserId(), structureId, version, serviceContext);
 	}
 
+	@Override
+	public List<DDMStructure> search(
+			long companyId, long[] groupIds, long classNameId, long classPK,
+			String keywords, int status, int start, int end,
+			OrderByComparator<DDMStructure> orderByComparator)
+		throws PortalException {
+
+		try {
+			SearchContext searchContext =
+				_ddmSearchHelper.buildStructureSearchContext(
+					companyId, groupIds, getUserId(), classNameId, classPK,
+					keywords, keywords, StringPool.BLANK, null, status, start,
+					end, orderByComparator);
+
+			return _ddmSearchHelper.doSearch(
+				searchContext, DDMStructure.class,
+				ddmStructureLocalService::fetchStructure);
+		}
+		catch (PrincipalException principalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(principalException);
+			}
+		}
+
+		return Collections.emptyList();
+	}
+
 	/**
 	 * Returns an ordered range of all the structures matching the groups and
 	 * class name IDs, and matching the keywords in the structure names and
@@ -570,6 +597,31 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 		}
 
 		return Collections.emptyList();
+	}
+
+	@Override
+	public int searchCount(
+			long companyId, long[] groupIds, long classNameId, long classPK,
+			String keywords, int status)
+		throws PortalException {
+
+		try {
+			SearchContext searchContext =
+				_ddmSearchHelper.buildStructureSearchContext(
+					companyId, groupIds, getUserId(), classNameId, classPK,
+					keywords, keywords, StringPool.BLANK, null, status,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+			return _ddmSearchHelper.doSearchCount(
+				searchContext, DDMStructure.class);
+		}
+		catch (PrincipalException principalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(principalException);
+			}
+		}
+
+		return 0;
 	}
 
 	/**

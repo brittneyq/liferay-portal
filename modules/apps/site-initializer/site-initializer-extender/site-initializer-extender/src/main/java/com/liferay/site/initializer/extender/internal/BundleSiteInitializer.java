@@ -37,6 +37,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
 import com.liferay.expando.kernel.model.ExpandoBridge;
+import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.fragment.importer.FragmentsImporter;
 import com.liferay.headless.admin.list.type.dto.v1_0.ListTypeDefinition;
@@ -148,6 +149,7 @@ import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
+import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -188,13 +190,15 @@ import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 import com.liferay.style.book.zip.processor.StyleBookEntryZipProcessor;
+import com.liferay.template.model.TemplateEntry;
+import com.liferay.template.service.TemplateEntryLocalService;
 
 import java.io.Serializable;
 
-import java.math.BigDecimal;
-
 import java.net.URL;
 import java.net.URLConnection;
+
+import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -285,6 +289,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 		StyleBookEntryZipProcessor styleBookEntryZipProcessor,
 		TaxonomyCategoryResource.Factory taxonomyCategoryResourceFactory,
 		TaxonomyVocabularyResource.Factory taxonomyVocabularyResourceFactory,
+		TemplateEntryLocalService templateEntryLocalService,
 		ThemeLocalService themeLocalService,
 		UserAccountResource.Factory userAccountResourceFactory,
 		UserGroupLocalService userGroupLocalService,
@@ -363,6 +368,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 		_styleBookEntryZipProcessor = styleBookEntryZipProcessor;
 		_taxonomyCategoryResourceFactory = taxonomyCategoryResourceFactory;
 		_taxonomyVocabularyResourceFactory = taxonomyVocabularyResourceFactory;
+		_templateEntryLocalService = templateEntryLocalService;
 		_themeLocalService = themeLocalService;
 		_userAccountResourceFactory = userAccountResourceFactory;
 		_userGroupLocalService = userGroupLocalService;
@@ -480,10 +486,12 @@ public class BundleSiteInitializer implements SiteInitializer {
 			_invoke(() -> _addStyleBookEntries(serviceContext));
 			_invoke(() -> _addOrUpdateUserGroups(serviceContext));
 
-			Map<String, String> taxonomyCategoryIdsStringUtilReplaceValues =
-				_invoke(
-					() -> _addOrUpdateTaxonomyVocabularies(
-						serviceContext, siteNavigationMenuItemSettingsBuilder));
+			Map<String, String>
+				taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues =
+					_invoke(
+						() -> _addOrUpdateTaxonomyVocabularies(
+							serviceContext,
+							siteNavigationMenuItemSettingsBuilder));
 
 			_invoke(() -> _addPortletSettings(serviceContext));
 			_invoke(
@@ -537,7 +545,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 					documentsStringUtilReplaceValues,
 					objectDefinitionIdsAndObjectEntryIdsStringUtilReplaceValues,
 					serviceContext,
-					taxonomyCategoryIdsStringUtilReplaceValues));
+					taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues));
 
 			_invoke(
 				() -> _addLayoutUtilityPageEntries(
@@ -545,7 +553,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 					documentsStringUtilReplaceValues,
 					objectDefinitionIdsAndObjectEntryIdsStringUtilReplaceValues,
 					serviceContext,
-					taxonomyCategoryIdsStringUtilReplaceValues));
+					taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues));
 
 			// TODO Review order/dependency
 
@@ -563,7 +571,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 					objectDefinitionIdsAndObjectEntryIdsStringUtilReplaceValues,
 					serviceContext,
 					siteNavigationMenuItemSettingsBuilder.build(),
-					taxonomyCategoryIdsStringUtilReplaceValues));
+					taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues));
 
 			_invoke(() -> _addRolesAssignments(serviceContext));
 
@@ -575,7 +583,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 					documentsStringUtilReplaceValues,
 					objectDefinitionIdsAndObjectEntryIdsStringUtilReplaceValues,
 					segmentsEntriesIdsStringUtilReplaceValues, serviceContext,
-					taxonomyCategoryIdsStringUtilReplaceValues));
+					taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues));
 			_invoke(() -> _addUserRoles(serviceContext));
 
 			_invoke(
@@ -1629,7 +1637,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 				jsonObject.getString("ddmTemplateKey"));
 
 			if (ddmTemplate == null) {
-				_ddmTemplateLocalService.addTemplate(
+				ddmTemplate = _ddmTemplateLocalService.addTemplate(
 					serviceContext.getUserId(),
 					serviceContext.getScopeGroupId(),
 					_portal.getClassNameId(
@@ -1645,6 +1653,18 @@ public class BundleSiteInitializer implements SiteInitializer {
 					TemplateConstants.LANG_TYPE_FTL,
 					SiteInitializerUtil.read(_bundle, "ddm-template.ftl", url),
 					false, false, null, null, serviceContext);
+
+				if (Objects.equals(
+						jsonObject.getString("className"),
+						TemplateEntry.class.getName())) {
+
+					_templateEntryLocalService.addTemplateEntry(
+						serviceContext.getUserId(),
+						serviceContext.getScopeGroupId(),
+						ddmTemplate.getTemplateId(),
+						jsonObject.getString("infoItemClassName"),
+						jsonObject.getString("infoItemKey"), serviceContext);
+				}
 			}
 			else {
 				_ddmTemplateLocalService.updateTemplate(
@@ -1965,12 +1985,12 @@ public class BundleSiteInitializer implements SiteInitializer {
 
 				expandoBridge.setAttributeDefault(
 					jsonObject.getString("name"),
-					_getExpandoAttributeValue(jsonObject.get("defaultValue")));
+					_getExpandoAttributeValue(jsonObject));
 			}
 			else {
 				expandoBridge.addAttribute(
 					jsonObject.getString("name"), jsonObject.getInt("dataType"),
-					_getExpandoAttributeValue(jsonObject.get("defaultValue")));
+					_getExpandoAttributeValue(jsonObject));
 			}
 
 			if (jsonObject.has("properties")) {
@@ -3337,14 +3357,15 @@ public class BundleSiteInitializer implements SiteInitializer {
 				siteNavigationMenuItemSettingsBuilder)
 		throws Exception {
 
-		Map<String, String> taxonomyCategoryIdsStringUtilReplaceValues =
-			new HashMap<>();
+		Map<String, String>
+			taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues =
+				new HashMap<>();
 
 		Set<String> resourcePaths = _servletContext.getResourcePaths(
 			parentResourcePath);
 
 		if (SetUtil.isEmpty(resourcePaths)) {
-			return taxonomyCategoryIdsStringUtilReplaceValues;
+			return taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues;
 		}
 
 		TaxonomyVocabularyResource.Builder taxonomyVocabularyResourceBuilder =
@@ -3396,14 +3417,21 @@ public class BundleSiteInitializer implements SiteInitializer {
 						existingTaxonomyVocabulary.getId(), taxonomyVocabulary);
 			}
 
-			taxonomyCategoryIdsStringUtilReplaceValues.putAll(
-				_addTaxonomyCategories(
-					StringUtil.replaceLast(resourcePath, ".json", "/"), null,
-					serviceContext, siteNavigationMenuItemSettingsBuilder,
-					taxonomyVocabulary.getId()));
+			taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues.
+				put(
+					"TAXONOMY_VOCABULARY_ID:" + taxonomyVocabulary.getName(),
+					String.valueOf(taxonomyVocabulary.getId()));
+
+			taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues.
+				putAll(
+					_addTaxonomyCategories(
+						StringUtil.replaceLast(resourcePath, ".json", "/"),
+						null, serviceContext,
+						siteNavigationMenuItemSettingsBuilder,
+						taxonomyVocabulary.getId()));
 		}
 
-		return taxonomyCategoryIdsStringUtilReplaceValues;
+		return taxonomyCategoryIdsAndTaxonomyVocabularyIdsStringUtilReplaceValues;
 	}
 
 	private Map<String, String> _addOrUpdateTaxonomyVocabularies(
@@ -4360,14 +4388,88 @@ public class BundleSiteInitializer implements SiteInitializer {
 		return map;
 	}
 
-	private Serializable _getExpandoAttributeValue(Object object) {
-		if (object instanceof BigDecimal) {
-			BigDecimal bigDecimal = (BigDecimal)object;
+	private Serializable _getExpandoAttributeValue(JSONObject jsonObject)
+		throws Exception {
 
-			return bigDecimal.doubleValue();
+		if (jsonObject.getInt("dataType") == ExpandoColumnConstants.BOOLEAN) {
+			return jsonObject.getBoolean("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") == ExpandoColumnConstants.DATE) {
+			if (Validator.isNull(jsonObject.getString("defaultValue"))) {
+				return null;
+			}
+
+			DateFormat dateFormat = DateUtil.getISOFormat(
+				jsonObject.getString("defaultValue"));
+
+			return dateFormat.parse(jsonObject.getString("defaultValue"));
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.DOUBLE) {
+
+			return jsonObject.getDouble("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.DOUBLE_ARRAY) {
+
+			return JSONUtil.toDoubleArray(
+				jsonObject.getJSONArray("defaultValue"));
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.FLOAT) {
+
+			return jsonObject.getDouble("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.FLOAT_ARRAY) {
+
+			return JSONUtil.toFloatArray(
+				jsonObject.getJSONArray("defaultValue"));
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.INTEGER) {
+
+			return jsonObject.getInt("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.INTEGER_ARRAY) {
+
+			return JSONUtil.toIntegerArray(
+				jsonObject.getJSONArray("defaultValue"));
+		}
+		else if (jsonObject.getInt("dataType") == ExpandoColumnConstants.LONG) {
+			return jsonObject.getLong("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.LONG_ARRAY) {
+
+			return JSONUtil.toLongArray(
+				jsonObject.getJSONArray("defaultValue"));
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.NUMBER) {
+
+			return jsonObject.getDouble("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.NUMBER_ARRAY) {
+
+			return JSONUtil.toIntegerArray(
+				jsonObject.getJSONArray("defaultValue"));
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.STRING) {
+
+			return jsonObject.getString("defaultValue");
+		}
+		else if (jsonObject.getInt("dataType") ==
+					ExpandoColumnConstants.STRING_ARRAY) {
+
+			return JSONUtil.toStringArray(
+				jsonObject.getJSONArray("defaultValue"));
 		}
 
-		return (Serializable)object;
+		return (Serializable)jsonObject.get("defaultValue");
 	}
 
 	private Map<String, String> _getReleaseInfoStringUtilReplaceValues() {
@@ -4823,6 +4925,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 		_taxonomyCategoryResourceFactory;
 	private final TaxonomyVocabularyResource.Factory
 		_taxonomyVocabularyResourceFactory;
+	private final TemplateEntryLocalService _templateEntryLocalService;
 	private final ThemeLocalService _themeLocalService;
 	private final UserAccountResource.Factory _userAccountResourceFactory;
 	private final UserGroupLocalService _userGroupLocalService;

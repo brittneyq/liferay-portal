@@ -24,7 +24,7 @@ export function getDTOFromDealRegistration(
 		additionalContactFirstName:
 			dealRegistration.additionalContact?.firstName,
 		additionalContactLastName: dealRegistration.additionalContact?.lastName,
-		additionalContacts: `${dealRegistration.additionalContact?.firstName} ${dealRegistration.additionalContact?.lastName}, ${dealRegistration.additionalContact?.emailAddress}`,
+		additionalContacts: `${dealRegistration.additionalContact?.firstName} ${dealRegistration.additionalContact?.lastName} ${dealRegistration.additionalContact?.emailAddress}`,
 		additionalInformationAboutTheOpportunity:
 			dealRegistration.additionalInformationAboutTheOpportunity,
 		currency: dealRegistration.currency,
@@ -33,7 +33,8 @@ export function getDTOFromDealRegistration(
 		mdfActivityExternalReferenceCode:
 			dealRegistration.mdfActivityAssociated.externalReferenceCode,
 		mdfActivityName: dealRegistration.mdfActivityAssociated.name,
-		partnerAccountName: dealRegistration.partnerAccount.name,
+		partnerFirstName: dealRegistration.partnerFirstName,
+		partnerLastName: dealRegistration.partnerLastName,
 		primaryProspectBusinessUnit:
 			dealRegistration.primaryProspect.businessUnit,
 		primaryProspectDepartment:

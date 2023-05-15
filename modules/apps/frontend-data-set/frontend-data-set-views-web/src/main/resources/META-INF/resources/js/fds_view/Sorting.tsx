@@ -28,24 +28,28 @@ import {getFields} from '../api';
 import OrderableTable from '../components/OrderableTable';
 import RequiredMark from '../components/RequiredMark';
 
-interface Field {
+interface IContentRendererProps {
+	item: IFDSSort;
+}
+
+interface IField {
 	format: string;
 	label: string;
 	name: string;
 	type: string;
 }
 
-interface FDSSort {
+interface IFDSSort {
 	fieldName: string;
 	id: number;
 	sortingDirection: string;
 }
 
-interface AddFDSSortModalContentInterface {
+interface IAddFDSSortModalContentInterface {
 	closeModal: Function;
 	fdsView: FDSViewType;
-	fields: Field[];
-	onSave: (newSort: FDSSort) => void;
+	fields: IField[];
+	onSave: (newSort: IFDSSort) => void;
 }
 
 const SORTING_DIRECTION = {
@@ -78,19 +82,31 @@ function alertSuccess() {
 	});
 }
 
+const SortingDirectionContentRenderer = ({item}: IContentRendererProps) => {
+	return (
+		<span>
+			{item.sortingDirection === SORTING_DIRECTION.ASCENDING.value
+				? SORTING_DIRECTION.ASCENDING.label
+				: SORTING_DIRECTION.DESCENDING.label}
+		</span>
+	);
+};
+
 const AddFDSSortModalContent = ({
 	closeModal,
 	fdsView,
 	fields,
 	onSave,
-}: AddFDSSortModalContentInterface) => {
+}: IAddFDSSortModalContentInterface) => {
 	const [selectedField, setSelectedField] = useState<string>();
 	const [selectedSortingDirection, setSelectedSortingDirection] = useState<
 		string
 	>(SORTING_DIRECTION.ASCENDING.value);
 
 	const handleSave = async () => {
-		const field = fields.find((item: Field) => item.name === selectedField);
+		const field = fields.find(
+			(item: IField) => item.name === selectedField
+		);
 
 		if (!field) {
 			alertFailed();
@@ -205,8 +221,8 @@ const AddFDSSortModalContent = ({
 };
 
 const Sorting = ({fdsView, fdsViewsURL}: FDSViewSectionInterface) => {
-	const [fields, setFields] = React.useState<Field[]>([]);
-	const [fdsSorts, setFDSSorts] = useState<Array<FDSSort>>([]);
+	const [fields, setFields] = React.useState<IField[]>([]);
+	const [fdsSorts, setFDSSorts] = useState<Array<IFDSSort>>([]);
 	const [loading, setLoading] = useState(true);
 	const [newFDSSortsOrder, setNewFDSSortsOrder] = React.useState<string>('');
 
@@ -220,10 +236,10 @@ const Sorting = ({fdsView, fdsViewsURL}: FDSViewSectionInterface) => {
 
 			const storedFDSSorts = responseJSON[
 				OBJECT_RELATIONSHIP.FDS_VIEW_FDS_SORT
-			] as FDSSort[];
+			] as IFDSSort[];
 
 			let ordered = storedFDSSorts;
-			let notOrdered: FDSSort[] = [];
+			let notOrdered: IFDSSort[] = [];
 
 			if (responseJSON.fdsSortsOrder) {
 				const fdsSortsOrderArray = responseJSON.fdsSortsOrder.split(
@@ -236,7 +252,7 @@ const Sorting = ({fdsView, fdsViewsURL}: FDSViewSectionInterface) => {
 							(fdsSort) => fdsSort.id === Number(fdsSortId)
 						)
 					)
-					.filter(Boolean) as FDSSort[];
+					.filter(Boolean) as IFDSSort[];
 
 				if (storedFDSSorts.length > fdsSortsOrderArray.length) {
 					notOrdered = storedFDSSorts.filter(
@@ -323,10 +339,12 @@ const Sorting = ({fdsView, fdsViewsURL}: FDSViewSectionInterface) => {
 						disableSave={!newFDSSortsOrder.length}
 						fields={[
 							{
+								headingTitle: true,
 								label: Liferay.Language.get('name'),
 								name: 'fieldName',
 							},
 							{
+								contentRenderer: SortingDirectionContentRenderer,
 								label: Liferay.Language.get('value'),
 								name: 'sortingDirection',
 							},
@@ -346,7 +364,7 @@ const Sorting = ({fdsView, fdsViewsURL}: FDSViewSectionInterface) => {
 						onOrderChange={({
 							orderedItems,
 						}: {
-							orderedItems: FDSSort[];
+							orderedItems: IFDSSort[];
 						}) => {
 							setNewFDSSortsOrder(
 								orderedItems

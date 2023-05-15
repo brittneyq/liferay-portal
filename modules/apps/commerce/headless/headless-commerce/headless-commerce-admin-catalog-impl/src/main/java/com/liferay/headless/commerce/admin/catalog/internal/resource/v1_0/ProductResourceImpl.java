@@ -18,11 +18,10 @@ import com.liferay.account.model.AccountGroup;
 import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.account.service.AccountGroupRelService;
 import com.liferay.account.service.AccountGroupService;
+import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetTagService;
-import com.liferay.commerce.account.service.CommerceAccountGroupRelService;
-import com.liferay.commerce.account.service.CommerceAccountGroupService;
 import com.liferay.commerce.price.list.service.CommercePriceEntryLocalService;
 import com.liferay.commerce.price.list.service.CommercePriceListLocalService;
 import com.liferay.commerce.product.configuration.CProductVersionConfiguration;
@@ -501,7 +500,22 @@ public class ProductResourceImpl extends BaseProductResourceImpl {
 		if (categories != null) {
 			serviceContext.setAssetCategoryIds(
 				transformToLongArray(
-					Arrays.asList(categories), Category::getId));
+					Arrays.asList(categories),
+					category -> {
+						if (Validator.isNull(
+								category.getExternalReferenceCode())) {
+
+							return category.getId();
+						}
+
+						AssetCategory assetCategory =
+							_assetCategoryLocalService.
+								fetchAssetCategoryByExternalReferenceCode(
+									category.getExternalReferenceCode(),
+									contextCompany.getGroupId());
+
+						return assetCategory.getCategoryId();
+					}));
 		}
 		else if (cpDefinition != null) {
 			serviceContext.setAssetCategoryIds(
@@ -1204,7 +1218,22 @@ public class ProductResourceImpl extends BaseProductResourceImpl {
 		else {
 			serviceContext.setAssetCategoryIds(
 				transformToLongArray(
-					Arrays.asList(categories), Category::getId));
+					Arrays.asList(categories),
+					category -> {
+						if (Validator.isNull(
+								category.getExternalReferenceCode())) {
+
+							return category.getId();
+						}
+
+						AssetCategory assetCategory =
+							_assetCategoryLocalService.
+								fetchAssetCategoryByExternalReferenceCode(
+									category.getExternalReferenceCode(),
+									contextCompany.getGroupId());
+
+						return assetCategory.getCategoryId();
+					}));
 		}
 
 		Map<String, String> nameMap = product.getName();
@@ -1314,12 +1343,6 @@ public class ProductResourceImpl extends BaseProductResourceImpl {
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
-
-	@Reference
-	private CommerceAccountGroupRelService _commerceAccountGroupRelService;
-
-	@Reference
-	private CommerceAccountGroupService _commerceAccountGroupService;
 
 	@Reference
 	private CommerceCatalogLocalService _commerceCatalogLocalService;

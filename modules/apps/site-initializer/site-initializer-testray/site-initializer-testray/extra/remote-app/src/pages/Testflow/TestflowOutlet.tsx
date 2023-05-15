@@ -96,8 +96,9 @@ const TestflowOutlet = () => {
 
 	const {data: testrayTaskUser, revalidate: revalidateTaskUser} = useFetch<
 		APIResponse<TestrayTaskUser>
-	>(`${testrayTaskImpl.getNestedObject('taskToTasksUsers', taskId)}`, {
+	>(testrayTaskUsersImpl.resource, {
 		params: {
+			filter: SearchBuilder.eq('taskId', taskId),
 			nestedFields: 'task,user',
 		},
 		transformData: (response) =>
@@ -109,11 +110,7 @@ const TestflowOutlet = () => {
 	const subTaskFilter = searchBuilder
 		.eq('taskId', taskId)
 		.and()
-		.in('dueStatus', [
-			SubTaskStatuses.IN_ANALYSIS,
-			SubTaskStatuses.MERGED,
-			SubTaskStatuses.OPEN,
-		])
+		.in('dueStatus', [SubTaskStatuses.IN_ANALYSIS, SubTaskStatuses.OPEN])
 		.build();
 
 	const {data: testraySubtasks, revalidate: revalidateSubtask} = useFetch<

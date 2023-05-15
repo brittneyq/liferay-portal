@@ -92,7 +92,7 @@ const appMessages = {
 	emptyStateMessage: {
 		description1: 'Publish apps and they will show up here.',
 		description2: 'Click on “New App” to start.',
-		title: 'No apps yet',
+		title: 'No Apps Yet',
 	},
 	title: 'Apps',
 };
@@ -102,7 +102,7 @@ const memberMessages = {
 	emptyStateMessage: {
 		description1: 'Create new members and they will show up here.',
 		description2: 'Click on “New Member” to start.',
-		title: 'No members yet',
+		title: 'No Members Yet',
 	},
 	title: 'Members',
 };
@@ -110,9 +110,9 @@ const memberMessages = {
 const solutionMessages = {
 	description: 'Manage solution trial and purchases from the Marketplace',
 	emptyStateMessage: {
-		description1: 'Solution empty message 1',
-		description2: 'Solution empty message 2',
-		title: 'Solutions Empty message title',
+		description1: 'Publish solutions and they will show up here.',
+		description2: 'Click on “New Solutions” to start.',
+		title: 'No Solutions Yet',
 	},
 	title: 'My Solutions',
 };
@@ -220,8 +220,19 @@ export function PublishedAppsDashboardPage() {
 		const makeFetch = async () => {
 			const accountsResponse = await getAccounts();
 
-			setAccounts(accountsResponse.items);
-			setSelectedAccount(accountsResponse.items[0]);
+			const accountsPublisher = accountsResponse.items.filter(
+				(currentAccount) => {
+					const catalogIdCustomField =
+						currentAccount.customFields?.find(
+							(customField) => customField.name === 'CatalogId'
+						);
+
+					return catalogIdCustomField?.customValue.data !== '';
+				}
+			);
+
+			setAccounts(accountsPublisher);
+			setSelectedAccount(accountsPublisher[0]);
 		};
 
 		makeFetch();

@@ -37,14 +37,13 @@ export default interface DealRegistrationDTO
 	leadQualificationExternalReferenceCode?: string;
 	leadStatus?: string;
 	leadStatusDetail?: string;
+	leadType?: string;
 	mdfActivityExternalReferenceCode?: string;
 	mdfActivityName?: string;
 	opportunityOwner?: string;
 	ownerName?: string;
 	partnerAccountName?: string;
 	partnerEmail?: string;
-	partnerFirstName?: string;
-	partnerLastName?: string;
 	primaryProspectBusinessUnit?: string;
 	primaryProspectDepartment?: string;
 	primaryProspectEmailAddress?: string;
@@ -71,4 +70,5 @@ export default interface DealRegistrationDTO
 	r_actToDealRegs_c_activity?: MDFRequestActivity;
 	r_actToDealRegs_c_activityId?: number;
 	stage?: string;
+	type?: string;
 }

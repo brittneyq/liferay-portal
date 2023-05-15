@@ -3570,6 +3570,59 @@ definition {
 			actionLabel = "Update Action Label");
 	}
 
+	@description = "Verify creating a Commerce Product entry triggers an action to update the Commerce Product entry"
+	@priority = 5
+	test CanUpdateCommerceProductEntryAfterCreatingCommerceProductEntry {
+		property portal.acceptance = "true";
+
+		task ("Given an action to update a Commerce Product entry after creating a Commerce Product entry") {
+			ObjectAdmin.openObjectAdmin();
+
+			ObjectPortlet.selectSystemObject(label = "Commerce Product");
+
+			ObjectAdmin.goToActionsTab();
+
+			ObjectAdmin.addObjectActionViaUI(
+				actionLabel = "Custom Action",
+				active = "true",
+				fieldName = "Name",
+				inputMethod = "true",
+				inputValue = "Shoes",
+				thenAction = "Update an Object Entry",
+				whenAction = "On After Add");
+		}
+
+		task ("When the user adds a new Commerce Product entry") {
+			CommerceProducts.openProductsAdmin();
+
+			Click(locator1 = "Button#PLUS");
+
+			DropdownMenuItem.click(menuItem = "Simple");
+
+			WaitForElementPresent(locator1 = "IFrame#MODAL_BODY");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+			Type(
+				locator1 = "CommerceEntry#NAME_FIELD",
+				value1 = "Bottle");
+
+			CommerceEntry.selectAutoCompleteField(
+				entryName = "Master",
+				label = "Catalog");
+
+			Button.clickSubmitButton();
+
+			CommerceProducts.openProductsAdmin();
+		}
+
+		task ("Then the action is triggered and the created Commerce Product entry is updated") {
+			AssertElementPresent(
+				key_entry = "Shoes",
+				locator1 = "CommerceNavigation#ANY_ENTRY_NAME");
+		}
+	}
+
 	@description = "LPS-173537 - Verify adding a Commerce Product entry triggers an action to update the Commerce Product Group entry."
 	@priority = 5
 	test CanUpdateCommerceProductGroupEntryAfterCreatingCommerceProductEntry {
@@ -3630,11 +3683,11 @@ definition {
 		property portal.acceptance = "true";
 
 		task ("Given a minium site and an order entry") {
-			JSONAccountEntry.addAccountEntry(
-				accountEntryName = "Accounts Name Test",
-				accountEntryType = "Business");
-
 			CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
+
+			JSONAccountEntry.addAccountEntry(
+				accountEntryName = "Accounts Name",
+				accountEntryType = "Business");
 
 			ApplicationsMenu.gotoSite(site = "Minium");
 
@@ -3674,9 +3727,7 @@ definition {
 		}
 
 		task ("When the Order is updated") {
-			CommerceNavigator.gotoPortlet(
-				category = "Order Management",
-				portlet = "Orders");
+			CommerceOrders.openOrdersAdmin();
 
 			CommerceNavigator.gotoOrderEntryViaAdmin(status = "Pending");
 

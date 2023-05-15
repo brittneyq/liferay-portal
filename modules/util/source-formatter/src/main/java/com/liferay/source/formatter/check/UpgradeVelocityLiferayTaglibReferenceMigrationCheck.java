@@ -15,8 +15,8 @@
 package com.liferay.source.formatter.check;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.check.constants.VelocityMigrationConstants;
 import com.liferay.source.formatter.check.util.SourceUtil;
@@ -106,7 +106,8 @@ public class UpgradeVelocityLiferayTaglibReferenceMigrationCheck
 
 		String indent = SourceUtil.getIndent(newLine);
 
-		newLine = StringUtil.replace(newLine, ".vm", ".ftl");
+		newLine = StringUtil.replace(
+			newLine, EXTENSION_VELOCITY, EXTENSION_FREEMARKER);
 		newLine = StringUtil.replaceFirst(
 			newLine, StringPool.CLOSE_PARENTHESIS,
 			StringBundler.concat(
