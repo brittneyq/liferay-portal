@@ -198,6 +198,7 @@ definition {
 	@description = "Smoke test Liferay Sample Etc Cron"
 	@priority = 4
 	test LiferaySampleEtcCronSmoke {
+		property portal.upstream = "britt";
 		task ("Deploy Liferay Sample Etc Cron into the current virtual instance") {
 			var clientExtensionName = "liferay-sample-etc-cron";
 
@@ -267,6 +268,8 @@ definition {
 	@description = "Smoke test Liferay Sample Etc Spring Boot"
 	@priority = 4
 	test LiferaySampleEtcSpringBootSmoke {
+		property portal.upstream = "britt";
+
 		task ("Deploy Liferay Sample Etc Spring Boot into the current virtual instance") {
 			var clientExtensionName = "liferay-sample-etc-spring-boot";
 
