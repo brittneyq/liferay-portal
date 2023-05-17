@@ -3078,24 +3078,18 @@ log.sanitizer.enabled=false</echo>
 						<echo>#</echo>
 						<echo></echo>
 
-						<exec executable="/bin/bash" outputproperty="postgres_ipaddress">
-							<arg value="-c" />
-
-							<arg value="docker inspect -f '{{range.NetworkSettings.Networks}}{{.Gateway}}{{end}}' test_postgresql" />
-						</exec>
-
 						<execute dir="${analytics.cloud.asah.dir}">
 							docker ps
 
 							docker network ls
 
-							export POSTGRESQL_SERVER_IP=${postgres_ipaddress}
+							export POSTGRESQL_SERVER_IP=test_postgresql
 
 							echo hello testing postgres server hostname
 
 							echo ${POSTGRESQL_SERVER_IP}
 
-							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=${postgres_ipaddress}/g' common.env
+							sed -i 's/POSTGRESQL_SERVER_IP=postgresql/POSTGRESQL_SERVER_IP=test_postgresql/g' common.env
 
 							touch common.env
 
