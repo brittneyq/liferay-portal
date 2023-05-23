@@ -12,7 +12,7 @@
  * details.
  */
 
-import React from 'react';
+// test
 
 import {Liferay} from '../services/liferay/liferay';
 
