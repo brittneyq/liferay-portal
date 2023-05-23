@@ -20,10 +20,10 @@ import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.item.capability.InfoItemCapability;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.test.util.MockInfoServiceRegistrationHolder;
 import com.liferay.info.test.util.model.MockObject;
-import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.taglib.servlet.taglib.RenderLayoutStructureTag;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
@@ -534,8 +534,10 @@ public class RenderLayoutStructureTagTest {
 	@Inject
 	private CompanyLocalService _companyLocalService;
 
-	@Inject
-	private EditPageInfoItemCapability _editPageInfoItemCapability;
+	@Inject(
+		filter = "component.name=com.liferay.layout.page.template.internal.info.item.capability.EditPageInfoItemCapabilityImpl"
+	)
+	private InfoItemCapability _editPageInfoItemCapability;
 
 	@DeleteAfterTestRun
 	private Group _group;

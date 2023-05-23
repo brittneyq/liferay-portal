@@ -28,9 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Eudaldo Alonso
  */
-@Component(
-	service = {EditPageInfoItemCapability.class, InfoItemCapability.class}
-)
+@Component(service = InfoItemCapability.class)
 public class EditPageInfoItemCapabilityImpl
 	implements EditPageInfoItemCapability {
 
