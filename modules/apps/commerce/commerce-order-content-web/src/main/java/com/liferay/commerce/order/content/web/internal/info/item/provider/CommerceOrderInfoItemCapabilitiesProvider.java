@@ -17,7 +17,6 @@ package com.liferay.commerce.order.content.web.internal.info.item.provider;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.info.item.capability.InfoItemCapability;
 import com.liferay.info.item.provider.InfoItemCapabilitiesProvider;
-import com.liferay.layout.page.template.info.item.capability.DisplayPageInfoItemCapability;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.template.info.item.capability.TemplateInfoItemCapability;
@@ -45,8 +44,10 @@ public class CommerceOrderInfoItemCapabilitiesProvider
 		return ListUtil.fromArray();
 	}
 
-	@Reference
-	private DisplayPageInfoItemCapability _displayPageInfoItemCapability;
+	@Reference(
+		target = "(component.name=com.liferay.layout.page.template.internal.info.item.capability.DisplayPageInfoItemCapabilityImpl)"
+	)
+	private InfoItemCapability _displayPageInfoItemCapability;
 
 	@Reference
 	private TemplateInfoItemCapability _templatePageInfoItemCapability;

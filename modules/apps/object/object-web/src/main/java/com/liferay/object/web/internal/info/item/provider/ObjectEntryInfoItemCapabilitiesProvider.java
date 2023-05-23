@@ -16,8 +16,6 @@ package com.liferay.object.web.internal.info.item.provider;
 
 import com.liferay.info.item.capability.InfoItemCapability;
 import com.liferay.info.item.provider.InfoItemCapabilitiesProvider;
-import com.liferay.layout.page.template.info.item.capability.DisplayPageInfoItemCapability;
-import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.template.info.item.capability.TemplateInfoItemCapability;
@@ -31,7 +29,7 @@ public class ObjectEntryInfoItemCapabilitiesProvider
 	implements InfoItemCapabilitiesProvider<ObjectEntry> {
 
 	public ObjectEntryInfoItemCapabilitiesProvider(
-		DisplayPageInfoItemCapability displayPageInfoItemCapability,
+		InfoItemCapability displayPageInfoItemCapability,
 		EditPageInfoItemCapability editPageInfoItemCapability,
 		TemplateInfoItemCapability templatePageInfoItemCapability) {
 
@@ -47,7 +45,7 @@ public class ObjectEntryInfoItemCapabilitiesProvider
 			_templatePageInfoItemCapability);
 	}
 
-	private final DisplayPageInfoItemCapability _displayPageInfoItemCapability;
+	private final InfoItemCapability _displayPageInfoItemCapability;
 	private final EditPageInfoItemCapability _editPageInfoItemCapability;
 	private final TemplateInfoItemCapability _templatePageInfoItemCapability;
 

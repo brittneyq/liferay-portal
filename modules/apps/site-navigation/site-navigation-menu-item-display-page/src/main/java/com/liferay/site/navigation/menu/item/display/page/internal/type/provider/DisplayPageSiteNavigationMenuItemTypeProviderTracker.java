@@ -23,7 +23,6 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.layout.display.page.LayoutDisplayPageInfoItemFieldValuesProviderRegistry;
 import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProviderRegistry;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderRegistry;
-import com.liferay.layout.page.template.info.item.capability.DisplayPageInfoItemCapability;
 import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.petra.reflect.GenericUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -83,8 +82,10 @@ public class DisplayPageSiteNavigationMenuItemTypeProviderTracker {
 	private AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
 
-	@Reference
-	private DisplayPageInfoItemCapability _displayPageInfoItemCapability;
+	@Reference(
+		target = "(component.name=com.liferay.layout.page.template.internal.info.item.capability.DisplayPageInfoItemCapabilityImpl)"
+	)
+	private InfoItemCapability _displayPageInfoItemCapability;
 
 	@Reference
 	private InfoItemServiceRegistry _infoItemServiceRegistry;

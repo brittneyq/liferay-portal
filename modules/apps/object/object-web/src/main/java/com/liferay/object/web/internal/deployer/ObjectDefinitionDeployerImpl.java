@@ -452,8 +452,10 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 
 	private BundleContext _bundleContext;
 
-	@Reference
-	private DisplayPageInfoItemCapability _displayPageInfoItemCapability;
+	@Reference(
+		target = "(component.name=com.liferay.layout.page.template.internal.info.item.capability.DisplayPageInfoItemCapabilityImpl)"
+	)
+	private InfoItemCapability _displayPageInfoItemCapability;
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;
