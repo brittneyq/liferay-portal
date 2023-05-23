@@ -50,7 +50,6 @@ public class FragmentEntryLinkCommentEditorConfigContributor
 	}
 
 	@Reference
-	private FragmentEntryLinkEditorConfigContributor
-		_fragmentEntryLinkEditorConfigContributor;
+	private EditorConfigContributor _fragmentEntryLinkEditorConfigContributor;
 
 }
