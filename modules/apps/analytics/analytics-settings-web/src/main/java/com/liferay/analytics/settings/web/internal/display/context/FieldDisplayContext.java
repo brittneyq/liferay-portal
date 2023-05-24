@@ -22,7 +22,7 @@ import com.liferay.analytics.settings.web.internal.search.FieldSearch;
 import com.liferay.analytics.settings.web.internal.user.AnalyticsUsersManager;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoColumnConstants;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -67,7 +67,7 @@ public class FieldDisplayContext {
 			(AnalyticsUsersManager)renderRequest.getAttribute(
 				AnalyticsSettingsWebKeys.ANALYTICS_USERS_MANAGER);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		_companyId = themeDisplay.getCompanyId();
@@ -312,15 +312,17 @@ public class FieldDisplayContext {
 		).put(
 			"parentContactId", "Long"
 		).put(
-			"prefixId", "Long"
+			"prefixListTypeId", "Long"
 		).put(
 			"skypeSn", "String"
 		).put(
 			"smsSn", "String"
 		).put(
-			"suffixId", "Long"
+			"suffixListTypeId", "Long"
 		).put(
 			"twitterSn", "String"
+		).put(
+			"userName", "String"
 		).build();
 	private static final Map<String, String> _userFieldNames =
 		TreeMapBuilder.put(
@@ -333,8 +335,6 @@ public class FieldDisplayContext {
 			"contactId", "Long"
 		).put(
 			"createDate", "Date"
-		).put(
-			"defaultUser", "Boolean"
 		).put(
 			"emailAddress", "String"
 		).put(

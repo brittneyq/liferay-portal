@@ -16,12 +16,11 @@ package com.liferay.change.tracking.web.internal.display.context;
 
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.web.internal.scheduler.ScheduledPublishInfo;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.frontend.icons.FrontendIconsUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -52,15 +51,13 @@ public class ReschedulePublicationDisplayContext {
 		_ctCollection = ctCollection;
 		_language = language;
 		_portal = portal;
-
 		_renderRequest = renderRequest;
-
-		_httpServletRequest = _portal.getHttpServletRequest(_renderRequest);
-		_themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		_renderResponse = renderResponse;
 		_scheduledPublishInfo = scheduledPublishInfo;
+
+		_httpServletRequest = portal.getHttpServletRequest(renderRequest);
+		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	public Map<String, Object> getReactData() {
@@ -98,7 +95,7 @@ public class ReschedulePublicationDisplayContext {
 				"minutes", String.format("%02d", calendar.get(Calendar.MINUTE))
 			)
 		).put(
-			"spritemap", FrontendIconsUtil.getSpritemap(_themeDisplay)
+			"spritemap", _themeDisplay.getPathThemeSpritemap()
 		).put(
 			"timeZone",
 			() -> {

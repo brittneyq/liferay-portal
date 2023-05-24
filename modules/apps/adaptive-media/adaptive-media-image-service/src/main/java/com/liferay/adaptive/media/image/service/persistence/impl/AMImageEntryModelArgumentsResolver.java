@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		AMImageEntryModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.adaptive.media.image.model.impl.AMImageEntryImpl",
+		"table.name=AMImageEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class AMImageEntryModelArgumentsResolver implements ArgumentsResolver {
 

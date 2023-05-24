@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CPDefinitionGroupedEntryModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.commerce.product.type.grouped.model.impl.CPDefinitionGroupedEntryImpl",
+		"table.name=CPDefinitionGroupedEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class CPDefinitionGroupedEntryModelArgumentsResolver
 	implements ArgumentsResolver {

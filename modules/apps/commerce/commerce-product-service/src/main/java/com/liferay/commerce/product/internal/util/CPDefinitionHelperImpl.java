@@ -31,6 +31,7 @@ import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.permission.CommerceProductViewPermission;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
+import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CProductLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
@@ -57,6 +58,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -72,15 +74,14 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Di Giorgi
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false, immediate = true, service = CPDefinitionHelper.class
-)
+@Component(service = CPDefinitionHelper.class)
 public class CPDefinitionHelperImpl implements CPDefinitionHelper {
 
 	@Override
 	public CPCatalogEntry getCPCatalogEntry(Document document, Locale locale) {
 		return new IndexCPCatalogEntryImpl(
-			document, _cpDefinitionLocalService, _cpInstanceLocalService,
+			document, _cpDefinitionLocalService,
+			_cpDefinitionOptionRelLocalService, _cpInstanceLocalService,
 			locale);
 	}
 
@@ -102,7 +103,8 @@ public class CPDefinitionHelperImpl implements CPDefinitionHelper {
 		}
 
 		return new DatabaseCPCatalogEntryImpl(
-			cpDefinition, _cpInstanceLocalService, locale);
+			cpDefinition, _cpDefinitionOptionRelLocalService,
+			_cpInstanceLocalService, locale);
 	}
 
 	@Override
@@ -169,6 +171,34 @@ public class CPDefinitionHelperImpl implements CPDefinitionHelper {
 			groupId, searchContext, cpQuery, 0, 0);
 
 		return cpDefinitionSearcher.searchCount(searchContext);
+	}
+
+	@Override
+	public List<CPDefinition> searchCPDefinitions(
+			long groupId, SearchContext searchContext, CPQuery cpQuery,
+			int start, int end)
+		throws PortalException {
+
+		List<CPDefinition> cpDefinitions = new ArrayList<>();
+
+		CPDefinitionSearcher cpDefinitionSearcher = _getCPDefinitionSearcher(
+			groupId, searchContext, cpQuery, start, end);
+
+		Hits hits = cpDefinitionSearcher.search(searchContext);
+
+		Document[] documents = hits.getDocs();
+
+		for (Document document : documents) {
+			CPDefinition cpDefinition =
+				_cpDefinitionLocalService.fetchCPDefinition(
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)));
+
+			if (cpDefinition != null) {
+				cpDefinitions.add(cpDefinition);
+			}
+		}
+
+		return cpDefinitions;
 	}
 
 	private long _checkChannelGroupId(long groupId) {
@@ -369,6 +399,10 @@ public class CPDefinitionHelperImpl implements CPDefinitionHelper {
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
+
+	@Reference
+	private CPDefinitionOptionRelLocalService
+		_cpDefinitionOptionRelLocalService;
 
 	@Reference
 	private CPFriendlyURL _cpFriendlyURL;

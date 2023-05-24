@@ -14,11 +14,16 @@
 
 package com.liferay.portal.json.validator;
 
+import com.liferay.petra.concurrent.DCLSingleton;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.io.IOException;
 import java.io.InputStream;
+
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +41,8 @@ import org.json.JSONTokener;
  */
 public class JSONValidator {
 
-	public JSONValidator(InputStream inputStream) {
-		JSONObject jsonSchemaJSONObject = new JSONObject(
-			new JSONTokener(inputStream));
-
-		_schema = SchemaLoader.load(jsonSchemaJSONObject);
+	public JSONValidator(URL url) {
+		_url = url;
 	}
 
 	public void validate(String json) throws JSONValidatorException {
@@ -49,7 +51,9 @@ public class JSONValidator {
 		}
 
 		try {
-			_validator.performValidation(_schema, new JSONObject(json));
+			_validator.performValidation(
+				_schemaDCLSingleton.getSingleton(this::_createSchema),
+				new JSONObject(json));
 		}
 		catch (Exception exception) {
 			if (exception instanceof JSONException) {
@@ -92,10 +96,22 @@ public class JSONValidator {
 		}
 	}
 
+	private Schema _createSchema() {
+		try (InputStream inputStream = _url.openStream()) {
+			return SchemaLoader.load(
+				new JSONObject(new JSONTokener(inputStream)));
+		}
+		catch (IOException ioException) {
+			return ReflectionUtil.throwException(ioException);
+		}
+	}
+
 	private static final org.everit.json.schema.Validator _validator =
 		org.everit.json.schema.Validator.builder(
 		).build();
 
-	private final Schema _schema;
+	private final DCLSingleton<Schema> _schemaDCLSingleton =
+		new DCLSingleton<>();
+	private final URL _url;
 
 }

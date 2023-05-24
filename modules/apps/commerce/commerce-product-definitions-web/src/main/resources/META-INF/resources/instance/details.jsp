@@ -53,6 +53,7 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 
 	<liferay-ui:error exception="<%= CPInstanceReplacementCPInstanceUuidException.class %>" message="please-enter-a-valid-replacement" />
 	<liferay-ui:error exception="<%= CPInstanceSkuException.class %>" message="please-enter-a-valid-sku" />
+	<liferay-ui:error exception="<%= DuplicateCPInstanceException.class %>" message="there-is-already-one-sku-with-the-external-reference-code" />
 
 	<commerce-ui:panel
 		title='<%= LanguageUtil.get(request, "details") %>'
@@ -60,6 +61,8 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 		<div class="row">
 			<div class="col-6">
 				<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="sku" />
+
+				<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="externalReferenceCode" />
 
 				<c:if test="<%= !cpDefinition.isIgnoreSKUCombinations() %>">
 					<c:choose>
@@ -90,7 +93,7 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 
 						</c:when>
 						<c:otherwise>
-							<%= cpInstanceDisplayContext.renderOptions(renderRequest, renderResponse) %>
+							<%= cpInstanceDisplayContext.renderOptions(PipingServletResponseFactory.createPipingServletResponse(pageContext)) %>
 
 							<aui:input name="ddmFormValues" type="hidden" />
 						</c:otherwise>
@@ -140,31 +143,33 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 		</div>
 	</commerce-ui:panel>
 
-	<commerce-ui:panel
-		title='<%= LanguageUtil.get(request, "shipping-override") %>'
-	>
-		<div class="row">
-			<div class="col-6">
-				<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="width" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_DIMENSION)) %>">
-					<aui:validator name="min">0</aui:validator>
-				</aui:input>
+	<c:if test="<%= cpDefinition.isShippable() %>">
+		<commerce-ui:panel
+			title='<%= LanguageUtil.get(request, "shipping-override") %>'
+		>
+			<div class="row">
+				<div class="col-6">
+					<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="width" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_DIMENSION)) %>">
+						<aui:validator name="min">0</aui:validator>
+					</aui:input>
 
-				<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="depth" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_DIMENSION)) %>">
-					<aui:validator name="min">0</aui:validator>
-				</aui:input>
+					<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="depth" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_DIMENSION)) %>">
+						<aui:validator name="min">0</aui:validator>
+					</aui:input>
+				</div>
+
+				<div class="col-6">
+					<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="height" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_DIMENSION)) %>">
+						<aui:validator name="min">0</aui:validator>
+					</aui:input>
+
+					<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="weight" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_WEIGHT)) %>">
+						<aui:validator name="min">0</aui:validator>
+					</aui:input>
+				</div>
 			</div>
-
-			<div class="col-6">
-				<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="height" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_DIMENSION)) %>">
-					<aui:validator name="min">0</aui:validator>
-				</aui:input>
-
-				<aui:input bean="<%= cpInstance %>" model="<%= CPInstance.class %>" name="weight" suffix="<%= HtmlUtil.escape(cpInstanceDisplayContext.getCPMeasurementUnitName(CPMeasurementUnitConstants.TYPE_WEIGHT)) %>">
-					<aui:validator name="min">0</aui:validator>
-				</aui:input>
-			</div>
-		</div>
-	</commerce-ui:panel>
+		</commerce-ui:panel>
+	</c:if>
 
 	<commerce-ui:panel
 		title='<%= LanguageUtil.get(request, "schedule") %>'
@@ -214,7 +219,7 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 		%>
 
 		<div class="<%= replacementAutocompleteWrapperCssClasses %>" id="<portlet:namespace />replacementAutocompleteWrapper">
-			<label class="control-label" for="replacementCPInstanceId"><%= LanguageUtil.get(request, "replacement") %></label>
+			<label class="control-label" for="replacementCPInstanceId"><liferay-ui:message key="replacement" /></label>
 
 			<div id="autocomplete-root"></div>
 		</div>
@@ -259,7 +264,7 @@ boolean discontinued = BeanParamUtil.getBoolean(cpInstance, request, "discontinu
 		String publishButtonLabel = "publish";
 
 		if (WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(themeDisplay.getCompanyId(), scopeGroupId, CPInstance.class.getName())) {
-			publishButtonLabel = "submit-for-publication";
+			publishButtonLabel = "submit-for-workflow";
 		}
 		%>
 

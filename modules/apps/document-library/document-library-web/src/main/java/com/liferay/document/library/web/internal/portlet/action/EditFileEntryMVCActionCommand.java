@@ -42,16 +42,14 @@ import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.util.DLUtil;
-import com.liferay.document.library.kernel.util.DLValidator;
+import com.liferay.document.library.util.DLFileEntryTypeUtil;
 import com.liferay.document.library.web.internal.exception.FileEntryExpirationDateException;
 import com.liferay.document.library.web.internal.exception.FileEntryReviewDateException;
 import com.liferay.document.library.web.internal.exception.FileNameExtensionException;
 import com.liferay.document.library.web.internal.settings.DLPortletInstanceSettings;
 import com.liferay.dynamic.data.mapping.exception.StorageFieldRequiredException;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
-import com.liferay.dynamic.data.mapping.service.DDMStructureLinkLocalService;
-import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.util.DDMBeanTranslator;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValuesValidationException;
@@ -61,7 +59,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -356,9 +354,6 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				cmd.equals(Constants.ADD_DYNAMIC)) {
 
 				hideDefaultSuccessMessage(actionRequest);
-
-				MultiSessionMessages.add(
-					actionRequest, portletResource + "requestProcessed");
 			}
 		}
 		catch (Exception exception) {
@@ -412,7 +407,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				reviewDate, serviceContext);
 		}
 
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
 
 		for (KeyValuePair validFileNameKVP : validFileNameKVPs) {
 			jsonArray.put(
@@ -496,6 +491,10 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		catch (Exception exception) {
 			String errorMessage = _getAddMultipleFileEntriesErrorMessage(
 				portletConfig, actionRequest, exception);
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(errorMessage, exception);
+			}
 
 			invalidFileNameKVPs.add(
 				new KeyValuePair(selectedFileName, errorMessage));
@@ -743,7 +742,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		long folderId = ParamUtil.getLong(actionRequest, "folderId");
 		String fileName = ParamUtil.getString(actionRequest, "fileName");
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
 		try {
 			_dlAppService.deleteTempFileEntry(
@@ -1197,7 +1196,9 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		DLFileEntryType dlFileEntryType =
 			_dlFileEntryTypeLocalService.getDLFileEntryType(fileEntryTypeId);
 
-		for (DDMStructure ddmStructure : dlFileEntryType.getDDMStructures()) {
+		for (DDMStructure ddmStructure :
+				DLFileEntryTypeUtil.getDDMStructures(dlFileEntryType)) {
+
 			String className =
 				com.liferay.dynamic.data.mapping.kernel.DDMFormValues.class.
 					getName();
@@ -1205,7 +1206,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 			DDMFormValues ddmFormValues = _ddmFormValuesFactory.create(
 				_getDDMStructureHttpServletRequest(
 					serviceContext.getRequest(), ddmStructure.getStructureId()),
-				_ddmBeanTranslator.translate(ddmStructure.getDDMForm()));
+				ddmStructure.getDDMForm());
 
 			serviceContext.setAttribute(
 				className + StringPool.POUND + ddmStructure.getStructureId(),
@@ -1435,12 +1436,6 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 	private DDMFormValuesFactory _ddmFormValuesFactory;
 
 	@Reference
-	private DDMStructureLinkLocalService _ddmStructureLinkLocalService;
-
-	@Reference
-	private DDMStructureLocalService _ddmStructureLocalService;
-
-	@Reference
 	private DLAppService _dlAppService;
 
 	private volatile DLConfiguration _dlConfiguration;
@@ -1452,9 +1447,6 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 	private DLTrashService _dlTrashService;
 
 	@Reference
-	private DLValidator _dlValidator;
-
-	@Reference
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
 
 	@Reference
@@ -1462,6 +1454,9 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Html _html;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

@@ -17,6 +17,7 @@ package com.liferay.content.dashboard.web.internal.item.type;
 import com.liferay.content.dashboard.info.item.ClassNameClassPKInfoItemIdentifier;
 import com.liferay.content.dashboard.item.type.ContentDashboardItemSubtype;
 import com.liferay.content.dashboard.item.type.ContentDashboardItemSubtypeFactory;
+import com.liferay.content.dashboard.item.type.ContentDashboardItemSubtypeFactoryRegistry;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
@@ -24,36 +25,18 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
-
-import java.util.Optional;
 
 /**
  * @author Cristina González
  */
 public class ContentDashboardItemSubtypeUtil {
 
-	public static Optional<ContentDashboardItemSubtype>
-		toContentDashboardItemSubtypeOptional(
-			ContentDashboardItemSubtypeFactoryTracker
-				contentDashboardItemSubtypeFactoryTracker,
-			Document document) {
-
-		return toContentDashboardItemSubtypeOptional(
-			contentDashboardItemSubtypeFactoryTracker,
-			new InfoItemReference(
-				GetterUtil.getString(document.get(Field.ENTRY_CLASS_NAME)),
-				GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))));
-	}
-
-	public static Optional<ContentDashboardItemSubtype>
-		toContentDashboardItemSubtypeOptional(
-			ContentDashboardItemSubtypeFactoryTracker
-				contentDashboardItemSubtypeFactoryTracker,
-			InfoItemReference infoItemReference) {
+	public static ContentDashboardItemSubtype toContentDashboardItemSubtype(
+		ContentDashboardItemSubtypeFactoryRegistry
+			contentDashboardItemSubtypeFactoryRegistry,
+		InfoItemReference infoItemReference) {
 
 		if (infoItemReference.getInfoItemIdentifier() instanceof
 				ClassNameClassPKInfoItemIdentifier) {
@@ -63,52 +46,39 @@ public class ContentDashboardItemSubtypeUtil {
 					(ClassNameClassPKInfoItemIdentifier)
 						infoItemReference.getInfoItemIdentifier();
 
-			Optional<ContentDashboardItemSubtypeFactory>
-				contentDashboardItemSubtypeFactoryOptional =
-					contentDashboardItemSubtypeFactoryTracker.
-						getContentDashboardItemSubtypeFactoryOptional(
-							classNameClassPKInfoItemIdentifier.getClassName());
-
-			return contentDashboardItemSubtypeFactoryOptional.flatMap(
-				contentDashboardItemSubtypeFactory ->
-					_toContentDashboardItemSubtypeOptional(
-						contentDashboardItemSubtypeFactoryOptional,
-						classNameClassPKInfoItemIdentifier.getClassPK()));
+			return _toContentDashboardItemSubtype(
+				contentDashboardItemSubtypeFactoryRegistry.
+					getContentDashboardItemSubtypeFactory(
+						classNameClassPKInfoItemIdentifier.getClassName()),
+				classNameClassPKInfoItemIdentifier.getClassPK());
 		}
 
-		Optional<ContentDashboardItemSubtypeFactory>
-			contentDashboardItemSubtypeFactoryOptional =
-				contentDashboardItemSubtypeFactoryTracker.
-					getContentDashboardItemSubtypeFactoryOptional(
-						infoItemReference.getClassName());
-
-		return contentDashboardItemSubtypeFactoryOptional.flatMap(
-			contentDashboardItemSubtypeFactory ->
-				_toContentDashboardItemSubtypeOptional(
-					contentDashboardItemSubtypeFactoryOptional,
-					infoItemReference.getClassPK()));
+		return _toContentDashboardItemSubtype(
+			contentDashboardItemSubtypeFactoryRegistry.
+				getContentDashboardItemSubtypeFactory(
+					infoItemReference.getClassName()),
+			infoItemReference.getClassPK());
 	}
 
-	public static Optional<ContentDashboardItemSubtype>
-		toContentDashboardItemSubtypeOptional(
-			ContentDashboardItemSubtypeFactoryTracker
-				contentDashboardItemSubtypeFactoryTracker,
-			JSONObject contentDashboardItemSubtypePayloadJSONObject) {
+	public static ContentDashboardItemSubtype toContentDashboardItemSubtype(
+		ContentDashboardItemSubtypeFactoryRegistry
+			contentDashboardItemSubtypeFactoryRegistry,
+		JSONObject contentDashboardItemSubtypePayloadJSONObject) {
 
 		String className =
 			contentDashboardItemSubtypePayloadJSONObject.getString("className");
 
 		if (Validator.isNull(className)) {
-			return toContentDashboardItemSubtypeOptional(
-				contentDashboardItemSubtypeFactoryTracker,
+			return toContentDashboardItemSubtype(
+				contentDashboardItemSubtypeFactoryRegistry,
 				new InfoItemReference(
 					contentDashboardItemSubtypePayloadJSONObject.getString(
 						"entryClassName"),
 					0));
 		}
 
-		return toContentDashboardItemSubtypeOptional(
-			contentDashboardItemSubtypeFactoryTracker,
+		return toContentDashboardItemSubtype(
+			contentDashboardItemSubtypeFactoryRegistry,
 			new InfoItemReference(
 				contentDashboardItemSubtypePayloadJSONObject.getString(
 					"entryClassName"),
@@ -119,43 +89,38 @@ public class ContentDashboardItemSubtypeUtil {
 							"classPK")))));
 	}
 
-	public static Optional<ContentDashboardItemSubtype>
-		toContentDashboardItemSubtypeOptional(
-			ContentDashboardItemSubtypeFactoryTracker
-				contentDashboardItemSubtypeFactoryTracker,
-			String contentDashboardItemSubtypePayload) {
+	public static ContentDashboardItemSubtype toContentDashboardItemSubtype(
+		ContentDashboardItemSubtypeFactoryRegistry
+			contentDashboardItemSubtypeFactoryRegistry,
+		String contentDashboardItemSubtypePayload) {
 
 		try {
-			return toContentDashboardItemSubtypeOptional(
-				contentDashboardItemSubtypeFactoryTracker,
+			return toContentDashboardItemSubtype(
+				contentDashboardItemSubtypeFactoryRegistry,
 				JSONFactoryUtil.createJSONObject(
 					contentDashboardItemSubtypePayload));
 		}
 		catch (JSONException jsonException) {
 			_log.error(jsonException);
 
-			return Optional.empty();
+			return null;
 		}
 	}
 
-	private static Optional<ContentDashboardItemSubtype>
-		_toContentDashboardItemSubtypeOptional(
-			Optional<ContentDashboardItemSubtypeFactory>
-				contentDashboardItemSubtypeFactoryOptional,
-			Long classPK) {
+	private static ContentDashboardItemSubtype _toContentDashboardItemSubtype(
+		ContentDashboardItemSubtypeFactory contentDashboardItemSubtypeFactory,
+		Long classPK) {
 
-		return contentDashboardItemSubtypeFactoryOptional.flatMap(
-			contentDashboardItemSubtypeFactory -> {
-				try {
-					return Optional.of(
-						contentDashboardItemSubtypeFactory.create(classPK));
-				}
-				catch (PortalException portalException) {
-					_log.error(portalException);
+		try {
+			if (contentDashboardItemSubtypeFactory != null) {
+				return contentDashboardItemSubtypeFactory.create(classPK);
+			}
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
+		}
 
-					return Optional.empty();
-				}
-			});
+		return null;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

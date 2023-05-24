@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Jorge Ferrer
  */
-@Component(immediate = true, service = StagingPermission.class)
+@Component(service = StagingPermission.class)
 public class StagingPermissionImpl implements StagingPermission {
 
 	@Override
@@ -81,6 +81,7 @@ public class StagingPermissionImpl implements StagingPermission {
 			!actionId.equals(ActionKeys.CUSTOMIZE) &&
 			!actionId.equals(ActionKeys.DELETE) &&
 			!actionId.equals(ActionKeys.DELETE_DISCUSSION) &&
+			!actionId.equals(ActionKeys.DOWNLOAD) &&
 			!actionId.equals(ActionKeys.UPDATE_DISCUSSION) &&
 			!actionId.equals(ActionKeys.VIEW) &&
 			group.hasLocalOrRemoteStagingGroup() &&

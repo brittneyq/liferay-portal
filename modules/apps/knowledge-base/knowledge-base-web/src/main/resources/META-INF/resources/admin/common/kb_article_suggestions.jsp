@@ -46,8 +46,6 @@ if (ratingsType == null) {
 %>
 
 <c:if test="<%= ratingsType.equals(RatingsType.THUMBS) && themeDisplay.isSignedIn() %>">
-	<h5><liferay-ui:message key="do-you-have-any-suggestions" /></h5>
-
 	<a name="kbSuggestions"></a>
 
 	<div id="<portlet:namespace />suggestionContainer">
@@ -60,7 +58,7 @@ if (ratingsType == null) {
 			<portlet:param name="redirect" value="<%= viewKBArticleURL.toString() %>" />
 		</liferay-portlet:actionURL>
 
-		<aui:form action="<%= updateKBCommentURL %>" method="post" name="suggestionFm">
+		<aui:form action="<%= updateKBCommentURL %>" cssClass="mb-5" method="post" name="suggestionFm">
 			<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.ADD %>" />
 			<aui:input name="classNameId" type="hidden" value="<%= PortalUtil.getClassNameId(KBArticle.class) %>" />
 			<aui:input name="classPK" type="hidden" value="<%= kbArticle.getResourcePrimKey() %>" />
@@ -69,13 +67,11 @@ if (ratingsType == null) {
 
 			<aui:model-context model="<%= KBComment.class %>" />
 
-			<aui:fieldset>
-				<aui:input label="" name="content" />
+			<aui:input label="do-you-have-any-suggestions" name="content" />
 
-				<aui:button-row cssClass="kb-submit-buttons">
-					<aui:button type="submit" value="submit" />
-				</aui:button-row>
-			</aui:fieldset>
+			<aui:button-row cssClass="kb-submit-buttons">
+				<aui:button type="submit" value="submit" />
+			</aui:button-row>
 		</aui:form>
 	</div>
 
@@ -85,40 +81,38 @@ if (ratingsType == null) {
 
 	<liferay-ui:success key="suggestionSaved" message="suggestion-was-saved-successfully" />
 
-	<c:choose>
-		<c:when test="<%= kbCommentsCount == 1 %>">
-			<c:choose>
-				<c:when test="<%= showAdminSuggestionView %>">
-					<h5>
+	<h5 class="mb-0">
+		<c:choose>
+			<c:when test="<%= kbCommentsCount == 1 %>">
+				<c:choose>
+					<c:when test="<%= showAdminSuggestionView %>">
 						<liferay-ui:message key="there-is-one-suggestion" />
 
 						<c:if test="<%= pendingKBCommentsCount > 0 %>">
 							(<liferay-ui:message arguments="<%= pendingKBCommentsCount %>" key="x-pending" />)
 						</c:if>
-					</h5>
-				</c:when>
-				<c:otherwise>
-					<liferay-ui:message key="you-sent-one-suggestion-for-this-article" />
-				</c:otherwise>
-			</c:choose>
-		</c:when>
-		<c:when test="<%= kbCommentsCount > 1 %>">
-			<c:choose>
-				<c:when test="<%= showAdminSuggestionView %>">
-					<h5>
+					</c:when>
+					<c:otherwise>
+						<liferay-ui:message key="you-sent-one-suggestion-for-this-article" />
+					</c:otherwise>
+				</c:choose>
+			</c:when>
+			<c:when test="<%= kbCommentsCount > 1 %>">
+				<c:choose>
+					<c:when test="<%= showAdminSuggestionView %>">
 						<liferay-ui:message arguments="<%= kbCommentsCount %>" key="there-are-x-suggestions" />
 
 						<c:if test="<%= pendingKBCommentsCount > 0 %>">
 							(<liferay-ui:message arguments="<%= pendingKBCommentsCount %>" key="x-pending" />)
 						</c:if>
-					</h5>
-				</c:when>
-				<c:otherwise>
-					<liferay-ui:message arguments="<%= kbCommentsCount %>" key="you-sent-x-suggestions-for-this-article" />
-				</c:otherwise>
-			</c:choose>
-		</c:when>
-	</c:choose>
+					</c:when>
+					<c:otherwise>
+						<liferay-ui:message arguments="<%= kbCommentsCount %>" key="you-sent-x-suggestions-for-this-article" />
+					</c:otherwise>
+				</c:choose>
+			</c:when>
+		</c:choose>
+	</h5>
 
 	<c:if test="<%= kbCommentsCount > 0 %>">
 		<c:choose>

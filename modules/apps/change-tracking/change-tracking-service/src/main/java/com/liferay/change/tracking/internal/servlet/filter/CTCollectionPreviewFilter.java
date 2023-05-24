@@ -44,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author David Truong
  */
 @Component(
-	immediate = true,
 	property = {
 		"dispatcher=FORWARD", "dispatcher=REQUEST", "servlet-context-name=",
 		"servlet-filter-name=CTCollection Preview Filter", "url-pattern=/*"
@@ -94,7 +93,12 @@ public class CTCollectionPreviewFilter extends BasePortalFilter {
 				return;
 			}
 
-			if (ctCollection.getStatus() != WorkflowConstants.STATUS_DRAFT) {
+			if ((ctCollection.getStatus() !=
+					WorkflowConstants.STATUS_APPROVED) &&
+				(ctCollection.getStatus() != WorkflowConstants.STATUS_DRAFT) &&
+				(ctCollection.getStatus() !=
+					WorkflowConstants.STATUS_EXPIRED)) {
+
 				_portal.sendError(
 					new PortalException("Collection is not available"),
 					httpServletRequest, httpServletResponse);

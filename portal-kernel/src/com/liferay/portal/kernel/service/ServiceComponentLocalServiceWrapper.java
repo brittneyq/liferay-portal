@@ -131,16 +131,6 @@ public class ServiceComponentLocalServiceWrapper
 	}
 
 	@Override
-	public void destroyServiceComponent(
-		com.liferay.portal.kernel.service.configuration.
-			ServiceComponentConfiguration serviceComponentConfiguration,
-		java.lang.ClassLoader classLoader) {
-
-		_serviceComponentLocalService.destroyServiceComponent(
-			serviceComponentConfiguration, classLoader);
-	}
-
-	@Override
 	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
 		return _serviceComponentLocalService.dslQuery(dslQuery);
 	}
@@ -385,11 +375,6 @@ public class ServiceComponentLocalServiceWrapper
 		_serviceComponentLocalService.upgradeDB(
 			classLoader, buildNamespace, buildNumber, previousServiceComponent,
 			tablesSQL, sequencesSQL, indexesSQL);
-	}
-
-	@Override
-	public void verifyDB() {
-		_serviceComponentLocalService.verifyDB();
 	}
 
 	@Override

@@ -58,8 +58,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -268,48 +266,21 @@ public abstract class DLFileEntryLocalServiceBaseImpl
 		return dlFileEntryPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the document library file entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the document library file entry's external reference code
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
 	@Override
 	public DLFileEntry fetchDLFileEntryByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
-		return dlFileEntryPersistence.fetchByG_ERC(
-			groupId, externalReferenceCode);
+		return dlFileEntryPersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchDLFileEntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public DLFileEntry fetchDLFileEntryByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return fetchDLFileEntryByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the document library file entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the document library file entry's external reference code
-	 * @return the matching document library file entry
-	 * @throws PortalException if a matching document library file entry could not be found
-	 */
 	@Override
 	public DLFileEntry getDLFileEntryByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return dlFileEntryPersistence.findByG_ERC(
-			groupId, externalReferenceCode);
+		return dlFileEntryPersistence.findByERC_G(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -677,14 +648,14 @@ public abstract class DLFileEntryLocalServiceBaseImpl
 			"com.liferay.document.library.kernel.model.DLFileEntry",
 			dlFileEntryLocalService);
 
-		_setLocalServiceUtilService(dlFileEntryLocalService);
+		DLFileEntryLocalServiceUtil.setService(dlFileEntryLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.document.library.kernel.model.DLFileEntry");
 
-		_setLocalServiceUtilService(null);
+		DLFileEntryLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -741,22 +712,6 @@ public abstract class DLFileEntryLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		DLFileEntryLocalService dlFileEntryLocalService) {
-
-		try {
-			Field field = DLFileEntryLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, dlFileEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

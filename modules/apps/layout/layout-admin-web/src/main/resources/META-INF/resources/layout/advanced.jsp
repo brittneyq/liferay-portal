@@ -19,7 +19,7 @@
 <%
 Layout selLayout = layoutsAdminDisplayContext.getSelLayout();
 
-UnicodeProperties layoutTypeSettings = selLayout.getTypeSettingsProperties();
+UnicodeProperties layoutTypeSettingsUnicodeProperties = selLayout.getTypeSettingsProperties();
 %>
 
 <liferay-ui:error-marker
@@ -40,30 +40,37 @@ Group group = layoutsAdminDisplayContext.getGroup();
 		<liferay-ui:message arguments='<%= new String[] {LanguageUtil.get(request, "inherit-changes"), "General"} %>' key="some-page-settings-are-unavailable-because-x-is-enabled" translateArguments="<%= false %>" />
 	</div>
 
-	<aui:input cssClass="propagatable-field" disabled="<%= selLayout.isLayoutPrototypeLinkActive() %>" helpMessage="query-string-help" label="query-string" name="TypeSettingsProperties--query-string--" size="30" type="text" value='<%= GetterUtil.getString(layoutTypeSettings.getProperty("query-string")) %>' />
+	<aui:input cssClass="propagatable-field" disabled="<%= selLayout.isLayoutPrototypeLinkActive() %>" helpMessage="query-string-help" label="query-string" name="TypeSettingsProperties--query-string--" size="30" type="text" value='<%= GetterUtil.getString(layoutTypeSettingsUnicodeProperties.getProperty("query-string")) %>' />
 </c:if>
 
 <%
-String targetType = GetterUtil.getString(layoutTypeSettings.getProperty("targetType"));
+String targetType = GetterUtil.getString(layoutTypeSettingsUnicodeProperties.getProperty("targetType"));
 %>
 
-<aui:select cssClass="propagatable-field" id="targetType" label="target-type" name="TypeSettingsProperties--targetType--">
-	<aui:option label="specific-frame" selected='<%= !Objects.equals(targetType, "useNewTab") %>' value="" />
-	<aui:option label="new-tab" selected='<%= Objects.equals(targetType, "useNewTab") %>' value="useNewTab" />
-</aui:select>
+<div class="d-flex">
+	<aui:select cssClass="propagatable-field" id="targetType" label="target-type" name="TypeSettingsProperties--targetType--" wrapperCssClass="mr-3 w-50">
+		<aui:option label="specific-frame" selected='<%= !Objects.equals(targetType, "useNewTab") %>' value="" />
+		<aui:option label="new-tab" selected='<%= Objects.equals(targetType, "useNewTab") %>' value="useNewTab" />
+	</aui:select>
 
-<aui:input cssClass="propagatable-field" disabled="<%= selLayout.isLayoutPrototypeLinkActive() %>" id="target" label="target" name="TypeSettingsProperties--target--" size="15" type="text" value='<%= GetterUtil.getString(layoutTypeSettings.getProperty("target")) %>' wrapperCssClass='<%= Objects.equals(targetType, "useNewTab") ? "hide" : "" %>' />
+	<aui:input cssClass="propagatable-field" disabled="<%= selLayout.isLayoutPrototypeLinkActive() %>" id="target" label="target" name="TypeSettingsProperties--target--" size="15" type="text" value='<%= GetterUtil.getString(layoutTypeSettingsUnicodeProperties.getProperty("target")) %>' wrapperCssClass='<%= Objects.equals(targetType, "useNewTab") ? "hide" : "w-50" %>' />
+</div>
 
-<aui:field-wrapper helpMessage="this-icon-will-be-shown-in-the-navigation-menu" label="icon" name="iconFileName">
-	<liferay-ui:logo-selector
-		currentLogoURL='<%= (selLayout.getIconImageId() == 0) ? themeDisplay.getPathThemeImages() + "/spacer.png" : themeDisplay.getPathImage() + "/logo?img_id=" + selLayout.getIconImageId() + "&t=" + WebServerServletTokenUtil.getToken(selLayout.getIconImageId()) %>'
-		defaultLogo="<%= selLayout.getIconImageId() == 0 %>"
-		defaultLogoURL='<%= themeDisplay.getPathThemeImages() + "/spacer.png" %>'
-		tempImageFileName="<%= String.valueOf(selLayout.getPlid()) %>"
-	/>
-</aui:field-wrapper>
+<liferay-frontend:logo-selector
+	currentLogoURL='<%= (selLayout.getIconImageId() == 0) ? themeDisplay.getPathThemeImages() + "/spacer.png" : themeDisplay.getPathImage() + "/logo?img_id=" + selLayout.getIconImageId() + "&t=" + WebServerServletTokenUtil.getToken(selLayout.getIconImageId()) %>'
+	defaultLogoURL='<%= themeDisplay.getPathThemeImages() + "/spacer.png" %>'
+	description='<%= LanguageUtil.get(request, "this-icon-will-be-shown-in-the-navigation-menu") %>'
+	label='<%= LanguageUtil.get(request, "icon") %>'
+/>
 
 <liferay-frontend:component
 	componentId='<%= liferayPortletResponse.getNamespace() + "addLayout" %>'
+	context='<%=
+		HashMapBuilder.<String, Object>put(
+			"defaultTarget", Objects.equals(targetType, "useNewTab") ? StringPool.BLANK : GetterUtil.getString(layoutTypeSettingsUnicodeProperties.getProperty("target"))
+		).put(
+			"namespace", liferayPortletResponse.getNamespace()
+		).build()
+	%>'
 	module="js/Advanced"
 />

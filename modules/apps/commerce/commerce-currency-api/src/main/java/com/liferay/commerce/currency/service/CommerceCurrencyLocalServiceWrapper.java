@@ -454,10 +454,12 @@ public class CommerceCurrencyLocalServiceWrapper
 
 	@Override
 	public void importDefaultValues(
+			boolean updateExchangeRate,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws Exception {
 
-		_commerceCurrencyLocalService.importDefaultValues(serviceContext);
+		_commerceCurrencyLocalService.importDefaultValues(
+			updateExchangeRate, serviceContext);
 	}
 
 	@Override
@@ -501,7 +503,7 @@ public class CommerceCurrencyLocalServiceWrapper
 	@Override
 	public com.liferay.commerce.currency.model.CommerceCurrency
 			updateCommerceCurrency(
-				long commerceCurrencyId, String code,
+				long commerceCurrencyId,
 				java.util.Map<java.util.Locale, String> nameMap, String symbol,
 				java.math.BigDecimal rate,
 				java.util.Map<java.util.Locale, String> formatPatternMap,
@@ -512,7 +514,7 @@ public class CommerceCurrencyLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceCurrencyLocalService.updateCommerceCurrency(
-			commerceCurrencyId, code, nameMap, symbol, rate, formatPatternMap,
+			commerceCurrencyId, nameMap, symbol, rate, formatPatternMap,
 			maxFractionDigits, minFractionDigits, roundingMode, primary,
 			priority, active, serviceContext);
 	}

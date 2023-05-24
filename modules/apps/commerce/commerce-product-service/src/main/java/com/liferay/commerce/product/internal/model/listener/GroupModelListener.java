@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Andrea Sbarra
  */
-@Component(enabled = false, immediate = true, service = ModelListener.class)
+@Component(service = ModelListener.class)
 public class GroupModelListener extends BaseModelListener<Group> {
 
 	@Override
@@ -45,7 +45,7 @@ public class GroupModelListener extends BaseModelListener<Group> {
 					commerceChannel.getCommerceChannelId(),
 					GroupConstants.DEFAULT_PARENT_GROUP_ID,
 					commerceChannel.getName(), commerceChannel.getType(),
-					commerceChannel.getTypeSettingsProperties(),
+					commerceChannel.getTypeSettingsUnicodeProperties(),
 					commerceChannel.getCommerceCurrencyCode());
 			}
 		}

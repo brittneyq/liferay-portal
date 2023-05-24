@@ -3,6 +3,18 @@
 
 <resource-action-mapping>
 	<model-resource>
+		<model-name>com.liferay.account.model.AccountEntry</model-name>
+		<portlet-ref>
+			<portlet-name>com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet</portlet-name>
+		</portlet-ref>
+		<weight>2</weight>
+		<permissions>
+			<supports>
+				<action-key>MANAGE_AVAILABLE_ACCOUNTS_VIA_USER_CHANNEL_REL</action-key>
+			</supports>
+		</permissions>
+	</model-resource>
+	<model-resource>
 		<model-name>com.liferay.commerce.availability</model-name>
 		<portlet-ref>
 			<portlet-name>com_liferay_commerce_availability_estimate_web_internal_portlet_CommerceAvailabilityEstimatePortlet</portlet-name>
@@ -35,6 +47,26 @@
 			<guest-defaults/>
 			<guest-unsupported>
 				<action-key>MANAGE_COMMERCE_HEALTH_STATUS</action-key>
+			</guest-unsupported>
+		</permissions>
+	</model-resource>
+	<model-resource>
+		<model-name>com.liferay.commerce.model.CommerceOrder</model-name>
+		<portlet-ref>
+			<portlet-name>com_liferay_commerce_order_content_web_internal_portlet_CommerceOpenOrderContentPortlet</portlet-name>
+			<portlet-name>com_liferay_commerce_order_content_web_internal_portlet_CommerceOrderContentPortlet</portlet-name>
+			<portlet-name>com_liferay_commerce_order_web_internal_portlet_CommerceOrderPortlet</portlet-name>
+		</portlet-ref>
+		<weight>2</weight>
+		<permissions>
+			<supports>
+				<action-key>VIEW</action-key>
+			</supports>
+			<site-member-defaults>
+			</site-member-defaults>
+			<guest-defaults>
+			</guest-defaults>
+			<guest-unsupported>
 			</guest-unsupported>
 		</permissions>
 	</model-resource>
@@ -101,10 +133,8 @@
 			<site-member-defaults>
 				<action-key>ADD_COMMERCE_ORDER</action-key>
 			</site-member-defaults>
-			<guest-defaults>
-				<action-key>ADD_COMMERCE_ORDER</action-key>
-			</guest-defaults>
 			<guest-unsupported>
+				<action-key>ADD_COMMERCE_ORDER</action-key>
 				<action-key>APPROVE_OPEN_COMMERCE_ORDERS</action-key>
 				<action-key>CHECKOUT_OPEN_COMMERCE_ORDERS</action-key>
 				<action-key>DELETE_COMMERCE_ORDERS</action-key>

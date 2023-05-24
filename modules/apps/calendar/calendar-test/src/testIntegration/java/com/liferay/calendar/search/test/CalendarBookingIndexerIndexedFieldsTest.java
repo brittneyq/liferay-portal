@@ -103,6 +103,9 @@ public class CalendarBookingIndexerIndexedFieldsTest
 		map.put(Field.RELATED_ENTRY, "true");
 		map.put(Field.STAGING_GROUP, "false");
 		map.put(Field.STATUS, "0");
+		map.put(
+			"statusByUserId",
+			String.valueOf(calendarBooking.getStatusByUserId()));
 		map.put("viewActionId", CalendarActionKeys.VIEW_BOOKING_DETAILS);
 
 		populateTitle(originalTitle, map);
@@ -134,7 +137,8 @@ public class CalendarBookingIndexerIndexedFieldsTest
 		SearchResponse searchResponse = searchOnlyOneSearchResponse(
 			keywords, LocaleUtil.HUNGARY);
 
-		FieldValuesAssert.assertFieldValues(map, searchResponse);
+		FieldValuesAssert.assertFieldValues(
+			map, name -> !name.equals("score"), searchResponse);
 	}
 
 	protected CalendarBooking addCalendarBooking(

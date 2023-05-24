@@ -41,7 +41,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.Version
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
@@ -180,7 +179,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<VersionedEntryVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VersionedEntryVersion versionedEntryVersion : list) {
@@ -551,7 +550,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {versionedEntryId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -670,7 +669,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByVersionedEntryId_Version, finderArgs);
+				_finderPathFetchByVersionedEntryId_Version, finderArgs, this);
 		}
 
 		if (result instanceof VersionedEntryVersion) {
@@ -776,7 +775,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {versionedEntryId, version};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -922,7 +921,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<VersionedEntryVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VersionedEntryVersion versionedEntryVersion : list) {
@@ -1290,7 +1289,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {groupId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1435,7 +1434,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<VersionedEntryVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VersionedEntryVersion versionedEntryVersion : list) {
@@ -1827,7 +1826,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {groupId, version};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2303,7 +2302,7 @@ public class VersionedEntryVersionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<VersionedEntryVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2373,7 +2372,7 @@ public class VersionedEntryVersionPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2505,29 +2504,13 @@ public class VersionedEntryVersionPersistenceImpl
 			new String[] {Long.class.getName(), Integer.class.getName()},
 			new String[] {"groupId", "version"}, false);
 
-		_setVersionedEntryVersionUtilPersistence(this);
+		VersionedEntryVersionUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setVersionedEntryVersionUtilPersistence(null);
+		VersionedEntryVersionUtil.setPersistence(null);
 
 		entityCache.removeCache(VersionedEntryVersionImpl.class.getName());
-	}
-
-	private void _setVersionedEntryVersionUtilPersistence(
-		VersionedEntryVersionPersistence versionedEntryVersionPersistence) {
-
-		try {
-			Field field = VersionedEntryVersionUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, versionedEntryVersionPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = EntityCache.class)

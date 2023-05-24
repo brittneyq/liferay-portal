@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Drew Brokke
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + UserAssociatedDataPortletKeys.USER_ASSOCIATED_DATA,
 		"mvc.command.name=/user_associated_data/info_panel"
@@ -85,7 +84,7 @@ public class InfoPanelMVCResourceCommand extends BaseMVCResourceCommand {
 
 				UADEntity<Object> uadEntity = new UADEntity(
 					entity, uadDisplay.getPrimaryKey(entity), null, false,
-					uadDisplay.getTypeClass(), true, null);
+					uadDisplay.getTypeKey(), true, null);
 
 				uadEntities.add(uadEntity);
 			}
@@ -102,7 +101,7 @@ public class InfoPanelMVCResourceCommand extends BaseMVCResourceCommand {
 
 			if (Validator.isNull(uadRegistryKey)) {
 				uadRegistryKey = ParamUtil.getString(
-					resourceRequest, "parentContainerClass");
+					resourceRequest, "parentContainerTypeKey");
 			}
 
 			if (Validator.isNull(uadRegistryKey)) {
@@ -113,10 +112,8 @@ public class InfoPanelMVCResourceCommand extends BaseMVCResourceCommand {
 					_uadRegistry.getUADHierarchyDisplay(applicationKey);
 
 				if (uadHierarchyDisplay != null) {
-					Class<?> typeClass =
-						uadHierarchyDisplay.getFirstContainerTypeClass();
-
-					uadRegistryKey = typeClass.getName();
+					uadRegistryKey =
+						uadHierarchyDisplay.getFirstContainerTypeKey();
 				}
 				else {
 					uadRegistryKey = ParamUtil.getString(

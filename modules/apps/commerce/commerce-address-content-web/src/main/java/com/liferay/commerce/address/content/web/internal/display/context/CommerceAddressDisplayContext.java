@@ -15,8 +15,6 @@
 package com.liferay.commerce.address.content.web.internal.display.context;
 
 import com.liferay.account.model.AccountEntry;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.address.content.web.internal.portlet.action.helper.ActionHelper;
 import com.liferay.commerce.address.content.web.internal.portlet.configuration.CommerceAddressContentPortletInstanceConfiguration;
 import com.liferay.commerce.constants.CommerceWebKeys;
@@ -24,14 +22,15 @@ import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.product.display.context.helper.CPRequestHelper;
 import com.liferay.commerce.service.CommerceAddressService;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.commerce.util.CommerceUtil;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.CountryService;
 import com.liferay.portal.kernel.service.RegionService;
 import com.liferay.portal.kernel.theme.PortletDisplay;
@@ -73,7 +72,7 @@ public class CommerceAddressDisplayContext {
 		_liferayPortletResponse = _cpRequestHelper.getLiferayPortletResponse();
 
 		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
+			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
@@ -81,6 +80,11 @@ public class CommerceAddressDisplayContext {
 		_commerceAddressContentPortletInstanceConfiguration =
 			portletDisplay.getPortletInstanceConfiguration(
 				CommerceAddressContentPortletInstanceConfiguration.class);
+	}
+
+	public AccountEntry getAccountEntry() throws PortalException {
+		return _commerceAccountHelper.getCurrentAccountEntry(
+			_cpRequestHelper.getCommerceChannelGroupId(), _httpServletRequest);
 	}
 
 	public String getAddCommerceAddressURL() {
@@ -97,11 +101,6 @@ public class CommerceAddressDisplayContext {
 				return themeDisplay.getURLCurrent();
 			}
 		).buildString();
-	}
-
-	public CommerceAccount getCommerceAccount() throws PortalException {
-		return _commerceAccountHelper.getCurrentCommerceAccount(
-			_cpRequestHelper.getCommerceChannelGroupId(), _httpServletRequest);
 	}
 
 	public CommerceAddress getCommerceAddress() throws PortalException {
@@ -268,12 +267,12 @@ public class CommerceAddressDisplayContext {
 				"create-date", "desc"));
 		_searchContainer.setOrderByType("desc");
 
-		CommerceAccount commerceAccount = getCommerceAccount();
+		AccountEntry accountEntry = getAccountEntry();
 
 		_searchContainer.setResultsAndTotal(
 			_commerceAddressService.searchCommerceAddresses(
-				commerceAccount.getCompanyId(), AccountEntry.class.getName(),
-				commerceAccount.getCommerceAccountId(), null,
+				accountEntry.getCompanyId(), AccountEntry.class.getName(),
+				accountEntry.getAccountEntryId(), null,
 				_searchContainer.getStart(), _searchContainer.getEnd(), null));
 
 		return _searchContainer;

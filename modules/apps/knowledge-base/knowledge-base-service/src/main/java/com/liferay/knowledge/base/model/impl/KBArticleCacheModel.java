@@ -76,10 +76,12 @@ public class KBArticleCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(61);
+		StringBundler sb = new StringBundler(67);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", kbArticleId=");
@@ -128,6 +130,10 @@ public class KBArticleCacheModel
 		sb.append(main);
 		sb.append(", sourceURL=");
 		sb.append(sourceURL);
+		sb.append(", expirationDate=");
+		sb.append(expirationDate);
+		sb.append(", reviewDate=");
+		sb.append(reviewDate);
 		sb.append(", lastPublishDate=");
 		sb.append(lastPublishDate);
 		sb.append(", status=");
@@ -148,6 +154,7 @@ public class KBArticleCacheModel
 		KBArticleImpl kbArticleImpl = new KBArticleImpl();
 
 		kbArticleImpl.setMvccVersion(mvccVersion);
+		kbArticleImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			kbArticleImpl.setUuid("");
@@ -243,6 +250,20 @@ public class KBArticleCacheModel
 			kbArticleImpl.setSourceURL(sourceURL);
 		}
 
+		if (expirationDate == Long.MIN_VALUE) {
+			kbArticleImpl.setExpirationDate(null);
+		}
+		else {
+			kbArticleImpl.setExpirationDate(new Date(expirationDate));
+		}
+
+		if (reviewDate == Long.MIN_VALUE) {
+			kbArticleImpl.setReviewDate(null);
+		}
+		else {
+			kbArticleImpl.setReviewDate(new Date(reviewDate));
+		}
+
 		if (lastPublishDate == Long.MIN_VALUE) {
 			kbArticleImpl.setLastPublishDate(null);
 		}
@@ -277,6 +298,8 @@ public class KBArticleCacheModel
 		throws ClassNotFoundException, IOException {
 
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		kbArticleId = objectInput.readLong();
@@ -314,6 +337,8 @@ public class KBArticleCacheModel
 
 		main = objectInput.readBoolean();
 		sourceURL = objectInput.readUTF();
+		expirationDate = objectInput.readLong();
+		reviewDate = objectInput.readLong();
 		lastPublishDate = objectInput.readLong();
 
 		status = objectInput.readInt();
@@ -326,6 +351,8 @@ public class KBArticleCacheModel
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		if (uuid == null) {
 			objectOutput.writeUTF("");
@@ -419,6 +446,8 @@ public class KBArticleCacheModel
 			objectOutput.writeUTF(sourceURL);
 		}
 
+		objectOutput.writeLong(expirationDate);
+		objectOutput.writeLong(reviewDate);
 		objectOutput.writeLong(lastPublishDate);
 
 		objectOutput.writeInt(status);
@@ -436,6 +465,7 @@ public class KBArticleCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long kbArticleId;
 	public long resourcePrimKey;
@@ -460,6 +490,8 @@ public class KBArticleCacheModel
 	public boolean latest;
 	public boolean main;
 	public String sourceURL;
+	public long expirationDate;
+	public long reviewDate;
 	public long lastPublishDate;
 	public int status;
 	public long statusByUserId;

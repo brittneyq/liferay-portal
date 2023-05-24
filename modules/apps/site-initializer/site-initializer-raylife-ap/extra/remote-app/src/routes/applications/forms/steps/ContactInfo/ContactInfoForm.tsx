@@ -24,7 +24,10 @@ import classNames from 'classnames';
 import {useContext, useEffect, useState} from 'react';
 
 import {useLocation} from '../../../../../common/hooks/useLocation';
-import {CONSTANTS} from '../../../../../common/utils/constants';
+import {
+	CONSTANTS,
+	ConstantListType,
+} from '../../../../../common/utils/constants';
 import {
 	ACTIONS,
 	NewApplicationAutoContext,
@@ -40,6 +43,7 @@ const ContactInfo = () => {
 	const [state, dispatch] = useContext(NewApplicationAutoContext);
 
 	const {setAutoComplete} = useLocation();
+	const [ownership, setOwnership] = useState('');
 
 	const addressElement = document.querySelector(
 		'#streetAddress'
@@ -150,6 +154,7 @@ const ContactInfo = () => {
 
 	useEffect(() => {
 		handleSaveChanges(form);
+		setOwnership(form?.ownership);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [form]);
@@ -166,8 +171,29 @@ const ContactInfo = () => {
 		</div>
 	);
 
+	const RadioGroup = () => {
+		return (
+			<ClayRadioGroup className="ml-3" defaultValue={ownership} inline>
+				<ClayRadio
+					checked={true}
+					label="Rent"
+					onClick={() => handleChangeField('ownership', 'rent')}
+					value="rent"
+				/>
+
+				<ClayRadio
+					checked={ownership === 'own'}
+					label="Own"
+					onClick={() => handleChangeField('ownership', 'own')}
+					value="own"
+				/>
+			</ClayRadioGroup>
+		);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	};
+
 	return (
-		<div className="mx-8">
+		<div className="mx-1 mx-md-8">
 			<div className="font-weight-bolder text-paragraph-sm text-uppercase">
 				Contact Information
 			</div>
@@ -175,7 +201,7 @@ const ContactInfo = () => {
 			<hr></hr>
 
 			<ClayForm>
-				<div className="d-flex flex-row">
+				<div className="d-flex flex-column flex-md-row">
 					<div
 						className={classNames(
 							'col filled form-condensed form-group',
@@ -261,10 +287,10 @@ const ContactInfo = () => {
 					</div>
 				</div>
 
-				<div className="d-flex flex-row">
+				<div className="d-flex flex-column flex-md-row">
 					<div
 						className={classNames(
-							'col filled form-condensed form-group position-relative"',
+							'col filled form-condensed form-group position-relative',
 							{
 								'has-error': hasError.dateOfBirth,
 							}
@@ -274,6 +300,11 @@ const ContactInfo = () => {
 							dateFormat="MM/dd/yyyy"
 							onBlur={(event) => {
 								const dateValue = event;
+
+								handleChangeField(
+									'dateOfBirth',
+									dateValue.target.value
+								);
 
 								setHasError({
 									...hasError,
@@ -431,7 +462,7 @@ const ContactInfo = () => {
 			<hr></hr>
 
 			<ClayForm>
-				<div className="d-flex flex-row">
+				<div className="d-flex flex-column flex-md-row">
 					<div
 						className={classNames(
 							'col filled form-condensed form-group',
@@ -499,7 +530,7 @@ const ContactInfo = () => {
 					</div>
 				</div>
 
-				<div className="d-flex flex-row">
+				<div className="d-flex flex-column flex-md-row">
 					<div
 						className={classNames(
 							'col filled form-condensed form-group',
@@ -585,13 +616,15 @@ const ContactInfo = () => {
 							}}
 							value={form.state}
 						>
-							{CONSTANTS.US_STATES.map((us_state) => (
-								<ClaySelect.Option
-									key={us_state.value}
-									label={us_state.label}
-									value={us_state.label}
-								/>
-							))}
+							{CONSTANTS.US_STATES.map(
+								(us_state: ConstantListType) => (
+									<ClaySelect.Option
+										key={us_state.value}
+										label={us_state.label}
+										value={us_state.label}
+									/>
+								)
+							)}
 						</ClaySelect>
 
 						<label htmlFor="state">
@@ -663,23 +696,7 @@ const ContactInfo = () => {
 					<span className="text-danger-darken-1">*</span>
 				</div>
 
-				<ClayRadioGroup
-					className="ml-3"
-					defaultValue={form.ownership}
-					inline
-				>
-					<ClayRadio
-						label="Rent"
-						onClick={() => handleChangeField('ownership', 'rent')}
-						value="rent"
-					/>
-
-					<ClayRadio
-						label="Own"
-						onClick={() => handleChangeField('ownership', 'own')}
-						value="own"
-					/>
-				</ClayRadioGroup>
+				<RadioGroup />
 			</div>
 		</div>
 	);

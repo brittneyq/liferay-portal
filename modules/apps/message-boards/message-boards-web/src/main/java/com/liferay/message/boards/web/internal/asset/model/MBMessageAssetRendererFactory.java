@@ -45,7 +45,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sergio González
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + MBPortletKeys.MESSAGE_BOARDS,
 	service = AssetRendererFactory.class
 )
@@ -121,13 +120,6 @@ public class MBMessageAssetRendererFactory
 			permissionChecker, classPK, actionId);
 	}
 
-	@Reference(unbind = "-")
-	protected void setMBMessageLocalService(
-		MBMessageLocalService mbMessageLocalService) {
-
-		_mbMessageLocalService = mbMessageLocalService;
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		MBMessageAssetRendererFactory.class);
 
@@ -138,6 +130,7 @@ public class MBMessageAssetRendererFactory
 	@Reference
 	private HtmlParser _htmlParser;
 
+	@Reference
 	private MBMessageLocalService _mbMessageLocalService;
 
 	@Reference(

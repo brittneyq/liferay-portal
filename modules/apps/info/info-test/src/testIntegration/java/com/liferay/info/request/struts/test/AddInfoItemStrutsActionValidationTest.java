@@ -16,6 +16,12 @@ package com.liferay.info.request.struts.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
+import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
+import com.liferay.fragment.listener.FragmentEntryLinkListener;
+import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
+import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.exception.InfoFormInvalidGroupException;
 import com.liferay.info.exception.InfoFormInvalidLayoutModeException;
@@ -23,14 +29,18 @@ import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.type.TextInfoFieldType;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.test.util.MockInfoServiceRegistrationHolder;
 import com.liferay.info.test.util.info.item.creator.MockInfoItemCreator;
 import com.liferay.info.test.util.model.MockObject;
 import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -50,10 +60,15 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
+
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -99,10 +114,10 @@ public class AddInfoItemStrutsActionValidationTest {
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
 			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
-				layout, false,
+				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", infoField);
+				"0", layout, _layoutStructureProvider, infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout, formItemId);
@@ -136,16 +151,35 @@ public class AddInfoItemStrutsActionValidationTest {
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
 			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
-				layout, true,
+				true,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", infoField);
+				"0", layout, _layoutStructureProvider, infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout, formItemId);
 
-			_addInfoItemStrutsAction.execute(
-				mockHttpServletRequest, new MockHttpServletResponse());
+			try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+					_CLASS_NAME, LoggerTestUtil.ERROR)) {
+
+				_addInfoItemStrutsAction.execute(
+					mockHttpServletRequest, new MockHttpServletResponse());
+
+				List<LogEntry> logEntries = logCapture.getLogEntries();
+
+				Assert.assertEquals(
+					logEntries.toString(), 1, logEntries.size());
+
+				LogEntry logEntry = logEntries.get(0);
+
+				Assert.assertEquals(
+					LoggerTestUtil.ERROR, logEntry.getPriority());
+
+				Assert.assertEquals(
+					"CAPTCHA text is null. User null may be trying to " +
+						"circumvent the CAPTCHA.",
+					logEntry.getMessage());
+			}
 
 			Assert.assertTrue(
 				SessionErrors.contains(mockHttpServletRequest, formItemId));
@@ -157,6 +191,79 @@ public class AddInfoItemStrutsActionValidationTest {
 			Assert.assertTrue(
 				infoFormException instanceof
 					InfoFormValidationException.InvalidCaptcha);
+
+			Assert.assertFalse(
+				SessionMessages.contains(mockHttpServletRequest, formItemId));
+		}
+	}
+
+	@Test
+	public void testAddInfoItemStrutsActionFormRequiredFieldValidation()
+		throws Exception {
+
+		InfoField<TextInfoFieldType> infoField = _getInfoField();
+
+		try (MockInfoServiceRegistrationHolder
+				mockInfoServiceRegistrationHolder =
+					new MockInfoServiceRegistrationHolder(
+						InfoFieldSet.builder(
+						).infoFieldSetEntries(
+							ListUtil.fromArray(infoField)
+						).build(),
+						_editPageInfoItemCapability)) {
+
+			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
+				false,
+				String.valueOf(
+					_portal.getClassNameId(MockObject.class.getName())),
+				"0", layout, _layoutStructureProvider, infoField);
+
+			MockHttpServletRequest mockHttpServletRequest =
+				_getMockHttpServletRequest(layout, formItemId);
+
+			_addInfoItemStrutsAction.execute(
+				mockHttpServletRequest, new MockHttpServletResponse());
+
+			Assert.assertFalse(
+				SessionErrors.contains(mockHttpServletRequest, formItemId));
+			Assert.assertFalse(
+				SessionErrors.contains(
+					mockHttpServletRequest, infoField.getUniqueId()));
+			Assert.assertTrue(
+				SessionMessages.contains(mockHttpServletRequest, formItemId));
+
+			_markInputFragmentEntryLinkAsRequired(layout);
+
+			mockHttpServletRequest = _getMockHttpServletRequest(
+				layout, formItemId);
+
+			_addInfoItemStrutsAction.execute(
+				mockHttpServletRequest, new MockHttpServletResponse());
+
+			Assert.assertTrue(
+				SessionErrors.contains(mockHttpServletRequest, formItemId));
+			Assert.assertTrue(
+				SessionErrors.contains(
+					mockHttpServletRequest, infoField.getUniqueId()));
+
+			Assert.assertTrue(
+				SessionErrors.get(mockHttpServletRequest, formItemId) instanceof
+					InfoFormValidationException.RequiredInfoField);
+
+			InfoFormValidationException.RequiredInfoField requiredInfoField =
+				(InfoFormValidationException.RequiredInfoField)
+					SessionErrors.get(mockHttpServletRequest, formItemId);
+
+			Assert.assertEquals(
+				infoField.getUniqueId(),
+				requiredInfoField.getInfoFieldUniqueId());
+
+			Assert.assertEquals(
+				requiredInfoField,
+				SessionErrors.get(
+					mockHttpServletRequest, infoField.getUniqueId()));
 
 			Assert.assertFalse(
 				SessionMessages.contains(mockHttpServletRequest, formItemId));
@@ -179,13 +286,13 @@ public class AddInfoItemStrutsActionValidationTest {
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
 			JSONObject jsonObject = ContentLayoutTestUtil.addFormToLayout(
-				layout,
+				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0",
+				"0", layout, _layoutStructureProvider,
 				_segmentsExperienceLocalService.
 					fetchDefaultSegmentsExperienceId(layout.getPlid()),
-				false, infoField);
+				infoField);
 
 			String formItemId = jsonObject.getString("addedItemId");
 
@@ -230,10 +337,10 @@ public class AddInfoItemStrutsActionValidationTest {
 				_group.getStagingGroup());
 
 			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
-				layout, false,
+				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", infoField);
+				"0", layout, _layoutStructureProvider, infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout, formItemId);
@@ -277,10 +384,10 @@ public class AddInfoItemStrutsActionValidationTest {
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
 			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
-				layout, false,
+				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", infoField);
+				"0", layout, _layoutStructureProvider, infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout, formItemId);
@@ -328,10 +435,10 @@ public class AddInfoItemStrutsActionValidationTest {
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
 			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
-				layout, false,
+				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", infoField);
+				"0", layout, _layoutStructureProvider, infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout, formItemId);
@@ -374,10 +481,10 @@ public class AddInfoItemStrutsActionValidationTest {
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
 			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
-				layout, false,
+				false,
 				String.valueOf(
 					_portal.getClassNameId(MockObject.class.getName())),
-				"0", infoField);
+				"0", layout, _layoutStructureProvider, infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(
@@ -445,9 +552,56 @@ public class AddInfoItemStrutsActionValidationTest {
 			String.valueOf(
 				_segmentsExperienceLocalService.
 					fetchDefaultSegmentsExperienceId(layout.getPlid())));
+		mockHttpServletRequest.setContentType(
+			"multipart/form-data;boundary=" + System.currentTimeMillis());
 
 		return mockHttpServletRequest;
 	}
+
+	private void _markInputFragmentEntryLinkAsRequired(Layout layout)
+		throws PortalException {
+
+		FragmentEntryLink inputFragmentEntryLink = null;
+
+		for (FragmentEntryLink fragmentEntryLink :
+				_fragmentEntryLinkLocalService.getFragmentEntryLinksByPlid(
+					layout.getGroupId(), layout.getPlid())) {
+
+			if (fragmentEntryLink.getType() == FragmentConstants.TYPE_INPUT) {
+				inputFragmentEntryLink = fragmentEntryLink;
+
+				break;
+			}
+		}
+
+		Assert.assertNotNull(inputFragmentEntryLink);
+
+		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
+			inputFragmentEntryLink.getEditableValues());
+
+		JSONObject freemarkerEntryProcessorJSONObject =
+			editableValuesJSONObject.getJSONObject(
+				FragmentEntryProcessorConstants.
+					KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR);
+
+		freemarkerEntryProcessorJSONObject.put("inputRequired", true);
+
+		inputFragmentEntryLink =
+			_fragmentEntryLinkLocalService.updateFragmentEntryLink(
+				inputFragmentEntryLink.getFragmentEntryLinkId(),
+				editableValuesJSONObject.toString());
+
+		for (FragmentEntryLinkListener fragmentEntryLinkListener :
+				_fragmentEntryLinkListenerRegistry.
+					getFragmentEntryLinkListeners()) {
+
+			fragmentEntryLinkListener.onUpdateFragmentEntryLink(
+				inputFragmentEntryLink);
+		}
+	}
+
+	private static final String _CLASS_NAME =
+		"com.liferay.captcha.simplecaptcha.SimpleCaptchaImpl";
 
 	@Inject(filter = "path=/portal/add_info_item")
 	private StrutsAction _addInfoItemStrutsAction;
@@ -458,11 +612,25 @@ public class AddInfoItemStrutsActionValidationTest {
 	@Inject
 	private EditPageInfoItemCapability _editPageInfoItemCapability;
 
+	@Inject
+	private FragmentEntryLinkListenerRegistry
+		_fragmentEntryLinkListenerRegistry;
+
+	@Inject
+	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
+
 	@DeleteAfterTestRun
 	private Group _group;
 
 	@Inject
-	private InfoItemServiceTracker _infoItemServiceTracker;
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
+
+	@Inject
+	private LayoutPageTemplateStructureLocalService
+		_layoutPageTemplateStructureLocalService;
+
+	@Inject
+	private LayoutStructureProvider _layoutStructureProvider;
 
 	@Inject
 	private Portal _portal;

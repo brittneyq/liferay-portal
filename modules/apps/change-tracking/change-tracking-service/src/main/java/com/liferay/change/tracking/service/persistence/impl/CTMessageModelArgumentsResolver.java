@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {CTMessageModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.change.tracking.model.impl.CTMessageImpl",
+		"table.name=CTMessage"
+	},
+	service = ArgumentsResolver.class
 )
 public class CTMessageModelArgumentsResolver implements ArgumentsResolver {
 

@@ -16,6 +16,15 @@ import {initializeCache} from './src/main/resources/META-INF/resources/page_edit
 
 initializeCache();
 
+Liferay.Util.sub.mockImplementation((key, ...args) => {
+	const argsArray = args.flatMap((arg) => arg);
+
+	return key
+		.replace(/^x-/, () => `${argsArray.shift()}-`)
+		.replace(/-x(\.?)-/g, (_, dot) => `-${argsArray.shift()}${dot}-`)
+		.replace(/-x$/, () => `-${argsArray.shift()}`);
+});
+
 if (typeof Array.prototype.flatMap !== 'function') {
 	Array.prototype.flatMap = function () {
 		return Array.prototype.map
@@ -26,7 +35,7 @@ if (typeof Array.prototype.flatMap !== 'function') {
 
 // eslint-disable-next-line
 jest.mock(
-	'./src/main/resources/META-INF/resources/page_editor/app/config',
+	'./src/main/resources/META-INF/resources/page_editor/app/config/index',
 	() => ({
 		config: {
 			availableLanguages: {
@@ -74,7 +83,9 @@ jest.mock(
 			panels: [['browser']],
 			portletNamespace: 'page-editor-portlet-namespace',
 			selectedViewportSize: 'desktop',
-			sidebarPanels: {browser: {sidebarPanelId: 'browser'}},
+			sidebarPanels: {
+				browser: {label: 'Browser', sidebarPanelId: 'browser'},
+			},
 		},
 	})
 );

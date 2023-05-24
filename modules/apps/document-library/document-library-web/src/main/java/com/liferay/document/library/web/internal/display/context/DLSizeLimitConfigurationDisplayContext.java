@@ -15,9 +15,9 @@
 package com.liferay.document.library.web.internal.display.context;
 
 import com.liferay.document.library.configuration.DLSizeLimitConfigurationProvider;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -77,9 +77,8 @@ public class DLSizeLimitConfigurationDisplayContext {
 
 			return _dlSizeLimitConfigurationProvider.getSystemFileMaxSize();
 		}
-		else {
-			throw new IllegalArgumentException("Unsupported scope: " + _scope);
-		}
+
+		throw new IllegalArgumentException("Unsupported scope: " + _scope);
 	}
 
 	public Map<String, Object> getFileSizePerMimeTypeData() {
@@ -121,9 +120,8 @@ public class DLSizeLimitConfigurationDisplayContext {
 			return _dlSizeLimitConfigurationProvider.
 				getSystemMimeTypeSizeLimit();
 		}
-		else {
-			throw new IllegalArgumentException("Unsupported scope: " + _scope);
-		}
+
+		throw new IllegalArgumentException("Unsupported scope: " + _scope);
 	}
 
 	private final DLSizeLimitConfigurationProvider

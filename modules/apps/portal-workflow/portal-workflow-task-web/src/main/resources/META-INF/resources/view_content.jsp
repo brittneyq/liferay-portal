@@ -65,11 +65,14 @@ renderResponse.setTitle(assetRenderer.getTitle(workflowTaskDisplayContext.getTas
 						assetEntry="<%= assetEntry %>"
 						assetRenderer="<%= assetRenderer %>"
 						assetRendererFactory="<%= assetRendererFactory %>"
+						showExtraInfo="<%= workflowTaskDisplayContext.isShowExtraInfo() %>"
 					/>
 				</c:if>
 
 				<%
-				String viewInContextURL = assetRenderer.getURLViewInContext(liferayPortletRequest, liferayPortletResponse, null);
+				WorkflowHandler<?> workflowHandler = workflowTaskDisplayContext.getWorkflowHandler(workflowTaskDisplayContext.getWorkflowTask());
+
+				String viewInContextURL = workflowHandler.getURLViewInContext(assetRenderer.getClassPK(), liferayPortletRequest, liferayPortletResponse, null);
 				%>
 
 				<c:if test="<%= viewInContextURL != null %>">

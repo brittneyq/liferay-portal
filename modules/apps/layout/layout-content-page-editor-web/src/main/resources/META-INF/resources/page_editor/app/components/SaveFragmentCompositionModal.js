@@ -25,16 +25,14 @@ import React, {useState} from 'react';
 
 import Button from '../../common/components/Button';
 import InvisibleFieldset from '../../common/components/InvisibleFieldset';
-import {openImageSelector} from '../../core/openImageSelector';
+import {openImageSelector} from '../../common/openImageSelector';
 import {config} from '../config/index';
 import {useActiveItemId} from '../contexts/ControlsContext';
 import {useDispatch, useSelector} from '../contexts/StoreContext';
-import selectSegmentsExperienceId from '../selectors/selectSegmentsExperienceId';
 import addFragmentComposition from '../thunks/addFragmentComposition';
 
-const SaveFragmentCompositionModal = ({onCloseModal}) => {
+const SaveFragmentCompositionModal = ({itemId, onCloseModal}) => {
 	const dispatch = useDispatch();
-	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
 	const activeItemId = useActiveItemId();
 	const isMounted = useIsMounted();
@@ -76,12 +74,11 @@ const SaveFragmentCompositionModal = ({onCloseModal}) => {
 				addFragmentComposition({
 					description,
 					fragmentCollectionId,
-					itemId: activeItemId,
+					itemId: itemId || activeItemId,
 					name,
 					previewImageURL: thumbnail.url,
 					saveInlineContent,
 					saveMappingConfiguration,
-					segmentsExperienceId,
 				})
 			)
 				.then(() => {
@@ -142,6 +139,11 @@ const SaveFragmentCompositionModal = ({onCloseModal}) => {
 								onChange={(event) =>
 									setName(event.target.value)
 								}
+								onClick={(event) => {
+									if (Liferay.Browser.isFirefox()) {
+										event.target.focus();
+									}
+								}}
 								placeholder={Liferay.Language.get('name')}
 								required
 								type="text"
@@ -171,7 +173,7 @@ const SaveFragmentCompositionModal = ({onCloseModal}) => {
 												handleThumbnailSelected
 											)
 										}
-										small
+										size="sm"
 										value={Liferay.Language.get(
 											'upload-thumbnail'
 										)}
@@ -363,6 +365,7 @@ const SaveFragmentCompositionModal = ({onCloseModal}) => {
 };
 
 SaveFragmentCompositionModal.propTypes = {
+	itemId: PropTypes.string,
 	onCloseModal: PropTypes.func.isRequired,
 };
 

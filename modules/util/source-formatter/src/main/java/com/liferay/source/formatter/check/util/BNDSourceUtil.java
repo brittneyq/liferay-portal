@@ -118,6 +118,19 @@ public class BNDSourceUtil {
 		return bundleSymbolicNamesMap;
 	}
 
+	public static String getDefinition(String content, String key) {
+		Pattern pattern = Pattern.compile(
+			"^" + key + ":[\\s\\S]*?([^\\\\]\n|\\Z)", Pattern.MULTILINE);
+
+		Matcher matcher = pattern.matcher(content);
+
+		if (!matcher.find()) {
+			return null;
+		}
+
+		return StringUtil.trim(matcher.group());
+	}
+
 	public static Map<String, String> getDefinitionKeysMap() {
 		return _populateDefinitionKeysMap(
 			ArrayUtil.append(
@@ -254,8 +267,9 @@ public class BNDSourceUtil {
 		"-metatype-inherit", "-sass", "Bundle-ActivationPolicy",
 		"Can-Redefine-Classes", "Can-Retransform-Classes",
 		"Eclipse-PlatformFilter", "Implementation-Version", "JPM-Command",
-		"Liferay-Configuration-Path", "Liferay-Enterprise-App",
-		"Liferay-Icons-Pack-Name", "Liferay-Icons-Path", "Liferay-JS-Config",
+		"Liferay-Client-Extension-Batch", "Liferay-Configuration-Path",
+		"Liferay-Enterprise-App", "Liferay-Icons-Pack-Name",
+		"Liferay-Icons-Path", "Liferay-JS-Config",
 		"Liferay-JS-Resources-Top-Head-Authenticated",
 		"Liferay-JS-Resources-Top-Head", "Liferay-JS-Submodules-Bridge",
 		"Liferay-JS-Submodules-Export", "Liferay-Modules-Compat-Adapters",
@@ -263,9 +277,11 @@ public class BNDSourceUtil {
 		"Liferay-Releng-Module-Group-Description",
 		"Liferay-Releng-Module-Group-Title", "Liferay-Require-SchemaVersion",
 		"Liferay-RTL-Support-Required", "Liferay-Service",
-		"Liferay-Site-Initializer-Description", "Liferay-Site-Initializer-Name",
-		"Liferay-Theme-Contributor-Type", "Liferay-Theme-Contributor-Weight",
-		"Liferay-Versions", "Main-Class", "Premain-Class", "Web-ContextPath"
+		"Liferay-Site-Initializer-Description",
+		"Liferay-Site-Initializer-Feature-Flag",
+		"Liferay-Site-Initializer-Name", "Liferay-Theme-Contributor-Type",
+		"Liferay-Theme-Contributor-Weight", "Liferay-Versions", "Main-Class",
+		"Premain-Class", "Web-ContextPath"
 	};
 
 	private static final String[] _COMMON_BND_DEFINITION_KEYS = {

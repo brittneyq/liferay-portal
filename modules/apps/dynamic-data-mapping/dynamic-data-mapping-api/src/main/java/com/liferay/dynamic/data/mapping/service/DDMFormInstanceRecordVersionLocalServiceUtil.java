@@ -94,10 +94,12 @@ public class DDMFormInstanceRecordVersionLocalServiceUtil {
 	 *
 	 * @param ddmFormInstanceRecordVersion the ddm form instance record version
 	 * @return the ddm form instance record version that was removed
+	 * @throws PortalException
 	 */
 	public static DDMFormInstanceRecordVersion
-		deleteDDMFormInstanceRecordVersion(
-			DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion) {
+			deleteDDMFormInstanceRecordVersion(
+				DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion)
+		throws PortalException {
 
 		return getService().deleteDDMFormInstanceRecordVersion(
 			ddmFormInstanceRecordVersion);
@@ -381,6 +383,12 @@ public class DDMFormInstanceRecordVersionLocalServiceUtil {
 
 	public static DDMFormInstanceRecordVersionLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		DDMFormInstanceRecordVersionLocalService service) {
+
+		_service = service;
 	}
 
 	private static volatile DDMFormInstanceRecordVersionLocalService _service;

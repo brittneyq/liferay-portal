@@ -15,14 +15,20 @@
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayForm from '@clayui/form';
+import ClayIcon from '@clayui/icon';
 import ClayModal, {ClayModalProvider, useModal} from '@clayui/modal';
 import {Observer} from '@clayui/modal/lib/types';
-import {API, Input} from '@liferay/object-js-components-web';
+import {ClayTooltipProvider} from '@clayui/tooltip';
+import {API, Input, Toggle} from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
+import {defaultLanguageId} from '../../utils/constants';
 import {toCamelCase} from '../../utils/string';
+import PicklistDefaultValueSelect from './DefaultValueFields/PicklistDefaultValueSelect';
 import ObjectFieldFormBase from './ObjectFieldFormBase';
 import {useObjectFieldForm} from './useObjectFieldForm';
+
+import './AddObjectField.scss';
 
 interface IModal extends IProps {
 	observer: Observer;
@@ -31,49 +37,55 @@ interface IModal extends IProps {
 
 interface IProps {
 	apiURL: string;
-	objectDefinitionId: number;
+	creationLanguageId: Liferay.Language.Locale;
+	objectDefinitionExternalReferenceCode: string;
 	objectFieldTypes: ObjectFieldType[];
 	objectName: string;
 }
 
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
-
 function ModalAddObjectField({
 	apiURL,
-	objectDefinitionId,
+	creationLanguageId,
+	objectDefinitionExternalReferenceCode,
 	objectFieldTypes,
 	objectName,
 	observer,
 	onClose,
 }: IModal) {
 	const [error, setError] = useState<string>('');
+	const [objectDefinition, setObjectDefinition] = useState<
+		ObjectDefinition
+	>();
 
 	const initialValues: Partial<ObjectField> = {
 		indexed: true,
 		indexedAsKeyword: false,
 		indexedLanguageId: null,
+		listTypeDefinitionExternalReferenceCode: '',
 		listTypeDefinitionId: 0,
 		required: false,
 	};
 
-	const onSubmit = async (field: ObjectField) => {
-		try {
-			await API.save(
-				apiURL,
-				{
-					...field,
-					name:
-						field.name ||
-						toCamelCase(field.label[defaultLanguageId] as string),
-				},
-				'POST'
-			);
+	const onSubmit = async (field: Partial<ObjectField>) => {
+		if (field.label) {
+			field = {
+				...field,
+				name:
+					field.name ||
+					toCamelCase(field.label[defaultLanguageId] as string, true),
+			};
 
-			onClose();
-			window.location.reload();
-		}
-		catch (error) {
-			setError((error as Error).message);
+			delete field.listTypeDefinitionId;
+
+			try {
+				await API.save(apiURL, field, 'POST');
+
+				onClose();
+				window.location.reload();
+			}
+			catch (error) {
+				setError((error as Error).message);
+			}
 		}
 	};
 
@@ -87,6 +99,45 @@ function ModalAddObjectField({
 		initialValues,
 		onSubmit,
 	});
+
+	const showEnableTranslationToggle =
+		values.businessType === 'LongText' ||
+		values.businessType === 'RichText' ||
+		values.businessType === 'Text';
+
+	useEffect(() => {
+		if (!objectDefinition) {
+			const makeFetch = async () => {
+				const objectDefinitionResponse = await API.getObjectDefinitionByExternalReferenceCode(
+					objectDefinitionExternalReferenceCode
+				);
+
+				setObjectDefinition(objectDefinitionResponse);
+			};
+
+			makeFetch();
+		}
+
+		if (Liferay.FeatureFlags['LPS-146755']) {
+			if (
+				objectDefinition?.enableLocalization &&
+				showEnableTranslationToggle
+			) {
+				setValues({
+					localized: true,
+				});
+
+				return;
+			}
+
+			setValues({
+				localized: false,
+			});
+
+			return;
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [values.businessType]);
 
 	return (
 		<ClayModal observer={observer}>
@@ -114,12 +165,67 @@ function ModalAddObjectField({
 					<ObjectFieldFormBase
 						errors={errors}
 						handleChange={handleChange}
-						objectDefinitionId={objectDefinitionId}
+						objectDefinition={objectDefinition}
+						objectDefinitionExternalReferenceCode={
+							objectDefinitionExternalReferenceCode
+						}
 						objectField={values}
 						objectFieldTypes={objectFieldTypes}
 						objectName={objectName}
 						setValues={setValues}
-					/>
+					>
+						{Liferay.FeatureFlags['LPS-146755'] &&
+							showEnableTranslationToggle && (
+								<div className="lfr-objects-add-object-field-enable-translations-toggle">
+									<Toggle
+										disabled={
+											!objectDefinition?.enableLocalization
+										}
+										label={Liferay.Language.get(
+											'enable-entry-translations'
+										)}
+										onToggle={() =>
+											setValues({
+												localized: !values.localized,
+											})
+										}
+										toggled={values.localized}
+									/>
+
+									<ClayTooltipProvider>
+										<span
+											title={Liferay.Language.get(
+												'users-will-be-able-to-add-translations-for-the-entries-of-this-field'
+											)}
+										>
+											<ClayIcon
+												className="lfr-objects-add-object-field-enable-translations-toggle-icon"
+												symbol="question-circle-full"
+											/>
+										</span>
+									</ClayTooltipProvider>
+								</div>
+							)}
+					</ObjectFieldFormBase>
+
+					{values.state && (
+						<PicklistDefaultValueSelect
+							creationLanguageId={creationLanguageId}
+							defaultValue={
+								Liferay.FeatureFlags['LPS-163716']
+									? values.objectFieldSettings?.find(
+											(setting) =>
+												setting.name === 'defaultValue'
+									  )?.value
+									: values.defaultValue
+							}
+							error={errors.defaultValue}
+							label={Liferay.Language.get('default-value')}
+							required
+							setValues={setValues}
+							values={values}
+						/>
+					)}
 				</ClayModal.Body>
 
 				<ClayModal.Footer
@@ -145,7 +251,8 @@ function ModalAddObjectField({
 
 export default function AddObjectField({
 	apiURL,
-	objectDefinitionId,
+	creationLanguageId,
+	objectDefinitionExternalReferenceCode,
 	objectFieldTypes,
 	objectName,
 }: IProps) {
@@ -158,19 +265,26 @@ export default function AddObjectField({
 		return () => Liferay.detach('addObjectField');
 	}, []);
 
+	const applyFeatureFlag = () => {
+		return objectFieldTypes.filter((objectFieldType) => {
+			if (!Liferay.FeatureFlags['LPS-164948']) {
+				return objectFieldType.businessType !== 'Formula';
+			}
+		});
+	};
+
 	return (
 		<ClayModalProvider>
 			{isVisible && (
 				<ModalAddObjectField
 					apiURL={apiURL}
-					objectDefinitionId={objectDefinitionId}
+					creationLanguageId={creationLanguageId}
+					objectDefinitionExternalReferenceCode={
+						objectDefinitionExternalReferenceCode
+					}
 					objectFieldTypes={
-						!Liferay.FeatureFlags['LPS-149625']
-							? objectFieldTypes.filter(
-									(filterType) =>
-										filterType.businessType !==
-										'Aggregation'
-							  )
+						!Liferay.FeatureFlags['LPS-164948']
+							? applyFeatureFlag()
 							: objectFieldTypes
 					}
 					objectName={objectName}

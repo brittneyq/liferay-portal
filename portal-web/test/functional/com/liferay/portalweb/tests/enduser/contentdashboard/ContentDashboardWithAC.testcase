@@ -22,7 +22,7 @@ definition {
 
 			Navigator.openURL();
 
-			JSONGroup.addGroup(groupName = "Test Site Name");
+			HeadlessSite.addSite(siteName = "Test Site Name");
 		}
 
 		task ("Connect and synchronyze with Analytics Cloud") {
@@ -37,19 +37,22 @@ definition {
 
 		Navigator.openURL();
 
-		AnalyticsCloud.teardownAnalyticsCloud();
+		ACDXPSettings.disconnectDXPFromAnalyticsCloud();
 
-		JSONGroup.deleteGroupByName(groupName = "Test Site Name");
-
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+
+		JSONUser.tearDownNonAdminUsers();
+
+		JSONRole.deleteTestRoles();
 	}
 
-	@description = "LPS-136512 Given The Content Performance panel of a document is opened
-	When the user clicks on the times icon ( X )
-	Then the Content Performance panel is closed"
-	@priority = "3"
+	@description = "LPS-136512 Given The Content Performance panel of a document is opened When the user clicks on the times icon ( X ) Then the Content Performance panel is closed"
+	@priority = 3
 	test CloseMetricsPanel {
 		task ("Create a default Display Page Template") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
@@ -76,7 +79,7 @@ definition {
 		task ("Go to Content Dashboard and click on View Metrics") {
 			ContentDashboard.goToContentDashboard();
 
-			ContentDashboard.openViewMetricsByIcon(assetTitle = "DM Document Title");
+			ContentDashboard.clickQuickActionIcon(iconName = "View Metrics");
 		}
 
 		task ("Assert the Content Performance is present") {
@@ -84,19 +87,17 @@ definition {
 		}
 
 		task ("Exit the Content Performance panel and assert is not visible anymore") {
-			Click(locator1 = "ContentDashboard#CLOSE_CONTENT_PERFORMANCE_PANEL");
+			Click.javaScriptClick(locator1 = "Sidebar#CLOSE");
 
 			AssertNotVisible(locator1 = "ContentDashboard#CONTENT_PERFORMANCE_TITLE_PANEL");
 		}
 	}
 
-	@description = "LPS-136512 Given A blog associated with a Display Page
-	When the user clicks on the option "View metrics" in the kebab menu
-	Then the Content Performance panel is displayed"
-	@priority = "4"
+	@description = "LPS-132509 Given a blog with an associated Display Page Template When the user with permissions clicks on the Metrics button Then the user is led to the metrics panel"
+	@priority = 4
 	test ViewMetricsButtonKebabWhenBlogHasDPT {
 		property osgi.module.configuration.file.names = "com.liferay.content.dashboard.web.internal.configuration.FFBlogsEntryContentDashboardItemConfiguration.config";
-		property osgi.module.configurations = "blogsEntryEnabled=B&quot;true&quot;";
+		property osgi.module.configurations = "blogsEntryEnabled=B\"true\"";
 		property portal.acceptance = "true";
 
 		task ("Create a default Display Page Template") {
@@ -122,7 +123,9 @@ definition {
 		task ("Go to Content Dashboard and click on View Metrics in the kebab menu") {
 			ContentDashboard.goToContentDashboard();
 
-			ContentDashboard.openViewMetricsByDropdownMenu();
+			LexiconTable.clickEllipsisItem(
+				item = "View Metrics",
+				tableEntry = "Blogs Entry Title");
 		}
 
 		task ("Assert the Content Performance is present") {
@@ -130,10 +133,8 @@ definition {
 		}
 	}
 
-	@description = "LPS-136512 Given A document associated with a Display Page
-	When the user clicks on the option "View metrics" in the kebab menu
-	Then the Content Performance panel is displayed"
-	@priority = "4"
+	@description = "LPS-136512 Given A document associated with a Display Page When the user clicks on the option ""View metrics"" in the kebab menu Then the Content Performance panel is displayed"
+	@priority = 4
 	test ViewMetricsButtonKebabWhenDocumentHasDPT {
 		task ("Create a default Display Page Template") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
@@ -160,7 +161,9 @@ definition {
 		task ("Go to Content Dashboard and click on View Metrics in the kebab menu") {
 			ContentDashboard.goToContentDashboard();
 
-			ContentDashboard.openViewMetricsByDropdownMenu();
+			LexiconTable.clickEllipsisItem(
+				item = "View Metrics",
+				tableEntry = "DM Document Title");
 		}
 
 		task ("Assert the Content Performance is present") {
@@ -169,7 +172,7 @@ definition {
 	}
 
 	@description = "LPS-152076 Bug: Content Performance Panel is not visible form Content dashboard if the user doesn't have Control Access Permission"
-	@priority = "4"
+	@priority = 4
 	test ViewMetricsButtonUserWithoutControlAccessPermission {
 		task ("Create a default Display Page Template") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
@@ -214,35 +217,35 @@ definition {
 		task ("Add all Content Dashboard permissions to role") {
 			for (var resourceActionIndex : list "VIEW,ADD_TO_PAGE,CONFIGURATION,PERMISSIONS,PREFERENCES,ACCESS_IN_CONTROL_PANEL") {
 				Permissions.definePermissionViaJSONAPI(
-					resourceAction = "${resourceActionIndex}",
+					resourceAction = ${resourceActionIndex},
 					resourceName = "com_liferay_content_dashboard_web_portlet_ContentDashboardAdminPortlet",
 					roleTitle = "Test Role Name");
 			}
 
 			Permissions.definePermissionViaJSONAPI(
 				resourceAction = "VIEW_CONTROL_PANEL",
-				resourceName = "90",
+				resourceName = 90,
 				roleTitle = "Test Role Name");
 		}
 
 		task ("Add all Web Content permissions to role") {
 			for (var resourceActionIndex : list "ADD_STRUCTURE,ADD_FOLDER,ADD_FEED,ADD_ARTICLE,VIEW,UPDATE,SUBSCRIBE,PERMISSIONS,ADD_TEMPLATE") {
 				Permissions.definePermissionViaJSONAPI(
-					resourceAction = "${resourceActionIndex}",
+					resourceAction = ${resourceActionIndex},
 					resourceName = "com.liferay.journal",
 					roleTitle = "Test Role Name");
 			}
 
 			for (var resourceActionIndex : list "ADD_DISCUSSION,VIEW,UPDATE_DISCUSSION,UPDATE,SUBSCRIBE,PERMISSIONS,EXPIRE,DELETE_DISCUSSION,DELETE") {
 				Permissions.definePermissionViaJSONAPI(
-					resourceAction = "${resourceActionIndex}",
+					resourceAction = ${resourceActionIndex},
 					resourceName = "com.liferay.journal.model.JournalArticle",
 					roleTitle = "Test Role Name");
 			}
 
 			for (var resourceActionIndex : list "VIEW,UPDATE,SUBSCRIBE,PERMISSIONS,DELETE,ADD_SUBFOLDER,ADD_ARTICLE,ACCESS") {
 				Permissions.definePermissionViaJSONAPI(
-					resourceAction = "${resourceActionIndex}",
+					resourceAction = ${resourceActionIndex},
 					resourceName = "com.liferay.journal.model.JournalFolder",
 					roleTitle = "Test Role Name");
 			}
@@ -254,7 +257,7 @@ definition {
 
 			for (var resourceActionIndex : list "VIEW,ACCESS_IN_CONTROL_PANEL") {
 				Permissions.definePermissionViaJSONAPI(
-					resourceAction = "${resourceActionIndex}",
+					resourceAction = ${resourceActionIndex},
 					resourceName = "com_liferay_journal_web_portlet_JournalPortlet",
 					roleTitle = "Test Role Name");
 			}
@@ -277,7 +280,9 @@ definition {
 		}
 
 		task ("Check that user can see metrics sidebar") {
-			ContentDashboard.openViewMetricsByDropdownMenu();
+			LexiconTable.clickEllipsisItem(
+				item = "View Metrics",
+				tableEntry = "WC Title 1");
 
 			AssertVisible(locator1 = "ContentDashboard#CONTENT_PERFORMANCE_TITLE_PANEL");
 		}
@@ -287,20 +292,10 @@ definition {
 				userLoginEmailAddress = "test@liferay.com",
 				userLoginFullName = "Test Test");
 		}
-
-		task ("Delete Role created") {
-			JSONRole.deleteRole(roleTitle = "Test Role Name");
-		}
-
-		task ("Delete User created") {
-			JSONUser.deleteUserByEmailAddress(userEmailAddress = "userea@liferay.com");
-		}
 	}
 
-	@description = "LPS-136512 Given A document associated with a Display Page
-	When the user clicks on the "Metrics" button in the hover action
-	Then the Content Performance panel is displayed"
-	@priority = "4"
+	@description = "LPS-136512 Given A document associated with a Display Page When the user clicks on the ""Metrics"" button in the hover action Then the Content Performance panel is displayed"
+	@priority = 4
 	test ViewMetricsButtonWhenDocumentHasDPT {
 		task ("Create a default Display Page Template") {
 			JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
@@ -327,7 +322,7 @@ definition {
 		task ("Go to Content Dashboard and click on View Mtrics") {
 			ContentDashboard.goToContentDashboard();
 
-			ContentDashboard.openViewMetricsByIcon(assetTitle = "DM Document Title");
+			ContentDashboard.clickQuickActionIcon(iconName = "View Metrics");
 		}
 
 		task ("Assert the Content Performance is present") {

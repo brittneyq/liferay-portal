@@ -14,6 +14,7 @@
 
 package com.liferay.saml.opensaml.integration.internal.servlet.profile;
 
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
@@ -21,6 +22,7 @@ import com.liferay.saml.constants.SamlWebKeys;
 import com.liferay.saml.opensaml.integration.internal.BaseSamlTestCase;
 import com.liferay.saml.opensaml.integration.internal.bootstrap.SecurityConfigurationBootstrap;
 import com.liferay.saml.opensaml.integration.internal.metadata.MetadataManagerImpl;
+import com.liferay.saml.opensaml.integration.internal.provider.CachingChainingMetadataResolver;
 import com.liferay.saml.opensaml.integration.internal.util.OpenSamlUtil;
 import com.liferay.saml.opensaml.integration.internal.util.SamlUtil;
 import com.liferay.saml.persistence.model.SamlSpAuthRequest;
@@ -99,6 +101,8 @@ import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.signature.Signature;
 
+import org.osgi.framework.BundleContext;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -126,26 +130,34 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 			SamlSpSessionLocalServiceUtil.class,
 			SamlSpSessionLocalService.class);
 
-		_webSsoProfileImpl.setIdentifierGenerationStrategyFactory(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "identifierGenerationStrategyFactory",
 			identifierGenerationStrategyFactory);
-		_webSsoProfileImpl.setMetadataManager(metadataManagerImpl);
-		_webSsoProfileImpl.setPortal(portal);
-		_webSsoProfileImpl.setSamlBindings(samlBindings);
-
-		_webSsoProfileImpl.setSamlProviderConfigurationHelper(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "metadataManager", metadataManagerImpl);
+		ReflectionTestUtil.setFieldValue(_webSsoProfileImpl, "portal", portal);
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "samlBindingProvider", samlBindingProvider);
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "samlProviderConfigurationHelper",
 			samlProviderConfigurationHelper);
-		_webSsoProfileImpl.setSamlSpAuthRequestLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpAuthRequestLocalService",
 			_samlSpAuthRequestLocalService);
-		_webSsoProfileImpl.setSamlSpSessionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "samlSpSessionLocalService",
 			_samlSpSessionLocalService);
-		_webSsoProfileImpl.setSamlSpMessageLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpMessageLocalService",
 			getMockPortletService(
 				SamlSpMessageLocalServiceUtil.class,
 				SamlSpMessageLocalService.class));
-		_webSsoProfileImpl.setSamlSpIdpConnectionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpIdpConnectionLocalService",
 			getMockPortletService(
 				SamlSpIdpConnectionLocalServiceUtil.class,
 				SamlSpIdpConnectionLocalService.class));
+
 		_webSsoProfileImpl.activate(new HashMap<String, Object>());
 
 		prepareServiceProvider(SP_ENTITY_ID);
@@ -381,7 +393,8 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 			samlSpIdpConnection
 		);
 
-		_webSsoProfileImpl.setSamlSpIdpConnectionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpIdpConnectionLocalService",
 			samlSpIdpConnectionLocalService);
 
 		MockHttpServletRequest mockHttpServletRequest =
@@ -494,7 +507,8 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 			samlSpIdpConnection
 		);
 
-		_webSsoProfileImpl.setSamlSpIdpConnectionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpIdpConnectionLocalService",
 			samlSpIdpConnectionLocalService);
 
 		MockHttpServletRequest mockHttpServletRequest =
@@ -586,19 +600,34 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 
 		metadataManagerImpl = new MetadataManagerImpl();
 
-		metadataManagerImpl.setCredentialResolver(credentialResolver);
-		metadataManagerImpl.setLocalEntityManager(credentialResolver);
-		metadataManagerImpl.setMetadataResolver(
-			new MockMetadataResolver(false));
-		metadataManagerImpl.setParserPool(parserPool);
-		metadataManagerImpl.setPortal(portal);
-		metadataManagerImpl.setSamlProviderConfigurationHelper(
+		ReflectionTestUtil.setFieldValue(
+			metadataManagerImpl, "_credentialResolver", credentialResolver);
+		ReflectionTestUtil.setFieldValue(
+			metadataManagerImpl, "_localEntityManager", credentialResolver);
+		ReflectionTestUtil.setFieldValue(
+			metadataManagerImpl, "_portal", portal);
+		ReflectionTestUtil.setFieldValue(
+			metadataManagerImpl, "_samlProviderConfigurationHelper",
 			samlProviderConfigurationHelper);
 
 		ReflectionTestUtil.invoke(
-			metadataManagerImpl, "activate", new Class<?>[0]);
+			metadataManagerImpl, "activate",
+			new Class<?>[] {BundleContext.class},
+			SystemBundleUtil.getBundleContext());
 
-		_webSsoProfileImpl.setMetadataManager(metadataManagerImpl);
+		ReflectionTestUtil.invoke(
+			metadataManagerImpl.getMetadataResolver(), "doDestroy",
+			new Class<?>[0]);
+
+		CachingChainingMetadataResolver cachingChainingMetadataResolver =
+			(CachingChainingMetadataResolver)
+				metadataManagerImpl.getMetadataResolver();
+
+		cachingChainingMetadataResolver.addMetadataResolver(
+			new MockMetadataResolver(false));
+
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "metadataManager", metadataManagerImpl);
 
 		Mockito.when(
 			samlSpIdpConnectionLocalService.getSamlSpIdpConnection(
@@ -607,7 +636,8 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 			samlSpIdpConnection
 		);
 
-		_webSsoProfileImpl.setSamlSpIdpConnectionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpIdpConnectionLocalService",
 			samlSpIdpConnectionLocalService);
 
 		MockHttpServletRequest mockHttpServletRequest =
@@ -660,7 +690,8 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 			samlSpIdpConnection
 		);
 
-		_webSsoProfileImpl.setSamlSpIdpConnectionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpIdpConnectionLocalService",
 			samlSpIdpConnectionLocalService);
 
 		MockHttpServletRequest mockHttpServletRequest =
@@ -1208,8 +1239,7 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 				samlSsoRequestContext, assertionConsumerService, issueDate);
 
 		return _webSsoProfileImpl.getSuccessSubject(
-			samlSsoRequestContext, assertionConsumerService, nameID,
-			subjectConfirmationData);
+			nameID, subjectConfirmationData);
 	}
 
 	private void _testVerifyAssertionSignature(String entityId)

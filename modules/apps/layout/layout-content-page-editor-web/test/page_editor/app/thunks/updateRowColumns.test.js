@@ -49,8 +49,10 @@ describe('updateRowColumns', () => {
 		updateRowColumnsThunk({
 			itemId: '0',
 			numberOfColumns: 6,
-			segmentsExperienceId: '0',
-		})(() => {});
+		})(
+			() => {},
+			() => ({})
+		);
 
 	it('calls LayoutService.updateRowColumns with the given information', () => {
 		runThunk();
@@ -59,7 +61,6 @@ describe('updateRowColumns', () => {
 			expect.objectContaining({
 				itemId: '0',
 				numberOfColumns: 6,
-				segmentsExperienceId: '0',
 			})
 		);
 	});
@@ -67,12 +68,14 @@ describe('updateRowColumns', () => {
 	it('dispatch updateRowColumns action when the promise is resolved', async () => {
 		await runThunk();
 
-		expect(updateRowColumns).toHaveBeenCalledWith({
-			itemId: '0',
-			layoutData: {
-				items: {},
-				version: 1,
-			},
-		});
+		expect(updateRowColumns).toHaveBeenCalledWith(
+			expect.objectContaining({
+				itemId: '0',
+				layoutData: {
+					items: {},
+					version: 1,
+				},
+			})
+		);
 	});
 });

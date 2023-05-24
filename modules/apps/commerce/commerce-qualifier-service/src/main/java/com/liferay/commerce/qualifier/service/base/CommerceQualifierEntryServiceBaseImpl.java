@@ -30,8 +30,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
 
-import java.lang.reflect.Field;
-
 import javax.sql.DataSource;
 
 import org.osgi.service.component.annotations.Deactivate;
@@ -60,7 +58,7 @@ public abstract class CommerceQualifierEntryServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		CommerceQualifierEntryServiceUtil.setService(null);
 	}
 
 	@Override
@@ -74,7 +72,8 @@ public abstract class CommerceQualifierEntryServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		commerceQualifierEntryService = (CommerceQualifierEntryService)aopProxy;
 
-		_setServiceUtilService(commerceQualifierEntryService);
+		CommerceQualifierEntryServiceUtil.setService(
+			commerceQualifierEntryService);
 	}
 
 	/**
@@ -120,23 +119,6 @@ public abstract class CommerceQualifierEntryServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CommerceQualifierEntryService commerceQualifierEntryService) {
-
-		try {
-			Field field =
-				CommerceQualifierEntryServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceQualifierEntryService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	@Reference
 	protected
 		com.liferay.commerce.qualifier.service.
@@ -152,25 +134,6 @@ public abstract class CommerceQualifierEntryServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceQualifierEntryServiceBaseImpl.class);

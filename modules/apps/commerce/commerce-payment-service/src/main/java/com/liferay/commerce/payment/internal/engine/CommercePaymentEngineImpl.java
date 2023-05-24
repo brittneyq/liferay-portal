@@ -15,6 +15,7 @@
 package com.liferay.commerce.payment.internal.engine;
 
 import com.liferay.commerce.constants.CommerceOrderConstants;
+import com.liferay.commerce.constants.CommerceOrderPaymentConstants;
 import com.liferay.commerce.context.CommerceGroupThreadLocal;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceOrder;
@@ -62,9 +63,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Luca Pellizzon
  */
-@Component(
-	enabled = false, immediate = true, service = CommercePaymentEngine.class
-)
+@Component(service = CommercePaymentEngine.class)
 public class CommercePaymentEngineImpl implements CommercePaymentEngine {
 
 	@Override
@@ -159,7 +158,7 @@ public class CommercePaymentEngineImpl implements CommercePaymentEngine {
 
 		if (BigDecimal.ZERO.compareTo(commerceOrder.getTotal()) == 0) {
 			updateOrderPaymentStatus(
-				commerceOrderId, CommerceOrderConstants.PAYMENT_STATUS_PAID,
+				commerceOrderId, CommerceOrderPaymentConstants.STATUS_COMPLETED,
 				transactionId, StringPool.BLANK);
 
 			return _commercePaymentUtils.emptyResult(
@@ -433,7 +432,7 @@ public class CommercePaymentEngineImpl implements CommercePaymentEngine {
 		_commerceOrderPaymentLocalService.addCommerceOrderPayment(
 			commerceOrderId, paymentStatus, result);
 
-		if ((paymentStatus == CommerceOrderConstants.PAYMENT_STATUS_PAID) &&
+		if ((paymentStatus == CommerceOrderPaymentConstants.STATUS_COMPLETED) &&
 			(commerceOrder.getOrderStatus() !=
 				CommerceOrderConstants.ORDER_STATUS_PENDING)) {
 
@@ -495,10 +494,10 @@ public class CommercePaymentEngineImpl implements CommercePaymentEngine {
 
 		_commerceOrderLocalService.updatePaymentStatusAndTransactionId(
 			_portal.getUserId(httpServletRequest), commerceOrderId,
-			CommerceOrderConstants.PAYMENT_STATUS_PAID, StringPool.BLANK);
+			CommerceOrderPaymentConstants.STATUS_COMPLETED, StringPool.BLANK);
 
 		_commerceOrderPaymentLocalService.addCommerceOrderPayment(
-			commerceOrderId, CommerceOrderConstants.PAYMENT_STATUS_PAID,
+			commerceOrderId, CommerceOrderPaymentConstants.STATUS_COMPLETED,
 			StringPool.BLANK);
 	}
 
@@ -544,7 +543,8 @@ public class CommercePaymentEngineImpl implements CommercePaymentEngine {
 				_commercePaymentMethodRegistry.getCommercePaymentMethod(
 					commercePaymentMethodGroupRel.getEngineKey());
 
-			if (!permissionChecker.hasPermission(
+			if ((commercePaymentMethod == null) ||
+				!permissionChecker.hasPermission(
 					commercePaymentMethodGroupRel.getGroupId(),
 					CommercePaymentMethodGroupRel.class.getName(),
 					commercePaymentMethodGroupRel.

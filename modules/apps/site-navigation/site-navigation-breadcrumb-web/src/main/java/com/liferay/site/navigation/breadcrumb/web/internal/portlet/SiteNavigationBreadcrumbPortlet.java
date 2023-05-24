@@ -14,29 +14,23 @@
 
 package com.liferay.site.navigation.breadcrumb.web.internal.portlet;
 
+import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import com.liferay.site.navigation.breadcrumb.web.internal.constants.SiteNavigationBreadcrumbPortletKeys;
 
-import java.io.IOException;
-
 import javax.portlet.Portlet;
-import javax.portlet.PortletException;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=breadcrumb",
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-breadcrumb",
 		"com.liferay.portlet.display-category=category.cms",
@@ -61,19 +55,22 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class SiteNavigationBreadcrumbPortlet extends MVCPortlet {
 
-	@Override
-	protected void doDispatch(
-			RenderRequest renderRequest, RenderResponse renderResponse)
-		throws IOException, PortletException {
-
-		renderRequest.setAttribute(
-			WebKeys.PORTLET_DISPLAY_TEMPLATE, _portletDisplayTemplate);
-
-		super.doDispatch(renderRequest, renderResponse);
+	@Activate
+	protected void activate() {
+		_portletRegistry.registerAlias(
+			_ALIAS,
+			SiteNavigationBreadcrumbPortletKeys.SITE_NAVIGATION_BREADCRUMB);
 	}
 
+	@Deactivate
+	protected void deactivate() {
+		_portletRegistry.unregisterAlias(_ALIAS);
+	}
+
+	private static final String _ALIAS = "breadcrumb";
+
 	@Reference
-	private PortletDisplayTemplate _portletDisplayTemplate;
+	private PortletRegistry _portletRegistry;
 
 	@Reference(
 		target = "(&(release.bundle.symbolic.name=com.liferay.site.navigation.breadcrumb.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))"

@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -275,48 +273,21 @@ public abstract class ObjectDefinitionLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the object definition with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the object definition's external reference code
-	 * @return the matching object definition, or <code>null</code> if a matching object definition could not be found
-	 */
 	@Override
 	public ObjectDefinition fetchObjectDefinitionByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return objectDefinitionPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return objectDefinitionPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchObjectDefinitionByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public ObjectDefinition fetchObjectDefinitionByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchObjectDefinitionByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the object definition with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the object definition's external reference code
-	 * @return the matching object definition
-	 * @throws PortalException if a matching object definition could not be found
-	 */
 	@Override
 	public ObjectDefinition getObjectDefinitionByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return objectDefinitionPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return objectDefinitionPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -548,7 +519,7 @@ public abstract class ObjectDefinitionLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		ObjectDefinitionLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -563,7 +534,8 @@ public abstract class ObjectDefinitionLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		objectDefinitionLocalService = (ObjectDefinitionLocalService)aopProxy;
 
-		_setLocalServiceUtilService(objectDefinitionLocalService);
+		ObjectDefinitionLocalServiceUtil.setService(
+			objectDefinitionLocalService);
 	}
 
 	/**
@@ -605,23 +577,6 @@ public abstract class ObjectDefinitionLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		ObjectDefinitionLocalService objectDefinitionLocalService) {
-
-		try {
-			Field field =
-				ObjectDefinitionLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, objectDefinitionLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

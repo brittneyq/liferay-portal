@@ -14,9 +14,9 @@
 
 package com.liferay.commerce.machine.learning.internal.recommendation.info.collection.provider;
 
+import com.liferay.account.model.AccountEntry;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.commerce.account.model.CommerceAccount;
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.machine.learning.recommendation.UserCommerceMLRecommendation;
@@ -28,6 +28,7 @@ import com.liferay.info.collection.provider.InfoCollectionProvider;
 import com.liferay.info.collection.provider.RelatedInfoItemCollectionProvider;
 import com.liferay.info.pagination.InfoPage;
 import com.liferay.info.pagination.Pagination;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -35,12 +36,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,7 +51,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.commerce.machine.learning.internal.recommendation.configuration.CommerceMLRecommendationsCollectionProviderConfiguration",
-	enabled = false, immediate = true,
 	service = {
 		InfoCollectionProvider.class, RelatedInfoItemCollectionProvider.class
 	}
@@ -65,10 +63,7 @@ public class UserCommerceMLRecommendationRelatedInfoItemCollectionProvider
 	public InfoPage<CPDefinition> getCollectionInfoPage(
 		CollectionQuery collectionQuery) {
 
-		Optional<Object> relatedItemOptional =
-			collectionQuery.getRelatedItemObjectOptional();
-
-		Object relatedItem = relatedItemOptional.orElse(null);
+		Object relatedItem = collectionQuery.getRelatedItem();
 
 		Pagination pagination = collectionQuery.getPagination();
 
@@ -88,10 +83,9 @@ public class UserCommerceMLRecommendationRelatedInfoItemCollectionProvider
 					0);
 			}
 
-			CommerceAccount commerceAccount =
-				commerceContext.getCommerceAccount();
+			AccountEntry accountEntry = commerceContext.getAccountEntry();
 
-			if (commerceAccount == null) {
+			if (accountEntry == null) {
 				return InfoPage.of(
 					Collections.emptyList(), collectionQuery.getPagination(),
 					0);
@@ -112,8 +106,8 @@ public class UserCommerceMLRecommendationRelatedInfoItemCollectionProvider
 			List<UserCommerceMLRecommendation> userCommerceMLRecommendations =
 				_userCommerceMLRecommendationManager.
 					getUserCommerceMLRecommendations(
-						commerceAccount.getCompanyId(),
-						commerceAccount.getCommerceAccountId(), categoryIds);
+						accountEntry.getCompanyId(),
+						accountEntry.getAccountEntryId(), categoryIds);
 
 			if (userCommerceMLRecommendations.isEmpty()) {
 				return InfoPage.of(

@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.search.RepositorySearchQueryBuilderUtil;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -79,8 +78,8 @@ public abstract class BaseRepositoryImpl
 
 	@Override
 	public abstract Folder addFolder(
-			long userId, long parentFolderId, String name, String description,
-			ServiceContext serviceContext)
+			String externalReferenceCode, long userId, long parentFolderId,
+			String name, String description, ServiceContext serviceContext)
 		throws PortalException;
 
 	@Override
@@ -317,8 +316,6 @@ public abstract class BaseRepositoryImpl
 
 	@Override
 	public Hits search(SearchContext searchContext) throws SearchException {
-		searchContext.setSearchEngineId(SearchEngineHelper.GENERIC_ENGINE_ID);
-
 		return search(
 			searchContext,
 			RepositorySearchQueryBuilderUtil.getFullQuery(searchContext));

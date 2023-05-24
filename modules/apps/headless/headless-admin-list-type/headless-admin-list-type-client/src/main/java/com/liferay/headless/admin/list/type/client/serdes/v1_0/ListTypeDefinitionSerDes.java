@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -101,6 +100,20 @@ public class ListTypeDefinitionSerDes {
 			sb.append(
 				liferayToJSONDateFormat.format(
 					listTypeDefinition.getDateModified()));
+
+			sb.append("\"");
+		}
+
+		if (listTypeDefinition.getExternalReferenceCode() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"externalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(listTypeDefinition.getExternalReferenceCode()));
 
 			sb.append("\"");
 		}
@@ -213,6 +226,15 @@ public class ListTypeDefinitionSerDes {
 					listTypeDefinition.getDateModified()));
 		}
 
+		if (listTypeDefinition.getExternalReferenceCode() == null) {
+			map.put("externalReferenceCode", null);
+		}
+		else {
+			map.put(
+				"externalReferenceCode",
+				String.valueOf(listTypeDefinition.getExternalReferenceCode()));
+		}
+
 		if (listTypeDefinition.getId() == null) {
 			map.put("id", null);
 		}
@@ -284,6 +306,14 @@ public class ListTypeDefinitionSerDes {
 						toDate((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName, "externalReferenceCode")) {
+
+				if (jsonParserFieldValue != null) {
+					listTypeDefinition.setExternalReferenceCode(
+						(String)jsonParserFieldValue);
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
 					listTypeDefinition.setId(
@@ -292,14 +322,18 @@ public class ListTypeDefinitionSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "listTypeEntries")) {
 				if (jsonParserFieldValue != null) {
-					listTypeDefinition.setListTypeEntries(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> ListTypeEntrySerDes.toDTO((String)object)
-						).toArray(
-							size -> new ListTypeEntry[size]
-						));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					ListTypeEntry[] listTypeEntriesArray =
+						new ListTypeEntry[jsonParserFieldValues.length];
+
+					for (int i = 0; i < listTypeEntriesArray.length; i++) {
+						listTypeEntriesArray[i] = ListTypeEntrySerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					listTypeDefinition.setListTypeEntries(listTypeEntriesArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {

@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		BookmarksFolderModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.bookmarks.model.impl.BookmarksFolderImpl",
+		"table.name=BookmarksFolder"
+	},
+	service = ArgumentsResolver.class
 )
 public class BookmarksFolderModelArgumentsResolver
 	implements ArgumentsResolver {

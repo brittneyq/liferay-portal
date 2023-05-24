@@ -44,7 +44,7 @@ public interface FragmentEntryConfigurationParser {
 
 	public Map<String, Object> getContextObjects(
 		JSONObject configurationValuesJSONObject, String configuration,
-		long[] segmentsEntryIds);
+		Object displayObject, long[] segmentsEntryIds);
 
 	public Object getFieldValue(
 		FragmentConfigurationField fragmentConfigurationField, Locale locale,

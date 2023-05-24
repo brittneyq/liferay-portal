@@ -40,7 +40,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuil
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
@@ -52,6 +51,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchContextFactory;
@@ -92,7 +92,7 @@ public class DDLViewRecordsDisplayContext {
 		_liferayPortletResponse = liferayPortletResponse;
 		_formDDMTemplateId = formDDMTemplateId;
 
-		_ddlRecordSet = (DDLRecordSet)_liferayPortletRequest.getAttribute(
+		_ddlRecordSet = (DDLRecordSet)liferayPortletRequest.getAttribute(
 			DDLWebKeys.DYNAMIC_DATA_LISTS_RECORD_SET);
 
 		_ddlRequestHelper = new DDLRequestHelper(
@@ -105,7 +105,7 @@ public class DDLViewRecordsDisplayContext {
 		if (user == null) {
 			ThemeDisplay themeDisplay = _ddlRequestHelper.getThemeDisplay();
 
-			user = themeDisplay.getDefaultUser();
+			user = themeDisplay.getGuestUser();
 		}
 
 		_user = user;
@@ -419,7 +419,7 @@ public class DDLViewRecordsDisplayContext {
 				DDLRecordLocalServiceUtil.searchDDLRecords(searchContext));
 		}
 
-		if (!_user.isDefaultUser()) {
+		if (!_user.isGuestUser()) {
 			recordSearch.setRowChecker(
 				new EmptyOnClickRowChecker(_liferayPortletResponse));
 		}
@@ -516,7 +516,7 @@ public class DDLViewRecordsDisplayContext {
 	}
 
 	public boolean isSelectable() {
-		return !_user.isDefaultUser();
+		return !_user.isGuestUser();
 	}
 
 	protected List<DropdownItem> getFilterNavigationDropdownItems() {

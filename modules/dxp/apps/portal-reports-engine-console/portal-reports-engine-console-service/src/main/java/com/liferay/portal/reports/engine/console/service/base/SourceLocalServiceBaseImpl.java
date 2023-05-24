@@ -49,16 +49,10 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.reports.engine.console.model.Source;
 import com.liferay.portal.reports.engine.console.service.SourceLocalService;
 import com.liferay.portal.reports.engine.console.service.SourceLocalServiceUtil;
-import com.liferay.portal.reports.engine.console.service.persistence.DefinitionFinder;
-import com.liferay.portal.reports.engine.console.service.persistence.DefinitionPersistence;
-import com.liferay.portal.reports.engine.console.service.persistence.EntryFinder;
-import com.liferay.portal.reports.engine.console.service.persistence.EntryPersistence;
 import com.liferay.portal.reports.engine.console.service.persistence.SourceFinder;
 import com.liferay.portal.reports.engine.console.service.persistence.SourcePersistence;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -520,7 +514,7 @@ public abstract class SourceLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		SourceLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -535,7 +529,7 @@ public abstract class SourceLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		sourceLocalService = (SourceLocalService)aopProxy;
 
-		_setLocalServiceUtilService(sourceLocalService);
+		SourceLocalServiceUtil.setService(sourceLocalService);
 	}
 
 	/**
@@ -580,34 +574,6 @@ public abstract class SourceLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		SourceLocalService sourceLocalService) {
-
-		try {
-			Field field = SourceLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, sourceLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected DefinitionPersistence definitionPersistence;
-
-	@Reference
-	protected DefinitionFinder definitionFinder;
-
-	@Reference
-	protected EntryPersistence entryPersistence;
-
-	@Reference
-	protected EntryFinder entryFinder;
-
 	protected SourceLocalService sourceLocalService;
 
 	@Reference
@@ -619,18 +585,6 @@ public abstract class SourceLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SourceLocalServiceBaseImpl.class);

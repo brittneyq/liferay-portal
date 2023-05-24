@@ -25,21 +25,19 @@ if (Validator.isNull(redirect)) {
 	redirect = portletURL.toString();
 }
 
-Map data = editAssetListDisplayContext.getData();
-
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
 
 renderResponse.setTitle(assetListDisplayContext.getAssetListEntryTitle());
 %>
 
-<c:if test='<%= !(boolean)data.get("isSegmentationEnabled") %>'>
+<c:if test="<%= !editAssetListDisplayContext.isSegmentationEnabled(company.getCompanyId()) %>">
 	<clay:stripe
 		defaultTitleDisabled="<%= true %>"
 		dismissible="<%= true %>"
 		displayType="warning"
 	>
-		<strong><%= LanguageUtil.get(request, "personalized-variations-cannot-be-displayed-because-segmentation-is-disabled") %></strong>
+		<strong><liferay-ui:message key="personalized-variations-cannot-be-displayed-because-segmentation-is-disabled" /></strong>
 
 		<%
 		String segmentsConfigurationURL = editAssetListDisplayContext.getSegmentsCompanyConfigurationURL();
@@ -76,7 +74,7 @@ renderResponse.setTitle(assetListDisplayContext.getAssetListEntryTitle());
 
 				<react:component
 					module="js/components/VariationsNav/index"
-					props="<%= data %>"
+					props="<%= editAssetListDisplayContext.getData() %>"
 				/>
 			</div>
 		</clay:col>
@@ -98,17 +96,19 @@ renderResponse.setTitle(assetListDisplayContext.getAssetListEntryTitle());
 
 <script>
 	<portlet:actionURL name="/asset_list/add_asset_list_entry_variation" var="addAssetListEntryVariationURL">
-	<portlet:param name="assetListEntryId" value="<%= String.valueOf(editAssetListDisplayContext.getAssetListEntryId()) %>" />
-	<portlet:param name="type" value="<%= String.valueOf(editAssetListDisplayContext.getAssetListEntryType()) %>" />
+		<portlet:param name="assetListEntryId" value="<%= String.valueOf(editAssetListDisplayContext.getAssetListEntryId()) %>" />
+		<portlet:param name="type" value="<%= String.valueOf(editAssetListDisplayContext.getAssetListEntryType()) %>" />
 	</portlet:actionURL>
 
 	function <portlet:namespace />openSelectSegmentsEntryDialog() {
 		Liferay.Util.openSelectionModal({
 			id: '<portlet:namespace />selectEntity',
-			onSelect: function (selectedItem) {
+			onSelect: function (event) {
+				const valueJSON = JSON.parse(event.value);
+
 				Liferay.Util.postForm(document.<portlet:namespace />fm, {
 					data: {
-						segmentsEntryId: selectedItem.entityid,
+						segmentsEntryId: valueJSON.segmentsEntryId,
 					},
 					url: '<%= addAssetListEntryVariationURL %>',
 				});

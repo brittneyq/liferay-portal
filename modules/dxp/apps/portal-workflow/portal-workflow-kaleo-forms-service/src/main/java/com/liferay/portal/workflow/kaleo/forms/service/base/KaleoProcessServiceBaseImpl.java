@@ -29,10 +29,7 @@ import com.liferay.portal.workflow.kaleo.forms.model.KaleoProcess;
 import com.liferay.portal.workflow.kaleo.forms.service.KaleoProcessService;
 import com.liferay.portal.workflow.kaleo.forms.service.KaleoProcessServiceUtil;
 import com.liferay.portal.workflow.kaleo.forms.service.persistence.KaleoProcessFinder;
-import com.liferay.portal.workflow.kaleo.forms.service.persistence.KaleoProcessLinkPersistence;
 import com.liferay.portal.workflow.kaleo.forms.service.persistence.KaleoProcessPersistence;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
 
@@ -61,7 +58,7 @@ public abstract class KaleoProcessServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		KaleoProcessServiceUtil.setService(null);
 	}
 
 	@Override
@@ -75,7 +72,7 @@ public abstract class KaleoProcessServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		kaleoProcessService = (KaleoProcessService)aopProxy;
 
-		_setServiceUtilService(kaleoProcessService);
+		KaleoProcessServiceUtil.setService(kaleoProcessService);
 	}
 
 	/**
@@ -120,22 +117,6 @@ public abstract class KaleoProcessServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		KaleoProcessService kaleoProcessService) {
-
-		try {
-			Field field = KaleoProcessServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, kaleoProcessService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	@Reference
 	protected
 		com.liferay.portal.workflow.kaleo.forms.service.KaleoProcessLocalService
@@ -150,30 +131,8 @@ public abstract class KaleoProcessServiceBaseImpl
 	protected KaleoProcessFinder kaleoProcessFinder;
 
 	@Reference
-	protected KaleoProcessLinkPersistence kaleoProcessLinkPersistence;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		KaleoProcessServiceBaseImpl.class);

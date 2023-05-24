@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.util.RepositoryUtil;
 
 /**
  * @author IL (Brian) Kim
@@ -31,10 +32,9 @@ public class FileShortcutDisplayContextHelper {
 		PermissionChecker permissionChecker, FileShortcut fileShortcut) {
 
 		_permissionChecker = permissionChecker;
-
 		_fileShortcut = fileShortcut;
 
-		if (_fileShortcut == null) {
+		if (fileShortcut == null) {
 			_setValuesForNullFileShortcut();
 		}
 	}
@@ -76,6 +76,23 @@ public class FileShortcutDisplayContextHelper {
 		return _hasUpdatePermission;
 	}
 
+	public boolean hasViewPermission() throws PortalException {
+		if (_hasViewPermission == null) {
+			_hasViewPermission = DLFileShortcutPermission.contains(
+				_permissionChecker, _fileShortcut, ActionKeys.VIEW);
+		}
+
+		return _hasViewPermission;
+	}
+
+	public boolean isCopyActionAvailable() throws PortalException {
+		if (hasViewPermission() && !_isExternalRepository()) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public boolean isDLFileShortcut() {
 		if (_dlFileShortcut == null) {
 			if (_fileShortcut.getModel() instanceof DLFileShortcut) {
@@ -109,6 +126,17 @@ public class FileShortcutDisplayContextHelper {
 		return hasUpdatePermission();
 	}
 
+	private boolean _isExternalRepository() {
+		if ((_fileShortcut != null) &&
+			RepositoryUtil.isExternalRepository(
+				_fileShortcut.getRepositoryId())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private void _setValuesForNullFileShortcut() {
 		_hasDeletePermission = false;
 		_hasExportImportPermission = false;
@@ -122,6 +150,7 @@ public class FileShortcutDisplayContextHelper {
 	private Boolean _hasExportImportPermission;
 	private Boolean _hasPermissionsPermission;
 	private Boolean _hasUpdatePermission;
+	private Boolean _hasViewPermission;
 	private final PermissionChecker _permissionChecker;
 
 }

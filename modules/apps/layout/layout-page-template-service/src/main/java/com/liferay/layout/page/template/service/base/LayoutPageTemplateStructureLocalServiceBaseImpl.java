@@ -37,8 +37,6 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -57,8 +55,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -393,30 +389,6 @@ public abstract class LayoutPageTemplateStructureLocalServiceBaseImpl
 				public void addCriteria(DynamicQuery dynamicQuery) {
 					portletDataContext.addDateRangeCriteria(
 						dynamicQuery, "modifiedDate");
-
-					StagedModelType stagedModelType =
-						exportActionableDynamicQuery.getStagedModelType();
-
-					long referrerClassNameId =
-						stagedModelType.getReferrerClassNameId();
-
-					Property classNameIdProperty = PropertyFactoryUtil.forName(
-						"classNameId");
-
-					if ((referrerClassNameId !=
-							StagedModelType.REFERRER_CLASS_NAME_ID_ALL) &&
-						(referrerClassNameId !=
-							StagedModelType.REFERRER_CLASS_NAME_ID_ANY)) {
-
-						dynamicQuery.add(
-							classNameIdProperty.eq(
-								stagedModelType.getReferrerClassNameId()));
-					}
-					else if (referrerClassNameId ==
-								StagedModelType.REFERRER_CLASS_NAME_ID_ANY) {
-
-						dynamicQuery.add(classNameIdProperty.isNotNull());
-					}
 				}
 
 			});
@@ -441,8 +413,7 @@ public abstract class LayoutPageTemplateStructureLocalServiceBaseImpl
 		exportActionableDynamicQuery.setStagedModelType(
 			new StagedModelType(
 				PortalUtil.getClassNameId(
-					LayoutPageTemplateStructure.class.getName()),
-				StagedModelType.REFERRER_CLASS_NAME_ID_ALL));
+					LayoutPageTemplateStructure.class.getName())));
 
 		return exportActionableDynamicQuery;
 	}
@@ -594,7 +565,7 @@ public abstract class LayoutPageTemplateStructureLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		LayoutPageTemplateStructureLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -611,7 +582,8 @@ public abstract class LayoutPageTemplateStructureLocalServiceBaseImpl
 		layoutPageTemplateStructureLocalService =
 			(LayoutPageTemplateStructureLocalService)aopProxy;
 
-		_setLocalServiceUtilService(layoutPageTemplateStructureLocalService);
+		LayoutPageTemplateStructureLocalServiceUtil.setService(
+			layoutPageTemplateStructureLocalService);
 	}
 
 	/**
@@ -670,24 +642,6 @@ public abstract class LayoutPageTemplateStructureLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		LayoutPageTemplateStructureLocalService
-			layoutPageTemplateStructureLocalService) {
-
-		try {
-			Field field =
-				LayoutPageTemplateStructureLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, layoutPageTemplateStructureLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

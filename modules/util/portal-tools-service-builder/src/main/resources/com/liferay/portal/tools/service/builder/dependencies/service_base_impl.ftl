@@ -508,42 +508,35 @@ import org.osgi.service.component.annotations.Reference;
 		</#if>
 
 		<#if entity.hasExternalReferenceCode() && !entity.versionEntity??>
-			/**
-			 * Returns the ${entity.humanName} with the matching external reference code and ${entity.externalReferenceCode}.
-			 *
-			 * @param ${entity.externalReferenceCode}Id the primary key of the ${entity.externalReferenceCode}
-			 * @param externalReferenceCode the ${entity.humanName}'s external reference code
-			 * @return the matching ${entity.humanName}, or <code>null</code> if a matching ${entity.humanName} could not be found
-			<#list serviceBaseExceptions as exception>
-			 * @throws ${exception}
-			</#list>
-			 */
-			@Override
-			public ${entity.name} fetch${entity.name}ByExternalReferenceCode(long ${entity.externalReferenceCode}Id, String externalReferenceCode) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-				return ${entity.variableName}Persistence.fetchBy${entity.externalReferenceCode?cap_first[0..0]}_ERC(${entity.externalReferenceCode}Id, externalReferenceCode);
-			}
+			<#if serviceBuilder.isVersionGTE_7_4_0()>
+				@Override
+				public ${entity.name} fetch${entity.name}ByExternalReferenceCode(String externalReferenceCode, long ${entity.externalReferenceCode}Id) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					return ${entity.variableName}Persistence.fetchByERC_${entity.externalReferenceCode?cap_first[0..0]}(externalReferenceCode, ${entity.externalReferenceCode}Id);
+				}
 
-			/**
-			 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetch${entity.name}ByExternalReferenceCode(long, String)}
-			 */
-			@Deprecated
-			@Override
-			public ${entity.name} fetch${entity.name}ByReferenceCode(long ${entity.externalReferenceCode}Id, String externalReferenceCode) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-				return fetch${entity.name}ByExternalReferenceCode(${entity.externalReferenceCode}Id, externalReferenceCode);
-			}
+				@Override
+				public ${entity.name} get${entity.name}ByExternalReferenceCode(String externalReferenceCode, long ${entity.externalReferenceCode}Id) throws PortalException {
+					return ${entity.variableName}Persistence.findByERC_${entity.externalReferenceCode?cap_first[0..0]}(externalReferenceCode, ${entity.externalReferenceCode}Id);
+				}
+			<#else>
+				@Deprecated
+				@Override
+				public ${entity.name} fetch${entity.name}ByExternalReferenceCode(long ${entity.externalReferenceCode}Id, String externalReferenceCode) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					return ${entity.variableName}Persistence.fetchBy${entity.externalReferenceCode?cap_first[0..0]}_ERC(${entity.externalReferenceCode}Id, externalReferenceCode);
+				}
 
-			/**
-			 * Returns the ${entity.humanName} with the matching external reference code and ${entity.externalReferenceCode}.
-			 *
-			 * @param ${entity.externalReferenceCode}Id the primary key of the ${entity.externalReferenceCode}
-			 * @param externalReferenceCode the ${entity.humanName}'s external reference code
-			 * @return the matching ${entity.humanName}
-			 * @throws PortalException if a matching ${entity.humanName} could not be found
-			 */
-			@Override
-			public ${entity.name} get${entity.name}ByExternalReferenceCode(long ${entity.externalReferenceCode}Id, String externalReferenceCode) throws PortalException {
-				return ${entity.variableName}Persistence.findBy${entity.externalReferenceCode?cap_first[0..0]}_ERC(${entity.externalReferenceCode}Id, externalReferenceCode);
-			}
+				@Deprecated
+				@Override
+				public ${entity.name} fetch${entity.name}ByReferenceCode(long ${entity.externalReferenceCode}Id, String externalReferenceCode) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					return fetch${entity.name}ByExternalReferenceCode(${entity.externalReferenceCode}Id, externalReferenceCode);
+				}
+
+				@Deprecated
+				@Override
+				public ${entity.name} get${entity.name}ByExternalReferenceCode(long ${entity.externalReferenceCode}Id, String externalReferenceCode) throws PortalException {
+					return ${entity.variableName}Persistence.findBy${entity.externalReferenceCode?cap_first[0..0]}_ERC(${entity.externalReferenceCode}Id, externalReferenceCode);
+				}
+			</#if>
 		</#if>
 
 		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + entity.name, [entity.PKClassName], ["PortalException"]) />
@@ -1611,7 +1604,7 @@ import org.osgi.service.component.annotations.Reference;
 				}
 			</#if>
 
-			_set${sessionTypeName}ServiceUtilService(${entity.variableName}${sessionTypeName}Service);
+			${entity.name}${sessionTypeName}ServiceUtil.setService(${entity.variableName}${sessionTypeName}Service);
 		}
 	</#if>
 
@@ -1641,7 +1634,7 @@ import org.osgi.service.component.annotations.Reference;
 
 		@Deactivate
 		protected void deactivate() {
-			_set${sessionTypeName}ServiceUtilService(null);
+			${entity.name}${sessionTypeName}ServiceUtil.setService(null);
 		}
 
 		@Override
@@ -1663,7 +1656,7 @@ import org.osgi.service.component.annotations.Reference;
 		public void setAopProxy(Object aopProxy) {
 			${entity.variableName}${sessionTypeName}Service = (${entity.name}${sessionTypeName}Service)aopProxy;
 
-			_set${sessionTypeName}ServiceUtilService(${entity.variableName}${sessionTypeName}Service);
+			${entity.name}${sessionTypeName}ServiceUtil.setService(${entity.variableName}${sessionTypeName}Service);
 		}
 	<#else>
 		public void destroy() {
@@ -1675,7 +1668,7 @@ import org.osgi.service.component.annotations.Reference;
 				</#if>
 			</#if>
 
-			_set${sessionTypeName}ServiceUtilService(null);
+			${entity.name}${sessionTypeName}ServiceUtil.setService(null);
 		}
 	</#if>
 
@@ -2049,19 +2042,6 @@ import org.osgi.service.component.annotations.Reference;
 			}
 		}
 	</#if>
-
-	private void _set${sessionTypeName}ServiceUtilService(${entity.name}${sessionTypeName}Service ${entity.variableName}${sessionTypeName}Service) {
-		try {
-			Field field = ${entity.name}${sessionTypeName}ServiceUtil.class.getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, ${entity.variableName}${sessionTypeName}Service);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
 
 	<#list referenceEntities as referenceEntity>
 		<#if referenceEntity.hasLocalService()>

@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,7 +49,6 @@ import com.liferay.portal.lock.service.persistence.impl.constants.LockPersistenc
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
@@ -79,7 +77,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {LockPersistence.class, BasePersistence.class})
+@Component(service = LockPersistence.class)
 public class LockPersistenceImpl
 	extends BasePersistenceImpl<Lock> implements LockPersistence {
 
@@ -193,7 +191,8 @@ public class LockPersistenceImpl
 		List<Lock> list = null;
 
 		if (useFinderCache) {
-			list = (List<Lock>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Lock>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Lock lock : list) {
@@ -571,7 +570,7 @@ public class LockPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -727,7 +726,8 @@ public class LockPersistenceImpl
 		List<Lock> list = null;
 
 		if (useFinderCache) {
-			list = (List<Lock>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Lock>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Lock lock : list) {
@@ -1137,7 +1137,7 @@ public class LockPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1294,7 +1294,8 @@ public class LockPersistenceImpl
 		List<Lock> list = null;
 
 		if (useFinderCache) {
-			list = (List<Lock>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Lock>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Lock lock : list) {
@@ -1675,7 +1676,7 @@ public class LockPersistenceImpl
 
 		Object[] finderArgs = new Object[] {className};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1815,7 +1816,8 @@ public class LockPersistenceImpl
 		List<Lock> list = null;
 
 		if (useFinderCache) {
-			list = (List<Lock>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Lock>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Lock lock : list) {
@@ -2199,7 +2201,7 @@ public class LockPersistenceImpl
 
 		Object[] finderArgs = new Object[] {_getTime(expirationDate)};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2331,7 +2333,8 @@ public class LockPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByC_K, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_K, finderArgs, this);
 		}
 
 		if (result instanceof Lock) {
@@ -2454,7 +2457,7 @@ public class LockPersistenceImpl
 
 		Object[] finderArgs = new Object[] {className, key};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2940,7 +2943,8 @@ public class LockPersistenceImpl
 		List<Lock> list = null;
 
 		if (useFinderCache) {
-			list = (List<Lock>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Lock>)finderCache.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3010,7 +3014,7 @@ public class LockPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -3159,27 +3163,14 @@ public class LockPersistenceImpl
 			new String[] {String.class.getName(), String.class.getName()},
 			new String[] {"className", "key_"}, false);
 
-		_setLockUtilPersistence(this);
+		LockUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setLockUtilPersistence(null);
+		LockUtil.setPersistence(null);
 
 		entityCache.removeCache(LockImpl.class.getName());
-	}
-
-	private void _setLockUtilPersistence(LockPersistence lockPersistence) {
-		try {
-			Field field = LockUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, lockPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3255,8 +3246,5 @@ public class LockPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private LockModelArgumentsResolver _lockModelArgumentsResolver;
 
 }

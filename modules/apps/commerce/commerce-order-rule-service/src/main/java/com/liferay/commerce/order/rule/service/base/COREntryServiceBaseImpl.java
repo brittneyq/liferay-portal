@@ -18,7 +18,6 @@ import com.liferay.commerce.order.rule.model.COREntry;
 import com.liferay.commerce.order.rule.service.COREntryService;
 import com.liferay.commerce.order.rule.service.COREntryServiceUtil;
 import com.liferay.commerce.order.rule.service.persistence.COREntryPersistence;
-import com.liferay.commerce.order.rule.service.persistence.COREntryRelPersistence;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -30,8 +29,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
 
@@ -60,7 +57,7 @@ public abstract class COREntryServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		COREntryServiceUtil.setService(null);
 	}
 
 	@Override
@@ -74,7 +71,7 @@ public abstract class COREntryServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		corEntryService = (COREntryService)aopProxy;
 
-		_setServiceUtilService(corEntryService);
+		COREntryServiceUtil.setService(corEntryService);
 	}
 
 	/**
@@ -119,20 +116,6 @@ public abstract class COREntryServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(COREntryService corEntryService) {
-		try {
-			Field field = COREntryServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, corEntryService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	@Reference
 	protected com.liferay.commerce.order.rule.service.COREntryLocalService
 		corEntryLocalService;
@@ -143,30 +126,8 @@ public abstract class COREntryServiceBaseImpl
 	protected COREntryPersistence corEntryPersistence;
 
 	@Reference
-	protected COREntryRelPersistence corEntryRelPersistence;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		COREntryServiceBaseImpl.class);

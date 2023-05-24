@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import java.io.Serializable;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provides the local service utility for NotificationTemplate. This utility wraps
@@ -46,18 +45,11 @@ public class NotificationTemplateLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.notification.service.impl.NotificationTemplateLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static NotificationTemplate addNotificationTemplate(
-			long userId, long objectDefinitionId, String bcc,
-			Map<java.util.Locale, String> bodyMap, String cc,
-			String description, String from,
-			Map<java.util.Locale, String> fromNameMap, String name,
-			Map<java.util.Locale, String> subjectMap,
-			Map<java.util.Locale, String> toMap,
-			List<Long> attachmentObjectFieldIds)
+			com.liferay.notification.context.NotificationContext
+				notificationContext)
 		throws PortalException {
 
-		return getService().addNotificationTemplate(
-			userId, objectDefinitionId, bcc, bodyMap, cc, description, from,
-			fromNameMap, name, subjectMap, toMap, attachmentObjectFieldIds);
+		return getService().addNotificationTemplate(notificationContext);
 	}
 
 	/**
@@ -74,6 +66,14 @@ public class NotificationTemplateLocalServiceUtil {
 		NotificationTemplate notificationTemplate) {
 
 		return getService().addNotificationTemplate(notificationTemplate);
+	}
+
+	public static NotificationTemplate addNotificationTemplate(
+			String externalReferenceCode, long userId, String type)
+		throws PortalException {
+
+		return getService().addNotificationTemplate(
+			externalReferenceCode, userId, type);
 	}
 
 	/**
@@ -235,6 +235,14 @@ public class NotificationTemplateLocalServiceUtil {
 		return getService().fetchNotificationTemplate(notificationTemplateId);
 	}
 
+	public static NotificationTemplate
+		fetchNotificationTemplateByExternalReferenceCode(
+			String externalReferenceCode, long companyId) {
+
+		return getService().fetchNotificationTemplateByExternalReferenceCode(
+			externalReferenceCode, companyId);
+	}
+
 	/**
 	 * Returns the notification template with the matching UUID and company.
 	 *
@@ -283,6 +291,15 @@ public class NotificationTemplateLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getNotificationTemplate(notificationTemplateId);
+	}
+
+	public static NotificationTemplate
+			getNotificationTemplateByExternalReferenceCode(
+				String externalReferenceCode, long companyId)
+		throws PortalException {
+
+		return getService().getNotificationTemplateByExternalReferenceCode(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -346,29 +363,12 @@ public class NotificationTemplateLocalServiceUtil {
 		return getService().getPersistedModel(primaryKeyObj);
 	}
 
-	public static void sendNotificationTemplate(
-			long userId, long notificationTemplateId,
-			String notificationTypeKey, Object object)
-		throws PortalException {
-
-		getService().sendNotificationTemplate(
-			userId, notificationTemplateId, notificationTypeKey, object);
-	}
-
 	public static NotificationTemplate updateNotificationTemplate(
-			long notificationTemplateId, long objectDefinitionId, String bcc,
-			Map<java.util.Locale, String> bodyMap, String cc,
-			String description, String from,
-			Map<java.util.Locale, String> fromNameMap, String name,
-			Map<java.util.Locale, String> subjectMap,
-			Map<java.util.Locale, String> toMap,
-			List<Long> attachmentObjectFieldIds)
+			com.liferay.notification.context.NotificationContext
+				notificationContext)
 		throws PortalException {
 
-		return getService().updateNotificationTemplate(
-			notificationTemplateId, objectDefinitionId, bcc, bodyMap, cc,
-			description, from, fromNameMap, name, subjectMap, toMap,
-			attachmentObjectFieldIds);
+		return getService().updateNotificationTemplate(notificationContext);
 	}
 
 	/**
@@ -389,6 +389,10 @@ public class NotificationTemplateLocalServiceUtil {
 
 	public static NotificationTemplateLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(NotificationTemplateLocalService service) {
+		_service = service;
 	}
 
 	private static volatile NotificationTemplateLocalService _service;

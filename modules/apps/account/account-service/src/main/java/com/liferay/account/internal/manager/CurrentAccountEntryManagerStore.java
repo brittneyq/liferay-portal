@@ -131,6 +131,9 @@ public class CurrentAccountEntryManagerStore {
 	}
 
 	private PortalPreferences _getPortalPreferences(long userId) {
+
+		// LPS-156201
+
 		try {
 			return _portletPreferencesFactory.getPortalPreferences(
 				userId, true);

@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Michael C. Han
  */
-@Component(immediate = true, service = DynamicInclude.class)
+@Component(service = DynamicInclude.class)
 public class FacebookConnectNavigationPreJSPDynamicInclude
 	extends BaseJSPDynamicInclude {
 
@@ -108,14 +108,10 @@ public class FacebookConnectNavigationPreJSPDynamicInclude
 		return _log;
 	}
 
-	@Reference(unbind = "-")
-	protected void setFacebookConnect(FacebookConnect facebookConnect) {
-		_facebookConnect = facebookConnect;
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		FacebookConnectNavigationPreJSPDynamicInclude.class);
 
+	@Reference
 	private FacebookConnect _facebookConnect;
 
 	@Reference(

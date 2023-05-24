@@ -28,13 +28,17 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Http;
 
+import java.net.HttpURLConnection;
+
+import javax.ws.rs.core.Response;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Guilherme Camacho
  */
-@Component(immediate = true, service = SalesforceHttp.class)
+@Component(service = SalesforceHttp.class)
 public class SalesforceHttp {
 
 	public JSONObject delete(long companyId, long groupId, String location) {
@@ -160,7 +164,21 @@ public class SalesforceHttp {
 				location));
 		options.setMethod(method);
 
-		return _http.URLtoByteArray(options);
+		byte[] bytes = _http.URLtoByteArray(options);
+
+		Http.Response response = options.getResponse();
+
+		if ((response.getResponseCode() < HttpURLConnection.HTTP_OK) ||
+			(response.getResponseCode() >=
+				HttpURLConnection.HTTP_MULT_CHOICE)) {
+
+			throw new ObjectEntryManagerHttpException(
+				StringBundler.concat(
+					"Unexpected response code ", response.getResponseCode(),
+					" with response message: ", new String(bytes)));
+		}
+
+		return bytes;
 	}
 
 	@Reference

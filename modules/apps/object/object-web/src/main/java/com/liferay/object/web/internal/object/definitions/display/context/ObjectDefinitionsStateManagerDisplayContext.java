@@ -16,14 +16,16 @@ package com.liferay.object.web.internal.object.definitions.display.context;
 
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.list.type.service.ListTypeDefinitionService;
 import com.liferay.object.admin.rest.dto.v1_0.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.object.service.ObjectFieldSettingLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 
 import java.util.Collections;
@@ -39,10 +41,15 @@ public class ObjectDefinitionsStateManagerDisplayContext
 
 	public ObjectDefinitionsStateManagerDisplayContext(
 		HttpServletRequest httpServletRequest,
+		ListTypeDefinitionService listTypeDefinitionService,
 		ModelResourcePermission<ObjectDefinition>
-			objectDefinitionModelResourcePermission) {
+			objectDefinitionModelResourcePermission,
+		ObjectFieldSettingLocalService objectFieldSettingLocalService) {
 
 		super(httpServletRequest, objectDefinitionModelResourcePermission);
+
+		_listTypeDefinitionService = listTypeDefinitionService;
+		_objectFieldSettingLocalService = objectFieldSettingLocalService;
 	}
 
 	public CreationMenu getCreationMenu() throws PortalException {
@@ -69,12 +76,18 @@ public class ObjectDefinitionsStateManagerDisplayContext
 	}
 
 	public JSONObject getObjectFieldJSONObject(ObjectField objectField) {
-		return ObjectFieldUtil.toJSONObject(objectField);
+		return ObjectFieldUtil.toJSONObject(
+			_listTypeDefinitionService, objectField,
+			_objectFieldSettingLocalService);
 	}
 
 	@Override
 	protected String getAPIURI() {
 		return "/object-fields?filter=state%20eq%20true";
 	}
+
+	private final ListTypeDefinitionService _listTypeDefinitionService;
+	private final ObjectFieldSettingLocalService
+		_objectFieldSettingLocalService;
 
 }

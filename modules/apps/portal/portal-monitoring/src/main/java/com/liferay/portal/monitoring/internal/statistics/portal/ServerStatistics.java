@@ -34,8 +34,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  */
 @Component(
-	enabled = false, immediate = true,
-	property = "namespace=com.liferay.monitoring.Portal",
+	enabled = false, property = "namespace=com.liferay.monitoring.Portal",
 	service = {DataSampleProcessor.class, ServerStatistics.class}
 )
 public class ServerStatistics
@@ -165,14 +164,9 @@ public class ServerStatistics
 			companyStatistics.getWebId(), companyStatistics);
 	}
 
-	@Reference(unbind = "-")
-	protected void setCompanyLocalService(
-		CompanyLocalService companyLocalService) {
-
-		_companyLocalService = companyLocalService;
-	}
-
+	@Reference
 	private CompanyLocalService _companyLocalService;
+
 	private final Map<Long, CompanyStatistics> _companyStatisticsByCompanyId =
 		new TreeMap<>();
 	private final Map<String, CompanyStatistics> _companyStatisticsByWebId =

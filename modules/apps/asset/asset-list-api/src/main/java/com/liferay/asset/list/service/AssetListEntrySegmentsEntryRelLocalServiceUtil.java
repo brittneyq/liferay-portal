@@ -287,10 +287,10 @@ public class AssetListEntrySegmentsEntryRelLocalServiceUtil {
 
 	public static List<AssetListEntrySegmentsEntryRel>
 		fetchAssetListEntrySegmentsEntryRels(
-			long assetListEntryId, long[] segmentsEntryId) {
+			long assetListEntryId, long[] segmentsEntryIds) {
 
 		return getService().fetchAssetListEntrySegmentsEntryRels(
-			assetListEntryId, segmentsEntryId);
+			assetListEntryId, segmentsEntryIds);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
@@ -364,6 +364,16 @@ public class AssetListEntrySegmentsEntryRelLocalServiceUtil {
 
 		return getService().getAssetListEntrySegmentsEntryRels(
 			assetListEntryId, start, end);
+	}
+
+	public static List<AssetListEntrySegmentsEntryRel>
+		getAssetListEntrySegmentsEntryRels(
+			long assetListEntryId, long[] segmentsEntryIds, int start, int end,
+			OrderByComparator<AssetListEntrySegmentsEntryRel>
+				orderByComparator) {
+
+		return getService().getAssetListEntrySegmentsEntryRels(
+			assetListEntryId, segmentsEntryIds, start, end, orderByComparator);
 	}
 
 	/**
@@ -484,6 +494,12 @@ public class AssetListEntrySegmentsEntryRelLocalServiceUtil {
 
 	public static AssetListEntrySegmentsEntryRelLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		AssetListEntrySegmentsEntryRelLocalService service) {
+
+		_service = service;
 	}
 
 	private static volatile AssetListEntrySegmentsEntryRelLocalService _service;

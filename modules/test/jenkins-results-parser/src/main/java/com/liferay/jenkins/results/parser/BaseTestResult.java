@@ -14,6 +14,8 @@
 
 package com.liferay.jenkins.results.parser;
 
+import com.liferay.jenkins.results.parser.test.clazz.TestClass;
+
 import java.io.IOException;
 
 import java.util.List;
@@ -32,42 +34,14 @@ public abstract class BaseTestResult implements TestResult {
 	}
 
 	@Override
-	public long getOverheadDuration() {
-		Build build = getBuild();
+	public TestClass getTestClass() {
+		TestClassResult testClassResult = getTestClassResult();
 
-		if (!(build instanceof DownstreamBuild)) {
-			return 0L;
+		if (testClassResult == null) {
+			return null;
 		}
 
-		DownstreamBuild downstreamBuild = (DownstreamBuild)build;
-
-		long overheadDuration = downstreamBuild.getTestExecutionDuration();
-
-		if (overheadDuration <= 0L) {
-			return 0L;
-		}
-
-		long totalDuration = 0L;
-
-		List<TestResult> testResults = build.getTestResults();
-
-		for (TestResult testResult : testResults) {
-			long duration = testResult.getDuration();
-
-			if (duration < 0L) {
-				continue;
-			}
-
-			totalDuration += duration;
-		}
-
-		overheadDuration -= totalDuration;
-
-		if (overheadDuration <= 0L) {
-			return 0L;
-		}
-
-		return overheadDuration / testResults.size();
+		return testClassResult.getTestClass();
 	}
 
 	@Override
@@ -94,6 +68,17 @@ public abstract class BaseTestResult implements TestResult {
 	}
 
 	@Override
+	public TestHistory getTestHistory() {
+		TestClass testClass = getTestClass();
+
+		if (testClass == null) {
+			return null;
+		}
+
+		return testClass.getTestHistory();
+	}
+
+	@Override
 	public boolean isFailing() {
 		String status = getStatus();
 
@@ -108,7 +93,33 @@ public abstract class BaseTestResult implements TestResult {
 
 	@Override
 	public boolean isUniqueFailure() {
-		return !UpstreamFailureUtil.isTestFailingInUpstreamJob(this);
+		if (!isFailing()) {
+			return false;
+		}
+
+		Build build = getBuild();
+
+		if (!build.isCompareToUpstream()) {
+			return true;
+		}
+
+		String batchName = build.getBatchName(build.getJobVariant());
+
+		TopLevelBuild topLevelBuild = build.getTopLevelBuild();
+
+		for (String upstreamFailure :
+				UpstreamFailureUtil.getUpstreamJobFailures(
+					"test", topLevelBuild)) {
+
+			String testFailure = JenkinsResultsParserUtil.combine(
+				getDisplayName(), ",", batchName);
+
+			if (upstreamFailure.equals(testFailure)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	protected BaseTestResult(Build build) {

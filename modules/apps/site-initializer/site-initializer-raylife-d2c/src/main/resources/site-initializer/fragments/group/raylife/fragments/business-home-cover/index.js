@@ -28,6 +28,27 @@ const fetchHeadless = async (url, options) => {
 	return data;
 };
 
+const fetchHeadlessWithToken = async (url, options) => {
+	if (Liferay.ThemeDisplay.getUserName()) {
+		return fetchHeadless(url);
+	}
+
+	const token = Liferay.Util.SessionStorage.getItem(
+		'raylife-guest-permission-token',
+		Liferay.Util.SessionStorage.TYPES.NECESSARY
+	);
+
+	const response = await fetch(`${window.location.origin}/${url}`, {
+		...options,
+		headers: {
+			'Authorization': `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+	});
+
+	return response.json();
+};
+
 const businessEmailDeliveredContainer = fragmentElement.querySelector(
 	'#business-email-delivered'
 );
@@ -123,7 +144,7 @@ continueQuoteButton.onclick = async function () {
 	newQuoteFormContainer.classList.remove('d-flex', 'invisible');
 	newQuoteFormContainer.classList.add('d-none', 'invisible');
 
-	await fetchHeadless(`o/c/quoteretrieves/scopes/${scopeGroupId}`, {
+	await fetchHeadlessWithToken(`o/c/quoteretrieves/scopes/${scopeGroupId}`, {
 		body: JSON.stringify({
 			productName: 'Business Home Cover',
 			quoteRetrieveLink: `${origin}${window.location.pathname}/get-a-quote?applicationId=${raylifeApplication.id}`,
@@ -143,8 +164,13 @@ getQuoteForm.onsubmit = function (event) {
 	zipContainer.classList.remove('has-error');
 	zipErrorFeedback.innerText = '';
 
-	if (localStorage.getItem('raylife-back-to-edit')) {
-		localStorage.removeItem('raylife-back-to-edit');
+	if (
+		Liferay.Util.LocalStorage.getItem(
+			'raylife-back-to-edit',
+			Liferay.Util.LocalStorage.TYPES.NECESSARY
+		)
+	) {
+		Liferay.Util.LocalStorage.removeItem('raylife-back-to-edit');
 	}
 
 	if (!formProps.zip || formProps.zip.length !== maxCharactersZIP) {
@@ -155,7 +181,11 @@ getQuoteForm.onsubmit = function (event) {
 		}
 	}
 	else {
-		localStorage.setItem('raylife-product', JSON.stringify(formProps));
+		Liferay.Util.LocalStorage.setItem(
+			'raylife-product',
+			JSON.stringify(formProps),
+			Liferay.Util.LocalStorage.TYPES.NECESSARY
+		);
 
 		const {pathname} = new URL(Liferay.ThemeDisplay.getCanonicalURL());
 

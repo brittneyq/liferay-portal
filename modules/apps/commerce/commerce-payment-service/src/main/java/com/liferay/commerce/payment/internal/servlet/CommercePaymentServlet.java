@@ -16,7 +16,7 @@ package com.liferay.commerce.payment.internal.servlet;
 
 import com.liferay.commerce.checkout.helper.CommerceCheckoutStepHttpHelper;
 import com.liferay.commerce.constants.CommerceOrderPaymentConstants;
-import com.liferay.commerce.constants.CommercePaymentConstants;
+import com.liferay.commerce.constants.CommercePaymentMethodConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.payment.engine.CommercePaymentEngine;
 import com.liferay.commerce.payment.engine.CommerceSubscriptionEngine;
@@ -58,11 +58,10 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
-		"osgi.http.whiteboard.context.path=/" + CommercePaymentConstants.SERVLET_PATH,
+		"osgi.http.whiteboard.context.path=/" + CommercePaymentMethodConstants.SERVLET_PATH,
 		"osgi.http.whiteboard.servlet.name=com.liferay.commerce.payment.internal.servlet.CommercePaymentServlet",
-		"osgi.http.whiteboard.servlet.pattern=/" + CommercePaymentConstants.SERVLET_PATH + "/*"
+		"osgi.http.whiteboard.servlet.pattern=/" + CommercePaymentMethodConstants.SERVLET_PATH + "/*"
 	},
 	service = Servlet.class
 )
@@ -147,9 +146,8 @@ public class CommercePaymentServlet extends HttpServlet {
 				_commercePaymentEngine.getCommercePaymentMethodType(
 					_commerceOrderId);
 
-			if ((CommercePaymentConstants.
-					COMMERCE_PAYMENT_METHOD_TYPE_OFFLINE ==
-						commercePaymentMethodType) ||
+			if ((CommercePaymentMethodConstants.TYPE_OFFLINE ==
+					commercePaymentMethodType) ||
 				(commercePaymentMethodType == -1)) {
 
 				_commercePaymentEngine.completePayment(
@@ -159,9 +157,8 @@ public class CommercePaymentServlet extends HttpServlet {
 			}
 
 			if (commercePaymentResult.isSuccess() &&
-				(CommercePaymentConstants.
-					COMMERCE_PAYMENT_METHOD_TYPE_ONLINE_STANDARD ==
-						commercePaymentMethodType)) {
+				(CommercePaymentMethodConstants.TYPE_ONLINE_STANDARD ==
+					commercePaymentMethodType)) {
 
 				if (commerceOrder.isSubscriptionOrder()) {
 					_commerceSubscriptionEngine.completeRecurringPayment(

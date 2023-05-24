@@ -35,7 +35,7 @@ import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
@@ -57,7 +57,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = PortalKaleoManager.class)
+@Component(service = PortalKaleoManager.class)
 public class DefaultPortalKaleoManager
 	extends BaseKaleoBean implements PortalKaleoManager {
 
@@ -75,8 +75,7 @@ public class DefaultPortalKaleoManager
 		companyLocalService.forEachCompanyId(
 			companyId -> {
 				try {
-					User defaultUser = userLocalService.getDefaultUser(
-						companyId);
+					User guestUser = userLocalService.getGuestUser(companyId);
 
 					Group companyGroup = groupLocalService.getCompanyGroup(
 						companyId);
@@ -92,7 +91,7 @@ public class DefaultPortalKaleoManager
 					serviceContext.setCompanyId(companyId);
 
 					deployDefaultDefinitionLink(
-						defaultUser, companyId, companyGroup, assetClassName,
+						guestUser, companyId, companyGroup, assetClassName,
 						definitionName);
 				}
 				catch (PortalException portalException) {
@@ -116,7 +115,7 @@ public class DefaultPortalKaleoManager
 
 	@Override
 	public void deployDefaultDefinitionLinks(long companyId) throws Exception {
-		User defaultUser = userLocalService.getDefaultUser(companyId);
+		User guestUser = userLocalService.getGuestUser(companyId);
 
 		Group companyGroup = groupLocalService.getCompanyGroup(companyId);
 
@@ -129,7 +128,7 @@ public class DefaultPortalKaleoManager
 			String definitionName = entry.getValue();
 
 			deployDefaultDefinitionLink(
-				defaultUser, companyId, companyGroup, assetClassName,
+				guestUser, companyId, companyGroup, assetClassName,
 				definitionName);
 		}
 	}
@@ -183,10 +182,10 @@ public class DefaultPortalKaleoManager
 				return;
 			}
 
-			User defaultUser = userLocalService.getDefaultUser(companyId);
+			User guestUser = userLocalService.getGuestUser(companyId);
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
-				serviceContext.getCompanyId(), defaultUser.getUserId(),
+				serviceContext.getCompanyId(), guestUser.getUserId(),
 				_getLocalizedTitle(companyId, definitionName), definitionName,
 				FileUtil.getBytes(inputStream));
 		}
@@ -207,7 +206,7 @@ public class DefaultPortalKaleoManager
 
 	@Override
 	public void deployDefaultRoles(long companyId) throws Exception {
-		User defaultUser = userLocalService.getDefaultUser(companyId);
+		User guestUser = userLocalService.getGuestUser(companyId);
 
 		for (Map.Entry<String, String> entry : _defaultRoles.entrySet()) {
 			String name = entry.getKey();
@@ -219,7 +218,7 @@ public class DefaultPortalKaleoManager
 			}
 
 			roleLocalService.addRole(
-				defaultUser.getUserId(), null, 0, name, null,
+				guestUser.getUserId(), null, 0, name, null,
 				HashMapBuilder.put(
 					LocaleUtil.getDefault(), entry.getValue()
 				).build(),
@@ -254,7 +253,7 @@ public class DefaultPortalKaleoManager
 	}
 
 	protected void deployDefaultDefinitionLink(
-			User defaultUser, long companyId, Group companyGroup,
+			User guestUser, long companyId, Group companyGroup,
 			String assetClassName, String workflowDefinitionName)
 		throws PortalException {
 
@@ -285,7 +284,7 @@ public class DefaultPortalKaleoManager
 		WorkflowDefinition workflowDefinition = workflowDefinitions.get(0);
 
 		workflowDefinitionLinkLocalService.addWorkflowDefinitionLink(
-			defaultUser.getUserId(), companyId, companyGroup.getGroupId(),
+			guestUser.getUserId(), companyId, companyGroup.getGroupId(),
 			assetClassName, 0, 0, workflowDefinition.getName(),
 			workflowDefinition.getVersion());
 	}
@@ -302,14 +301,14 @@ public class DefaultPortalKaleoManager
 	@Reference
 	protected UserLocalService userLocalService;
 
-	@Reference(target = "(proxy.bean=false)")
+	@Reference
 	protected WorkflowComparatorFactory workflowComparatorFactory;
 
 	private String _getLocalizedTitle(long companyId, String definitionName)
 		throws Exception {
 
 		if (!Objects.equals(_DEFINITION_NAME, definitionName)) {
-			return LocalizationUtil.updateLocalization(
+			return _localization.updateLocalization(
 				StringPool.BLANK, "title", definitionName,
 				LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
 		}
@@ -329,7 +328,7 @@ public class DefaultPortalKaleoManager
 					"single-approver"));
 		}
 
-		return LocalizationUtil.getXml(localizedValuesMap, "title");
+		return _localization.getXml(localizedValuesMap, "title");
 	}
 
 	private static final String _DEFINITION_NAME = "Single Approver";
@@ -347,7 +346,10 @@ public class DefaultPortalKaleoManager
 	@Reference
 	private Language _language;
 
-	@Reference(target = "(proxy.bean=false)")
+	@Reference
+	private Localization _localization;
+
+	@Reference
 	private WorkflowDefinitionManager _workflowDefinitionManager;
 
 }

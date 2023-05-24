@@ -280,13 +280,14 @@ public class DLAppServiceUtil {
 	 * @throws PortalException if a portal exception occurred
 	 */
 	public static com.liferay.portal.kernel.repository.model.Folder addFolder(
-			long repositoryId, long parentFolderId, String name,
-			String description,
+			String externalReferenceCode, long repositoryId,
+			long parentFolderId, String name, String description,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().addFolder(
-			repositoryId, parentFolderId, name, description, serviceContext);
+			externalReferenceCode, repositoryId, parentFolderId, name,
+			description, serviceContext);
 	}
 
 	/**
@@ -504,6 +505,41 @@ public class DLAppServiceUtil {
 
 		return getService().checkOutFileEntry(
 			fileEntryId, owner, expirationTime, serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.repository.model.FileEntry
+			copyFileEntry(
+				long fileEntryId, long destinationFolderId,
+				long destinationRepositoryId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().copyFileEntry(
+			fileEntryId, destinationFolderId, destinationRepositoryId,
+			serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.repository.model.FileShortcut
+			copyFileShortcut(
+				long fileShortcutId, long destinationFolderId,
+				long destinationRepositoryId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().copyFileShortcut(
+			fileShortcutId, destinationFolderId, destinationRepositoryId,
+			serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.repository.model.Folder copyFolder(
+			long sourceRepositoryId, long sourceFolderId,
+			long destinationRepositoryId, long destinationParentFolderId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().copyFolder(
+			sourceRepositoryId, sourceFolderId, destinationRepositoryId,
+			destinationParentFolderId, serviceContext);
 	}
 
 	/**
@@ -1045,6 +1081,15 @@ public class DLAppServiceUtil {
 		throws PortalException {
 
 		return getService().getFolder(repositoryId, parentFolderId, name);
+	}
+
+	public static com.liferay.portal.kernel.repository.model.Folder
+			getFolderByExternalReferenceCode(
+				String externalReferenceCode, long groupId)
+		throws PortalException {
+
+		return getService().getFolderByExternalReferenceCode(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -2412,6 +2457,10 @@ public class DLAppServiceUtil {
 
 	public static DLAppService getService() {
 		return _service;
+	}
+
+	public static void setService(DLAppService service) {
+		_service = service;
 	}
 
 	private static volatile DLAppService _service;

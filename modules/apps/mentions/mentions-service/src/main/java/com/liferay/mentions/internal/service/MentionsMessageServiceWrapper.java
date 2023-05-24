@@ -43,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Sergio González
  */
-@Component(immediate = true, service = ServiceWrapper.class)
+@Component(service = ServiceWrapper.class)
 public class MentionsMessageServiceWrapper
 	extends MBMessageLocalServiceWrapper {
 
@@ -122,31 +122,16 @@ public class MentionsMessageServiceWrapper
 		return message;
 	}
 
-	@Reference(unbind = "-")
-	protected void setConfigurationProvider(
-		ConfigurationProvider configurationProvider) {
-
-		_configurationProvider = configurationProvider;
-	}
-
-	@Reference(unbind = "-")
-	protected void setMBMessageLocalService(
-		MBMessageLocalService mbMessageLocalService) {
-
-		_mbMessageLocalService = mbMessageLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setMentionsNotifier(MentionsNotifier mentionsNotifier) {
-		_mentionsNotifier = mentionsNotifier;
-	}
-
+	@Reference
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private HtmlParser _htmlParser;
 
+	@Reference
 	private MBMessageLocalService _mbMessageLocalService;
+
+	@Reference
 	private MentionsNotifier _mentionsNotifier;
 
 	@Reference

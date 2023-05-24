@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -39,10 +39,10 @@ import com.liferay.portal.language.override.web.internal.display.context.ViewDis
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -61,7 +61,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Drew Brokke
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.display-category=category.hidden",
 		"com.liferay.portlet.preferences-owned-by-group=true",
@@ -108,7 +107,7 @@ public class PLOPortlet extends MVCPortlet {
 
 		_ploEntryService.setPLOEntries(
 			ParamUtil.getString(actionRequest, "key"),
-			LocalizationUtil.getLocalizationMap(actionRequest, "value"));
+			_localization.getLocalizationMap(actionRequest, "value"));
 	}
 
 	@Override
@@ -148,15 +147,21 @@ public class PLOPortlet extends MVCPortlet {
 		try {
 			ZipWriter zipWriter = _zipWriterFactory.getZipWriter();
 
-			List<PLOEntry> ploEntries = _ploEntryService.getPLOEntries(
-				_portal.getCompanyId(resourceRequest));
+			Map<String, List<PLOEntry>> keyPLOEntries = new HashMap<>();
 
-			Stream<PLOEntry> stream = ploEntries.stream();
+			for (PLOEntry ploEntry :
+					_ploEntryService.getPLOEntries(
+						_portal.getCompanyId(resourceRequest))) {
 
-			Map<String, List<PLOEntry>> map = stream.collect(
-				Collectors.groupingBy(PLOEntry::getLanguageId));
+				List<PLOEntry> ploEntries = keyPLOEntries.computeIfAbsent(
+					ploEntry.getLanguageId(), key -> new ArrayList<>());
 
-			for (Map.Entry<String, List<PLOEntry>> entry : map.entrySet()) {
+				ploEntries.add(ploEntry);
+			}
+
+			for (Map.Entry<String, List<PLOEntry>> entry :
+					keyPLOEntries.entrySet()) {
+
 				StringBundler sb = new StringBundler();
 
 				for (PLOEntry ploEntry : entry.getValue()) {
@@ -211,6 +216,9 @@ public class PLOPortlet extends MVCPortlet {
 	}
 
 	private EditDisplayContextFactory _editDisplayContextFactory;
+
+	@Reference
+	private Localization _localization;
 
 	@Reference
 	private PermissionCheckerFactory _permissionCheckerFactory;

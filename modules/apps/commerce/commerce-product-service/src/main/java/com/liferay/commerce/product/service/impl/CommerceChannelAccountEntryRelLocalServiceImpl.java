@@ -24,6 +24,7 @@ import com.liferay.commerce.product.service.base.CommerceChannelAccountEntryRelL
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -34,13 +35,19 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.List;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.product.model.CommerceChannelAccountEntryRel",
+	service = AopService.class
+)
 public class CommerceChannelAccountEntryRelLocalServiceImpl
 	extends CommerceChannelAccountEntryRelLocalServiceBaseImpl {
 
@@ -51,9 +58,20 @@ public class CommerceChannelAccountEntryRelLocalServiceImpl
 			double priority, int type)
 		throws PortalException {
 
-		int commerceChannelAccountEntryRelsCount =
-			commerceChannelAccountEntryRelPersistence.countByA_C_T(
-				accountEntryId, commerceChannelId, type);
+		int commerceChannelAccountEntryRelsCount = 0;
+		long classNameId = _classNameLocalService.getClassNameId(className);
+
+		if (CommerceChannelAccountEntryRelConstants.TYPE_USER != type) {
+			commerceChannelAccountEntryRelsCount =
+				commerceChannelAccountEntryRelPersistence.countByA_C_T(
+					accountEntryId, commerceChannelId, type);
+		}
+		else {
+			commerceChannelAccountEntryRelsCount =
+				commerceChannelAccountEntryRelPersistence.countByA_C_C_C_T(
+					accountEntryId, classNameId, classPK, commerceChannelId,
+					type);
+		}
 
 		if (commerceChannelAccountEntryRelsCount > 0) {
 			throw new DuplicateCommerceChannelAccountEntryRelException();
@@ -71,8 +89,7 @@ public class CommerceChannelAccountEntryRelLocalServiceImpl
 		commerceChannelAccountEntryRel.setUserId(user.getUserId());
 		commerceChannelAccountEntryRel.setUserName(user.getFullName());
 		commerceChannelAccountEntryRel.setAccountEntryId(accountEntryId);
-		commerceChannelAccountEntryRel.setClassNameId(
-			_classNameLocalService.getClassNameId(className));
+		commerceChannelAccountEntryRel.setClassNameId(classNameId);
 		commerceChannelAccountEntryRel.setClassPK(classPK);
 		commerceChannelAccountEntryRel.setCommerceChannelId(commerceChannelId);
 		commerceChannelAccountEntryRel.setOverrideEligibility(
@@ -241,6 +258,16 @@ public class CommerceChannelAccountEntryRelLocalServiceImpl
 	}
 
 	@Override
+	public List<CommerceChannelAccountEntryRel>
+		getCommerceChannelAccountEntryRels(
+			String className, long classPK, long commerceChannelId, int type) {
+
+		return commerceChannelAccountEntryRelPersistence.findByC_C_C_T(
+			_classNameLocalService.getClassNameId(className), classPK,
+			commerceChannelId, type);
+	}
+
+	@Override
 	public int getCommerceChannelAccountEntryRelsCount(
 		long accountEntryId, int type) {
 
@@ -345,13 +372,13 @@ public class CommerceChannelAccountEntryRelLocalServiceImpl
 		}
 	}
 
-	@ServiceReference(type = AccountEntryLocalService.class)
+	@Reference
 	private AccountEntryLocalService _accountEntryLocalService;
 
-	@ServiceReference(type = ClassNameLocalService.class)
+	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

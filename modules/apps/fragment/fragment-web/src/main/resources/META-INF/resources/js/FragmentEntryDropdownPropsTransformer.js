@@ -12,12 +12,15 @@
  * details.
  */
 
+import {render} from '@liferay/frontend-js-react-web';
 import {
 	openConfirmModal,
 	openSelectionModal,
 	openSimpleInputModal,
+	setFormValues,
 } from 'frontend-js-web';
 
+import CopyFragmentModal from './CopyFragmentModal';
 import openDeleteFragmentModal from './openDeleteFragmentModal';
 
 const ACTIONS = {
@@ -30,7 +33,7 @@ const ACTIONS = {
 		);
 
 		if (form) {
-			Liferay.Util.setFormValues(form, {
+			setFormValues(form, {
 				fragmentCollectionId,
 				fragmentEntryIds: fragmentEntryId,
 			});
@@ -40,30 +43,20 @@ const ACTIONS = {
 	},
 
 	copyToFragmentEntry(
-		{copyFragmentEntryURL, fragmentEntryId, selectFragmentCollectionURL},
-		portletNamespace
+		{copyFragmentEntryURL, fragmentEntryId},
+		portletNamespace,
+		fragmentCollections
 	) {
-		openSelectionModal({
-			onSelect: (selectedItem) => {
-				if (selectedItem) {
-					const form = document.getElementById(
-						`${portletNamespace}fragmentEntryFm`
-					);
-
-					if (form) {
-						Liferay.Util.setFormValues(form, {
-							fragmentCollectionId: selectedItem.id,
-							fragmentEntryIds: fragmentEntryId,
-						});
-					}
-
-					submitForm(form, copyFragmentEntryURL);
-				}
+		render(
+			CopyFragmentModal,
+			{
+				copyFragmentEntriesURL: copyFragmentEntryURL,
+				fragmentCollections,
+				fragmentEntryIds: [fragmentEntryId],
+				portletNamespace,
 			},
-			selectEventName: `${portletNamespace}selectFragmentCollection`,
-			title: Liferay.Language.get('select-fragment-set'),
-			url: selectFragmentCollectionURL,
-		});
+			document.createElement('div')
+		);
 	},
 
 	deleteDraftFragmentEntry({deleteDraftFragmentEntryURL}) {
@@ -91,6 +84,20 @@ const ACTIONS = {
 		submitForm(document.hrefFm, deleteFragmentEntryPreviewURL);
 	},
 
+	markAsCacheableFragmentEntry({markAsCacheableFragmentEntryURL}) {
+		openConfirmModal({
+			message: Liferay.Language.get('cacheable-fragment-help'),
+			onConfirm: (isConfirmed) => {
+				if (isConfirmed) {
+					submitForm(
+						document.hrefFm,
+						markAsCacheableFragmentEntryURL
+					);
+				}
+			},
+		});
+	},
+
 	moveFragmentEntry(
 		{fragmentEntryId, moveFragmentEntryURL, selectFragmentCollectionURL},
 		portletNamespace
@@ -103,7 +110,7 @@ const ACTIONS = {
 					);
 
 					if (form) {
-						Liferay.Util.setFormValues(form, {
+						setFormValues(form, {
 							fragmentCollectionId: selectedItem.id,
 							fragmentEntryIds: fragmentEntryId,
 						});
@@ -135,6 +142,10 @@ const ACTIONS = {
 		});
 	},
 
+	unmarkAsCacheableFragmentEntry({unmarkAsCacheableFragmentEntryURL}) {
+		submitForm(document.hrefFm, unmarkAsCacheableFragmentEntryURL);
+	},
+
 	updateFragmentEntryPreview(
 		{fragmentEntryId, itemSelectorURL},
 		portletNamespace
@@ -149,7 +160,7 @@ const ACTIONS = {
 					);
 
 					if (form) {
-						Liferay.Util.setFormValues(form, {
+						setFormValues(form, {
 							fileEntryId: itemValue.fileEntryId,
 							fragmentEntryId,
 						});
@@ -167,6 +178,7 @@ const ACTIONS = {
 
 export default function propsTransformer({
 	actions,
+	additionalProps: {fragmentCollections},
 	portletNamespace,
 	...props
 }) {
@@ -186,7 +198,11 @@ export default function propsTransformer({
 				if (action) {
 					event.preventDefault();
 
-					ACTIONS[action](actionItem.data, portletNamespace);
+					ACTIONS[action](
+						actionItem.data,
+						portletNamespace,
+						fragmentCollections
+					);
 				}
 			},
 		};
@@ -194,6 +210,6 @@ export default function propsTransformer({
 
 	return {
 		...props,
-		actions: actions.map(transformAction),
+		actions: (actions || []).map(transformAction),
 	};
 }

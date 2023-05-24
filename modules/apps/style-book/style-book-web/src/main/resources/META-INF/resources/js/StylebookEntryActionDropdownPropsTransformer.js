@@ -16,6 +16,7 @@ import {
 	openConfirmModal,
 	openSelectionModal,
 	openSimpleInputModal,
+	setFormValues,
 } from 'frontend-js-web';
 
 import openDeleteStyleBookModal from './openDeleteStyleBookModal';
@@ -83,7 +84,7 @@ const ACTIONS = {
 					);
 
 					if (form) {
-						Liferay.Util.setFormValues(form, {
+						setFormValues(form, {
 							fileEntryId: itemValue.fileEntryId,
 							styleBookEntryId,
 						});
@@ -116,7 +117,7 @@ export default function propsTransformer({
 
 	return {
 		...otherProps,
-		actions: actions.map((item) => {
+		actions: (actions || []).map((item) => {
 			return {
 				...item,
 				items: item.items?.map((child) => {

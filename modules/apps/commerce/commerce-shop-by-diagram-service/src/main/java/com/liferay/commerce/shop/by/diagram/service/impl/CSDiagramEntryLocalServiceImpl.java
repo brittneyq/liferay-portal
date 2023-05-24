@@ -30,7 +30,9 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.shop.by.diagram.model.CSDiagramEntry",
 	service = AopService.class
 )
@@ -60,9 +61,9 @@ public class CSDiagramEntryLocalServiceImpl
 			String sku, ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
-		validate(null, cpDefinitionId, sequence);
+		_validate(null, cpDefinitionId, sequence);
 
 		long csDiagramEntryId = counterLocalService.increment();
 
@@ -154,6 +155,16 @@ public class CSDiagramEntryLocalServiceImpl
 	}
 
 	@Override
+	public List<CSDiagramEntry> getCProductCSDiagramEntries(
+			long cProductId, int start, int end,
+			OrderByComparator<CSDiagramEntry> orderByComparator)
+		throws PortalException {
+
+		return csDiagramEntryPersistence.findByCProductId(
+			cProductId, start, end, orderByComparator);
+	}
+
+	@Override
 	public List<CSDiagramEntry> getCSDiagramEntries(
 		long cpDefinitionId, int start, int end) {
 
@@ -185,7 +196,7 @@ public class CSDiagramEntryLocalServiceImpl
 		CSDiagramEntry csDiagramEntry =
 			csDiagramEntryLocalService.getCSDiagramEntry(csDiagramEntryId);
 
-		validate(csDiagramEntry, csDiagramEntry.getCPDefinitionId(), sequence);
+		_validate(csDiagramEntry, csDiagramEntry.getCPDefinitionId(), sequence);
 
 		csDiagramEntry.setCPInstanceId(cpInstanceId);
 		csDiagramEntry.setCProductId(cProductId);
@@ -198,7 +209,7 @@ public class CSDiagramEntryLocalServiceImpl
 		return csDiagramEntryPersistence.update(csDiagramEntry);
 	}
 
-	protected void validate(
+	private void _validate(
 			CSDiagramEntry oldCSDiagramEntry, long cpDefinitionId,
 			String sequence)
 		throws PortalException {
@@ -219,5 +230,8 @@ public class CSDiagramEntryLocalServiceImpl
 
 	@Reference
 	private ExpandoRowLocalService _expandoRowLocalService;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

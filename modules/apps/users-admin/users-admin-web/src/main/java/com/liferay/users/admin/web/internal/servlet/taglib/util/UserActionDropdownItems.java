@@ -18,7 +18,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -27,12 +26,15 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.membershippolicy.OrganizationMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PrefsPropsUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.taglib.security.DoAsURLTag;
@@ -95,8 +97,12 @@ public class UserActionDropdownItems {
 					_getPermissionsActionUnsafeConsumer()
 				).add(
 					() ->
-						(PropsValues.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED ||
-						 PropsValues.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED) &&
+						(PrefsPropsUtil.getBoolean(
+							_themeDisplay.getCompanyId(),
+							PropsKeys.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED) ||
+						 PrefsPropsUtil.getBoolean(
+							 _themeDisplay.getCompanyId(),
+							 PropsKeys.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED)) &&
 						hasUpdatePermission,
 					_getManagePagesActionUnsafeConsumer()
 				).add(

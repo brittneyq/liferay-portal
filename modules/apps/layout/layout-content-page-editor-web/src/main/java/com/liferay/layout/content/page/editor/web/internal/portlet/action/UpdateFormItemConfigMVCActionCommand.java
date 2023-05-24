@@ -15,26 +15,20 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.fragment.contributor.FragmentCollectionContributor;
-import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
+import com.liferay.fragment.helper.DefaultInputFragmentEntryConfigurationProvider;
 import com.liferay.fragment.listener.FragmentEntryLinkListener;
-import com.liferay.fragment.listener.FragmentEntryLinkListenerTracker;
+import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkService;
 import com.liferay.info.field.InfoField;
-import com.liferay.info.field.type.BooleanInfoFieldType;
-import com.liferay.info.field.type.DateInfoFieldType;
-import com.liferay.info.field.type.FileInfoFieldType;
 import com.liferay.info.field.type.InfoFieldType;
-import com.liferay.info.field.type.NumberInfoFieldType;
-import com.liferay.info.field.type.RelationshipInfoFieldType;
-import com.liferay.info.field.type.SelectInfoFieldType;
-import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.form.InfoForm;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormProvider;
-import com.liferay.info.search.InfoSearchClassMapperTracker;
+import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
@@ -48,7 +42,7 @@ import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -60,11 +54,9 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -73,6 +65,7 @@ import com.liferay.segments.constants.SegmentsExperienceConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
 
@@ -89,7 +82,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lourdes Fernández Besada
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/layout_content_page_editor/update_form_item_config"
@@ -128,10 +120,10 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 
 		if (infoField != null) {
 			JSONObject editableValuesJSONObject =
-				JSONFactoryUtil.createJSONObject();
+				_jsonFactory.createJSONObject();
 
 			if (Validator.isNotNull(fragmentEntryLink.getEditableValues())) {
-				editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
+				editableValuesJSONObject = _jsonFactory.createJSONObject(
 					fragmentEntryLink.getEditableValues());
 			}
 
@@ -140,7 +132,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 					KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR);
 
 			if (jsonObject == null) {
-				jsonObject = JSONFactoryUtil.createJSONObject();
+				jsonObject = _jsonFactory.createJSONObject();
 
 				editableValuesJSONObject.put(
 					FragmentEntryProcessorConstants.
@@ -170,7 +162,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		throws Exception {
 
 		FragmentCollectionContributor fragmentCollectionContributor =
-			_fragmentCollectionContributorTracker.
+			_fragmentCollectionContributorRegistry.
 				getFragmentCollectionContributor("INPUTS");
 
 		if (fragmentCollectionContributor == null) {
@@ -203,8 +195,9 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 			InfoFieldType infoFieldType = infoField.getInfoFieldType();
 
 			FragmentEntry fragmentEntry =
-				_fragmentCollectionContributorTracker.getFragmentEntry(
-					_getFragmentEntryKey(infoFieldType));
+				_fragmentCollectionContributorRegistry.getFragmentEntry(
+					_getFragmentEntryKey(
+						infoField, themeDisplay.getScopeGroupId()));
 
 			if ((fragmentEntry == null) ||
 				!_isAllowedFragmentEntryKey(
@@ -225,7 +218,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		FragmentEntry fragmentEntry =
-			_fragmentCollectionContributorTracker.getFragmentEntry(
+			_fragmentCollectionContributorRegistry.getFragmentEntry(
 				"INPUTS-submit-button");
 
 		if ((fragmentEntry == null) ||
@@ -272,34 +265,14 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		return addedFragmentEntryLinks;
 	}
 
-	private String _getFragmentEntryKey(InfoFieldType infoFieldType) {
-		if (infoFieldType instanceof BooleanInfoFieldType) {
-			return "INPUTS-checkbox";
-		}
+	private String _getFragmentEntryKey(InfoField infoField, long groupId) {
+		InfoFieldType infoFieldType = infoField.getInfoFieldType();
 
-		if (infoFieldType instanceof DateInfoFieldType) {
-			return "INPUTS-date-input";
-		}
+		Map<String, String> defaultInputFragmentEntryKeys =
+			_defaultInputFragmentEntryHelper.getDefaultInputFragmentEntryKeys(
+				groupId);
 
-		if (infoFieldType instanceof FileInfoFieldType) {
-			return "INPUTS-file-upload";
-		}
-
-		if (infoFieldType instanceof NumberInfoFieldType) {
-			return "INPUTS-numeric-input";
-		}
-
-		if (infoFieldType instanceof RelationshipInfoFieldType ||
-			infoFieldType instanceof SelectInfoFieldType) {
-
-			return "INPUTS-select-from-list";
-		}
-
-		if (infoFieldType instanceof TextInfoFieldType) {
-			return "INPUTS-text-input";
-		}
-
-		return null;
+		return defaultInputFragmentEntryKeys.get(infoFieldType.getName());
 	}
 
 	private List<InfoField<?>> _getInfoFields(
@@ -307,12 +280,12 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 			long groupId)
 		throws Exception {
 
-		String itemClassName = _infoSearchClassMapperTracker.getClassName(
+		String itemClassName = _infoSearchClassMapperRegistry.getClassName(
 			_portal.getClassName(
 				formStyledLayoutStructureItem.getClassNameId()));
 
 		InfoItemFormProvider<?> infoItemFormProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
+			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemFormProvider.class, itemClassName);
 
 		if (infoItemFormProvider == null) {
@@ -392,7 +365,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		FormStyledLayoutStructureItem formStyledLayoutStructureItem) {
 
 		JSONArray fragmentEntryLinkIdsJSONArray =
-			JSONFactoryUtil.createJSONArray();
+			_jsonFactory.createJSONArray();
 
 		for (String itemId :
 				ListUtil.copy(
@@ -435,7 +408,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		String itemConfig = ParamUtil.getString(actionRequest, "itemConfig");
 		String formItemId = ParamUtil.getString(actionRequest, "itemId");
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
 		try {
 			LayoutPageTemplateStructure layoutPageTemplateStructure =
@@ -458,24 +431,22 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 
 			FormStyledLayoutStructureItem formStyledLayoutStructureItem =
 				(FormStyledLayoutStructureItem)layoutStructure.updateItemConfig(
-					JSONFactoryUtil.createJSONObject(itemConfig), formItemId);
+					_jsonFactory.createJSONObject(itemConfig), formItemId);
 
 			JSONArray removedLayoutStructureItemsJSONArray =
-				JSONFactoryUtil.createJSONArray();
+				_jsonFactory.createJSONArray();
 
 			HttpServletRequest httpServletRequest =
 				_portal.getHttpServletRequest(actionRequest);
 
 			List<FragmentEntryLink> addedFragmentEntryLinks = new ArrayList<>();
 
-			if (GetterUtil.getBoolean(
-					PropsUtil.get("feature.flag.LPS-157738")) &&
-				(!Objects.equals(
+			if (!Objects.equals(
 					formStyledLayoutStructureItem.getClassNameId(),
 					previousClassNameId) ||
-				 !Objects.equals(
-					 formStyledLayoutStructureItem.getClassTypeId(),
-					 previousClassTypeId))) {
+				!Objects.equals(
+					formStyledLayoutStructureItem.getClassTypeId(),
+					previousClassTypeId)) {
 
 				removedLayoutStructureItemsJSONArray =
 					_removeLayoutStructureItemsJSONArray(
@@ -495,15 +466,12 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 						themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
 						segmentsExperienceId, layoutStructure.toString());
 
-			List<FragmentEntryLinkListener> fragmentEntryLinkListeners =
-				_fragmentEntryLinkListenerTracker.
-					getFragmentEntryLinkListeners();
-
 			for (FragmentEntryLink addedFragmentEntryLink :
 					addedFragmentEntryLinks) {
 
 				for (FragmentEntryLinkListener fragmentEntryLinkListener :
-						fragmentEntryLinkListeners) {
+						_fragmentEntryLinkListenerRegistry.
+							getFragmentEntryLinkListeners()) {
 
 					fragmentEntryLinkListener.onAddFragmentEntryLink(
 						addedFragmentEntryLink);
@@ -511,7 +479,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 			}
 
 			JSONObject addedFragmentEntryLinksJSONObject =
-				JSONFactoryUtil.createJSONObject();
+				_jsonFactory.createJSONObject();
 
 			HttpServletResponse httpServletResponse =
 				_portal.getHttpServletResponse(actionResponse);
@@ -557,11 +525,16 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		UpdateFormItemConfigMVCActionCommand.class);
 
 	@Reference
-	private FragmentCollectionContributorTracker
-		_fragmentCollectionContributorTracker;
+	private DefaultInputFragmentEntryConfigurationProvider
+		_defaultInputFragmentEntryHelper;
 
 	@Reference
-	private FragmentEntryLinkListenerTracker _fragmentEntryLinkListenerTracker;
+	private FragmentCollectionContributorRegistry
+		_fragmentCollectionContributorRegistry;
+
+	@Reference
+	private FragmentEntryLinkListenerRegistry
+		_fragmentEntryLinkListenerRegistry;
 
 	@Reference
 	private FragmentEntryLinkManager _fragmentEntryLinkManager;
@@ -570,10 +543,13 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 	private FragmentEntryLinkService _fragmentEntryLinkService;
 
 	@Reference
-	private InfoItemServiceTracker _infoItemServiceTracker;
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Reference
-	private InfoSearchClassMapperTracker _infoSearchClassMapperTracker;
+	private InfoSearchClassMapperRegistry _infoSearchClassMapperRegistry;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

@@ -24,11 +24,9 @@ import com.liferay.source.formatter.check.util.JavaSourceUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
 import com.liferay.source.formatter.parser.JavaTerm;
-import com.liferay.source.formatter.parser.ParseException;
 import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +52,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
-		throws IOException, ParseException {
+		throws Exception {
 
 		if (!content.contains("@Component")) {
 			return content;
@@ -95,6 +93,8 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 				moduleSuperClassContent);
 		}
 
+		_checkUnnecessaryVariableInjection(fileName, absolutePath, content);
+
 		return content;
 	}
 
@@ -132,11 +132,87 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 		}
 	}
 
+	private void _checkUnnecessaryVariableInjection(
+			String fileName, String absolutePath, String content)
+		throws Exception {
+
+		if (!absolutePath.contains("-service/") ||
+			!absolutePath.contains("/service/impl/") ||
+			!fileName.endsWith("ServiceImpl.java")) {
+
+			return;
+		}
+
+		BNDSettings bndSettings = getBNDSettings(fileName);
+
+		String bndSettingsContent = bndSettings.getContent();
+
+		if (!bndSettingsContent.contains("-dsannotations-options: inherit")) {
+			return;
+		}
+
+		String serviceBaseClassPath = StringUtil.replace(
+			absolutePath, new String[] {"/service/impl/", "Impl.java"},
+			new String[] {"/service/base/", "BaseImpl.java"});
+
+		File file = new File(serviceBaseClassPath);
+
+		if (!file.exists()) {
+			return;
+		}
+
+		JavaClass serviceBaseJavaClass = JavaClassParser.parseJavaClass(
+			serviceBaseClassPath, FileUtil.read(file));
+
+		JavaClass javaClass = JavaClassParser.parseJavaClass(fileName, content);
+
+		for (JavaTerm javaTerm : javaClass.getChildJavaTerms()) {
+			if (!javaTerm.hasAnnotation() || !javaTerm.isJavaVariable() ||
+				!javaTerm.isPrivate()) {
+
+				continue;
+			}
+
+			String fieldTypeClassName = _getFieldTypeClassName(
+				javaTerm, JavaTerm.ACCESS_MODIFIER_PRIVATE, javaClass);
+
+			if (Validator.isNull(fieldTypeClassName)) {
+				continue;
+			}
+
+			for (JavaTerm serviceBaseJavaTerm :
+					serviceBaseJavaClass.getChildJavaTerms()) {
+
+				if (!serviceBaseJavaTerm.hasAnnotation() ||
+					!serviceBaseJavaTerm.isJavaVariable() ||
+					!serviceBaseJavaTerm.isProtected()) {
+
+					continue;
+				}
+
+				String serviceBaseFieldTypeClassName = _getFieldTypeClassName(
+					serviceBaseJavaTerm, JavaTerm.ACCESS_MODIFIER_PROTECTED,
+					serviceBaseJavaClass);
+
+				if (Validator.isNotNull(serviceBaseFieldTypeClassName) &&
+					fieldTypeClassName.equals(serviceBaseFieldTypeClassName)) {
+
+					addMessage(
+						fileName,
+						"Use super class variable '" +
+							serviceBaseJavaTerm.getName() +
+								"' instead of injection",
+						javaTerm.getLineNumber());
+				}
+			}
+		}
+	}
+
 	private void _checkUtilUsage(
 			String fileName, String content,
 			String serviceReferenceUtilClassName,
 			String moduleSuperClassContent)
-		throws IOException, ParseException {
+		throws Exception {
 
 		if (!content.contains(serviceReferenceUtilClassName) ||
 			(Validator.isNotNull(moduleSuperClassContent) &&
@@ -176,7 +252,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 
 	private String _formatDuplicateReferenceMethods(
 			String fileName, String content, String moduleSuperClassContent)
-		throws IOException {
+		throws Exception {
 
 		if (Validator.isNull(moduleSuperClassContent) ||
 			!moduleSuperClassContent.contains("@Component") ||
@@ -273,8 +349,42 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 		return content;
 	}
 
+	private String _getFieldTypeClassName(
+		JavaTerm javaTerm, String accessModifier, JavaClass javaClass) {
+
+		Pattern pattern = Pattern.compile(
+			"@Reference\n\t+" + accessModifier + "\\s(\\S+)\\s+(\\S+\\.)?\\w+");
+
+		Matcher matcher = pattern.matcher(javaTerm.getContent());
+
+		if (!matcher.find()) {
+			return null;
+		}
+
+		String fieldTypeClassName = matcher.group(1);
+
+		if (!fieldTypeClassName.contains(StringPool.PERIOD)) {
+			fieldTypeClassName = _getFullyQualifiedName(
+				fieldTypeClassName, javaClass);
+		}
+
+		return fieldTypeClassName;
+	}
+
+	private String _getFullyQualifiedName(
+		String className, JavaClass javaClass) {
+
+		for (String importName : javaClass.getImportNames()) {
+			if (importName.endsWith(StringPool.PERIOD + className)) {
+				return importName;
+			}
+		}
+
+		return javaClass.getPackageName() + StringPool.PERIOD + className;
+	}
+
 	private String _getModuleClassContent(String fullClassName)
-		throws IOException {
+		throws Exception {
 
 		String classContent = _moduleFileContentsMap.get(fullClassName);
 
@@ -304,7 +414,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 	}
 
 	private synchronized Map<String, String> _getModuleFileNamesMap()
-		throws IOException {
+		throws Exception {
 
 		if (_moduleFileNamesMap != null) {
 			return _moduleFileNamesMap;
@@ -387,7 +497,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 
 	private String _getModuleSuperClassContent(
 			String content, String className, String packageName)
-		throws IOException {
+		throws Exception {
 
 		Pattern pattern = Pattern.compile(
 			" class " + className + "\\s+extends\\s+([\\w.]+) ");
@@ -429,7 +539,7 @@ public class JavaOSGiReferenceCheck extends BaseFileCheck {
 	}
 
 	private synchronized List<String> _getServiceProxyFactoryUtilClassNames()
-		throws IOException {
+		throws Exception {
 
 		if (_serviceProxyFactoryUtilClassNames != null) {
 			return _serviceProxyFactoryUtilClassNames;

@@ -102,6 +102,9 @@ public interface JournalArticle
 
 	public String getContentByLocale(String languageId);
 
+	public com.liferay.dynamic.data.mapping.storage.DDMFormValues
+		getDDMFormValues();
+
 	public com.liferay.dynamic.data.mapping.model.DDMStructure
 		getDDMStructure();
 
@@ -127,6 +130,9 @@ public interface JournalArticle
 	public String getDescriptionMapAsXML();
 
 	public com.liferay.portal.kernel.xml.Document getDocument();
+
+	public com.liferay.portal.kernel.xml.Document getDocumentByLocale(
+		String languageId);
 
 	public JournalFolder getFolder()
 		throws com.liferay.portal.kernel.exception.PortalException;

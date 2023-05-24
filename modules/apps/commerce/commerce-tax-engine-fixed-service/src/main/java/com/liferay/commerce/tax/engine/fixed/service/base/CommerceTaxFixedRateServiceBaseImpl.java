@@ -17,8 +17,6 @@ package com.liferay.commerce.tax.engine.fixed.service.base;
 import com.liferay.commerce.tax.engine.fixed.model.CommerceTaxFixedRate;
 import com.liferay.commerce.tax.engine.fixed.service.CommerceTaxFixedRateService;
 import com.liferay.commerce.tax.engine.fixed.service.CommerceTaxFixedRateServiceUtil;
-import com.liferay.commerce.tax.engine.fixed.service.persistence.CommerceTaxFixedRateAddressRelFinder;
-import com.liferay.commerce.tax.engine.fixed.service.persistence.CommerceTaxFixedRateAddressRelPersistence;
 import com.liferay.commerce.tax.engine.fixed.service.persistence.CommerceTaxFixedRatePersistence;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -31,8 +29,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
 
@@ -62,7 +58,7 @@ public abstract class CommerceTaxFixedRateServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		CommerceTaxFixedRateServiceUtil.setService(null);
 	}
 
 	@Override
@@ -76,7 +72,7 @@ public abstract class CommerceTaxFixedRateServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		commerceTaxFixedRateService = (CommerceTaxFixedRateService)aopProxy;
 
-		_setServiceUtilService(commerceTaxFixedRateService);
+		CommerceTaxFixedRateServiceUtil.setService(commerceTaxFixedRateService);
 	}
 
 	/**
@@ -122,23 +118,6 @@ public abstract class CommerceTaxFixedRateServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CommerceTaxFixedRateService commerceTaxFixedRateService) {
-
-		try {
-			Field field =
-				CommerceTaxFixedRateServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceTaxFixedRateService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	@Reference
 	protected com.liferay.commerce.tax.engine.fixed.service.
 		CommerceTaxFixedRateLocalService commerceTaxFixedRateLocalService;
@@ -149,35 +128,8 @@ public abstract class CommerceTaxFixedRateServiceBaseImpl
 	protected CommerceTaxFixedRatePersistence commerceTaxFixedRatePersistence;
 
 	@Reference
-	protected CommerceTaxFixedRateAddressRelPersistence
-		commerceTaxFixedRateAddressRelPersistence;
-
-	@Reference
-	protected CommerceTaxFixedRateAddressRelFinder
-		commerceTaxFixedRateAddressRelFinder;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceTaxFixedRateServiceBaseImpl.class);

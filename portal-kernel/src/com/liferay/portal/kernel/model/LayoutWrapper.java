@@ -785,6 +785,11 @@ public class LayoutWrapper
 		return model.getHTMLTitle(localeLanguageId);
 	}
 
+	@Override
+	public String getIcon() {
+		return model.getIcon();
+	}
+
 	/**
 	 * Returns <code>true</code> if the current layout has a configured icon.
 	 *
@@ -1624,6 +1629,11 @@ public class LayoutWrapper
 		return model.isDraftLayout();
 	}
 
+	@Override
+	public boolean isEmbeddedPersonalApplication() {
+		return model.isEmbeddedPersonalApplication();
+	}
+
 	/**
 	 * Returns <code>true</code> if this layout is expired.
 	 *
@@ -1829,6 +1839,11 @@ public class LayoutWrapper
 	@Override
 	public boolean isTypeAssetDisplay() {
 		return model.isTypeAssetDisplay();
+	}
+
+	@Override
+	public boolean isTypeCollection() {
+		return model.isTypeCollection();
 	}
 
 	@Override
@@ -2646,6 +2661,11 @@ public class LayoutWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

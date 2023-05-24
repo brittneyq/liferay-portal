@@ -12,12 +12,15 @@
  * details.
  */
 
+export {default as CodeMirrorKeyboardMessage} from '../page_editor/common/components/CodeMirrorKeyboardMessage';
 export {ColorPicker} from '../page_editor/common/components/ColorPicker/ColorPicker';
-export {LengthField} from '../page_editor/common/components/LengthField';
-export {default as useControlledState} from '../page_editor/core/hooks/useControlledState';
+export {LengthInput} from '../page_editor/common/components/LengthField';
+export {default as useControlledState} from '../page_editor/common/hooks/useControlledState';
+export {useSessionState} from '../page_editor/common/hooks/useSessionState';
 export {default as Collapse} from '../page_editor/common/components/Collapse';
 export {
 	useHasStyleErrors,
 	StyleErrorsContextProvider,
 } from '../page_editor/app/contexts/StyleErrorsContext';
-export {useId} from '../page_editor/core/hooks/useId';
+export {useId} from '../page_editor/common/hooks/useId';
+export {default as SearchResultsMessage} from '../page_editor/common/components/SearchResultsMessage';

@@ -318,6 +318,22 @@ components:
             required:
                 - className
             type: object
+        ClientExtension:
+            # @review
+            description:
+                Represents a client extension
+            properties:
+                externalReferenceCode:
+                    # @review
+                    description:
+                        The client extension's external reference code.
+                    type: string
+                name:
+                    description:
+                        The client extension's name.
+                    readOnly: true
+                    type: string
+            type: object
         CollectionViewport:
             # @review
             description:
@@ -1341,6 +1357,10 @@ components:
                         The document's file extension.
                     readOnly: true
                     type: string
+                fileName:
+                    description:
+                        The document's file name.
+                    type: string
                 id:
                     description:
                         The document's ID.
@@ -1463,6 +1483,11 @@ components:
                     description:
                         The folder's description.
                     type: string
+                externalReferenceCode:
+                    # @review
+                    description:
+                        The document folder's external reference code.
+                    type: string
                 id:
                     description:
                         The folder's ID.
@@ -1559,6 +1584,12 @@ components:
                     # @review
                     description:
                         The fragment's name.
+                    type: string
+                siteKey:
+                    # @review
+                    description:
+                        The key of the site to which this fragment is scoped.
+                    readOnly: true
                     type: string
             type: object
         FragmentField:
@@ -2365,6 +2396,10 @@ components:
                         The file's media type (e.g., application/pdf, etc.).
                     readOnly: true
                     type: string
+                externalReferenceCode:
+                    description:
+                        The attachment's external reference code.
+                    type: string
                 fileExtension:
                     description:
                         The file's extension.
@@ -2550,6 +2585,16 @@ components:
             description:
                 A binary file attached to a message on a message board (`MessageBoardMessage`).
             properties:
+                actions:
+                    additionalProperties:
+                        additionalProperties:
+                            type: string
+                        type: object
+                    # @review
+                    description:
+                        Block of actions allowed by the user making the request.
+                    readOnly: true
+                    type: object
                 contentUrl:
                     description:
                         The file's relative URL.
@@ -2565,6 +2610,11 @@ components:
                     description:
                         The file's media format (e.g., application/pdf, etc.).
                     readOnly: true
+                    type: string
+                externalReferenceCode:
+                    # @review
+                    description:
+                        The message board's external reference code.
                     type: string
                 fileExtension:
                     description:
@@ -2658,6 +2708,8 @@ components:
                     type: string
                 friendlyUrlPath:
                     type: string
+                hasCompanyMx:
+                    type: boolean
                 headline:
                     description:
                         The message's main title.
@@ -2687,6 +2739,8 @@ components:
                     format: int64
                     readOnly: true
                     type: integer
+                modified:
+                    type: boolean
                 numberOfMessageBoardAttachments:
                     description:
                         The number of the message's attachments.
@@ -2913,6 +2967,10 @@ components:
                     items:
                         type: string
                     type: array
+                lastPostDate:
+                    format: date-time
+                    readOnly: true
+                    type: string
                 locked:
                     # @review
                     description:
@@ -3220,6 +3278,18 @@ components:
                     # @review
                     description:
                         The Open Graph's image.
+                imageAlt:
+                    # @review
+                    description:
+                        The Open Graph's image alt.
+                    type: string
+                imageAlt_i18n:
+                    additionalProperties:
+                        type: string
+                    # @review
+                    description:
+                        The localized Open Graph's image alts.
+                    type: object
                 title:
                     # @review
                     description:
@@ -3304,6 +3374,21 @@ components:
                     items:
                         $ref: "#/components/schemas/FragmentViewport"
                     type: array
+                layout:
+                    # @review
+                    description:
+                        the page section's layout.
+                    properties:
+                        align:
+                            enum: [Baseline, Center, End, None, Start, Stretch]
+                            type: string
+                        flexWrap:
+                            enum: [NoWrap, Wrap, WrapReverse]
+                            type: string
+                        justify:
+                            enum: [Center, End, None, SpaceAround, SpaceBetween, Start]
+                            type: string
+                    type: object
                 listItemStyle:
                     # @review
                     description:
@@ -3473,6 +3558,7 @@ components:
                         - $ref: "#/components/schemas/PageColumnDefinition"
                         - $ref: "#/components/schemas/PageDropZoneDefinition"
                         - $ref: "#/components/schemas/PageFormDefinition"
+                        - $ref: "#/components/schemas/PageFragmentDropZoneDefinition"
                         - $ref: "#/components/schemas/PageFragmentInstanceDefinition"
                         - $ref: "#/components/schemas/PageRootDefinition"
                         - $ref: "#/components/schemas/PageRowDefinition"
@@ -3585,6 +3671,17 @@ components:
                     # @review
                     description:
                         The custom name of of a Page form.
+                    type: string
+            type: object
+        PageFragmentDropZoneDefinition:
+            # @review
+            description:
+                Represents a definition of a Page Fragment DropZone.
+            properties:
+                fragmentDropZoneId:
+                    # @review
+                    description:
+                        The id of the fragment dropzone
                     type: string
             type: object
         PageFragmentInstanceDefinition:
@@ -3979,6 +4076,12 @@ components:
                     # @review
                     description:
                         The page's SEO settings.
+                sitePageNavigationMenuSettings:
+                    allOf:
+                        - $ref: "#/components/schemas/SitePageNavigationMenuSettings"
+                    # @review
+                    description:
+                        The page's site navigation menu settings.
             type: object
         PageTemplate:
             # @review
@@ -4411,6 +4514,35 @@ components:
                     description:
                         A list of localized target keywords of the page to be used by search engines.
                     type: object
+                siteMapSettings:
+                    # @review
+                    description:
+                        Represents settings related with the site map.
+                    properties:
+                        changeFrequency:
+                            description:
+                                Indicates how often a page is updated.
+                            enum:
+                                - Always
+                                - Hourly
+                                - Daily
+                                - Weekly
+                                - Monthly
+                                - Yearly
+                                - Never
+                            type: string
+                        include:
+                            description:
+                                Whether search engines should crawl and index the page.
+                            type: boolean
+                        pagePriority:
+                            description:
+                                How the page should be prioritized relative to other pages.
+                            format: double
+                            maximum: 1
+                            minimum: 0
+                            type: number
+                    type: object
             type: object
         Settings:
             # @review
@@ -4427,6 +4559,25 @@ components:
                     description:
                         The page's CSS.
                     type: string
+                favIcon:
+                    # @review
+                    description:
+                        The FavIcon of the page
+                    oneOf:
+                        - $ref: "#/components/schemas/ClientExtension"
+                        - $ref: "#/components/schemas/ContentDocument"
+                globalCSSClientExtensions:
+                    description:
+                        The client extensions for global css associated to the page.
+                    items:
+                        $ref: "#/components/schemas/ClientExtension"
+                    type: array
+                globalJSClientExtensions:
+                    description:
+                        The client extensions for global js associated to the page.
+                    items:
+                        $ref: "#/components/schemas/ClientExtension"
+                    type: array
                 javascript:
                     # @review
                     description:
@@ -4454,6 +4605,12 @@ components:
                                 The stylebook's name.
                             type: string
                     type: object
+                themeCSSClientExtension:
+                    allOf:
+                        - $ref: "#/components/schemas/ClientExtension"
+                    # @review
+                    description:
+                        The Client Extension for the theme css of a page
                 themeName:
                     # @review
                     description:
@@ -4547,6 +4704,12 @@ components:
                     description:
                         The localized relative URLs to the page's rendered content.
                     type: object
+                id:
+                    description:
+                        The page ID.
+                    format: int64
+                    readOnly: true
+                    type: integer
                 keywords:
                     # @review
                     description:
@@ -4562,6 +4725,26 @@ components:
                         Optional field with the structure of all the elements of the page. Can be embedded with
                         nestedFields when retrieving the collection of site pages. When retrieving a single site page,
                         it will automatically be included.
+                pagePermissions:
+                    # @review
+                    description:
+                        The page's permissions.
+                    items:
+                        properties:
+                            actionKeys:
+                                # @review
+                                description:
+                                    The keys of the actions the role has permission for.
+                                items:
+                                    type: string
+                                type: array
+                            roleKey:
+                                # @review
+                                description:
+                                    The role's key.
+                                type: string
+                        type: object
+                    type: array
                 pageSettings:
                     allOf:
                         - $ref: "#/components/schemas/PageSettings"
@@ -4573,6 +4756,17 @@ components:
                     description:
                         The type of the page.
                     type: string
+                parentSitePage:
+                    # @review
+                    description:
+                        The parent page or null if it is a top level page.
+                    properties:
+                        friendlyUrlPath:
+                            # @review
+                            description:
+                                The relative URL of the parent page.
+                            type: string
+                    type: object
                 renderedPage:
                     allOf:
                         - $ref: "#/components/schemas/RenderedPage"
@@ -4592,12 +4786,13 @@ components:
                         The categories associated with this page.
                     items:
                         $ref: "#/components/schemas/TaxonomyCategoryBrief"
-                    readOnly: true
                     type: array
                 taxonomyCategoryIds:
+                    deprecated: true
                     # @review
                     description:
-                        A write-only field that adds `TaxonomyCategory` instances to the page.
+                        A write-only field that adds `TaxonomyCategory` instances to the page. Deprecated as of
+                        Cavanaugh (7.4.x), replaced by `taxonomyCategoryBriefs.taxonomyCategoryReference`
                     items:
                         format: int64
                         type: integer
@@ -4642,6 +4837,28 @@ components:
                     # @review
                     description:
                         The localized submission of page type.
+            type: object
+        SitePageNavigationMenuSettings:
+            # @review
+            description:
+                Represents settings related with the site navigation menu of a page.
+            properties:
+                queryString:
+                    # @review
+                    description:
+                        The default parameter for a page.
+                    type: string
+                target:
+                    # @review
+                    description:
+                        The page's description to be used as summary for search engines.
+                    type: string
+                targetType:
+                    # @review
+                    description:
+                        The target's type (specific frame or new tab).
+                    enum: [SpecificFrame, NewTab]
+                    type: string
             type: object
         StructuredContent:
             description:
@@ -4979,6 +5196,25 @@ components:
                         The localized category's names.
                     readOnly: true
                     type: object
+                taxonomyCategoryReference:
+                    # @review
+                    description:
+                        A unique reference to a taxonomy category.
+                    properties:
+                        externalReferenceCode:
+                            # @review
+                            description:
+                                The taxonomy category's external reference code.
+                            type: string
+                        siteKey:
+                            # @review
+                            description:
+                                The key of the site or asset library where the taxonomy category is located. It can be
+                                left out if the taxonomy category is in the same site as the page.
+                            type: string
+                    required:
+                        - externalReferenceCode
+                    type: object
             type: object
         URLFormSubmissionResult:
             # @review
@@ -4991,6 +5227,32 @@ components:
                     # @review
                     description:
                         The localized submission of URL type.
+            type: object
+        UtilityPageTemplate:
+            description:
+                Represents a Utility Page Template.
+            properties:
+                defaultTemplate:
+                    # @review
+                    description:
+                        Specifies if the utility page template should be the default for the given type.
+                    type: boolean
+                externalReferenceCode:
+                    # @review
+                    description:
+                        The utility page template external reference code.
+                    type: string
+                name:
+                    # @review
+                    description:
+                        The utility page template name.
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The utility page template type.
+                    enum: [Error, ErrorCode404, ErrorCode500, TermsOfUse]
+                    type: string
             type: object
         WidgetInstance:
             # @review
@@ -5259,6 +5521,16 @@ components:
             description:
                 A binary file attached to a wiki page.
             properties:
+                actions:
+                    additionalProperties:
+                        additionalProperties:
+                            type: string
+                        type: object
+                    # @review
+                    description:
+                        Block of actions allowed by the user making the request.
+                    readOnly: true
+                    type: object
                 contentUrl:
                     description:
                         The file's relative URL.
@@ -5302,7 +5574,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.delivery.client', and version '4.0.38'."
+        'com.liferay.headless.delivery.client', and version '4.0.58'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -5769,6 +6041,40 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["DocumentFolder"]
+    "/asset-libraries/{assetLibraryId}/document-folders/rated-by-me":
+        get:
+            description:
+                Retrieves the document folders rated by the user.
+            operationId: getAssetLibraryDocumentFoldersRatedByMePage
+            parameters:
+                - in: path
+                  name: assetLibraryId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                - in: query
+                  name: pageSize
+                  schema:
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentFolder"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentFolder"
+                                type: array
+            tags: ["DocumentFolder"]
     "/asset-libraries/{assetLibraryId}/documents":
         get:
             operationId: getAssetLibraryDocumentsPage
@@ -6015,6 +6321,40 @@ paths:
                     content:
                         application/json: {}
                         application/xml: {}
+            tags: ["Document"]
+    "/asset-libraries/{assetLibraryId}/documents/rated-by-me":
+        get:
+            description:
+                Retrieves the documents rated by the user.
+            operationId: getAssetLibraryDocumentsRatedByMePage
+            parameters:
+                - in: path
+                  name: assetLibraryId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                - in: query
+                  name: pageSize
+                  schema:
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Document"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Document"
+                                type: array
             tags: ["Document"]
     "/asset-libraries/{assetLibraryId}/languages":
         get:
@@ -6823,10 +7163,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -7565,6 +7901,112 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Document"
             tags: ["Document"]
+    "/document-folders/{documentFolderId}/my-rating":
+        delete:
+            description:
+                Deletes the document folder's rating and returns a 204 if the operation succeeded.
+            operationId: deleteDocumentFolderMyRating
+            parameters:
+                - in: path
+                  name: documentFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["DocumentFolder"]
+        get:
+            description:
+                Retrieves the document folder's rating.
+            operationId: getDocumentFolderMyRating
+            parameters:
+                - in: path
+                  name: documentFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: query
+                  name: fields
+                  schema:
+                      type: string
+                - in: query
+                  name: restrictFields
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Rating"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Rating"
+            tags: ["DocumentFolder"]
+        post:
+            description:
+                Creates a new rating for the document folder, by the user who authenticated the request.
+            operationId: postDocumentFolderMyRating
+            parameters:
+                - in: path
+                  name: documentFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Rating"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Rating"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Rating"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Rating"
+            tags: ["DocumentFolder"]
+        put:
+            description:
+                Replaces the rating with the information sent in the request body. Any missing fields are deleted,
+                unless they are required.
+            operationId: putDocumentFolderMyRating
+            parameters:
+                - in: path
+                  name: documentFolderId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Rating"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Rating"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Rating"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Rating"
+            tags: ["DocumentFolder"]
     "/document-folders/{documentFolderId}/permissions":
         get:
             operationId: getDocumentFolderPermissionsPage
@@ -7987,10 +8429,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -8359,10 +8797,6 @@ paths:
                       type: integer
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -9264,10 +9698,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -10119,7 +10549,7 @@ paths:
                                 file:
                                     format: binary
                                     type: string
-                                knowledgeBaseAttachment:
+                                messageBoardAttachment:
                                     $ref: "#/components/schemas/MessageBoardAttachment"
                             type: object
             responses:
@@ -10256,10 +10686,6 @@ paths:
                       type: integer
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -11486,6 +11912,10 @@ paths:
                   schema:
                       type: string
                 - in: query
+                  name: nestedFields
+                  schema:
+                      type: string
+                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -11644,6 +12074,40 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["DocumentFolder"]
+    "/sites/{siteId}/document-folders/rated-by-me":
+        get:
+            description:
+                Retrieves the document folders rated by the user.
+            operationId: getSiteDocumentFoldersRatedByMePage
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                - in: query
+                  name: pageSize
+                  schema:
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentFolder"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/DocumentFolder"
+                                type: array
+            tags: ["DocumentFolder"]
     "/sites/{siteId}/documents":
         get:
             description:
@@ -11746,6 +12210,93 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Document"
             tags: ["Document"]
+    "/sites/{siteId}/documents-folder/by-external-reference-code/{externalReferenceCode}":
+        delete:
+            # @review
+            description:
+                Deletes the site's document folder by external reference code returns a 204 if the operation succeeds.
+            operationId: deleteSiteDocumentsFolderByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["DocumentFolder"]
+        get:
+            # @review
+            description:
+                Retrieves the site's document folder by external reference code.
+            operationId: getSiteDocumentsFolderByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/DocumentFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/DocumentFolder"
+            tags: ["DocumentFolder"]
+        put:
+            # @review
+            description:
+                Replaces the document folder by external reference code with the information sent in the request body,
+                or replaces it if it not exists.
+            operationId: putSiteDocumentsFolderByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/DocumentFolder"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/DocumentFolder"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/DocumentFolder"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/DocumentFolder"
+            tags: ["DocumentFolder"]
     "/sites/{siteId}/documents/by-external-reference-code/{documentExternalReferenceCode}/comments/by-external-reference-code/{externalReferenceCode}":
         delete:
             # @review
@@ -12011,6 +12562,40 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["Document"]
+    "/sites/{siteId}/documents/rated-by-me":
+        get:
+            description:
+                Retrieves the documents rated by the user.
+            operationId: getSiteDocumentsRatedByMePage
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                - in: query
+                  name: pageSize
+                  schema:
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Document"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Document"
+                                type: array
+            tags: ["Document"]
     "/sites/{siteId}/knowledge-base-articles":
         get:
             description:
@@ -12208,6 +12793,80 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/KnowledgeBaseArticle"
             tags: ["KnowledgeBaseArticle"]
+    "/sites/{siteId}/knowledge-base-articles/by-external-reference-code/{knowledgeBaseArticleExternalReferenceCode}/knowledge-base-attachments/by-external-reference-code/{externalReferenceCode}":
+        delete:
+            # @review
+            description:
+                Delete the knowledge base attachment by knowledge base article's and knowledge base attachment's
+                external reference codes.
+            operationId: deleteSiteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: knowledgeBaseArticleExternalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["KnowledgeBaseAttachment"]
+        get:
+            # @review
+            description:
+                Retrieves the knowledge base article attachment by external reference code.
+            operationId: getSiteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: knowledgeBaseArticleExternalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+                - in: query
+                  name: fields
+                  schema:
+                      type: string
+                - in: query
+                  name: nestedFields
+                  schema:
+                      type: string
+                - in: query
+                  name: restrictFields
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/KnowledgeBaseAttachment"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/KnowledgeBaseAttachment"
+            tags: ["KnowledgeBaseAttachment"]
     "/sites/{siteId}/knowledge-base-articles/permissions":
         get:
             operationId: getSiteKnowledgeBaseArticlePermissionsPage
@@ -12711,6 +13370,77 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/MessageBoardMessage"
             tags: ["MessageBoardMessage"]
+    "/sites/{siteId}/message-board-messages/by-external-reference-code/{messageBoardMessageExternalReferenceCode}/message-board-attachments/by-external-reference-code/{externalReferenceCode}":
+        delete:
+            # @review
+            description:
+                Delete the message board attachment by message board message's and message board attachment's external
+                reference codes.
+            operationId: deleteSiteMessageBoardMessageByExternalReferenceCodeMessageBoardMessageExternalReferenceCodeMessageBoardAttachmentByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: messageBoardMessageExternalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["MessageBoardAttachment"]
+        get:
+            # @review
+            description:
+                Retrieves the message board attachment by message board message's and message board attachment's
+                external reference codes.
+            operationId: getSiteMessageBoardMessageByExternalReferenceCodeMessageBoardMessageExternalReferenceCodeMessageBoardAttachmentByExternalReferenceCode
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: messageBoardMessageExternalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: externalReferenceCode
+                  required: true
+                  schema:
+                      type: string
+                - in: query
+                  name: fields
+                  schema:
+                      type: string
+                - in: query
+                  name: restrictFields
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MessageBoardAttachment"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/MessageBoardAttachment"
+            tags: ["MessageBoardAttachment"]
     "/sites/{siteId}/message-board-messages/by-friendly-url-path/{friendlyUrlPath}":
         get:
             operationId: getSiteMessageBoardMessageByFriendlyUrlPath
@@ -13315,6 +14045,38 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/SitePage"
                                 type: array
+            tags: ["SitePage"]
+        post:
+            description:
+                Adds a new site page
+            operationId: postSiteSitePage
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/SitePage"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/SitePage"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SitePage"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/SitePage"
+                    description:
+                        default response
+            # @review
             tags: ["SitePage"]
     "/sites/{siteId}/site-pages/{friendlyUrlPath}":
         get:
@@ -14607,6 +15369,14 @@ paths:
                   required: true
                   schema:
                       type: string
+                - in: query
+                  name: fields
+                  schema:
+                      type: string
+                - in: query
+                  name: restrictFields
+                  schema:
+                      type: string
             responses:
                 200:
                     content:
@@ -15251,10 +16021,6 @@ paths:
                       type: integer
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query

@@ -22,6 +22,7 @@ import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.util.AssetRendererFactoryLookup;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -43,6 +44,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatConstants;
 import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -57,8 +59,6 @@ import com.liferay.portal.search.web.internal.result.display.context.SearchResul
 import com.liferay.portal.search.web.internal.result.display.context.SearchResultSummaryDisplayContext;
 import com.liferay.portal.search.web.internal.util.SearchStringUtil;
 import com.liferay.portal.search.web.internal.util.SearchUtil;
-import com.liferay.portal.search.web.search.result.SearchResultImage;
-import com.liferay.portal.search.web.search.result.SearchResultImageContributor;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -66,17 +66,13 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
@@ -271,17 +267,6 @@ public class SearchResultSummaryDisplayContextBuilder {
 		return this;
 	}
 
-	public SearchResultSummaryDisplayContextBuilder
-		setSearchResultImageContributorsStream(
-			Stream<SearchResultImageContributor>
-				searchResultImageContributorsStream) {
-
-		_searchResultImageContributorsStream =
-			searchResultImageContributorsStream;
-
-		return this;
-	}
-
 	public SearchResultSummaryDisplayContextBuilder setSearchResultPreferences(
 		SearchResultPreferences searchResultPreferences) {
 
@@ -395,12 +380,17 @@ public class SearchResultSummaryDisplayContextBuilder {
 			searchResultSummaryDisplayContext, assetRenderer, summary);
 		_buildCreationDateString(searchResultSummaryDisplayContext);
 		_buildCreatorUserName(searchResultSummaryDisplayContext);
+		_buildCreatorUserPortrait(searchResultSummaryDisplayContext);
 		_buildDocumentForm(searchResultSummaryDisplayContext);
 		_buildImage(
 			searchResultSummaryDisplayContext, assetRendererFactory,
 			assetRenderer);
 		_buildLocaleReminder(searchResultSummaryDisplayContext, summary);
 		_buildModelResource(searchResultSummaryDisplayContext, className);
+		_buildModifiedByUserName(searchResultSummaryDisplayContext);
+		_buildModifiedByUserPortrait(searchResultSummaryDisplayContext);
+		_buildModifiedDateString(searchResultSummaryDisplayContext);
+		_buildPublishedDateString(searchResultSummaryDisplayContext);
 		_buildUserPortrait(
 			searchResultSummaryDisplayContext, assetEntry, className);
 		_buildViewURL(className, classPK, searchResultSummaryDisplayContext);
@@ -554,29 +544,42 @@ public class SearchResultSummaryDisplayContextBuilder {
 	private void _buildCreationDateString(
 		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
-		Optional<String> dateStringOptional = SearchStringUtil.maybe(
+		String dateString = StringUtil.trim(
 			_getFieldValueString(Field.CREATE_DATE));
 
-		Optional<Date> dateOptional = dateStringOptional.map(
-			this::_parseDateStringFieldValue);
+		if (Validator.isBlank(dateString)) {
+			return;
+		}
 
-		dateOptional.ifPresent(
-			date -> {
-				searchResultSummaryDisplayContext.setCreationDateString(
-					_formatCreationDate(date));
-				searchResultSummaryDisplayContext.setCreationDateVisible(true);
-			});
+		searchResultSummaryDisplayContext.setCreationDateString(
+			_formatDate(_parseDateStringFieldValue(dateString)));
+		searchResultSummaryDisplayContext.setCreationDateVisible(true);
 	}
 
 	private void _buildCreatorUserName(
 		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
-		String creatorUserName = _getFieldValueString(Field.USER_NAME);
+		User user = _userLocalService.fetchUser(
+			_getFieldValueLong(Field.USER_ID));
 
-		if (!Validator.isBlank(creatorUserName)) {
+		if (user != null) {
 			searchResultSummaryDisplayContext.setCreatorUserName(
-				creatorUserName);
+				user.getFullName());
 			searchResultSummaryDisplayContext.setCreatorVisible(true);
+		}
+	}
+
+	private void _buildCreatorUserPortrait(
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
+
+		String creatorUserPortraitUrlString = _getPortraitURLString(
+			_getFieldValueLong(Field.USER_ID));
+
+		if (creatorUserPortraitUrlString != null) {
+			searchResultSummaryDisplayContext.setCreatorUserPortraitURLString(
+				creatorUserPortraitUrlString);
+			searchResultSummaryDisplayContext.setCreatorUserPortraitVisible(
+				true);
 		}
 	}
 
@@ -584,25 +587,19 @@ public class SearchResultSummaryDisplayContextBuilder {
 		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
 
 		if (_searchResultPreferences.isDisplayResultsInDocumentForm()) {
-			Collection<String> allFieldNames = _getAllFieldNames();
-
 			searchResultSummaryDisplayContext.
 				setDocumentFormFieldDisplayContexts(
-					_buildFieldDisplayContexts(allFieldNames.stream()));
+					_buildFieldDisplayContexts(_getAllFieldNames()));
 
 			searchResultSummaryDisplayContext.setDocumentFormVisible(true);
 		}
 	}
 
 	private List<SearchResultFieldDisplayContext> _buildFieldDisplayContexts(
-		Stream<String> fieldNames) {
+		List<String> fieldNames) {
 
-		return fieldNames.sorted(
-		).map(
-			this::_buildFieldWithHighlight
-		).collect(
-			Collectors.toList()
-		);
+		return TransformUtil.transform(
+			ListUtil.sort(fieldNames), this::_buildFieldWithHighlight);
 	}
 
 	private SearchResultFieldDisplayContext _buildFieldWithHighlight(
@@ -624,7 +621,7 @@ public class SearchResultSummaryDisplayContextBuilder {
 		Set<String> set = new LinkedHashSet<>(
 			Arrays.asList(
 				SearchStringUtil.splitAndUnquote(
-					_searchResultPreferences.getFieldsToDisplayOptional())));
+					_searchResultPreferences.getFieldsToDisplay())));
 
 		boolean star = set.remove(StringPool.STAR);
 
@@ -698,7 +695,7 @@ public class SearchResultSummaryDisplayContextBuilder {
 			}
 
 			searchResultSummaryDisplayContext.setFieldDisplayContexts(
-				_buildFieldDisplayContexts(visibleFieldNames.stream()));
+				_buildFieldDisplayContexts(visibleFieldNames));
 		}
 
 		searchResultSummaryDisplayContext.setHighlightedTitle(
@@ -745,39 +742,6 @@ public class SearchResultSummaryDisplayContextBuilder {
 				_log.debug(exception);
 			}
 		}
-
-		SearchResultImage searchResultImage = new SearchResultImage() {
-
-			@Override
-			public String getClassName() {
-				return assetRenderer.getClassName();
-			}
-
-			@Override
-			public long getClassPK() {
-				return assetRenderer.getClassPK();
-			}
-
-			@Override
-			public void setIcon(String iconName) {
-				searchResultSummaryDisplayContext.setIconId(iconName);
-				searchResultSummaryDisplayContext.setIconVisible(true);
-				searchResultSummaryDisplayContext.setPathThemeImages(
-					_themeDisplay.getPathThemeImages());
-			}
-
-			@Override
-			public void setThumbnail(String thumbnailURLString) {
-				searchResultSummaryDisplayContext.setThumbnailURLString(
-					thumbnailURLString);
-				searchResultSummaryDisplayContext.setThumbnailVisible(true);
-			}
-
-		};
-
-		_searchResultImageContributorsStream.forEach(
-			searchResultImageContributor ->
-				searchResultImageContributor.contribute(searchResultImage));
 	}
 
 	private void _buildLocaleReminder(
@@ -821,6 +785,65 @@ public class SearchResultSummaryDisplayContextBuilder {
 			searchResultSummaryDisplayContext.setModelResource(modelResource);
 			searchResultSummaryDisplayContext.setModelResourceVisible(true);
 		}
+	}
+
+	private void _buildModifiedByUserName(
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
+
+		User user = _userLocalService.fetchUser(
+			_getFieldValueLong("statusByUserId"));
+
+		if (user != null) {
+			searchResultSummaryDisplayContext.setModifiedByUserName(
+				user.getFullName());
+			searchResultSummaryDisplayContext.setModifiedByUserNameVisible(
+				true);
+		}
+	}
+
+	private void _buildModifiedByUserPortrait(
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
+
+		String modifiedByUserPortraitURLString = _getPortraitURLString(
+			_getFieldValueLong("statusByUserId"));
+
+		if (modifiedByUserPortraitURLString != null) {
+			searchResultSummaryDisplayContext.
+				setModifiedByUserPortraitURLString(
+					modifiedByUserPortraitURLString);
+			searchResultSummaryDisplayContext.setModifiedByUserPortraitVisible(
+				true);
+		}
+	}
+
+	private void _buildModifiedDateString(
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
+
+		String dateString = StringUtil.trim(
+			_getFieldValueString(Field.MODIFIED_DATE));
+
+		if (Validator.isBlank(dateString)) {
+			return;
+		}
+
+		searchResultSummaryDisplayContext.setModifiedDateString(
+			_formatDate(_parseDateStringFieldValue(dateString)));
+		searchResultSummaryDisplayContext.setModifiedDateVisible(true);
+	}
+
+	private void _buildPublishedDateString(
+		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext) {
+
+		String dateString = StringUtil.trim(
+			_getFieldValueString(Field.PUBLISH_DATE));
+
+		if (Validator.isBlank(dateString)) {
+			return;
+		}
+
+		searchResultSummaryDisplayContext.setPublishedDateString(
+			_formatDate(_parseDateStringFieldValue(dateString)));
+		searchResultSummaryDisplayContext.setPublishedDateVisible(true);
 	}
 
 	private SearchResultSummaryDisplayContext _buildTemporarilyUnavailable() {
@@ -867,7 +890,7 @@ public class SearchResultSummaryDisplayContextBuilder {
 			getSearchResultViewURL(className, classPK));
 	}
 
-	private String _formatCreationDate(Date date) {
+	private String _formatDate(Date date) {
 		Format format = _fastDateFormatFactory.getDateTime(
 			FastDateFormatConstants.MEDIUM, FastDateFormatConstants.SHORT,
 			_locale, _themeDisplay.getTimeZone());
@@ -1052,8 +1075,6 @@ public class SearchResultSummaryDisplayContextBuilder {
 	private RenderRequest _renderRequest;
 	private RenderResponse _renderResponse;
 	private ResourceActions _resourceActions;
-	private Stream<SearchResultImageContributor>
-		_searchResultImageContributorsStream = Stream.empty();
 	private SearchResultPreferences _searchResultPreferences;
 	private SearchResultViewURLSupplier _searchResultViewURLSupplier;
 	private SummaryBuilderFactory _summaryBuilderFactory;

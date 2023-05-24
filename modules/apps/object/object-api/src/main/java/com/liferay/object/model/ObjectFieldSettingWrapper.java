@@ -133,6 +133,11 @@ public class ObjectFieldSettingWrapper
 		return wrap(model.cloneWithOriginalValues());
 	}
 
+	@Override
+	public boolean compareName(String name) {
+		return model.compareName(name);
+	}
+
 	/**
 	 * Returns the company ID of this object field setting.
 	 *
@@ -416,6 +421,11 @@ public class ObjectFieldSettingWrapper
 	@Override
 	public void setValue(String value) {
 		model.setValue(value);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

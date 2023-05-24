@@ -83,6 +83,14 @@ public class ObjectRelationshipLocalServiceUtil {
 			serviceContext);
 	}
 
+	public static ObjectRelationship createManyToManyObjectRelationshipTable(
+			long userId, ObjectRelationship objectRelationship)
+		throws PortalException {
+
+		return getService().createManyToManyObjectRelationshipTable(
+			userId, objectRelationship);
+	}
+
 	/**
 	 * Creates a new object relationship with the primary key. Does not add the object relationship to the database.
 	 *
@@ -155,6 +163,19 @@ public class ObjectRelationshipLocalServiceUtil {
 
 		getService().deleteObjectRelationshipMappingTableValues(
 			objectRelationshipId, primaryKey1, primaryKey2);
+	}
+
+	public static void deleteObjectRelationships(long objectDefinitionId1)
+		throws PortalException {
+
+		getService().deleteObjectRelationships(objectDefinitionId1);
+	}
+
+	public static void deleteObjectRelationships(
+			long objectDefinitionId1, boolean reverse)
+		throws PortalException {
+
+		getService().deleteObjectRelationships(objectDefinitionId1, reverse);
 	}
 
 	/**
@@ -258,6 +279,22 @@ public class ObjectRelationshipLocalServiceUtil {
 		return getService().fetchObjectRelationship(objectRelationshipId);
 	}
 
+	public static ObjectRelationship
+		fetchObjectRelationshipByObjectDefinitionId(
+			long objectDefinitionId, String name) {
+
+		return getService().fetchObjectRelationshipByObjectDefinitionId(
+			objectDefinitionId, name);
+	}
+
+	public static ObjectRelationship
+		fetchObjectRelationshipByObjectDefinitionId1(
+			long objectDefinitionId1, String name) {
+
+		return getService().fetchObjectRelationshipByObjectDefinitionId1(
+			objectDefinitionId1, name);
+	}
+
 	public static ObjectRelationship fetchObjectRelationshipByObjectFieldId2(
 		long objectFieldId2) {
 
@@ -290,6 +327,12 @@ public class ObjectRelationshipLocalServiceUtil {
 		getActionableDynamicQuery() {
 
 		return getService().getActionableDynamicQuery();
+	}
+
+	public static List<ObjectRelationship> getAllObjectRelationships(
+		long objectDefinitionId) {
+
+		return getService().getAllObjectRelationships(objectDefinitionId);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
@@ -326,6 +369,14 @@ public class ObjectRelationshipLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getObjectRelationship(objectDefinitionId1, name);
+	}
+
+	public static ObjectRelationship getObjectRelationshipByObjectDefinitionId(
+			long objectDefinitionId, String name)
+		throws Exception {
+
+		return getService().getObjectRelationshipByObjectDefinitionId(
+			objectDefinitionId, name);
 	}
 
 	/**
@@ -382,10 +433,23 @@ public class ObjectRelationshipLocalServiceUtil {
 	}
 
 	public static List<ObjectRelationship> getObjectRelationships(
+		long objectDefinitionId, String type) {
+
+		return getService().getObjectRelationships(objectDefinitionId, type);
+	}
+
+	public static List<ObjectRelationship> getObjectRelationships(
 		long objectDefinitionId1, String deletionType, boolean reverse) {
 
 		return getService().getObjectRelationships(
 			objectDefinitionId1, deletionType, reverse);
+	}
+
+	public static List<ObjectRelationship>
+		getObjectRelationshipsByObjectDefinitionId2(long objectDefinitionId2) {
+
+		return getService().getObjectRelationshipsByObjectDefinitionId2(
+			objectDefinitionId2);
 	}
 
 	/**
@@ -413,6 +477,15 @@ public class ObjectRelationshipLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getPersistedModel(primaryKeyObj);
+	}
+
+	public static void
+		registerObjectRelationshipsRelatedInfoCollectionProviders(
+			com.liferay.object.model.ObjectDefinition objectDefinition1,
+			ObjectDefinitionLocalService objectDefinitionLocalService) {
+
+		getService().registerObjectRelationshipsRelatedInfoCollectionProviders(
+			objectDefinition1, objectDefinitionLocalService);
 	}
 
 	public static ObjectRelationship updateObjectRelationship(
@@ -443,6 +516,10 @@ public class ObjectRelationshipLocalServiceUtil {
 
 	public static ObjectRelationshipLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(ObjectRelationshipLocalService service) {
+		_service = service;
 	}
 
 	private static volatile ObjectRelationshipLocalService _service;

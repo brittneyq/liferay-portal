@@ -29,10 +29,10 @@ import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.io.InputStream;
 
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -86,9 +86,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.of(_adaptiveMedia)
+			invocation -> Arrays.asList(_adaptiveMedia)
 		);
 
 		_amImageEntryProcessor.getPreviewAsStream(_fileVersion);
@@ -105,9 +105,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -136,9 +136,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -161,9 +161,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -196,9 +196,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -227,15 +227,15 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_adaptiveMedia.getValueOptional(Mockito.any())
+			_adaptiveMedia.getValue(Mockito.any())
 		).thenReturn(
-			Optional.empty()
+			null
 		);
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.of(_adaptiveMedia)
+			invocation -> Arrays.asList(_adaptiveMedia)
 		);
 
 		_amImageEntryProcessor.getPreviewFileSize(_fileVersion);
@@ -252,9 +252,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -283,9 +283,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -308,9 +308,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -345,9 +345,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -376,9 +376,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.of(_adaptiveMedia)
+			invocation -> Arrays.asList(_adaptiveMedia)
 		);
 
 		_amImageEntryProcessor.getThumbnailAsStream(_fileVersion, 0);
@@ -395,9 +395,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -426,9 +426,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -451,9 +451,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -482,15 +482,15 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_adaptiveMedia.getValueOptional(Mockito.any())
+			_adaptiveMedia.getValue(Mockito.any())
 		).thenReturn(
-			Optional.empty()
+			null
 		);
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.of(_adaptiveMedia)
+			invocation -> Arrays.asList(_adaptiveMedia)
 		);
 
 		_amImageEntryProcessor.getThumbnailFileSize(_fileVersion, 0);
@@ -507,9 +507,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -538,9 +538,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -563,9 +563,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -594,9 +594,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.of(_adaptiveMedia)
+			invocation -> Arrays.asList(_adaptiveMedia)
 		);
 
 		_amImageEntryProcessor.hasImages(_fileVersion);
@@ -613,9 +613,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -644,9 +644,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(
@@ -669,9 +669,9 @@ public class AMImageEntryProcessorTest {
 		throws Exception {
 
 		Mockito.when(
-			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
+			_amImageFinder.getAdaptiveMedias(Mockito.any(Function.class))
 		).thenAnswer(
-			invocation -> Stream.empty()
+			invocation -> Collections.emptyList()
 		);
 
 		Mockito.when(

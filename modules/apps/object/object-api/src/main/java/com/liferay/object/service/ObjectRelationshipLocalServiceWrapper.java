@@ -80,6 +80,17 @@ public class ObjectRelationshipLocalServiceWrapper
 			serviceContext);
 	}
 
+	@Override
+	public com.liferay.object.model.ObjectRelationship
+			createManyToManyObjectRelationshipTable(
+				long userId,
+				com.liferay.object.model.ObjectRelationship objectRelationship)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectRelationshipLocalService.
+			createManyToManyObjectRelationshipTable(userId, objectRelationship);
+	}
+
 	/**
 	 * Creates a new object relationship with the primary key. Does not add the object relationship to the database.
 	 *
@@ -164,6 +175,23 @@ public class ObjectRelationshipLocalServiceWrapper
 		_objectRelationshipLocalService.
 			deleteObjectRelationshipMappingTableValues(
 				objectRelationshipId, primaryKey1, primaryKey2);
+	}
+
+	@Override
+	public void deleteObjectRelationships(long objectDefinitionId1)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_objectRelationshipLocalService.deleteObjectRelationships(
+			objectDefinitionId1);
+	}
+
+	@Override
+	public void deleteObjectRelationships(
+			long objectDefinitionId1, boolean reverse)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_objectRelationshipLocalService.deleteObjectRelationships(
+			objectDefinitionId1, reverse);
 	}
 
 	/**
@@ -291,6 +319,26 @@ public class ObjectRelationshipLocalServiceWrapper
 
 	@Override
 	public com.liferay.object.model.ObjectRelationship
+		fetchObjectRelationshipByObjectDefinitionId(
+			long objectDefinitionId, String name) {
+
+		return _objectRelationshipLocalService.
+			fetchObjectRelationshipByObjectDefinitionId(
+				objectDefinitionId, name);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship
+		fetchObjectRelationshipByObjectDefinitionId1(
+			long objectDefinitionId1, String name) {
+
+		return _objectRelationshipLocalService.
+			fetchObjectRelationshipByObjectDefinitionId1(
+				objectDefinitionId1, name);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship
 		fetchObjectRelationshipByObjectFieldId2(long objectFieldId2) {
 
 		return _objectRelationshipLocalService.
@@ -327,6 +375,14 @@ public class ObjectRelationshipLocalServiceWrapper
 		getActionableDynamicQuery() {
 
 		return _objectRelationshipLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
+	public java.util.List<com.liferay.object.model.ObjectRelationship>
+		getAllObjectRelationships(long objectDefinitionId) {
+
+		return _objectRelationshipLocalService.getAllObjectRelationships(
+			objectDefinitionId);
 	}
 
 	@Override
@@ -370,6 +426,16 @@ public class ObjectRelationshipLocalServiceWrapper
 
 		return _objectRelationshipLocalService.getObjectRelationship(
 			objectDefinitionId1, name);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectRelationship
+			getObjectRelationshipByObjectDefinitionId(
+				long objectDefinitionId, String name)
+		throws Exception {
+
+		return _objectRelationshipLocalService.
+			getObjectRelationshipByObjectDefinitionId(objectDefinitionId, name);
 	}
 
 	/**
@@ -435,11 +501,27 @@ public class ObjectRelationshipLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.object.model.ObjectRelationship>
+		getObjectRelationships(long objectDefinitionId, String type) {
+
+		return _objectRelationshipLocalService.getObjectRelationships(
+			objectDefinitionId, type);
+	}
+
+	@Override
+	public java.util.List<com.liferay.object.model.ObjectRelationship>
 		getObjectRelationships(
 			long objectDefinitionId1, String deletionType, boolean reverse) {
 
 		return _objectRelationshipLocalService.getObjectRelationships(
 			objectDefinitionId1, deletionType, reverse);
+	}
+
+	@Override
+	public java.util.List<com.liferay.object.model.ObjectRelationship>
+		getObjectRelationshipsByObjectDefinitionId2(long objectDefinitionId2) {
+
+		return _objectRelationshipLocalService.
+			getObjectRelationshipsByObjectDefinitionId2(objectDefinitionId2);
 	}
 
 	/**
@@ -471,6 +553,16 @@ public class ObjectRelationshipLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectRelationshipLocalService.getPersistedModel(primaryKeyObj);
+	}
+
+	@Override
+	public void registerObjectRelationshipsRelatedInfoCollectionProviders(
+		com.liferay.object.model.ObjectDefinition objectDefinition1,
+		ObjectDefinitionLocalService objectDefinitionLocalService) {
+
+		_objectRelationshipLocalService.
+			registerObjectRelationshipsRelatedInfoCollectionProviders(
+				objectDefinition1, objectDefinitionLocalService);
 	}
 
 	@Override

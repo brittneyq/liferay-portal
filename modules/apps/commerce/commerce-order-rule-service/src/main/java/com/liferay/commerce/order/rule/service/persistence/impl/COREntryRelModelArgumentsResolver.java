@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {COREntryRelModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.commerce.order.rule.model.impl.COREntryRelImpl",
+		"table.name=COREntryRel"
+	},
+	service = ArgumentsResolver.class
 )
 public class COREntryRelModelArgumentsResolver implements ArgumentsResolver {
 

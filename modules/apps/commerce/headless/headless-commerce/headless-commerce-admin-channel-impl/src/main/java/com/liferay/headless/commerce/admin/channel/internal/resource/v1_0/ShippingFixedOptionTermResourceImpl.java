@@ -23,17 +23,16 @@ import com.liferay.commerce.shipping.engine.fixed.service.CommerceShippingFixedO
 import com.liferay.commerce.term.model.CommerceTermEntry;
 import com.liferay.commerce.term.service.CommerceTermEntryService;
 import com.liferay.headless.commerce.admin.channel.dto.v1_0.ShippingFixedOptionTerm;
-import com.liferay.headless.commerce.admin.channel.internal.dto.v1_0.converter.ShippingFixedOptionTermDTOConverter;
 import com.liferay.headless.commerce.admin.channel.resource.v1_0.ShippingFixedOptionTermResource;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.Map;
 
@@ -45,7 +44,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/shipping-fixed-option-term.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = ShippingFixedOptionTermResource.class
@@ -76,7 +74,7 @@ public class ShippingFixedOptionTermResourceImpl
 		}
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_commerceShippingFixedOptionQualifierService.
 					getCommerceTermEntryCommerceShippingFixedOptionQualifiers(
 						id, search, pagination.getStartPosition(),
@@ -182,8 +180,11 @@ public class ShippingFixedOptionTermResourceImpl
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@Reference
-	private ShippingFixedOptionTermDTOConverter
-		_shippingFixedOptionTermDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.channel.internal.dto.v1_0.converter.ShippingFixedOptionTermDTOConverter)"
+	)
+	private DTOConverter
+		<CommerceShippingFixedOptionQualifier, ShippingFixedOptionTerm>
+			_shippingFixedOptionTermDTOConverter;
 
 }

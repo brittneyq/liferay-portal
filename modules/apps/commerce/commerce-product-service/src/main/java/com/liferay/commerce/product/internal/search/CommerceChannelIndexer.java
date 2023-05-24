@@ -46,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alec Sloan
  */
-@Component(enabled = false, immediate = true, service = Indexer.class)
+@Component(service = Indexer.class)
 public class CommerceChannelIndexer extends BaseIndexer<CommerceChannel> {
 
 	public static final String CLASS_NAME = CommerceChannel.class.getName();
@@ -115,13 +115,16 @@ public class CommerceChannelIndexer extends BaseIndexer<CommerceChannel> {
 
 		Document document = getBaseModelDocument(CLASS_NAME, commerceChannel);
 
-		document.addKeyword(Field.NAME, commerceChannel.getName());
-
 		Group group = _commerceChannelLocalService.getCommerceChannelGroup(
 			commerceChannel.getCommerceChannelId());
 
 		document.addKeyword(
 			CPField.COMMERCE_CHANNEL_GROUP_ID, group.getGroupId());
+
+		document.addKeyword(Field.NAME, commerceChannel.getName());
+
+		document.addKeyword(
+			Field.SCOPE_GROUP_ID, commerceChannel.getSiteGroupId());
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Document " + commerceChannel + " indexed successfully");
@@ -146,8 +149,7 @@ public class CommerceChannelIndexer extends BaseIndexer<CommerceChannel> {
 	@Override
 	protected void doReindex(CommerceChannel commerceChannel) throws Exception {
 		_indexWriterHelper.updateDocument(
-			getSearchEngineId(), commerceChannel.getCompanyId(),
-			getDocument(commerceChannel), isCommitImmediately());
+			commerceChannel.getCompanyId(), getDocument(commerceChannel));
 	}
 
 	@Override
@@ -160,6 +162,21 @@ public class CommerceChannelIndexer extends BaseIndexer<CommerceChannel> {
 		long companyId = GetterUtil.getLong(ids[0]);
 
 		_reindexCommerceChannels(companyId);
+	}
+
+	@Override
+	protected boolean isUseSearchResultPermissionFilter(
+		SearchContext searchContext) {
+
+		Boolean useSearchResultPermissionFilter =
+			(Boolean)searchContext.getAttribute(
+				"useSearchResultPermissionFilter");
+
+		if (useSearchResultPermissionFilter != null) {
+			return useSearchResultPermissionFilter;
+		}
+
+		return super.isUseSearchResultPermissionFilter(searchContext);
 	}
 
 	private void _reindexCommerceChannels(long companyId) throws Exception {
@@ -182,7 +199,6 @@ public class CommerceChannelIndexer extends BaseIndexer<CommerceChannel> {
 					}
 				}
 			});
-		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
 	}

@@ -14,6 +14,8 @@
 
 import {LiferayAdapt} from '../../../common/services/liferay/adapter';
 import {axios} from '../../../common/services/liferay/api';
+import {getGuestPermissionToken} from '../../../common/services/token';
+import {Liferay} from '../../../common/utils/liferay';
 
 const RaylifeApplicationAPI = 'o/c/raylifeapplications';
 
@@ -26,24 +28,50 @@ export function getRaylifeApplicationById(raylifeApplicationId) {
  * @returns {Promise<any>}  Status code
  */
 
-export function createOrUpdateRaylifeApplication(form, status) {
-	const payload = LiferayAdapt.adaptToFormApplicationRequest(form, status);
-
-	if (form?.basics?.applicationId) {
+const updateRaylifeApplication = async (applicationId, payload = null) => {
+	if (Liferay.ThemeDisplay.getUserName()) {
 		return axios.patch(
-			`${RaylifeApplicationAPI}/${form.basics.applicationId}`,
+			`${RaylifeApplicationAPI}/${applicationId}`,
 			payload
 		);
 	}
 
-	return axios.post(`${RaylifeApplicationAPI}/`, payload);
+	const {access_token} = await getGuestPermissionToken();
+
+	Liferay.Util.SessionStorage.setItem(
+		'raylife-guest-permission-token',
+		access_token,
+		Liferay.Util.SessionStorage.TYPES.NECESSARY
+	);
+
+	return axios.patch(`${RaylifeApplicationAPI}/${applicationId}`, payload, {
+		headers: {
+			'Authorization': `Bearer ${access_token}`,
+			'Content-Type': 'application/json',
+		},
+	});
+};
+
+export function createOrUpdateRaylifeApplication(form, status) {
+	const payload = LiferayAdapt.adaptToFormApplicationRequest(form, status);
+	const applicationId = form?.basics?.applicationId;
+
+	if (applicationId) {
+		return updateRaylifeApplication(applicationId, payload);
+	}
+
+	return axios.post(`${RaylifeApplicationAPI}/`, payload).catch((error) => {
+		console.error(error);
+	});
 }
 
 export function updateRaylifeApplicationStatus(applicationId, status) {
-	return axios.patch(`${RaylifeApplicationAPI}/${applicationId}`, {
+	const payload = {
 		applicationStatus: {
 			key: status?.key,
 			name: status?.name,
 		},
-	});
+	};
+
+	return updateRaylifeApplication(applicationId, payload);
 }

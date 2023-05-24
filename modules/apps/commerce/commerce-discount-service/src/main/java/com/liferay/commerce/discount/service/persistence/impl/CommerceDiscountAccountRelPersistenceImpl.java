@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -77,11 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @generated
  */
-@Component(
-	service = {
-		CommerceDiscountAccountRelPersistence.class, BasePersistence.class
-	}
-)
+@Component(service = CommerceDiscountAccountRelPersistence.class)
 public class CommerceDiscountAccountRelPersistenceImpl
 	extends BasePersistenceImpl<CommerceDiscountAccountRel>
 	implements CommerceDiscountAccountRelPersistence {
@@ -200,7 +194,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceDiscountAccountRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceDiscountAccountRel commerceDiscountAccountRel :
@@ -596,7 +590,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -757,7 +751,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceDiscountAccountRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceDiscountAccountRel commerceDiscountAccountRel :
@@ -1179,7 +1173,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1342,7 +1336,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceDiscountAccountRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceDiscountAccountRel commerceDiscountAccountRel :
@@ -1717,7 +1711,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceAccountId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1860,7 +1854,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceDiscountAccountRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceDiscountAccountRel commerceDiscountAccountRel :
@@ -2237,7 +2231,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceDiscountId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2357,7 +2351,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByCAI_CDI, finderArgs);
+				_finderPathFetchByCAI_CDI, finderArgs, this);
 		}
 
 		if (result instanceof CommerceDiscountAccountRel) {
@@ -2463,7 +2457,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 			commerceAccountId, commerceDiscountId
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2998,7 +2992,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceDiscountAccountRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3071,7 +3065,7 @@ public class CommerceDiscountAccountRelPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -3226,31 +3220,14 @@ public class CommerceDiscountAccountRelPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"commerceAccountId", "commerceDiscountId"}, false);
 
-		_setCommerceDiscountAccountRelUtilPersistence(this);
+		CommerceDiscountAccountRelUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCommerceDiscountAccountRelUtilPersistence(null);
+		CommerceDiscountAccountRelUtil.setPersistence(null);
 
 		entityCache.removeCache(CommerceDiscountAccountRelImpl.class.getName());
-	}
-
-	private void _setCommerceDiscountAccountRelUtilPersistence(
-		CommerceDiscountAccountRelPersistence
-			commerceDiscountAccountRelPersistence) {
-
-		try {
-			Field field = CommerceDiscountAccountRelUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceDiscountAccountRelPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3319,9 +3296,5 @@ public class CommerceDiscountAccountRelPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private CommerceDiscountAccountRelModelArgumentsResolver
-		_commerceDiscountAccountRelModelArgumentsResolver;
 
 }

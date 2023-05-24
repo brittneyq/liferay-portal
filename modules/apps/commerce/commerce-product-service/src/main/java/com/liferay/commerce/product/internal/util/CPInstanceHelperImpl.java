@@ -15,7 +15,6 @@
 package com.liferay.commerce.product.internal.util;
 
 import com.liferay.adaptive.media.image.html.AMImageHTMLTagFactory;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.inventory.CPDefinitionInventoryEngine;
 import com.liferay.commerce.media.CommerceMediaProvider;
 import com.liferay.commerce.media.CommerceMediaResolver;
@@ -40,13 +39,9 @@ import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPDefinitionOptionValueRelLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CPInstanceOptionValueRelLocalService;
-import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.CPInstanceHelper;
-import com.liferay.commerce.product.util.DDMFormValuesHelper;
 import com.liferay.commerce.product.util.JsonHelper;
 import com.liferay.commerce.product.util.comparator.CPDefinitionOptionValueRelPriorityComparator;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
-import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -54,11 +49,11 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.KeyValuePair;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
@@ -77,8 +72,27 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  * @author Igor Beslic
  */
-@Component(enabled = false, immediate = true, service = CPInstanceHelper.class)
+@Component(service = CPInstanceHelper.class)
 public class CPInstanceHelperImpl implements CPInstanceHelper {
+
+	@Override
+	public CPInstance fetchCPInstance(
+			long cpDefinitionId, JSONArray skuOptionJSONArray)
+		throws PortalException {
+
+		CPDefinition cpDefinition = _cpDefinitionLocalService.getCPDefinition(
+			cpDefinitionId);
+
+		if (cpDefinition.isIgnoreSKUCombinations()) {
+			return getDefaultCPInstance(cpDefinitionId);
+		}
+
+		if (JSONUtil.isEmpty(skuOptionJSONArray)) {
+			return null;
+		}
+
+		return _fetchCPInstance(cpDefinitionId, skuOptionJSONArray);
+	}
 
 	@Override
 	public CPInstance fetchCPInstance(
@@ -96,8 +110,7 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			return null;
 		}
 
-		return _fetchCPInstanceBySKUContributors(
-			cpDefinitionId, serializedDDMFormValues);
+		return _fetchCPInstance(cpDefinitionId, serializedDDMFormValues);
 	}
 
 	@Override
@@ -318,8 +331,49 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			getCPInstanceThumbnailSrc(commerceAccountId, cpInstanceId),
 			"\" />");
 
+		if (fileVersion == null) {
+			return originalImgTag;
+		}
+
 		return _amImageHTMLTagFactory.create(
 			originalImgTag, fileVersion.getFileEntry());
+	}
+
+	@Override
+	public String getCPInstanceCDNURL(long commerceAccountId, long cpInstanceId)
+		throws Exception {
+
+		CPInstance cpInstance = _cpInstanceLocalService.fetchCPInstance(
+			cpInstanceId);
+
+		if (cpInstance == null) {
+			return StringPool.BLANK;
+		}
+
+		JSONArray jsonArray = _jsonHelper.toJSONArray(
+			_cpDefinitionOptionRelLocalService.
+				getCPDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys(
+					cpInstanceId));
+
+		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
+			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
+				cpInstance.getCPDefinitionId(), jsonArray.toString(),
+				CPAttachmentFileEntryConstants.TYPE_IMAGE, 0, 1);
+
+		if (cpAttachmentFileEntries.isEmpty()) {
+			CPDefinition cpDefinition = cpInstance.getCPDefinition();
+
+			return cpDefinition.getDefaultImageThumbnailSrc(commerceAccountId);
+		}
+
+		CPAttachmentFileEntry cpAttachmentFileEntry =
+			cpAttachmentFileEntries.get(0);
+
+		if (!cpAttachmentFileEntry.isCDNEnabled()) {
+			return StringPool.BLANK;
+		}
+
+		return cpAttachmentFileEntry.getCDNURL();
 	}
 
 	@Override
@@ -438,14 +492,14 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			return null;
 		}
 
-		JSONArray keyValuesJSONArray = _jsonHelper.toJSONArray(
+		JSONArray jsonArray = _jsonHelper.toJSONArray(
 			_cpDefinitionOptionRelLocalService.
 				getCPDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys(
 					cpInstanceId));
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
 			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
-				cpInstance.getCPDefinitionId(), keyValuesJSONArray.toString(),
+				cpInstance.getCPDefinitionId(), jsonArray.toString(),
 				CPAttachmentFileEntryConstants.TYPE_IMAGE, 0, 1);
 
 		if (cpAttachmentFileEntries.isEmpty()) {
@@ -473,6 +527,10 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		FileEntry fileEntry = cpAttachmentFileEntry.fetchFileEntry();
 
+		if (fileEntry == null) {
+			return null;
+		}
+
 		return fileEntry.getFileVersion();
 	}
 
@@ -488,14 +546,14 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			return StringPool.BLANK;
 		}
 
-		JSONArray keyValuesJSONArray = _jsonHelper.toJSONArray(
+		JSONArray jsonArray = _jsonHelper.toJSONArray(
 			_cpDefinitionOptionRelLocalService.
 				getCPDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys(
 					cpInstanceId));
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
 			_cpAttachmentFileEntryLocalService.getCPAttachmentFileEntries(
-				cpInstance.getCPDefinitionId(), keyValuesJSONArray.toString(),
+				cpInstance.getCPDefinitionId(), jsonArray.toString(),
 				CPAttachmentFileEntryConstants.TYPE_IMAGE, 0, 1);
 
 		if (cpAttachmentFileEntries.isEmpty()) {
@@ -621,15 +679,15 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 		return new CPSkuImpl(cpInstance);
 	}
 
-	private CPInstance _fetchCPInstanceBySKUContributors(
-			long cpDefinitionId, String json)
+	private CPInstance _fetchCPInstance(
+			long cpDefinitionId, JSONArray skuOptionJSONArray)
 		throws PortalException {
 
-		int skuContributorCPDefinitionOptionRelsCount =
+		int cpDefinitionOptionRelsCount =
 			_cpDefinitionOptionRelLocalService.getCPDefinitionOptionRelsCount(
 				cpDefinitionId, true);
 
-		if (skuContributorCPDefinitionOptionRelsCount == 0) {
+		if (cpDefinitionOptionRelsCount == 0) {
 			return null;
 		}
 
@@ -637,10 +695,10 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 			cpDefinitionOptionRelCPDefinitionOptionValueRelIds =
 				_cpDefinitionOptionRelLocalService.
 					getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
-						cpDefinitionId, true, json);
+						cpDefinitionId, true, skuOptionJSONArray);
 
 		if (cpDefinitionOptionRelCPDefinitionOptionValueRelIds.isEmpty() ||
-			(skuContributorCPDefinitionOptionRelsCount !=
+			(cpDefinitionOptionRelsCount !=
 				cpDefinitionOptionRelCPDefinitionOptionValueRelIds.size())) {
 
 			return null;
@@ -695,7 +753,89 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 
 		long cpInstanceId = _getTopId(cpInstanceCPInstanceOptionValueHits);
 
-		if (skuContributorCPDefinitionOptionRelsCount !=
+		if (cpDefinitionOptionRelsCount !=
+				cpInstanceCPInstanceOptionValueHits.get(cpInstanceId)) {
+
+			return null;
+		}
+
+		return _cpInstanceLocalService.getCPInstance(cpInstanceId);
+	}
+
+	private CPInstance _fetchCPInstance(long cpDefinitionId, String json)
+		throws PortalException {
+
+		int cpDefinitionOptionRelsCount =
+			_cpDefinitionOptionRelLocalService.getCPDefinitionOptionRelsCount(
+				cpDefinitionId, true);
+
+		if (cpDefinitionOptionRelsCount == 0) {
+			return null;
+		}
+
+		Map<Long, List<Long>>
+			cpDefinitionOptionRelCPDefinitionOptionValueRelIds =
+				_cpDefinitionOptionRelLocalService.
+					getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
+						cpDefinitionId, true, json);
+
+		if (cpDefinitionOptionRelCPDefinitionOptionValueRelIds.isEmpty() ||
+			(cpDefinitionOptionRelsCount !=
+				cpDefinitionOptionRelCPDefinitionOptionValueRelIds.size())) {
+
+			return null;
+		}
+
+		List<CPInstanceOptionValueRel> cpDefinitionCPInstanceOptionValueRels =
+			_cpInstanceOptionValueRelLocalService.
+				getCPDefinitionCPInstanceOptionValueRels(cpDefinitionId);
+
+		Map<Long, Integer> cpInstanceCPInstanceOptionValueHits =
+			new HashMap<>();
+
+		for (CPInstanceOptionValueRel cpInstanceOptionValueRel :
+				cpDefinitionCPInstanceOptionValueRels) {
+
+			if (!cpDefinitionOptionRelCPDefinitionOptionValueRelIds.containsKey(
+					cpInstanceOptionValueRel.getCPDefinitionOptionRelId())) {
+
+				continue;
+			}
+
+			List<Long> cpDefinitionOptionValueIds =
+				cpDefinitionOptionRelCPDefinitionOptionValueRelIds.get(
+					cpInstanceOptionValueRel.getCPDefinitionOptionRelId());
+
+			if (!cpDefinitionOptionValueIds.contains(
+					cpInstanceOptionValueRel.
+						getCPDefinitionOptionValueRelId())) {
+
+				continue;
+			}
+
+			if (cpInstanceCPInstanceOptionValueHits.containsKey(
+					cpInstanceOptionValueRel.getCPInstanceId())) {
+
+				int value = cpInstanceCPInstanceOptionValueHits.get(
+					cpInstanceOptionValueRel.getCPInstanceId());
+
+				cpInstanceCPInstanceOptionValueHits.put(
+					cpInstanceOptionValueRel.getCPInstanceId(), value + 1);
+
+				continue;
+			}
+
+			cpInstanceCPInstanceOptionValueHits.put(
+				cpInstanceOptionValueRel.getCPInstanceId(), 1);
+		}
+
+		if (cpInstanceCPInstanceOptionValueHits.isEmpty()) {
+			return null;
+		}
+
+		long cpInstanceId = _getTopId(cpInstanceCPInstanceOptionValueHits);
+
+		if (cpDefinitionOptionRelsCount !=
 				cpInstanceCPInstanceOptionValueHits.get(cpInstanceId)) {
 
 			return null;
@@ -762,12 +902,6 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 	private AMImageHTMLTagFactory _amImageHTMLTagFactory;
 
 	@Reference
-	private CommerceAccountHelper _commerceAccountHelper;
-
-	@Reference
-	private CommerceChannelLocalService _commerceChannelLocalService;
-
-	@Reference
 	private CommerceMediaProvider _commerceMediaProvider;
 
 	@Reference
@@ -805,21 +939,9 @@ public class CPInstanceHelperImpl implements CPInstanceHelper {
 		_cpInstanceOptionValueRelLocalService;
 
 	@Reference
-	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
-
-	@Reference
-	private DDMFormRenderer _ddmFormRenderer;
-
-	@Reference
-	private DDMFormValuesHelper _ddmFormValuesHelper;
-
-	@Reference
 	private JSONFactory _jsonFactory;
 
 	@Reference
 	private JsonHelper _jsonHelper;
-
-	@Reference
-	private Portal _portal;
 
 }

@@ -22,7 +22,6 @@ import com.liferay.object.field.render.ObjectFieldRenderingContext;
 import com.liferay.object.model.ObjectField;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 
 import java.util.Locale;
@@ -35,12 +34,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcela Cunha
  */
 @Component(
-	immediate = true,
 	property = "object.field.business.type.key=" + ObjectFieldConstants.BUSINESS_TYPE_PRECISION_DECIMAL,
-	service = {
-		ObjectFieldBusinessType.class,
-		PrecisionDecimalObjectFieldBusinessType.class
-	}
+	service = ObjectFieldBusinessType.class
 )
 public class PrecisionDecimalObjectFieldBusinessType
 	implements ObjectFieldBusinessType {
@@ -58,17 +53,12 @@ public class PrecisionDecimalObjectFieldBusinessType
 	@Override
 	public String getDescription(Locale locale) {
 		return _language.get(
-			ResourceBundleUtil.getModuleAndPortalResourceBundle(
-				locale, getClass()),
-			"add-a-high-precision-decimal-number-without-rounding");
+			locale, "add-a-high-precision-decimal-number-without-rounding");
 	}
 
 	@Override
 	public String getLabel(Locale locale) {
-		return _language.get(
-			ResourceBundleUtil.getModuleAndPortalResourceBundle(
-				locale, getClass()),
-			"precision-decimal");
+		return _language.get(locale, "precision-decimal");
 	}
 
 	@Override

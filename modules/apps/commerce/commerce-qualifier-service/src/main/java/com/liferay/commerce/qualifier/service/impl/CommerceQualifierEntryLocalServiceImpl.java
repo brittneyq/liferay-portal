@@ -38,14 +38,16 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -54,7 +56,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Riccardo Alberti
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.qualifier.model.CommerceQualifierEntry",
 	service = AopService.class
 )
@@ -72,19 +73,19 @@ public class CommerceQualifierEntryLocalServiceImpl
 			commerceQualifierEntryPersistence.create(
 				counterLocalService.increment());
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		commerceQualifierEntry.setCompanyId(user.getCompanyId());
 		commerceQualifierEntry.setUserId(user.getUserId());
 		commerceQualifierEntry.setUserName(user.getFullName());
 
 		commerceQualifierEntry.setSourceClassNameId(
-			classNameLocalService.getClassNameId(sourceClassName));
+			_classNameLocalService.getClassNameId(sourceClassName));
 		commerceQualifierEntry.setSourceClassPK(sourceClassPK);
 		commerceQualifierEntry.setSourceCommerceQualifierMetadataKey(
 			sourceCommerceQualifierMetadataKey);
 		commerceQualifierEntry.setTargetClassNameId(
-			classNameLocalService.getClassNameId(targetClassName));
+			_classNameLocalService.getClassNameId(targetClassName));
 		commerceQualifierEntry.setTargetClassPK(targetClassPK);
 		commerceQualifierEntry.setTargetCommerceQualifierMetadataKey(
 			targetCommerceQualifierMetadataKey);
@@ -92,7 +93,7 @@ public class CommerceQualifierEntryLocalServiceImpl
 		commerceQualifierEntry = commerceQualifierEntryPersistence.update(
 			commerceQualifierEntry);
 
-		reindexSource(sourceClassName, sourceClassPK);
+		_reindexSource(sourceClassName, sourceClassPK);
 
 		return commerceQualifierEntry;
 	}
@@ -105,7 +106,7 @@ public class CommerceQualifierEntryLocalServiceImpl
 
 		commerceQualifierEntryPersistence.remove(commerceQualifierEntry);
 
-		reindexSource(
+		_reindexSource(
 			commerceQualifierEntry.getSourceClassNameId(),
 			commerceQualifierEntry.getSourceClassPK());
 
@@ -132,7 +133,7 @@ public class CommerceQualifierEntryLocalServiceImpl
 
 		List<CommerceQualifierEntry> commerceQualifierEntries =
 			commerceQualifierEntryPersistence.findByS_S(
-				classNameLocalService.getClassNameId(sourceClassName),
+				_classNameLocalService.getClassNameId(sourceClassName),
 				sourceClassPK);
 
 		for (CommerceQualifierEntry commerceQualifierEntry :
@@ -150,7 +151,7 @@ public class CommerceQualifierEntryLocalServiceImpl
 
 		List<CommerceQualifierEntry> commerceQualifierEntries =
 			commerceQualifierEntryPersistence.findByT_T(
-				classNameLocalService.getClassNameId(targetClassName),
+				_classNameLocalService.getClassNameId(targetClassName),
 				targetClassPK);
 
 		for (CommerceQualifierEntry commerceQualifierEntry :
@@ -167,9 +168,9 @@ public class CommerceQualifierEntryLocalServiceImpl
 		long targetClassPK) {
 
 		return commerceQualifierEntryPersistence.fetchByS_S_T_T(
-			classNameLocalService.getClassNameId(sourceClassName),
+			_classNameLocalService.getClassNameId(sourceClassName),
 			sourceClassPK,
-			classNameLocalService.getClassNameId(targetClassName),
+			_classNameLocalService.getClassNameId(targetClassName),
 			targetClassPK);
 	}
 
@@ -346,24 +347,6 @@ public class CommerceQualifierEntryLocalServiceImpl
 				sourceCommerceQualifierMetadata.getKeywordsColumn()));
 	}
 
-	protected void reindexSource(long sourceClassNameId, long sourceClassPK)
-		throws PortalException {
-
-		ClassName sourceClassName = classNameLocalService.getClassName(
-			sourceClassNameId);
-
-		reindexSource(sourceClassName.getClassName(), sourceClassPK);
-	}
-
-	protected void reindexSource(String sourceClassName, long sourceClassPK)
-		throws PortalException {
-
-		Indexer<?> indexer = IndexerRegistryUtil.nullSafeGetIndexer(
-			sourceClassName);
-
-		indexer.reindex(sourceClassName, sourceClassPK);
-	}
-
 	private GroupByStep _getGroupByStep(
 		long companyId, FromStep fromStep,
 		CommerceQualifierMetadata sourceCommerceQualifierMetadata,
@@ -410,7 +393,7 @@ public class CommerceQualifierEntryLocalServiceImpl
 			return joinStep.leftJoinOn(
 				CommerceQualifierEntryTable.INSTANCE,
 				CommerceQualifierEntryTable.INSTANCE.sourceClassNameId.eq(
-					classNameLocalService.getClassNameId(
+					_classNameLocalService.getClassNameId(
 						sourceCommerceQualifierMetadata.getModelClassName())
 				).and(
 					CommerceQualifierEntryTable.INSTANCE.sourceClassPK.eq(
@@ -423,21 +406,21 @@ public class CommerceQualifierEntryLocalServiceImpl
 			);
 		}
 
-		String[] allowedTargetKeys = Stream.of(
-			sourceCommerceQualifierMetadata.getAllowedTargetKeysArray()
-		).flatMap(
-			Stream::of
-		).toArray(
-			String[]::new
-		);
+		List<String> allowedTargetKeysList = new ArrayList<>();
 
-		if (allowedTargetKeys.length == 0) {
+		for (String[] allowedTargetKeys :
+				sourceCommerceQualifierMetadata.getAllowedTargetKeysArray()) {
+
+			Collections.addAll(allowedTargetKeysList, allowedTargetKeys);
+		}
+
+		if (allowedTargetKeysList.isEmpty()) {
 			return joinStep.where(predicate);
 		}
 
 		Predicate subpredicate = null;
 
-		for (String allowedTargetKey : allowedTargetKeys) {
+		for (String allowedTargetKey : allowedTargetKeysList) {
 			CommerceQualifierEntryTable aliasCommerceQualifierEntryTable =
 				_commerceQualifierHelper.getAliasCommerceQualifierEntryTable(
 					sourceCommerceQualifierMetadata.getKey(), allowedTargetKey);
@@ -490,28 +473,29 @@ public class CommerceQualifierEntryLocalServiceImpl
 					if (target) {
 						return CommerceQualifierEntryTable.INSTANCE.
 							targetClassNameId.eq(
-								classNameLocalService.getClassNameId(className1)
+								_classNameLocalService.getClassNameId(
+									className1)
 							).and(
 								CommerceQualifierEntryTable.INSTANCE.
 									targetClassPK.eq(classPK1)
 							).and(
 								CommerceQualifierEntryTable.INSTANCE.
 									sourceClassNameId.eq(
-										classNameLocalService.getClassNameId(
+										_classNameLocalService.getClassNameId(
 											className2))
 							);
 					}
 
 					return CommerceQualifierEntryTable.INSTANCE.
 						sourceClassNameId.eq(
-							classNameLocalService.getClassNameId(className1)
+							_classNameLocalService.getClassNameId(className1)
 						).and(
 							CommerceQualifierEntryTable.INSTANCE.sourceClassPK.
 								eq(classPK1)
 						).and(
 							CommerceQualifierEntryTable.INSTANCE.
 								targetClassNameId.eq(
-									classNameLocalService.getClassNameId(
+									_classNameLocalService.getClassNameId(
 										className2))
 						);
 				}
@@ -545,14 +529,14 @@ public class CommerceQualifierEntryLocalServiceImpl
 				targetCommerceQualifierMetadataKey);
 
 		return targetClassNameIdColumn.eq(
-			classNameLocalService.getClassNameId(
+			_classNameLocalService.getClassNameId(
 				targetCommerceQualifierMetadata.getModelClassName())
 		).and(
 			targetCommerceQualifierMetadataKeyColumn.eq(
 				targetCommerceQualifierMetadataKey)
 		).and(
 			sourceClassNameIdColumn.eq(
-				classNameLocalService.getClassNameId(sourceClassName))
+				_classNameLocalService.getClassNameId(sourceClassName))
 		).and(
 			sourceClassPKColumn.eq(sourceCommerceQualifierPrimaryColumn)
 		);
@@ -589,6 +573,27 @@ public class CommerceQualifierEntryLocalServiceImpl
 		).withParentheses();
 	}
 
+	private void _reindexSource(long sourceClassNameId, long sourceClassPK)
+		throws PortalException {
+
+		ClassName sourceClassName = _classNameLocalService.getClassName(
+			sourceClassNameId);
+
+		_reindexSource(sourceClassName.getClassName(), sourceClassPK);
+	}
+
+	private void _reindexSource(String sourceClassName, long sourceClassPK)
+		throws PortalException {
+
+		Indexer<?> indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			sourceClassName);
+
+		indexer.reindex(sourceClassName, sourceClassPK);
+	}
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
 	@Reference
 	private CommerceQualifierHelper _commerceQualifierHelper;
 
@@ -598,5 +603,8 @@ public class CommerceQualifierEntryLocalServiceImpl
 
 	@Reference
 	private CustomSQL _customSQL;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

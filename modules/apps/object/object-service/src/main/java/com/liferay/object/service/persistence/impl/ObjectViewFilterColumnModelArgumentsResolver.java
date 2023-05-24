@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		ObjectViewFilterColumnModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.object.model.impl.ObjectViewFilterColumnImpl",
+		"table.name=ObjectViewFilterColumn"
+	},
+	service = ArgumentsResolver.class
 )
 public class ObjectViewFilterColumnModelArgumentsResolver
 	implements ArgumentsResolver {

@@ -17,8 +17,8 @@ package com.liferay.portal.aop.internal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -31,20 +31,20 @@ public class AopServiceResolver {
 
 		_aopServiceRegistrars.add(aopServiceRegistrar);
 
-		if (!_transactionHandlerHolders.isEmpty()) {
-			TransactionHandlerHolder topRankingTransactionHandlerHolder =
-				_transactionHandlerHolders.get(0);
+		if (!_transactionExecutorHolders.isEmpty()) {
+			TransactionExecutorHolder topRankingTransactionExecutorHolder =
+				_transactionExecutorHolders.get(0);
 
 			aopServiceRegistrar.register(
-				topRankingTransactionHandlerHolder.getTransactionHandler());
+				topRankingTransactionExecutorHolder.getTransactionExecutor());
 		}
 	}
 
-	public synchronized void addTransactionHandlerHolder(
-		TransactionHandlerHolder transactionHandlerHolder) {
+	public synchronized void addTransactionExecutorHolder(
+		TransactionExecutorHolder transactionExecutorHolder) {
 
 		int index = Collections.binarySearch(
-			_transactionHandlerHolders, transactionHandlerHolder,
+			_transactionExecutorHolders, transactionExecutorHolder,
 			Comparator.reverseOrder());
 
 		if (index >= 0) {
@@ -53,7 +53,7 @@ public class AopServiceResolver {
 
 		index = -index - 1;
 
-		_transactionHandlerHolders.add(index, transactionHandlerHolder);
+		_transactionExecutorHolders.add(index, transactionExecutorHolder);
 
 		if (index > 0) {
 			return;
@@ -65,7 +65,7 @@ public class AopServiceResolver {
 
 		for (AopServiceRegistrar aopServiceRegistrar : _aopServiceRegistrars) {
 			aopServiceRegistrar.register(
-				transactionHandlerHolder.getTransactionHandler());
+				transactionExecutorHolder.getTransactionExecutor());
 		}
 	}
 
@@ -75,17 +75,17 @@ public class AopServiceResolver {
 		_aopServiceRegistrars.remove(aopServiceRegistrar);
 	}
 
-	public synchronized void removeTransactionHandlerHolder(
-		TransactionHandlerHolder transactionHandlerHolder) {
+	public synchronized void removeTransactionExecutorHolder(
+		TransactionExecutorHolder transactionExecutorHolder) {
 
-		int index = _transactionHandlerHolders.indexOf(
-			transactionHandlerHolder);
+		int index = _transactionExecutorHolders.indexOf(
+			transactionExecutorHolder);
 
 		if (index < 0) {
 			return;
 		}
 
-		_transactionHandlerHolders.remove(index);
+		_transactionExecutorHolders.remove(index);
 
 		if (index > 0) {
 			return;
@@ -95,22 +95,22 @@ public class AopServiceResolver {
 			aopServiceRegistrar.unregister();
 		}
 
-		if (_transactionHandlerHolders.isEmpty()) {
+		if (_transactionExecutorHolders.isEmpty()) {
 			return;
 		}
 
-		TransactionHandlerHolder topRankingTransactionHandlerHolder =
-			_transactionHandlerHolders.get(0);
+		TransactionExecutorHolder topRankingTransactionExecutorHolder =
+			_transactionExecutorHolders.get(0);
 
 		for (AopServiceRegistrar aopServiceRegistrar : _aopServiceRegistrars) {
 			aopServiceRegistrar.register(
-				topRankingTransactionHandlerHolder.getTransactionHandler());
+				topRankingTransactionExecutorHolder.getTransactionExecutor());
 		}
 	}
 
-	private final Set<AopServiceRegistrar> _aopServiceRegistrars =
-		Collections.newSetFromMap(new ConcurrentHashMap<>());
-	private final List<TransactionHandlerHolder> _transactionHandlerHolders =
+	private final Queue<AopServiceRegistrar> _aopServiceRegistrars =
+		new ConcurrentLinkedQueue<>();
+	private final List<TransactionExecutorHolder> _transactionExecutorHolders =
 		new CopyOnWriteArrayList<>();
 
 }

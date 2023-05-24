@@ -14,6 +14,8 @@
 
 package com.liferay.portal.search.rest.internal.resource.v1_0;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -26,11 +28,11 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.rest.configuration.SearchSuggestionsCompanyConfiguration;
 import com.liferay.portal.search.rest.dto.v1_0.Suggestion;
 import com.liferay.portal.search.rest.dto.v1_0.SuggestionsContributorConfiguration;
@@ -47,7 +49,6 @@ import java.util.Map;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletMode;
-import javax.portlet.RenderRequest;
 import javax.portlet.WindowState;
 
 import javax.servlet.ServletContext;
@@ -70,7 +71,8 @@ public class SuggestionResourceImpl extends BaseSuggestionResourceImpl {
 	@Override
 	public Page<SuggestionsContributorResults> postSuggestionsPage(
 			String currentURL, String destinationFriendlyURL, Long groupId,
-			Long plid, String scope, String search,
+			String keywordsParameterName, Long plid, String scope,
+			String search,
 			SuggestionsContributorConfiguration[]
 				suggestionsContributorConfigurations)
 		throws Exception {
@@ -85,16 +87,21 @@ public class SuggestionResourceImpl extends BaseSuggestionResourceImpl {
 		LiferayRenderRequest liferayRenderRequest = _createLiferayRenderRequest(
 			currentURL, plid);
 
+		if (!StringUtil.startsWith(destinationFriendlyURL, CharPool.SLASH)) {
+			destinationFriendlyURL = StringPool.SLASH.concat(
+				destinationFriendlyURL);
+		}
+
 		return Page.of(
 			transform(
 				_suggestionsRetriever.getSuggestionsContributorResults(
 					liferayRenderRequest,
 					RenderResponseFactory.create(
-						contextHttpServletResponse,
-						(RenderRequest)liferayRenderRequest),
+						contextHttpServletResponse, liferayRenderRequest),
 					_createSearchContext(
-						destinationFriendlyURL, _getGroupId(groupId), scope,
-						search, suggestionsContributorConfigurations)),
+						destinationFriendlyURL, _getGroupId(groupId),
+						keywordsParameterName, scope, search,
+						suggestionsContributorConfigurations)),
 				suggestionsContributorResult ->
 					new SuggestionsContributorResults() {
 						{
@@ -160,14 +167,16 @@ public class SuggestionResourceImpl extends BaseSuggestionResourceImpl {
 	}
 
 	private SearchContext _createSearchContext(
-			String destinationFriendlyURL, long groupId, String scope,
-			String search,
+			String destinationFriendlyURL, long groupId,
+			String keywordsParameterName, String scope, String search,
 			SuggestionsContributorConfiguration[]
 				suggestionsContributorConfigurations)
 		throws Exception {
 
 		SearchContext searchContext = new SearchContext();
 
+		searchContext.setAttribute(
+			SearchContextAttributes.ATTRIBUTE_KEY_EMPTY_SEARCH, Boolean.TRUE);
 		searchContext.setAttribute(
 			"search.experiences.ip.address",
 			contextHttpServletRequest.getRemoteAddr());
@@ -179,6 +188,9 @@ public class SuggestionResourceImpl extends BaseSuggestionResourceImpl {
 		searchContext.setAttribute(
 			"search.suggestions.destination.friendly.url",
 			destinationFriendlyURL);
+		searchContext.setAttribute(
+			"search.suggestions.keywords.parameter.name",
+			keywordsParameterName);
 		searchContext.setCompanyId(contextCompany.getCompanyId());
 
 		if (!StringUtil.equals(scope, "everything")) {
@@ -237,9 +249,6 @@ public class SuggestionResourceImpl extends BaseSuggestionResourceImpl {
 
 	@Reference
 	private PortletLocalService _portletLocalService;
-
-	@Reference
-	private PortletPreferencesLocalService _portletPreferencesLocalService;
 
 	private volatile SearchSuggestionsCompanyConfiguration
 		_searchSuggestionsCompanyConfiguration;

@@ -41,8 +41,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.CacheMi
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -607,7 +605,7 @@ public class CacheMissEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CacheMissEntry>)dummyFinderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -683,7 +681,7 @@ public class CacheMissEntryPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)dummyFinderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -795,29 +793,13 @@ public class CacheMissEntryPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0], new String[0], false);
 
-		_setCacheMissEntryUtilPersistence(this);
+		CacheMissEntryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setCacheMissEntryUtilPersistence(null);
+		CacheMissEntryUtil.setPersistence(null);
 
 		dummyEntityCache.removeCache(CacheMissEntryImpl.class.getName());
-	}
-
-	private void _setCacheMissEntryUtilPersistence(
-		CacheMissEntryPersistence cacheMissEntryPersistence) {
-
-		try {
-			Field field = CacheMissEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, cacheMissEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = CTPersistenceHelper.class)

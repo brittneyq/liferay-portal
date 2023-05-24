@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.segments.processor.SegmentsExperienceRequestProcessor;
 import com.liferay.segments.processor.SegmentsExperienceRequestProcessorRegistry;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,17 +35,14 @@ import org.osgi.service.component.annotations.Deactivate;
 /**
  * @author Eduardo García
  */
-@Component(
-	immediate = true, service = SegmentsExperienceRequestProcessorRegistry.class
-)
+@Component(service = SegmentsExperienceRequestProcessorRegistry.class)
 public class SegmentsExperienceRequestProcessorRegistryImpl
 	implements SegmentsExperienceRequestProcessorRegistry {
 
 	@Override
 	public long[] getSegmentsExperienceIds(
 			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, long groupId,
-			long classNameId, long classPK)
+			HttpServletResponse httpServletResponse, long groupId, long plid)
 		throws PortalException {
 
 		long[] segmentsExperienceIds = new long[0];
@@ -57,8 +53,8 @@ public class SegmentsExperienceRequestProcessorRegistryImpl
 
 			segmentsExperienceIds =
 				segmentsExperienceRequestProcessor.getSegmentsExperienceIds(
-					httpServletRequest, httpServletResponse, groupId,
-					classNameId, classPK, segmentsExperienceIds);
+					httpServletRequest, httpServletResponse, groupId, plid,
+					segmentsExperienceIds);
 		}
 
 		return segmentsExperienceIds;
@@ -67,8 +63,8 @@ public class SegmentsExperienceRequestProcessorRegistryImpl
 	@Override
 	public long[] getSegmentsExperienceIds(
 			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, long groupId,
-			long classNameId, long classPK, long[] segmentsEntryIds)
+			HttpServletResponse httpServletResponse, long groupId, long plid,
+			long[] segmentsEntryIds)
 		throws PortalException {
 
 		long[] segmentsExperienceIds = new long[0];
@@ -79,9 +75,8 @@ public class SegmentsExperienceRequestProcessorRegistryImpl
 
 			segmentsExperienceIds =
 				segmentsExperienceRequestProcessor.getSegmentsExperienceIds(
-					httpServletRequest, httpServletResponse, groupId,
-					classNameId, classPK, segmentsEntryIds,
-					segmentsExperienceIds);
+					httpServletRequest, httpServletResponse, groupId, plid,
+					segmentsEntryIds, segmentsExperienceIds);
 		}
 
 		return segmentsExperienceIds;
@@ -91,12 +86,7 @@ public class SegmentsExperienceRequestProcessorRegistryImpl
 	public List<SegmentsExperienceRequestProcessor>
 		getSegmentsExperienceRequestProcessors() {
 
-		List<SegmentsExperienceRequestProcessor>
-			segmentsExperienceRequestProcessors = new ArrayList<>();
-
-		_serviceTrackerList.forEach(segmentsExperienceRequestProcessors::add);
-
-		return segmentsExperienceRequestProcessors;
+		return _serviceTrackerList.toList();
 	}
 
 	@Activate

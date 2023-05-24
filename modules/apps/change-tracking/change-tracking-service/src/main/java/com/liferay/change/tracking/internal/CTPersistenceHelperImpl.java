@@ -16,7 +16,6 @@ package com.liferay.change.tracking.internal;
 
 import com.liferay.change.tracking.constants.CTConstants;
 import com.liferay.change.tracking.model.CTEntry;
-import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -34,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Preston Crary
  */
-@Component(immediate = true, service = CTPersistenceHelper.class)
+@Component(service = CTPersistenceHelper.class)
 public class CTPersistenceHelperImpl implements CTPersistenceHelper {
 
 	@Override
@@ -180,9 +179,6 @@ public class CTPersistenceHelperImpl implements CTPersistenceHelper {
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
-
-	@Reference
-	private CTCollectionLocalService _ctCollectionLocalService;
 
 	@Reference
 	private CTEntryLocalService _ctEntryLocalService;

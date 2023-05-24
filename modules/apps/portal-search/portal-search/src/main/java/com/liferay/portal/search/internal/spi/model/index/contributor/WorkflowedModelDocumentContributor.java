@@ -25,7 +25,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = DocumentContributor.class)
+@Component(service = DocumentContributor.class)
 public class WorkflowedModelDocumentContributor
 	implements DocumentContributor<WorkflowedModel> {
 
@@ -40,6 +40,8 @@ public class WorkflowedModelDocumentContributor
 		WorkflowedModel workflowedModel = (WorkflowedModel)baseModel;
 
 		document.addKeyword(Field.STATUS, workflowedModel.getStatus());
+		document.addKeyword(
+			"statusByUserId", workflowedModel.getStatusByUserId());
 	}
 
 }

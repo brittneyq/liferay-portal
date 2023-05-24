@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -50,7 +49,6 @@ import com.liferay.portal.workflow.kaleo.service.persistence.impl.constants.Kale
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -81,9 +79,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(
-	service = {KaleoTaskFormInstancePersistence.class, BasePersistence.class}
-)
+@Component(service = KaleoTaskFormInstancePersistence.class)
 public class KaleoTaskFormInstancePersistenceImpl
 	extends BasePersistenceImpl<KaleoTaskFormInstance>
 	implements KaleoTaskFormInstancePersistence {
@@ -206,7 +202,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoTaskFormInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoTaskFormInstance kaleoTaskFormInstance : list) {
@@ -583,7 +579,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -735,7 +731,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoTaskFormInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoTaskFormInstance kaleoTaskFormInstance : list) {
@@ -1122,7 +1118,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoDefinitionVersionId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1271,7 +1267,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoTaskFormInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoTaskFormInstance kaleoTaskFormInstance : list) {
@@ -1651,7 +1647,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoInstanceId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1797,7 +1793,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoTaskFormInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoTaskFormInstance kaleoTaskFormInstance : list) {
@@ -2174,7 +2170,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoTaskId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2326,7 +2322,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoTaskFormInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoTaskFormInstance kaleoTaskFormInstance : list) {
@@ -2713,7 +2709,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoTaskInstanceTokenId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2830,7 +2826,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByKaleoTaskFormId, finderArgs);
+				_finderPathFetchByKaleoTaskFormId, finderArgs, this);
 		}
 
 		if (result instanceof KaleoTaskFormInstance) {
@@ -2947,7 +2943,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoTaskFormId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3606,7 +3602,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoTaskFormInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3682,7 +3678,7 @@ public class KaleoTaskFormInstancePersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3929,30 +3925,14 @@ public class KaleoTaskFormInstancePersistenceImpl
 			new String[] {Long.class.getName()},
 			new String[] {"kaleoTaskFormId"}, false);
 
-		_setKaleoTaskFormInstanceUtilPersistence(this);
+		KaleoTaskFormInstanceUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setKaleoTaskFormInstanceUtilPersistence(null);
+		KaleoTaskFormInstanceUtil.setPersistence(null);
 
 		entityCache.removeCache(KaleoTaskFormInstanceImpl.class.getName());
-	}
-
-	private void _setKaleoTaskFormInstanceUtilPersistence(
-		KaleoTaskFormInstancePersistence kaleoTaskFormInstancePersistence) {
-
-		try {
-			Field field = KaleoTaskFormInstanceUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, kaleoTaskFormInstancePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -4018,9 +3998,5 @@ public class KaleoTaskFormInstancePersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private KaleoTaskFormInstanceModelArgumentsResolver
-		_kaleoTaskFormInstanceModelArgumentsResolver;
 
 }

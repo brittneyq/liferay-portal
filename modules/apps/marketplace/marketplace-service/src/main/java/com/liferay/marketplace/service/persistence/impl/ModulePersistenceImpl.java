@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -49,7 +48,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -76,7 +74,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Ryan Park
  * @generated
  */
-@Component(service = {ModulePersistence.class, BasePersistence.class})
+@Component(service = ModulePersistence.class)
 public class ModulePersistenceImpl
 	extends BasePersistenceImpl<Module> implements ModulePersistence {
 
@@ -190,7 +188,8 @@ public class ModulePersistenceImpl
 		List<Module> list = null;
 
 		if (useFinderCache) {
-			list = (List<Module>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Module>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Module module : list) {
@@ -570,7 +569,7 @@ public class ModulePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -726,7 +725,8 @@ public class ModulePersistenceImpl
 		List<Module> list = null;
 
 		if (useFinderCache) {
-			list = (List<Module>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Module>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Module module : list) {
@@ -1136,7 +1136,7 @@ public class ModulePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1288,7 +1288,8 @@ public class ModulePersistenceImpl
 		List<Module> list = null;
 
 		if (useFinderCache) {
-			list = (List<Module>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Module>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Module module : list) {
@@ -1643,7 +1644,7 @@ public class ModulePersistenceImpl
 
 		Object[] finderArgs = new Object[] {appId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1783,7 +1784,8 @@ public class ModulePersistenceImpl
 		List<Module> list = null;
 
 		if (useFinderCache) {
-			list = (List<Module>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Module>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Module module : list) {
@@ -2176,7 +2178,7 @@ public class ModulePersistenceImpl
 
 		Object[] finderArgs = new Object[] {bundleSymbolicName};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2333,7 +2335,8 @@ public class ModulePersistenceImpl
 		List<Module> list = null;
 
 		if (useFinderCache) {
-			list = (List<Module>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Module>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Module module : list) {
@@ -2716,7 +2719,7 @@ public class ModulePersistenceImpl
 
 		Object[] finderArgs = new Object[] {contextName};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2845,7 +2848,8 @@ public class ModulePersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByA_CN, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByA_CN, finderArgs, this);
 		}
 
 		if (result instanceof Module) {
@@ -2971,7 +2975,7 @@ public class ModulePersistenceImpl
 
 		Object[] finderArgs = new Object[] {appId, contextName};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -3122,7 +3126,7 @@ public class ModulePersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByA_BSN_BV, finderArgs);
+				_finderPathFetchByA_BSN_BV, finderArgs, this);
 		}
 
 		if (result instanceof Module) {
@@ -3276,7 +3280,7 @@ public class ModulePersistenceImpl
 			appId, bundleSymbolicName, bundleVersion
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -3773,7 +3777,8 @@ public class ModulePersistenceImpl
 		List<Module> list = null;
 
 		if (useFinderCache) {
-			list = (List<Module>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Module>)finderCache.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3843,7 +3848,7 @@ public class ModulePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -4031,29 +4036,14 @@ public class ModulePersistenceImpl
 			new String[] {"appId", "bundleSymbolicName", "bundleVersion"},
 			false);
 
-		_setModuleUtilPersistence(this);
+		ModuleUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setModuleUtilPersistence(null);
+		ModuleUtil.setPersistence(null);
 
 		entityCache.removeCache(ModuleImpl.class.getName());
-	}
-
-	private void _setModuleUtilPersistence(
-		ModulePersistence modulePersistence) {
-
-		try {
-			Field field = ModuleUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, modulePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -4121,8 +4111,5 @@ public class ModulePersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private ModuleModelArgumentsResolver _moduleModelArgumentsResolver;
 
 }

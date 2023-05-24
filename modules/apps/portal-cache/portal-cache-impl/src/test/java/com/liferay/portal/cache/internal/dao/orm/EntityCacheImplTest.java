@@ -14,16 +14,18 @@
 
 package com.liferay.portal.cache.internal.dao.orm;
 
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cluster.ClusterExecutor;
+import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
+import com.liferay.portal.kernel.dao.orm.FinderCache;
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
@@ -31,11 +33,20 @@ import java.io.Serializable;
 
 import java.util.Map;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * @author Tina Tian
@@ -46,6 +57,27 @@ public class EntityCacheImplTest {
 	@Rule
 	public static final LiferayUnitTestRule liferayUnitTestRule =
 		LiferayUnitTestRule.INSTANCE;
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		Mockito.when(
+			FrameworkUtil.getBundle(Mockito.any())
+		).thenReturn(
+			bundleContext.getBundle()
+		);
+
+		_finderCacheServiceRegistration = bundleContext.registerService(
+			FinderCache.class, _finderCacheImpl, null);
+	}
+
+	@AfterClass
+	public static void tearDownClass() {
+		_finderCacheServiceRegistration.unregister();
+
+		_frameworkUtilMockedStatic.close();
+	}
 
 	@Before
 	public void setUp() {
@@ -74,18 +106,17 @@ public class EntityCacheImplTest {
 			new MultiVMPoolInvocationHandler(_classLoader, true));
 
 		ReflectionTestUtil.setFieldValue(
-			entityCacheImpl, "_clusterExecutor",
-			ProxyFactory.newDummyInstance(ClusterExecutor.class));
-		ReflectionTestUtil.setFieldValue(
 			entityCacheImpl, "_multiVMPool", multiVMPool);
+
 		ReflectionTestUtil.setFieldValue(entityCacheImpl, "_props", _props);
 
-		FinderCacheImpl finderCacheImpl = new FinderCacheImpl();
-
 		ReflectionTestUtil.setFieldValue(
-			entityCacheImpl, "_finderCacheImpl", finderCacheImpl);
+			_finderCacheImpl, "_multiVMPool", multiVMPool);
 		ReflectionTestUtil.setFieldValue(
-			finderCacheImpl, "_multiVMPool", multiVMPool);
+			_finderCacheImpl, "_serviceTrackerMap",
+			ServiceTrackerMapFactory.openSingleValueMap(
+				SystemBundleUtil.getBundleContext(), ArgumentsResolver.class,
+				"class.name"));
 
 		entityCacheImpl.activate();
 
@@ -129,6 +160,13 @@ public class EntityCacheImplTest {
 			_nullModel,
 			entityCacheImpl.getResult(EntityCacheImplTest.class, 12345));
 	}
+
+	private static final FinderCacheImpl _finderCacheImpl =
+		new FinderCacheImpl();
+	private static ServiceRegistration<FinderCache>
+		_finderCacheServiceRegistration;
+	private static final MockedStatic<FrameworkUtil>
+		_frameworkUtilMockedStatic = Mockito.mockStatic(FrameworkUtil.class);
 
 	private ClassLoader _classLoader;
 	private Serializable _nullModel;

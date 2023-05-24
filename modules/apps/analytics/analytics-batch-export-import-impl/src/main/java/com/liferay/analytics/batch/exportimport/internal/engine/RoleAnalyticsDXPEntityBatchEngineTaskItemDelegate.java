@@ -14,19 +14,21 @@
 
 package com.liferay.analytics.batch.exportimport.internal.engine;
 
+import com.liferay.analytics.batch.exportimport.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.analytics.dxp.entity.rest.dto.v1_0.DXPEntity;
-import com.liferay.analytics.dxp.entity.rest.dto.v1_0.converter.DXPEntityDTOConverter;
 import com.liferay.batch.engine.BatchEngineTaskItemDelegate;
 import com.liferay.batch.engine.pagination.Page;
 import com.liferay.batch.engine.pagination.Pagination;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 
 import java.io.Serializable;
 
@@ -41,7 +43,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcos Martins
  */
 @Component(
-	immediate = true,
 	property = "batch.engine.task.item.delegate.name=role-analytics-dxp-entities",
 	service = BatchEngineTaskItemDelegate.class
 )
@@ -87,8 +88,8 @@ public class RoleAnalyticsDXPEntityBatchEngineTaskItemDelegate
 		return buildDynamicQuery(companyId, dynamicQuery, filter);
 	}
 
-	@Reference
-	private DXPEntityDTOConverter _dxpEntityDTOConverter;
+	@Reference(target = DTOConverterConstants.DXP_ENTITY_DTO_CONVERTER)
+	private DTOConverter<BaseModel<?>, DXPEntity> _dxpEntityDTOConverter;
 
 	@Reference
 	private RoleLocalService _roleLocalService;

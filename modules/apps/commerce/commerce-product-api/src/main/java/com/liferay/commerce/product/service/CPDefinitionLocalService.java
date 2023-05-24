@@ -206,12 +206,18 @@ public interface CPDefinitionLocalService
 
 	public void checkCPDefinitions() throws PortalException;
 
-	public CPDefinition copyCPDefinition(long cpDefinitionId)
+	@Indexable(type = IndexableType.REINDEX)
+	public CPDefinition cloneCPDefinition(
+			long userId, long cpDefinitionId, long groupId,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	public CPDefinition copyCPDefinition(long sourceCPDefinitionId)
 		throws PortalException;
 
 	@Indexable(type = IndexableType.REINDEX)
 	public CPDefinition copyCPDefinition(
-			long cpDefinitionId, long groupId, int status)
+			long sourceCPDefinitionId, long groupId, int status)
 		throws PortalException;
 
 	/**
@@ -511,8 +517,17 @@ public interface CPDefinitionLocalService
 		long cpDefinitionId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public CPDefinition getCProductCPDefinition(long cProductId, int version)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<CPDefinition> getCProductCPDefinitions(
 		long cProductId, int status, int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<CPDefinition> getCProductCPDefinitions(
+		long cProductId, int status, int start, int end,
+		OrderByComparator<CPDefinition> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CPAttachmentFileEntry getDefaultImageCPAttachmentFileEntry(
@@ -529,6 +544,10 @@ public interface CPDefinitionLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public String getLayoutPageTemplateEntryUuid(
+		long groupId, long cpDefinitionId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public String getLayoutUuid(long groupId, long cpDefinitionId);
@@ -580,7 +599,7 @@ public interface CPDefinitionLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public BaseModelSearchResult<CPDefinition> searchCPDefinitions(
 			long companyId, long[] groupIds, String keywords, int status,
-			int start, int end, Sort sort)
+			boolean ignoreCommerceAccountGroup, int start, int end, Sort sort)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -594,7 +613,8 @@ public interface CPDefinitionLocalService
 	public BaseModelSearchResult<CPDefinition>
 			searchCPDefinitionsByChannelGroupId(
 				long companyId, long[] groupIds, long commerceChannelGroupId,
-				String keywords, int status, int start, int end, Sort sort)
+				String keywords, int status, boolean ignoreCommerceAccountGroup,
+				int start, int end, Sort sort)
 		throws PortalException;
 
 	public void updateAsset(

@@ -18,9 +18,9 @@ import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.model.AssetVocabularyConstants;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.content.dashboard.web.internal.constants.ContentDashboardConstants;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryTracker;
+import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryRegistry;
 import com.liferay.content.dashboard.web.internal.util.AssetVocabularyUtil;
-import com.liferay.info.search.InfoSearchClassMapperTracker;
+import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.instance.lifecycle.BasePortalInstanceLifecycleListener;
 import com.liferay.portal.instance.lifecycle.PortalInstanceLifecycleListener;
@@ -53,18 +53,16 @@ public class AddDefaultAssetVocabulariesPortalInstanceLifecycleListener
 
 	@Override
 	public void portalInstanceRegistered(Company company) throws Exception {
-		_addAssetVocabulary(
-			company, PropsValues.ASSET_VOCABULARY_DEFAULT,
-			AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC);
+		_addAssetVocabulary(company);
 
 		Set<Long> searchClassNameIds = new HashSet<>();
 
 		for (String className :
-				_contentDashboardItemFactoryTracker.getClassNames()) {
+				_contentDashboardItemFactoryRegistry.getClassNames()) {
 
 			searchClassNameIds.add(
 				_portal.getClassNameId(
-					_infoSearchClassMapperTracker.getSearchClassName(
+					_infoSearchClassMapperRegistry.getSearchClassName(
 						className)));
 		}
 
@@ -80,15 +78,13 @@ public class AddDefaultAssetVocabulariesPortalInstanceLifecycleListener
 		}
 	}
 
-	private void _addAssetVocabulary(
-			Company company, String assetVocabularyName, int visibilityType)
-		throws Exception {
-
+	private void _addAssetVocabulary(Company company) throws Exception {
 		AssetVocabulary assetVocabulary =
 			_assetVocabularyLocalService.fetchGroupVocabulary(
 				company.getGroupId(),
 				StringUtil.toLowerCase(
-					GetterUtil.getString(assetVocabularyName)));
+					GetterUtil.getString(
+						PropsValues.ASSET_VOCABULARY_DEFAULT)));
 
 		if (assetVocabulary != null) {
 			return;
@@ -96,12 +92,14 @@ public class AddDefaultAssetVocabulariesPortalInstanceLifecycleListener
 
 		Map<Locale, String> titleMap = new HashMap<>();
 
-		User defaultUser = company.getDefaultUser();
+		User guestUser = company.getGuestUser();
 
 		for (Locale locale :
 				_language.getCompanyAvailableLocales(company.getCompanyId())) {
 
-			titleMap.put(locale, _language.get(locale, assetVocabularyName));
+			titleMap.put(
+				locale,
+				_language.get(locale, PropsValues.ASSET_VOCABULARY_DEFAULT));
 		}
 
 		AssetVocabularySettingsHelper assetVocabularySettingsHelper =
@@ -113,21 +111,21 @@ public class AddDefaultAssetVocabulariesPortalInstanceLifecycleListener
 		serviceContext.setAddGuestPermissions(true);
 
 		_assetVocabularyLocalService.addVocabulary(
-			null, defaultUser.getUserId(), company.getGroupId(),
-			assetVocabularyName, StringPool.BLANK, titleMap,
+			null, guestUser.getUserId(), company.getGroupId(),
+			PropsValues.ASSET_VOCABULARY_DEFAULT, StringPool.BLANK, titleMap,
 			Collections.emptyMap(), assetVocabularySettingsHelper.toString(),
-			visibilityType, serviceContext);
+			AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC, serviceContext);
 	}
 
 	@Reference
 	private AssetVocabularyLocalService _assetVocabularyLocalService;
 
 	@Reference
-	private ContentDashboardItemFactoryTracker
-		_contentDashboardItemFactoryTracker;
+	private ContentDashboardItemFactoryRegistry
+		_contentDashboardItemFactoryRegistry;
 
 	@Reference
-	private InfoSearchClassMapperTracker _infoSearchClassMapperTracker;
+	private InfoSearchClassMapperRegistry _infoSearchClassMapperRegistry;
 
 	@Reference
 	private Language _language;

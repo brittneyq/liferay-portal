@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -47,7 +46,6 @@ import com.liferay.sharepoint.rest.oauth2.service.persistence.impl.constants.Sha
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -73,11 +71,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  * @generated
  */
-@Component(
-	service = {
-		SharepointOAuth2TokenEntryPersistence.class, BasePersistence.class
-	}
-)
+@Component(service = SharepointOAuth2TokenEntryPersistence.class)
 public class SharepointOAuth2TokenEntryPersistenceImpl
 	extends BasePersistenceImpl<SharepointOAuth2TokenEntry>
 	implements SharepointOAuth2TokenEntryPersistence {
@@ -194,7 +188,7 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<SharepointOAuth2TokenEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (SharepointOAuth2TokenEntry sharepointOAuth2TokenEntry :
@@ -565,7 +559,7 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -684,7 +678,8 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByU_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByU_C, finderArgs, this);
 		}
 
 		if (result instanceof SharepointOAuth2TokenEntry) {
@@ -801,7 +796,7 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, configurationPid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1322,7 +1317,7 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<SharepointOAuth2TokenEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1395,7 +1390,7 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1489,31 +1484,14 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"userId", "configurationPid"}, false);
 
-		_setSharepointOAuth2TokenEntryUtilPersistence(this);
+		SharepointOAuth2TokenEntryUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setSharepointOAuth2TokenEntryUtilPersistence(null);
+		SharepointOAuth2TokenEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(SharepointOAuth2TokenEntryImpl.class.getName());
-	}
-
-	private void _setSharepointOAuth2TokenEntryUtilPersistence(
-		SharepointOAuth2TokenEntryPersistence
-			sharepointOAuth2TokenEntryPersistence) {
-
-		try {
-			Field field = SharepointOAuth2TokenEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, sharepointOAuth2TokenEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -1576,9 +1554,5 @@ public class SharepointOAuth2TokenEntryPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private SharepointOAuth2TokenEntryModelArgumentsResolver
-		_sharepointOAuth2TokenEntryModelArgumentsResolver;
 
 }

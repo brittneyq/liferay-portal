@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -48,7 +47,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
@@ -77,7 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Jamie Sammons
  * @generated
  */
-@Component(service = {AkismetEntryPersistence.class, BasePersistence.class})
+@Component(service = AkismetEntryPersistence.class)
 public class AkismetEntryPersistenceImpl
 	extends BasePersistenceImpl<AkismetEntry>
 	implements AkismetEntryPersistence {
@@ -187,7 +185,7 @@ public class AkismetEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AkismetEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AkismetEntry akismetEntry : list) {
@@ -571,7 +569,7 @@ public class AkismetEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {_getTime(modifiedDate)};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -698,7 +696,8 @@ public class AkismetEntryPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByC_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_C, finderArgs, this);
 		}
 
 		if (result instanceof AkismetEntry) {
@@ -813,7 +812,7 @@ public class AkismetEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {classNameId, classPK};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1280,7 +1279,7 @@ public class AkismetEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AkismetEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1350,7 +1349,7 @@ public class AkismetEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1444,30 +1443,14 @@ public class AkismetEntryPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"classNameId", "classPK"}, false);
 
-		_setAkismetEntryUtilPersistence(this);
+		AkismetEntryUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setAkismetEntryUtilPersistence(null);
+		AkismetEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(AkismetEntryImpl.class.getName());
-	}
-
-	private void _setAkismetEntryUtilPersistence(
-		AkismetEntryPersistence akismetEntryPersistence) {
-
-		try {
-			Field field = AkismetEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, akismetEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -1540,9 +1523,5 @@ public class AkismetEntryPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private AkismetEntryModelArgumentsResolver
-		_akismetEntryModelArgumentsResolver;
 
 }

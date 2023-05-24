@@ -24,9 +24,13 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.NamedThreadFactory;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
+import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 import com.liferay.portal.workflow.kaleo.runtime.graph.GraphWalker;
 import com.liferay.portal.workflow.kaleo.runtime.graph.PathElement;
 
@@ -49,7 +53,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Rafael Praxedes
  */
-@Component(immediate = true, service = GraphWalkerPortalExecutor.class)
+@Component(service = GraphWalkerPortalExecutor.class)
 public class GraphWalkerPortalExecutor {
 
 	public void execute(PathElement pathElement, boolean waitForCompletion) {
@@ -59,6 +63,12 @@ public class GraphWalkerPortalExecutor {
 			return;
 		}
 
+		ExecutionContext executionContext = pathElement.getExecutionContext();
+
+		ServiceContext serviceContext = executionContext.getServiceContext();
+
+		long companyId = serviceContext.getCompanyId();
+
 		long ctCollectionId = CTCollectionThreadLocal.getCTCollectionId();
 
 		if (waitForCompletion) {
@@ -66,9 +76,8 @@ public class GraphWalkerPortalExecutor {
 				_noticeableExecutorService.submit(
 					() -> {
 						try (SafeCloseable safeCloseable =
-								CTCollectionThreadLocal.
-									setCTCollectionIdWithSafeCloseable(
-										ctCollectionId)) {
+								CompanyThreadLocal.setWithSafeCloseable(
+									companyId, ctCollectionId)) {
 
 							_walk(pathElement);
 						}
@@ -88,9 +97,8 @@ public class GraphWalkerPortalExecutor {
 			_noticeableExecutorService.submit(
 				() -> {
 					try (SafeCloseable safeCloseable =
-							CTCollectionThreadLocal.
-								setCTCollectionIdWithSafeCloseable(
-									ctCollectionId)) {
+							CompanyThreadLocal.setWithSafeCloseable(
+								companyId, ctCollectionId)) {
 
 						_walk(pathElement);
 					}
@@ -137,7 +145,19 @@ public class GraphWalkerPortalExecutor {
 	}
 
 	private void _walk(PathElement pathElement) {
+		String name = PrincipalThreadLocal.getName();
+
 		try {
+			ExecutionContext executionContext =
+				pathElement.getExecutionContext();
+
+			if (PrincipalThreadLocal.getUserId() == 0) {
+				ServiceContext serviceContext =
+					executionContext.getServiceContext();
+
+				PrincipalThreadLocal.setName(serviceContext.getUserId());
+			}
+
 			Queue<List<PathElement>> queue = new LinkedList<>();
 
 			queue.add(Collections.singletonList(pathElement));
@@ -161,6 +181,9 @@ public class GraphWalkerPortalExecutor {
 		}
 		catch (Throwable throwable) {
 			_log.error(throwable, throwable);
+		}
+		finally {
+			PrincipalThreadLocal.setName(name);
 		}
 	}
 

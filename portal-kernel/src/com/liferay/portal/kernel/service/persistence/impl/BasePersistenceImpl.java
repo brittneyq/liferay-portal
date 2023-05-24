@@ -21,6 +21,7 @@ import com.liferay.petra.sql.dsl.Table;
 import com.liferay.petra.sql.dsl.ast.ASTNode;
 import com.liferay.petra.sql.dsl.expression.Alias;
 import com.liferay.petra.sql.dsl.expression.Expression;
+import com.liferay.petra.sql.dsl.expression.ScalarDSLQueryAlias;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.petra.sql.dsl.query.FromStep;
 import com.liferay.petra.sql.dsl.query.GroupByStep;
@@ -30,6 +31,7 @@ import com.liferay.petra.sql.dsl.spi.ast.DefaultASTNodeListener;
 import com.liferay.petra.sql.dsl.spi.expression.AggregateExpression;
 import com.liferay.petra.sql.dsl.spi.expression.DSLFunction;
 import com.liferay.petra.sql.dsl.spi.expression.DSLFunctionType;
+import com.liferay.petra.sql.dsl.spi.expression.Scalar;
 import com.liferay.petra.sql.dsl.spi.expression.TableStar;
 import com.liferay.petra.sql.dsl.spi.query.QueryTable;
 import com.liferay.petra.sql.dsl.spi.query.Select;
@@ -226,7 +228,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 		Object[] arguments = _getArguments(defaultASTNodeListener);
 
-		Object cacheResult = finderCache.getResult(finderPath, arguments);
+		Object cacheResult = finderCache.getResult(finderPath, arguments, this);
 
 		boolean productionMode = CTCollectionThreadLocal.isProductionMode();
 
@@ -271,6 +273,14 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 						Column<?, ?> column = (Column<?, ?>)expression;
 
 						sqlQuery.addScalar(column.getName(), _getType(column));
+					}
+					else if (expression instanceof ScalarDSLQueryAlias) {
+						ScalarDSLQueryAlias<?> scalarDSLQueryAlias =
+							(ScalarDSLQueryAlias<?>)expression;
+
+						sqlQuery.addScalar(
+							scalarDSLQueryAlias.getName(),
+							_types.get(scalarDSLQueryAlias.getJavaType()));
 					}
 					else {
 						throw new IllegalArgumentException(
@@ -1108,7 +1118,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 			Class<?> javaTypeClass = column.getJavaType();
 
-			Type type = _typeMap.get(javaTypeClass);
+			Type type = _types.get(javaTypeClass);
 
 			if (type != null) {
 				return type;
@@ -1154,6 +1164,14 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 			return _getType(dslFunction.getExpressions()[0]);
 		}
 
+		if (expression instanceof Scalar<?>) {
+			Scalar<?> scalar = (Scalar<?>)expression;
+
+			Object value = scalar.getValue();
+
+			return _types.get(value.getClass());
+		}
+
 		throw new IllegalArgumentException(expression.toString());
 	}
 
@@ -1189,7 +1207,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	private static final Log _log = LogFactoryUtil.getLog(
 		BasePersistenceImpl.class);
 
-	private static final Map<Class<?>, Type> _typeMap =
+	private static final Map<Class<?>, Type> _types =
 		HashMapBuilder.<Class<?>, Type>put(
 			BigDecimal.class, Type.BIG_DECIMAL
 		).put(
@@ -1364,11 +1382,6 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 		@Override
 		public NullModel toUnescapedModel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String toXmlString() {
 			throw new UnsupportedOperationException();
 		}
 

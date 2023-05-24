@@ -29,8 +29,10 @@ AssetListEntryAssetEntryRel assetListEntryAssetEntryRel = (AssetListEntryAssetEn
 	<portlet:param name="position" value="<%= String.valueOf(assetListEntryAssetEntryRel.getPosition()) %>" />
 </portlet:actionURL>
 
-<liferay-ui:icon
+<clay:link
+	aria-label='<%= LanguageUtil.get(request, "remove") %>'
+	cssClass="lfr-portal-tooltip"
+	href="<%= deleteAssetEntrySelectionURL %>"
 	icon="times-circle"
-	markupView="lexicon"
-	url="<%= deleteAssetEntrySelectionURL %>"
+	title='<%= LanguageUtil.get(request, "remove") %>'
 />

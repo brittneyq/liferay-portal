@@ -14,15 +14,16 @@
 
 package com.liferay.commerce.product.content.search.web.internal.portlet.shared.search;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.asset.kernel.model.AssetCategory;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.product.constants.CPField;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.content.search.web.internal.configuration.CPSearchResultsPortletInstanceConfiguration;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -42,6 +43,7 @@ import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchContributor;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchSettings;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javax.portlet.PortletPreferences;
@@ -54,7 +56,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Shuyang Zhou
  */
 @Component(
-	enabled = false,
 	property = "javax.portlet.name=" + CPPortletKeys.CP_SEARCH_RESULTS,
 	service = PortletSharedSearchContributor.class
 )
@@ -68,14 +69,20 @@ public class CPSearchResultsPortletSharedSearchContributor
 		try {
 			_contribute(portletSharedSearchSettings);
 
+			String paginationStartParameterName =
+				portletSharedSearchSettings.getPaginationStartParameterName();
+
+			if (paginationStartParameterName == null) {
+				throw new NoSuchElementException(
+					"Pagination start parameter name is null for portlet ID " +
+						portletSharedSearchSettings.getPortletId());
+			}
+
 			SearchRequestBuilder searchRequestBuilder =
 				portletSharedSearchSettings.getSearchRequestBuilder();
 
-			Optional<String> paginationStartParameterNameOptional =
-				portletSharedSearchSettings.getPaginationStartParameterName();
-
 			searchRequestBuilder.paginationStartParameterName(
-				paginationStartParameterNameOptional.get());
+				paginationStartParameterName);
 		}
 		catch (PortalException portalException) {
 			throw new SystemException(portalException);
@@ -97,7 +104,7 @@ public class CPSearchResultsPortletSharedSearchContributor
 				themeDisplay.getScopeGroupId());
 
 		Optional<String> parameterValueOptional =
-			portletSharedSearchSettings.getParameter71("q");
+			portletSharedSearchSettings.getParameterOptional("q");
 
 		portletSharedSearchSettings.setKeywords(
 			parameterValueOptional.orElse(StringPool.BLANK));
@@ -131,16 +138,16 @@ public class CPSearchResultsPortletSharedSearchContributor
 			searchContext.setAttribute(
 				"commerceChannelGroupId", commerceChannel.getGroupId());
 
-			CommerceAccount commerceAccount =
-				_commerceAccountHelper.getCurrentCommerceAccount(
+			AccountEntry accountEntry =
+				_commerceAccountHelper.getCurrentAccountEntry(
 					commerceChannel.getGroupId(),
 					_portal.getHttpServletRequest(renderRequest));
 
-			if (commerceAccount != null) {
+			if (accountEntry != null) {
 				searchContext.setAttribute(
 					"commerceAccountGroupIds",
-					_commerceAccountHelper.getCommerceAccountGroupIds(
-						commerceAccount.getCommerceAccountId()));
+					_accountGroupLocalService.getAccountGroupIds(
+						accountEntry.getAccountEntryId()));
 			}
 		}
 
@@ -173,7 +180,7 @@ public class CPSearchResultsPortletSharedSearchContributor
 			paginationStartParameterName);
 
 		Optional<String> paginationStartParameterValueOptional =
-			portletSharedSearchSettings.getParameter71(
+			portletSharedSearchSettings.getParameterOptional(
 				paginationStartParameterName);
 
 		Optional<Integer> paginationStartOptional =
@@ -185,7 +192,7 @@ public class CPSearchResultsPortletSharedSearchContributor
 		String paginationDeltaParameterName = "delta";
 
 		Optional<String> paginationDeltaParameterValueOptional =
-			portletSharedSearchSettings.getParameter71(
+			portletSharedSearchSettings.getParameterOptional(
 				paginationDeltaParameterName);
 
 		Optional<Integer> paginationDeltaOptional =
@@ -195,7 +202,7 @@ public class CPSearchResultsPortletSharedSearchContributor
 			cpSearchResultsPortletInstanceConfiguration.paginationDelta();
 
 		Optional<PortletPreferences> portletPreferencesOptional =
-			portletSharedSearchSettings.getPortletPreferences71();
+			portletSharedSearchSettings.getPortletPreferencesOptional();
 
 		if (portletPreferencesOptional.isPresent()) {
 			PortletPreferences portletPreferences =
@@ -208,6 +215,9 @@ public class CPSearchResultsPortletSharedSearchContributor
 		portletSharedSearchSettings.setPaginationDelta(
 			paginationDeltaOptional.orElse(configurationPaginationDelta));
 	}
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;

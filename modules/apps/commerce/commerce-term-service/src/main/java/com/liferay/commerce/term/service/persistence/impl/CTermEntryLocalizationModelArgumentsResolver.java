@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CTermEntryLocalizationModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.commerce.term.model.impl.CTermEntryLocalizationImpl",
+		"table.name=CTermEntryLocalization"
+	},
+	service = ArgumentsResolver.class
 )
 public class CTermEntryLocalizationModelArgumentsResolver
 	implements ArgumentsResolver {

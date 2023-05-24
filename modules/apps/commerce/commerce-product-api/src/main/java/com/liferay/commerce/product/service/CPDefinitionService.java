@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -52,13 +51,6 @@ import org.osgi.annotation.versioning.ProviderType;
 @AccessControlled
 @CTAware
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=commerce",
-		"json.web.service.context.path=CPDefinition"
-	},
-	service = CPDefinitionService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -177,8 +169,12 @@ public interface CPDefinitionService extends BaseService {
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	public CPDefinition cloneCPDefinition(
+			long cpDefinitionId, long groupId, ServiceContext serviceContext)
+		throws PortalException;
+
 	public CPDefinition copyCPDefinition(
-			long cpDefinitionId, long groupId, int status)
+			long sourceCPDefinitionId, long groupId, int status)
 		throws PortalException;
 
 	public void deleteAssetCategoryCPDefinition(
@@ -215,6 +211,10 @@ public interface CPDefinitionService extends BaseService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public CPDefinition getCProductCPDefinition(long cProductId, int version)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<CPDefinition> getCProductCPDefinitions(
 			long cProductId, int status, int start, int end)
 		throws PortalException;
@@ -241,8 +241,8 @@ public interface CPDefinitionService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public BaseModelSearchResult<CPDefinition> searchCPDefinitions(
-			long companyId, String keywords, int status, int start, int end,
-			Sort sort)
+			long companyId, String keywords, int status,
+			boolean ignoreCommerceAccountGroup, int start, int end, Sort sort)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -255,7 +255,8 @@ public interface CPDefinitionService extends BaseService {
 	public BaseModelSearchResult<CPDefinition>
 			searchCPDefinitionsByChannelGroupId(
 				long companyId, long commerceChannelGroupId, String keywords,
-				int status, int start, int end, Sort sort)
+				int status, boolean ignoreCommerceAccountGroup, int start,
+				int end, Sort sort)
 		throws PortalException;
 
 	public CPDefinition updateCPDefinition(

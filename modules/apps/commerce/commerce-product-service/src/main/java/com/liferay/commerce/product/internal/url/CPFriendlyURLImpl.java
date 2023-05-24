@@ -29,16 +29,17 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Ivica Cardic
  */
-@Component(enabled = false, immediate = true, service = CPFriendlyURL.class)
+@Component(service = CPFriendlyURL.class)
 public class CPFriendlyURLImpl implements CPFriendlyURL {
 
 	@Override
 	public String getAssetCategoryURLSeparator(long companyId) {
-		CPFriendlyURLConfiguration cpURLConfiguration =
+		CPFriendlyURLConfiguration cpFriendlyURLConfiguration =
 			_getCPFriendlyURLConfiguration(companyId);
 
 		return StringPool.SLASH +
-			cpURLConfiguration.assetCategoryURLSeparator() + StringPool.SLASH;
+			cpFriendlyURLConfiguration.assetCategoryURLSeparator() +
+				StringPool.SLASH;
 	}
 
 	@Override

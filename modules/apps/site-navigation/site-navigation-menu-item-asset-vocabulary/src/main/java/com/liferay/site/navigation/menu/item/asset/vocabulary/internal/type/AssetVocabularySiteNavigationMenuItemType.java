@@ -24,16 +24,16 @@ import com.liferay.asset.vocabulary.item.selector.criterion.AssetVocabularyItemS
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.item.selector.ItemSelector;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -76,7 +76,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lourdes Fernández Besada
  */
 @Component(
-	immediate = true,
 	property = {
 		"service.ranking:Integer=600",
 		"site.navigation.menu.item.type=" + SiteNavigationMenuItemTypeConstants.ASSET_VOCABULARY
@@ -199,8 +198,6 @@ public class AssetVocabularySiteNavigationMenuItemType
 				RequestBackedPortletURLFactoryUtil.create(httpServletRequest),
 				renderResponse.getNamespace() + "selectItem",
 				assetVocabularyItemSelectorCriterion)
-		).setParameter(
-			"multipleSelection", isMultiSelection()
 		).buildString();
 	}
 
@@ -332,8 +329,8 @@ public class AssetVocabularySiteNavigationMenuItemType
 			"localizedNames", "{}");
 
 		try {
-			JSONObject localizedNamesJSONObject =
-				JSONFactoryUtil.createJSONObject(localizedNames);
+			JSONObject localizedNamesJSONObject = _jsonFactory.createJSONObject(
+				localizedNames);
 
 			return localizedNamesJSONObject.getString(
 				LocaleUtil.toLanguageId(locale),
@@ -520,6 +517,9 @@ public class AssetVocabularySiteNavigationMenuItemType
 
 	@Reference
 	private ItemSelector _itemSelector;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private JSPRenderer _jspRenderer;

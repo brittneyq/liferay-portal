@@ -19,6 +19,7 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
 import com.liferay.portal.kernel.exception.LayoutFriendlyURLException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -57,7 +58,6 @@ import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
@@ -65,9 +65,11 @@ import com.liferay.portal.kernel.util.LayoutTypePortletFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -82,6 +84,7 @@ import com.liferay.portal.util.PropsValues;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -620,8 +623,26 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	@Override
 	public String getFriendlyURLsXML() {
+		Map<Locale, String> friendlyURLMap = getFriendlyURLMap();
+
+		if (MapUtil.isNotEmpty(friendlyURLMap) &&
+			!friendlyURLMap.containsKey(LocaleUtil.getSiteDefault())) {
+
+			String friendlyURL = friendlyURLMap.get(getDefaultLanguageId());
+
+			if (friendlyURL == null) {
+				Collection<String> values = friendlyURLMap.values();
+
+				Iterator<String> iterator = values.iterator();
+
+				friendlyURL = iterator.next();
+			}
+
+			friendlyURLMap.put(LocaleUtil.getSiteDefault(), friendlyURL);
+		}
+
 		return LocalizationUtil.updateLocalization(
-			getFriendlyURLMap(), StringPool.BLANK, "FriendlyURL",
+			friendlyURLMap, StringPool.BLANK, "FriendlyURL",
 			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()));
 	}
 
@@ -679,6 +700,23 @@ public class LayoutImpl extends LayoutBaseImpl {
 		}
 
 		return htmlTitle;
+	}
+
+	@Override
+	public String getIcon() {
+		if (isTypeCollection()) {
+			return "list";
+		}
+
+		if (isTypeContent()) {
+			return "page";
+		}
+
+		if (isTypeURL() || isTypeLinkToLayout()) {
+			return "link";
+		}
+
+		return "page-template";
 	}
 
 	/**
@@ -1040,6 +1078,23 @@ public class LayoutImpl extends LayoutBaseImpl {
 		return false;
 	}
 
+	@Override
+	public boolean isEmbeddedPersonalApplication() {
+		if (isTypeControlPanel()) {
+			return false;
+		}
+
+		if (isSystem() &&
+			Objects.equals(
+				getFriendlyURL(),
+				PropsUtil.get(PropsKeys.CONTROL_PANEL_LAYOUT_FRIENDLY_URL))) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	/**
 	 * Returns <code>true</code> if the current layout is the first layout in
 	 * its parent's hierarchical list of children layouts.
@@ -1253,6 +1308,15 @@ public class LayoutImpl extends LayoutBaseImpl {
 				_getLayoutTypeControllerType(),
 				LayoutConstants.TYPE_ASSET_DISPLAY)) {
 
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isTypeCollection() {
+		if (Objects.equals(getType(), LayoutConstants.TYPE_COLLECTION)) {
 			return true;
 		}
 
@@ -1633,7 +1697,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 		String url = PortalUtil.getLayoutURL(this, themeDisplay);
 
-		if (!CookieKeys.hasSessionId(httpServletRequest) &&
+		if (!CookiesManagerUtil.hasSessionId(httpServletRequest) &&
 			(url.startsWith(PortalUtil.getPortalURL(httpServletRequest)) ||
 			 url.startsWith(StringPool.SLASH))) {
 

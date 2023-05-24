@@ -19,17 +19,16 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.increment.BufferedIncrementThreadLocal;
-import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
@@ -126,7 +125,6 @@ public class CompanySampleDataGenerationTest {
 						() -> {
 							BufferedIncrementThreadLocal.setWithSafeCloseable(
 								true);
-							ProxyModeThreadLocal.setWithSafeCloseable(true);
 
 							_addCompany(companyIndex);
 
@@ -159,8 +157,7 @@ public class CompanySampleDataGenerationTest {
 			Company company = _companyLocalService.addCompany(
 				null, webId, webId, webId, 0, true);
 
-			PortalInstances.initCompany(
-				ServletContextPool.get(StringPool.BLANK), webId);
+			PortalInstances.initCompany(company);
 
 			// Add user
 
@@ -192,8 +189,8 @@ public class CompanySampleDataGenerationTest {
 		throws Exception {
 
 		String middleName = StringPool.BLANK;
-		long prefixId = 0;
-		long suffixId = 0;
+		long prefixListTypeId = 0;
+		long suffixListTypeId = 0;
 		boolean male = true;
 		int birthdayMonth = Calendar.JANUARY;
 		int birthdayDay = 1;
@@ -220,8 +217,9 @@ public class CompanySampleDataGenerationTest {
 			User user = _userLocalService.addUser(
 				0, companyId, false, "test", "test", false, screenName,
 				emailAddress, LocaleUtil.US, firstName, middleName, lastName,
-				prefixId, suffixId, male, birthdayMonth, birthdayDay,
-				birthdayYear, jobTitle, new long[] {groupId}, organizationIds,
+				prefixListTypeId, suffixListTypeId, male, birthdayMonth,
+				birthdayDay, birthdayYear, jobTitle, UserConstants.TYPE_REGULAR,
+				new long[] {groupId}, organizationIds,
 				new long[] {role.getRoleId()}, userGroupIds, sendEmail,
 				_getServiceContext(companyId));
 

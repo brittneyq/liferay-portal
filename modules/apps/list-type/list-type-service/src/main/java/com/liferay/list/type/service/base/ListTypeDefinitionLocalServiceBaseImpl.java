@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -279,6 +277,23 @@ public abstract class ListTypeDefinitionLocalServiceBaseImpl
 
 		return listTypeDefinitionPersistence.fetchByUuid_C_First(
 			uuid, companyId, null);
+	}
+
+	@Override
+	public ListTypeDefinition fetchListTypeDefinitionByExternalReferenceCode(
+		String externalReferenceCode, long companyId) {
+
+		return listTypeDefinitionPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
+	}
+
+	@Override
+	public ListTypeDefinition getListTypeDefinitionByExternalReferenceCode(
+			String externalReferenceCode, long companyId)
+		throws PortalException {
+
+		return listTypeDefinitionPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -514,7 +529,7 @@ public abstract class ListTypeDefinitionLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		ListTypeDefinitionLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -530,7 +545,8 @@ public abstract class ListTypeDefinitionLocalServiceBaseImpl
 		listTypeDefinitionLocalService =
 			(ListTypeDefinitionLocalService)aopProxy;
 
-		_setLocalServiceUtilService(listTypeDefinitionLocalService);
+		ListTypeDefinitionLocalServiceUtil.setService(
+			listTypeDefinitionLocalService);
 	}
 
 	/**
@@ -573,23 +589,6 @@ public abstract class ListTypeDefinitionLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		ListTypeDefinitionLocalService listTypeDefinitionLocalService) {
-
-		try {
-			Field field =
-				ListTypeDefinitionLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, listTypeDefinitionLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

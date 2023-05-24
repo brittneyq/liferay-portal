@@ -21,7 +21,6 @@ import com.liferay.commerce.payment.method.mercanet.internal.connector.Environme
 import com.liferay.commerce.payment.method.mercanet.internal.connector.PaypageClient;
 import com.liferay.commerce.payment.method.mercanet.internal.constants.MercanetCommercePaymentMethodConstants;
 import com.liferay.commerce.payment.util.CommercePaymentHttpHelper;
-import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -64,7 +63,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"osgi.http.whiteboard.context.path=/" + MercanetCommercePaymentMethodConstants.SERVLET_PATH,
 		"osgi.http.whiteboard.servlet.name=com.liferay.commerce.payment.method.mercanet.internal.servlet.MercanetServlet",
@@ -114,7 +112,7 @@ public class MercanetServlet extends HttpServlet {
 
 			Map<String, String> parameterMap = _getResponseParameters(data);
 
-			if (Objects.equals("normal", type)) {
+			if (Objects.equals(type, "normal")) {
 				if (PortalSessionThreadLocal.getHttpSession() == null) {
 					PortalSessionThreadLocal.setHttpSession(
 						httpServletRequest.getSession());
@@ -143,7 +141,7 @@ public class MercanetServlet extends HttpServlet {
 				httpServletResponse.sendRedirect(redirect);
 			}
 
-			if (Objects.equals("automatic", type)) {
+			if (Objects.equals(type, "automatic")) {
 				String uuid = ParamUtil.getString(httpServletRequest, "uuid");
 				long groupId = ParamUtil.getLong(httpServletRequest, "groupId");
 
@@ -152,8 +150,9 @@ public class MercanetServlet extends HttpServlet {
 						uuid, groupId);
 
 				MercanetGroupServiceConfiguration
-					mercanetGroupServiceConfiguration = _getConfiguration(
-						commerceOrder.getGroupId());
+					mercanetGroupServiceConfiguration =
+						_getMercanetGroupServiceConfiguration(
+							commerceOrder.getGroupId());
 
 				String environment = StringUtil.toUpperCase(
 					mercanetGroupServiceConfiguration.environment());
@@ -203,7 +202,8 @@ public class MercanetServlet extends HttpServlet {
 		}
 	}
 
-	private MercanetGroupServiceConfiguration _getConfiguration(Long groupId)
+	private MercanetGroupServiceConfiguration
+			_getMercanetGroupServiceConfiguration(Long groupId)
 		throws ConfigurationException {
 
 		return _configurationProvider.getConfiguration(
@@ -233,9 +233,6 @@ public class MercanetServlet extends HttpServlet {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MercanetServlet.class);
-
-	@Reference
-	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
 	private CommerceOrderLocalService _commerceOrderLocalService;

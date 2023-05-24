@@ -14,7 +14,6 @@
 
 package com.liferay.wiki.web.internal.portlet.toolbar.item;
 
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -26,6 +25,7 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.toolbar.contributor.BasePortletToolbarContributor;
 import com.liferay.portal.kernel.portlet.toolbar.contributor.PortletToolbarContributor;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
@@ -57,14 +57,11 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + WikiPortletKeys.WIKI,
 		"mvc.render.command.name=/wiki/view_pages"
 	},
-	service = {
-		PortletToolbarContributor.class, WikiPortletToolbarContributor.class
-	}
+	service = PortletToolbarContributor.class
 )
 public class WikiPortletToolbarContributor
 	extends BasePortletToolbarContributor {

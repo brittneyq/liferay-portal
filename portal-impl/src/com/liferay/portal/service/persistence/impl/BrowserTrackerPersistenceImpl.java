@@ -43,7 +43,6 @@ import com.liferay.portal.model.impl.BrowserTrackerModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
@@ -147,7 +146,7 @@ public class BrowserTrackerPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByUserId, finderArgs);
+				_finderPathFetchByUserId, finderArgs, this);
 		}
 
 		if (result instanceof BrowserTracker) {
@@ -237,7 +236,8 @@ public class BrowserTrackerPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -677,7 +677,7 @@ public class BrowserTrackerPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BrowserTracker>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -747,7 +747,7 @@ public class BrowserTrackerPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -821,29 +821,13 @@ public class BrowserTrackerPersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"userId"},
 			false);
 
-		_setBrowserTrackerUtilPersistence(this);
+		BrowserTrackerUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setBrowserTrackerUtilPersistence(null);
+		BrowserTrackerUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(BrowserTrackerImpl.class.getName());
-	}
-
-	private void _setBrowserTrackerUtilPersistence(
-		BrowserTrackerPersistence browserTrackerPersistence) {
-
-		try {
-			Field field = BrowserTrackerUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, browserTrackerPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_BROWSERTRACKER =

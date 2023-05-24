@@ -26,6 +26,8 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -160,6 +162,29 @@ public class JenkinsMaster implements JenkinsNode<JenkinsMaster> {
 		return new ArrayList<>(_buildURLs);
 	}
 
+	public List<DefaultBuild> getDefaultBuilds() {
+		List<String> buildURLs = getBuildURLs();
+
+		List<DefaultBuild> oldDefaultBuilds = new ArrayList<>();
+
+		for (DefaultBuild defaultBuild : _defaultBuilds) {
+			if (!buildURLs.contains(defaultBuild.getBuildURL())) {
+				oldDefaultBuilds.add(defaultBuild);
+			}
+			else {
+				buildURLs.remove(defaultBuild.getBuildURL());
+			}
+		}
+
+		_defaultBuilds.removeAll(oldDefaultBuilds);
+
+		for (String buildURL : buildURLs) {
+			_defaultBuilds.add(BuildFactory.newDefaultBuild(buildURL));
+		}
+
+		return _defaultBuilds;
+	}
+
 	public int getIdleJenkinsSlavesCount() {
 		int idleSlavesCount = 0;
 
@@ -174,6 +199,25 @@ public class JenkinsMaster implements JenkinsNode<JenkinsMaster> {
 		}
 
 		return idleSlavesCount;
+	}
+
+	@Override
+	public JenkinsCohort getJenkinsCohort() {
+		if (_jenkinsCohort != null) {
+			return _jenkinsCohort;
+		}
+
+		Matcher matcher = _masterNamePattern.matcher(getName());
+
+		if (!matcher.find()) {
+			return null;
+		}
+
+		String cohortName = matcher.group("cohortName");
+
+		_jenkinsCohort = JenkinsCohort.getInstance(cohortName);
+
+		return _jenkinsCohort;
 	}
 
 	@Override
@@ -625,26 +669,33 @@ public class JenkinsMaster implements JenkinsNode<JenkinsMaster> {
 		for (int i = 0; i < itemsJSONArray.length(); i++) {
 			JSONObject itemJSONObject = itemsJSONArray.getJSONObject(i);
 
-			JSONObject taskJSONObject = null;
-
-			if (itemJSONObject.has("task")) {
-				taskJSONObject = itemJSONObject.getJSONObject("task");
+			if (!itemJSONObject.has("task")) {
+				continue;
 			}
 
-			if (taskJSONObject != null) {
-				String taskName = taskJSONObject.getString("name");
+			JSONObject taskJSONObject = itemJSONObject.getJSONObject("task");
 
-				if (taskName.equals("verification-node")) {
-					continue;
-				}
+			String taskName = taskJSONObject.getString("name");
+
+			if (taskName.equals("verification-node")) {
+				continue;
 			}
 
 			if (itemJSONObject.has("why")) {
 				String why = itemJSONObject.optString("why");
 
+				if (taskName.startsWith("label=")) {
+					String offlineSlaveWhy = JenkinsResultsParserUtil.combine(
+						"‘", taskName.substring("label=".length()),
+						"’ is offline");
+
+					if (why.contains(offlineSlaveWhy)) {
+						continue;
+					}
+				}
+
 				if (why.startsWith("There are no nodes") ||
-					why.contains("already in progress") ||
-					why.endsWith("is offline")) {
+					why.contains("already in progress")) {
 
 					continue;
 				}
@@ -747,6 +798,8 @@ public class JenkinsMaster implements JenkinsNode<JenkinsMaster> {
 		Collections.synchronizedMap(new HashMap<String, JenkinsMaster>());
 	private static final List<String> _jenkinsMastersBlacklist =
 		new ArrayList<>();
+	private static final Pattern _masterNamePattern = Pattern.compile(
+		"(?<cohortName>test-\\d+)-\\d+");
 
 	static {
 		try {
@@ -767,6 +820,8 @@ public class JenkinsMaster implements JenkinsNode<JenkinsMaster> {
 	private final Map<Long, Integer> _batchSizes = new TreeMap<>();
 	private boolean _blacklisted;
 	private final List<String> _buildURLs = new CopyOnWriteArrayList<>();
+	private final List<DefaultBuild> _defaultBuilds = new ArrayList<>();
+	private JenkinsCohort _jenkinsCohort;
 	private final Map<String, JenkinsSlave> _jenkinsSlavesMap =
 		Collections.synchronizedMap(new HashMap<String, JenkinsSlave>());
 	private final String _masterName;

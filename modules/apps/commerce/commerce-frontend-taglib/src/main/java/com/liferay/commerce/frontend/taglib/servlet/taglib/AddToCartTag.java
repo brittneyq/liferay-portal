@@ -14,6 +14,8 @@
 
 package com.liferay.commerce.frontend.taglib.servlet.taglib;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.commerce.constants.CommerceOrderActionKeys;
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.currency.model.CommerceCurrency;
@@ -26,13 +28,17 @@ import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.order.CommerceOrderHttpHelper;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.catalog.CPSku;
+import com.liferay.commerce.product.constants.CommerceChannelConstants;
 import com.liferay.commerce.product.content.util.CPContentHelper;
 import com.liferay.commerce.service.CommerceOrderItemLocalService;
 import com.liferay.commerce.util.CommerceUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.List;
@@ -80,19 +86,20 @@ public class AddToCartTag extends IncludeTag {
 
 			if (_cpCatalogEntry != null) {
 				cpSku = _cpContentHelper.getDefaultCPSku(_cpCatalogEntry);
+
+				long cpDefinitionId = _cpCatalogEntry.getCPDefinitionId();
+
 				hasChildCPDefinitions = _cpContentHelper.hasChildCPDefinitions(
-					_cpCatalogEntry.getCPDefinitionId());
+					cpDefinitionId);
+				_productSettingsModel = _productHelper.getProductSettingsModel(
+					cpDefinitionId);
 			}
 
 			String sku = null;
 
 			if ((cpSku != null) && !hasChildCPDefinitions) {
 				_cpInstanceId = cpSku.getCPInstanceId();
-				_disabled =
-					!cpSku.isPurchasable() ||
-					((_commerceAccountId <= 0) &&
-					 !_commerceOrderHttpHelper.isGuestCheckoutEnabled(
-						 httpServletRequest));
+				_disabled = !cpSku.isPurchasable() || (_commerceAccountId == 0);
 				sku = cpSku.getSku();
 
 				if (commerceOrder != null) {
@@ -110,16 +117,38 @@ public class AddToCartTag extends IncludeTag {
 			if (sku != null) {
 				_stockQuantity = _commerceInventoryEngine.getStockQuantity(
 					PortalUtil.getCompanyId(httpServletRequest),
+					_cpCatalogEntry.getGroupId(),
 					commerceContext.getCommerceChannelGroupId(), sku);
-
-				_productSettingsModel = _productHelper.getProductSettingsModel(
-					cpSku.getCPInstanceId());
 
 				if (!_disabled) {
 					_disabled =
 						(!_productSettingsModel.isBackOrders() &&
 						 (_stockQuantity <= 0)) ||
 						!cpSku.isPublished() || !cpSku.isPurchasable();
+				}
+			}
+
+			AccountEntry accountEntry = commerceContext.getAccountEntry();
+
+			if (accountEntry != null) {
+				if (accountEntry.isBusinessAccount()) {
+					ThemeDisplay themeDisplay =
+						(ThemeDisplay)httpServletRequest.getAttribute(
+							WebKeys.THEME_DISPLAY);
+
+					_disabled =
+						_disabled ||
+						!_commerceOrderPortletResourcePermission.contains(
+							themeDisplay.getPermissionChecker(),
+							accountEntry.getAccountEntryGroupId(),
+							CommerceOrderActionKeys.ADD_COMMERCE_ORDER);
+				}
+				else {
+					_disabled =
+						_disabled ||
+						(accountEntry.isGuestAccount() &&
+						 (CommerceChannelConstants.SITE_TYPE_B2B ==
+							 commerceContext.getCommerceSiteType()));
 				}
 			}
 		}
@@ -225,12 +254,14 @@ public class AddToCartTag extends IncludeTag {
 
 		setServletContext(ServletContextUtil.getServletContext());
 
-		_commerceOrderHttpHelper =
-			ServletContextUtil.getCommerceOrderHttpHelper();
 		_commerceInventoryEngine =
 			ServletContextUtil.getCommerceInventoryEngine();
+		_commerceOrderHttpHelper =
+			ServletContextUtil.getCommerceOrderHttpHelper();
 		_commerceOrderItemLocalService =
 			ServletContextUtil.getCommerceOrderItemLocalService();
+		_commerceOrderPortletResourcePermission =
+			ServletContextUtil.getCommerceOrderPortletResourcePermission();
 		_cpContentHelper = ServletContextUtil.getCPContentHelper();
 		_productHelper = ServletContextUtil.getProductHelper();
 	}
@@ -256,6 +287,7 @@ public class AddToCartTag extends IncludeTag {
 		_commerceOrderHttpHelper = null;
 		_commerceOrderId = 0;
 		_commerceOrderItemLocalService = null;
+		_commerceOrderPortletResourcePermission = null;
 		_cpCatalogEntry = null;
 		_cpContentHelper = null;
 		_cpInstanceId = 0;
@@ -292,6 +324,7 @@ public class AddToCartTag extends IncludeTag {
 	private CommerceOrderHttpHelper _commerceOrderHttpHelper;
 	private long _commerceOrderId;
 	private CommerceOrderItemLocalService _commerceOrderItemLocalService;
+	private PortletResourcePermission _commerceOrderPortletResourcePermission;
 	private CPCatalogEntry _cpCatalogEntry;
 	private CPContentHelper _cpContentHelper;
 	private long _cpInstanceId;

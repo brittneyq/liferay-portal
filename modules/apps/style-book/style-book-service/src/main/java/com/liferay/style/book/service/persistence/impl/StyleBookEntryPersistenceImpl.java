@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -53,7 +52,6 @@ import com.liferay.style.book.service.persistence.impl.constants.StyleBookPersis
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -85,7 +83,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {StyleBookEntryPersistence.class, BasePersistence.class})
+@Component(service = StyleBookEntryPersistence.class)
 public class StyleBookEntryPersistenceImpl
 	extends BasePersistenceImpl<StyleBookEntry>
 	implements StyleBookEntryPersistence {
@@ -205,7 +203,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -597,7 +595,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -761,7 +759,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -1183,7 +1181,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1354,7 +1352,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -1779,7 +1777,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1931,7 +1929,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G_Head, finderArgs);
+				_finderPathFetchByUUID_G_Head, finderArgs, this);
 		}
 
 		if (result instanceof StyleBookEntry) {
@@ -2059,7 +2057,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2238,7 +2236,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -2663,7 +2661,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2841,7 +2839,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -3288,7 +3286,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3458,7 +3456,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -3826,7 +3824,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3975,7 +3973,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -4374,7 +4372,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4534,7 +4532,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -4935,7 +4933,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, defaultStyleBookEntry};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -5104,7 +5102,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -5531,7 +5529,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, defaultStyleBookEntry, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -5686,7 +5684,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -6113,7 +6111,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, name};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -6280,7 +6278,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -6729,7 +6727,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, name, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -6911,7 +6909,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (StyleBookEntry styleBookEntry : list) {
@@ -7337,7 +7335,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, styleBookEntryKey};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -7491,7 +7489,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByG_SBEK_Head, finderArgs);
+				_finderPathFetchByG_SBEK_Head, finderArgs, this);
 		}
 
 		if (result instanceof StyleBookEntry) {
@@ -7623,7 +7621,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, styleBookEntryKey, head};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -7763,7 +7761,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByHeadId, finderArgs);
+				_finderPathFetchByHeadId, finderArgs, this);
 		}
 
 		if (result instanceof StyleBookEntry) {
@@ -7862,7 +7860,7 @@ public class StyleBookEntryPersistenceImpl
 
 			finderArgs = new Object[] {headId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -8543,7 +8541,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<StyleBookEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -8619,7 +8617,7 @@ public class StyleBookEntryPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -9035,30 +9033,14 @@ public class StyleBookEntryPersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"headId"},
 			false);
 
-		_setStyleBookEntryUtilPersistence(this);
+		StyleBookEntryUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setStyleBookEntryUtilPersistence(null);
+		StyleBookEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(StyleBookEntryImpl.class.getName());
-	}
-
-	private void _setStyleBookEntryUtilPersistence(
-		StyleBookEntryPersistence styleBookEntryPersistence) {
-
-		try {
-			Field field = StyleBookEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, styleBookEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -9129,9 +9111,5 @@ public class StyleBookEntryPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private StyleBookEntryModelArgumentsResolver
-		_styleBookEntryModelArgumentsResolver;
 
 }

@@ -49,14 +49,6 @@
 		padding: $modal-inner-padding;
 	}
 
-	.management-bar-default {
-		border-left-width: 0;
-		border-radius: 0;
-		border-right-width: 0;
-		border-top-width: 0;
-		margin-bottom: 0;
-	}
-
 	.navbar ~ .portlet-configuration-setup,
 	.portlet-export-import-container {
 		height: calc(100% - #{$dialog-navbar-height});
@@ -142,6 +134,11 @@
 		.btn {
 			margin-left: 1rem;
 			margin-right: 0;
+		}
+
+		&.dialog-footer-not-reverse {
+			flex-direction: initial;
+			justify-content: flex-end;
 		}
 	}
 

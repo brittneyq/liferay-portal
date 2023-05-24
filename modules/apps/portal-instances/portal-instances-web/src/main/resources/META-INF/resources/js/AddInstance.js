@@ -12,7 +12,7 @@
  * details.
  */
 
-import {fetch, openToast} from 'frontend-js-web';
+import {fetch, getOpener, openToast} from 'frontend-js-web';
 
 export default function ({namespace}) {
 	const form = document.getElementById(`${namespace}fm`);
@@ -29,21 +29,21 @@ export default function ({namespace}) {
 		content.classList.remove('d-block');
 		loading.classList.add('d-flex');
 
+		const alertContainer = document.querySelector(
+			'.add-instance-alert-container'
+		);
+
+		if (alertContainer.hasChildNodes()) {
+			alertContainer.firstChild.remove();
+		}
+
 		fetch(form.action, {
 			body: formData,
 			method: 'POST',
 		})
 			.then((response) => response.json())
 			.then((response) => {
-				const opener = Liferay.Util.getOpener();
-
-				const alertContainer = document.querySelector(
-					'.add-instance-alert-container'
-				);
-
-				if (alertContainer.hasChildNodes()) {
-					alertContainer.firstChild.remove();
-				}
+				const opener = getOpener();
 
 				if (!response.error) {
 					opener.Liferay.fire('closeModal', {
@@ -58,9 +58,7 @@ export default function ({namespace}) {
 
 					openToast({
 						autoClose: false,
-						container: document.querySelector(
-							'.add-instance-alert-container'
-						),
+						container: alertContainer,
 						message: response.error,
 						toastProps: {
 							onClose: null,

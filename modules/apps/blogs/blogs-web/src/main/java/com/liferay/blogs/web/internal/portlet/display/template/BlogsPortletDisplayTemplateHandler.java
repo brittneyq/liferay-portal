@@ -50,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.blogs.configuration.BlogsConfiguration",
-	immediate = true, property = "javax.portlet.name=" + BlogsPortletKeys.BLOGS,
+	property = "javax.portlet.name=" + BlogsPortletKeys.BLOGS,
 	service = TemplateHandler.class
 )
 public class BlogsPortletDisplayTemplateHandler
@@ -64,9 +64,9 @@ public class BlogsPortletDisplayTemplateHandler
 	@Override
 	public Map<String, Object> getCustomContextObjects() {
 		return HashMapBuilder.<String, Object>put(
-			"blogsEntryAssetEntryUtil", _blogsEntryAssetEntryUtil
+			"blogsEntryAssetEntryUtil", new BlogsEntryAssetEntryUtil()
 		).put(
-			"blogsEntryPermission", _blogsEntryPermission
+			"blogsEntryPermission", new BlogsEntryPermission()
 		).put(
 			"blogsEntryUtil", _blogsEntryUtil
 		).put(
@@ -152,12 +152,6 @@ public class BlogsPortletDisplayTemplateHandler
 	}
 
 	private volatile BlogsConfiguration _blogsConfiguration;
-
-	@Reference
-	private BlogsEntryAssetEntryUtil _blogsEntryAssetEntryUtil;
-
-	@Reference
-	private BlogsEntryPermission _blogsEntryPermission;
 
 	@Reference
 	private BlogsEntryUtil _blogsEntryUtil;

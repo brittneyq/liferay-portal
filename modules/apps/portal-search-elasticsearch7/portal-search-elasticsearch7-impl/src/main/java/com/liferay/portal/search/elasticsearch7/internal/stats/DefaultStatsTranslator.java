@@ -47,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = StatsTranslator.class)
+@Component(service = StatsTranslator.class)
 public class DefaultStatsTranslator implements StatsTranslator {
 
 	@Override
@@ -204,13 +204,7 @@ public class DefaultStatsTranslator implements StatsTranslator {
 		return statsResponseBuilder.build();
 	}
 
-	@Reference(unbind = "-")
-	protected void setStatsResponseBuilderFactory(
-		StatsResponseBuilderFactory statsResponseBuilderFactory) {
-
-		_statsResponseBuilderFactory = statsResponseBuilderFactory;
-	}
-
+	@Reference
 	private StatsResponseBuilderFactory _statsResponseBuilderFactory;
 
 }

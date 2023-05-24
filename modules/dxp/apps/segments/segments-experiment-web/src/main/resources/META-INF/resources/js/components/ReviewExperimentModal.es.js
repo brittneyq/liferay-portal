@@ -12,6 +12,7 @@
 import ClayButton from '@clayui/button';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClayModal from '@clayui/modal';
+import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {
 	useCallback,
@@ -32,14 +33,14 @@ import {
 	MIN_CONFIDENCE_LEVEL,
 	percentageNumberToIndex,
 } from '../util/percentages.es';
-import BusyButton from './BusyButton/BusyButton.es';
+import LoadingButton from './LoadingButton/LoadingButton.es';
 import {SliderWithLabel} from './SliderWithLabel.es';
 import {SplitPicker} from './SplitPicker/SplitPicker.es';
 
 const TIME_ESTIMATION_THROTTLE_TIME_MS = 1000;
 
 function ReviewExperimentModal({modalObserver, onModalClose, onRun, variants}) {
-	const [busy, setBusy] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [estimation, setEstimation] = useState({
 		days: null,
@@ -240,13 +241,13 @@ function ReviewExperimentModal({modalObserver, onModalClose, onRun, variants}) {
 								{Liferay.Language.get('cancel')}
 							</ClayButton>
 
-							<BusyButton
-								busy={busy}
-								disabled={busy}
+							<LoadingButton
+								disabled={loading}
+								loading={loading}
 								onClick={_handleRun}
 							>
 								{Liferay.Language.get('run')}
-							</BusyButton>
+							</LoadingButton>
 						</ClayButton.Group>
 					)
 				}
@@ -261,14 +262,14 @@ function ReviewExperimentModal({modalObserver, onModalClose, onRun, variants}) {
 	function _handleRun() {
 		const splitVariantsMap = _variantsToSplitVariantsMap(draftVariants);
 
-		setBusy(true);
+		setLoading(true);
 
 		onRun({
 			confidenceLevel: percentageNumberToIndex(confidenceLevel),
 			splitVariantsMap,
 		}).then(() => {
 			if (mountedRef.current) {
-				setBusy(false);
+				setLoading(false);
 				setSuccess(true);
 			}
 		});
@@ -286,10 +287,10 @@ function _variantsToSplitVariantsMap(variants) {
 
 function _getDaysMessage(days) {
 	if (days === 1) {
-		return Liferay.Util.sub(Liferay.Language.get('x-day'), days);
+		return sub(Liferay.Language.get('x-day'), days);
 	}
 	else {
-		return Liferay.Util.sub(Liferay.Language.get('x-days'), days);
+		return sub(Liferay.Language.get('x-days'), days);
 	}
 }
 

@@ -14,14 +14,19 @@
 
 import {delegate, getOpener, navigate} from 'frontend-js-web';
 
-const createButton = ({action, buttonClass, label, type = 'submit'}) => {
+const createButton = ({action, buttonClasses, label, type = 'submit'}) => {
 	const wrapper = document.createElement('div');
 
 	wrapper.classList.add('btn-group-item');
 
 	const button = document.createElement('button');
 
-	button.classList.add('add-category-toolbar-button', 'btn', buttonClass);
+	button.classList.add('add-category-toolbar-button', 'btn');
+
+	for (const buttonClass of buttonClasses) {
+		button.classList.add(buttonClass);
+	}
+
 	button.dataset.action = action;
 	button.textContent = label;
 	button.type = type;
@@ -32,7 +37,7 @@ const createButton = ({action, buttonClass, label, type = 'submit'}) => {
 };
 
 export default function ({currentURL, namespace, redirect}) {
-	const formSheet = document.querySelector('.lfr-form-content .sheet');
+	const formSheet = document.querySelector('.lfr-form-content div');
 
 	formSheet.classList.add('border-0');
 
@@ -71,20 +76,23 @@ export default function ({currentURL, namespace, redirect}) {
 		const buttons = [
 			createButton({
 				action: 'cancel',
-				buttonClass: 'btn-link',
+				buttonClasses: [
+					'btn-outline-borderless',
+					'btn-outline-secondary',
+				],
 				label: Liferay.Language.get('cancel'),
 				type: 'button',
 			}),
 
 			createButton({
 				action: 'saveAndAddNew',
-				buttonClass: 'btn-secondary',
+				buttonClasses: ['btn-secondary'],
 				label: Liferay.Language.get('save-and-add-a-new-one'),
 			}),
 
 			createButton({
 				action: 'save',
-				buttonClass: 'btn-primary',
+				buttonClasses: ['btn-primary'],
 				label: Liferay.Language.get('save'),
 			}),
 		];

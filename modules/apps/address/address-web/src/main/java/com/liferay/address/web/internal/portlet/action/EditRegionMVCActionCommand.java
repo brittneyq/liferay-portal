@@ -15,26 +15,22 @@
 package com.liferay.address.web.internal.portlet.action;
 
 import com.liferay.address.web.internal.constants.AddressPortletKeys;
-import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.DuplicateRegionException;
 import com.liferay.portal.kernel.exception.NoSuchRegionException;
 import com.liferay.portal.kernel.exception.RegionCodeException;
 import com.liferay.portal.kernel.exception.RegionNameException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Region;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.RegionLocalService;
 import com.liferay.portal.kernel.service.RegionService;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.servlet.SessionErrors;
-import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -51,27 +47,17 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AddressPortletKeys.COUNTRIES_MANAGEMENT_ADMIN,
 		"mvc.command.name=/address/edit_region"
 	},
-	service = AopService.class
+	service = MVCActionCommand.class
 )
 public class EditRegionMVCActionCommand
-	extends BaseMVCActionCommand implements AopService, MVCActionCommand {
+	extends BaseTransactionalMVCActionCommand {
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public boolean processAction(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws PortletException {
-
-		return super.processAction(actionRequest, actionResponse);
-	}
-
-	@Override
-	protected void doProcessAction(
+	protected void doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -83,7 +69,6 @@ public class EditRegionMVCActionCommand
 			double position = ParamUtil.getDouble(actionRequest, "position");
 			String regionCode = ParamUtil.getString(
 				actionRequest, "regionCode");
-			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
 			Region region = null;
 
@@ -95,28 +80,38 @@ public class EditRegionMVCActionCommand
 					ServiceContextFactory.getInstance(
 						Region.class.getName(), actionRequest));
 
-				redirect = HttpComponentsUtil.setParameter(
-					redirect, actionResponse.getNamespace() + "regionId",
-					region.getRegionId());
+				actionRequest.setAttribute(
+					WebKeys.REDIRECT,
+					HttpComponentsUtil.setParameter(
+						ParamUtil.getString(actionRequest, "redirect"),
+						actionResponse.getNamespace() + "regionId",
+						region.getRegionId()));
 			}
 			else {
 				region = _regionService.updateRegion(
 					regionId, active, name, position, regionCode);
 			}
 
-			_updateRegionLocalizations(
-				region,
-				LocalizationUtil.getLocalizationMap(actionRequest, "title"));
+			if (region != null) {
+				Map<String, String> titleMap = new HashMap<>();
 
-			if (Validator.isNotNull(redirect)) {
-				sendRedirect(actionRequest, actionResponse, redirect);
+				Map<Locale, String> titleLocalizationMap =
+					_localization.getLocalizationMap(actionRequest, "title");
+
+				for (Map.Entry<Locale, String> entry :
+						titleLocalizationMap.entrySet()) {
+
+					titleMap.put(
+						_language.getLanguageId(entry.getKey()),
+						entry.getValue());
+				}
+
+				_regionLocalService.updateRegionLocalizations(region, titleMap);
 			}
 		}
 		catch (Throwable throwable) {
 			if (throwable instanceof NoSuchRegionException ||
 				throwable instanceof PrincipalException) {
-
-				SessionErrors.add(actionRequest, throwable.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
@@ -127,35 +122,18 @@ public class EditRegionMVCActionCommand
 				hideDefaultErrorMessage(actionRequest);
 				hideDefaultSuccessMessage(actionRequest);
 
-				SessionErrors.add(actionRequest, throwable.getClass());
-
-				actionResponse.setRenderParameter(
-					"mvcRenderCommandName", "/address/edit_region");
+				sendRedirect(actionRequest, actionResponse);
 			}
-			else {
-				throw new Exception(throwable);
-			}
+
+			throw new PortletException(throwable);
 		}
-	}
-
-	private void _updateRegionLocalizations(
-			Region region, Map<Locale, String> localizationMap)
-		throws Exception {
-
-		Map<String, String> map = new HashMap<>();
-
-		for (Map.Entry<Locale, String> entry : localizationMap.entrySet()) {
-			map.put(_language.getLanguageId(entry.getKey()), entry.getValue());
-		}
-
-		_regionLocalService.updateRegionLocalizations(region, map);
 	}
 
 	@Reference
 	private Language _language;
 
 	@Reference
-	private Portal _portal;
+	private Localization _localization;
 
 	@Reference
 	private RegionLocalService _regionLocalService;

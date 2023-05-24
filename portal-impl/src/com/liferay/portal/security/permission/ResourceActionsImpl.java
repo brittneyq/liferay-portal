@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
@@ -439,6 +440,15 @@ public class ResourceActionsImpl implements ResourceActions {
 			ClassLoader classLoader, String... sources)
 		throws ResourceActionsException {
 
+		populateModelResources(classLoader, sources, true);
+	}
+
+	@Override
+	public void populateModelResources(
+			ClassLoader classLoader, String[] sources,
+			boolean checkResourceActions)
+		throws ResourceActionsException {
+
 		if (ArrayUtil.isEmpty(sources)) {
 			return;
 		}
@@ -452,9 +462,12 @@ public class ResourceActionsImpl implements ResourceActions {
 					rootElement, modelResourceNames));
 		}
 
-		for (String modelResourceName : modelResourceNames) {
-			resourceActionLocalService.checkResourceActions(
-				modelResourceName, getModelResourceActions(modelResourceName));
+		if (checkResourceActions) {
+			for (String modelResourceName : modelResourceNames) {
+				resourceActionLocalService.checkResourceActions(
+					modelResourceName,
+					getModelResourceActions(modelResourceName));
+			}
 		}
 	}
 
@@ -482,6 +495,25 @@ public class ResourceActionsImpl implements ResourceActions {
 			resourceActionLocalService.checkResourceActions(
 				modelResourceName, getModelResourceActions(modelResourceName));
 		}
+	}
+
+	@Override
+	public void populatePortletResource(
+			Portlet portlet, ClassLoader classLoader, Document document)
+		throws ResourceActionsException {
+
+		if (portlet == null) {
+			throw new IllegalArgumentException("Portlet must not be null");
+		}
+
+		_readPortletResource(document.getRootElement(), portlet);
+
+		String portletResourceName = PortletIdCodec.decodePortletName(
+			portlet.getPortletId());
+
+		resourceActionLocalService.checkResourceActions(
+			portletResourceName,
+			_getPortletResourceActions(portletResourceName, portlet));
 	}
 
 	@Override
@@ -516,6 +548,15 @@ public class ResourceActionsImpl implements ResourceActions {
 			ClassLoader classLoader, String... sources)
 		throws ResourceActionsException {
 
+		populatePortletResources(classLoader, sources, true);
+	}
+
+	@Override
+	public void populatePortletResources(
+			ClassLoader classLoader, String[] sources,
+			boolean checkResourceActions)
+		throws ResourceActionsException {
+
 		if (ArrayUtil.isEmpty(sources) ||
 			!PropsValues.RESOURCE_ACTIONS_READ_PORTLET_RESOURCES) {
 
@@ -531,10 +572,12 @@ public class ResourceActionsImpl implements ResourceActions {
 					rootElement, portletResourceNames));
 		}
 
-		for (String portletResourceName : portletResourceNames) {
-			resourceActionLocalService.checkResourceActions(
-				portletResourceName,
-				getPortletResourceActions(portletResourceName));
+		if (checkResourceActions) {
+			for (String portletResourceName : portletResourceNames) {
+				resourceActionLocalService.checkResourceActions(
+					portletResourceName,
+					getPortletResourceActions(portletResourceName));
+			}
 		}
 	}
 
@@ -544,6 +587,26 @@ public class ResourceActionsImpl implements ResourceActions {
 		_read(
 			classLoader, source,
 			rootElement -> _readModelResources(rootElement, null));
+	}
+
+	@Override
+	public void removeModelResource(String name, String action) {
+		if (Validator.isNull(name) || Validator.isNull(action)) {
+			return;
+		}
+
+		ResourceActionsBag resourceActionsBag = _getResourceActionsBag(name);
+
+		Set<String> resourceActions = resourceActionsBag.getSupportsActions();
+
+		resourceActions.remove(action);
+
+		ResourceAction resourceAction =
+			resourceActionLocalService.fetchResourceAction(name, action);
+
+		if (resourceAction != null) {
+			resourceActionLocalService.deleteResourceAction(resourceAction);
+		}
 	}
 
 	@BeanReference(type = PortletLocalService.class)

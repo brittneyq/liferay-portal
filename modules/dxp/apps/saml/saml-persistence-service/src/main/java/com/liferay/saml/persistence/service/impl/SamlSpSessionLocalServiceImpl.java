@@ -18,18 +18,18 @@ import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.saml.persistence.exception.NoSuchSpSessionException;
 import com.liferay.saml.persistence.model.SamlPeerBinding;
 import com.liferay.saml.persistence.model.SamlSpSession;
 import com.liferay.saml.persistence.service.SamlPeerBindingLocalService;
 import com.liferay.saml.persistence.service.base.SamlSpSessionLocalServiceBaseImpl;
+import com.liferay.saml.persistence.service.persistence.SamlPeerBindingPersistence;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -52,28 +52,28 @@ public class SamlSpSessionLocalServiceImpl
 			String sessionIndex, ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userLocalService.getUserById(serviceContext.getUserId());
+		User user = _userLocalService.getUserById(serviceContext.getUserId());
 
 		SamlPeerBinding samlPeerBinding =
-			samlPeerBindingPersistence.fetchByC_D_SNIF_SNINQ_SNIV_SPEI_First(
+			_samlPeerBindingLocalService.fetchSamlPeerBinding(
 				user.getCompanyId(), false, nameIdFormat, nameIdNameQualifier,
-				nameIdValue, samlIdpEntityId, null);
+				nameIdValue, samlIdpEntityId);
 
 		if ((samlPeerBinding != null) &&
 			(user.getUserId() != samlPeerBinding.getUserId())) {
 
 			samlPeerBinding.setDeleted(true);
 
-			samlPeerBindingPersistence.update(samlPeerBinding);
+			_samlPeerBindingPersistence.update(samlPeerBinding);
 
 			samlPeerBinding = null;
 		}
 
 		if (samlPeerBinding == null) {
 			_deleteSamlPeerBindings(
-				samlPeerBindingPersistence.findByC_U_D_SNIF_SNINQ_SPEI(
-					user.getCompanyId(), user.getUserId(), false, nameIdFormat,
-					nameIdNameQualifier, samlIdpEntityId));
+				_samlPeerBindingLocalService.getUserSamlPeerBindings(
+					user.getUserId(), false, nameIdFormat, nameIdNameQualifier,
+					samlIdpEntityId));
 
 			samlPeerBinding = _samlPeerBindingLocalService.addSamlPeerBinding(
 				user.getUserId(), nameIdFormat, nameIdNameQualifier,
@@ -121,7 +121,19 @@ public class SamlSpSessionLocalServiceImpl
 			return null;
 		}
 
-		return samlSpSessionPersistence.fetchByC_SI(companyId, sessionIndex);
+		return samlSpSessionPersistence.fetchByC_SI_First(
+			companyId, sessionIndex, null);
+	}
+
+	@Override
+	public List<SamlSpSession> fetchSamlSpSessionsBySessionIndex(
+		long companyId, String sessionIndex) {
+
+		if (Validator.isNull(sessionIndex)) {
+			return null;
+		}
+
+		return samlSpSessionPersistence.findByC_SI(companyId, sessionIndex);
 	}
 
 	@Override
@@ -149,7 +161,8 @@ public class SamlSpSessionLocalServiceImpl
 			throw new NoSuchSpSessionException(sessionIndex);
 		}
 
-		return samlSpSessionPersistence.findByC_SI(companyId, sessionIndex);
+		return samlSpSessionPersistence.findByC_SI_First(
+			companyId, sessionIndex, null);
 	}
 
 	@Override
@@ -158,32 +171,29 @@ public class SamlSpSessionLocalServiceImpl
 		String nameIdSPNameQualifier, String nameIdValue,
 		String samlIdpEntityId) {
 
-		List<SamlPeerBinding> samlPeerBindings = new ArrayList<>();
+		List<SamlSpSession> samlSpSessions = new ArrayList<>();
 
-		samlPeerBindings.addAll(
-			samlPeerBindingPersistence.findByC_D_SNIF_SNINQ_SNIV_SPEI(
-				companyId, false, nameIdFormat, nameIdNameQualifier,
-				nameIdValue, samlIdpEntityId));
-		samlPeerBindings.addAll(
-			samlPeerBindingPersistence.findByC_D_SNIF_SNINQ_SNIV_SPEI(
-				companyId, true, nameIdFormat, nameIdNameQualifier, nameIdValue,
-				samlIdpEntityId));
+		for (SamlPeerBinding samlPeerBinding :
+				_samlPeerBindingLocalService.getSamlPeerBindings(
+					companyId, false, nameIdFormat, nameIdNameQualifier,
+					nameIdValue, samlIdpEntityId)) {
 
-		Stream<SamlPeerBinding> stream = samlPeerBindings.stream();
+			samlSpSessions.addAll(
+				samlSpSessionPersistence.findBySamlPeerBindingId(
+					samlPeerBinding.getSamlPeerBindingId()));
+		}
 
-		return stream.map(
-			SamlPeerBinding::getSamlPeerBindingId
-		).flatMap(
-			samlPeerBindingId -> {
-				List<SamlSpSession> samlSpSessions =
-					samlSpSessionPersistence.findBySamlPeerBindingId(
-						samlPeerBindingId);
+		for (SamlPeerBinding samlPeerBinding :
+				_samlPeerBindingLocalService.getSamlPeerBindings(
+					companyId, true, nameIdFormat, nameIdNameQualifier,
+					nameIdValue, samlIdpEntityId)) {
 
-				return samlSpSessions.stream();
-			}
-		).collect(
-			Collectors.toList()
-		);
+			samlSpSessions.addAll(
+				samlSpSessionPersistence.findBySamlPeerBindingId(
+					samlPeerBinding.getSamlPeerBindingId()));
+		}
+
+		return samlSpSessions;
 	}
 
 	@Override
@@ -209,12 +219,12 @@ public class SamlSpSessionLocalServiceImpl
 			String sessionIndex, ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userLocalService.getUserById(serviceContext.getUserId());
+		User user = _userLocalService.getUserById(serviceContext.getUserId());
 
 		SamlPeerBinding samlPeerBinding =
-			samlPeerBindingPersistence.fetchByC_D_SNIF_SNINQ_SNIV_SPEI_First(
+			_samlPeerBindingLocalService.fetchSamlPeerBinding(
 				user.getCompanyId(), false, nameIdFormat, nameIdNameQualifier,
-				nameIdValue, samlIdpEntityId, null);
+				nameIdValue, samlIdpEntityId);
 
 		if (samlPeerBinding == null) {
 			samlPeerBinding = _samlPeerBindingLocalService.addSamlPeerBinding(
@@ -245,11 +255,17 @@ public class SamlSpSessionLocalServiceImpl
 		for (SamlPeerBinding samlPeerBinding : samlPeerBindings) {
 			samlPeerBinding.setDeleted(true);
 
-			samlPeerBindingPersistence.update(samlPeerBinding);
+			_samlPeerBindingPersistence.update(samlPeerBinding);
 		}
 	}
 
 	@Reference
 	private SamlPeerBindingLocalService _samlPeerBindingLocalService;
+
+	@Reference
+	private SamlPeerBindingPersistence _samlPeerBindingPersistence;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

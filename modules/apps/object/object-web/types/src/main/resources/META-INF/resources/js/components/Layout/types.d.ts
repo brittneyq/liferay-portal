@@ -12,12 +12,11 @@
  * details.
  */
 
-export declare type BoxType = 'regular' | 'categorization' | 'comments';
-export declare type TName = LocalizedValue<string>;
+export declare type BoxType = 'regular' | 'categorization';
 export declare type TObjectLayout = {
 	defaultObjectLayout: boolean;
-	name: TName;
-	objectDefinitionId: number;
+	name: LocalizedValue<string>;
+	objectDefinitionExternalReferenceCode: string;
 	objectLayoutTabs: TObjectLayoutTab[];
 };
 export declare type TObjectLayoutTab = {
@@ -28,7 +27,7 @@ export declare type TObjectLayoutTab = {
 };
 export declare type TObjectLayoutBox = {
 	collapsable: boolean;
-	name: TName;
+	name: LocalizedValue<string>;
 	objectLayoutRows: TObjectLayoutRow[];
 	priority: number;
 	type: BoxType;
@@ -38,7 +37,7 @@ export declare type TObjectLayoutRow = {
 	priority: number;
 };
 export declare type TObjectLayoutColumn = {
-	objectFieldId: number;
+	objectFieldName: string;
 	priority: number;
 	size: number;
 };

@@ -15,8 +15,6 @@
 package com.liferay.exportimport.internal.controller;
 
 import com.liferay.asset.kernel.model.adapter.StagedAssetLink;
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
-import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.expando.kernel.exception.NoSuchTableException;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoTable;
@@ -141,7 +139,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Máté Thurzó
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.portal.kernel.model.Portlet",
 	service = {ExportImportController.class, PortletImportController.class}
 )
@@ -565,7 +562,7 @@ public class PortletImportControllerImpl implements PortletImportController {
 				element.attributeValue("default-user"));
 
 			if (defaultUser) {
-				ownerId = _userLocalService.getDefaultUserId(companyId);
+				ownerId = _userLocalService.getGuestUserId(companyId);
 			}
 
 			javax.portlet.PortletPreferences jxPortletPreferences =
@@ -602,13 +599,9 @@ public class PortletImportControllerImpl implements PortletImportController {
 						}
 					}
 
-					if (portletDataContext.getGroupId() ==
-							portletDataContext.getScopeGroupId()) {
-
-						exportImportPortletPreferencesProcessor.
-							processImportPortletPreferences(
-								portletDataContext, jxPortletPreferences);
-					}
+					exportImportPortletPreferencesProcessor.
+						processImportPortletPreferences(
+							portletDataContext, jxPortletPreferences);
 				}
 			}
 			finally {
@@ -1010,12 +1003,12 @@ public class PortletImportControllerImpl implements PortletImportController {
 
 	protected boolean isValidateMissingReferences() {
 		try {
-			ExportImportServiceConfiguration configuration =
+			ExportImportServiceConfiguration exportImportServiceConfiguration =
 				_configurationProvider.getCompanyConfiguration(
 					ExportImportServiceConfiguration.class,
 					CompanyThreadLocal.getCompanyId());
 
-			return configuration.validateMissingReferences();
+			return exportImportServiceConfiguration.validateMissingReferences();
 		}
 		catch (Exception exception) {
 			_log.error(exception);
@@ -1501,12 +1494,6 @@ public class PortletImportControllerImpl implements PortletImportController {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletImportControllerImpl.class);
-
-	@Reference
-	private AssetEntryLocalService _assetEntryLocalService;
-
-	@Reference
-	private AssetLinkLocalService _assetLinkLocalService;
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;

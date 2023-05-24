@@ -208,48 +208,64 @@ public class CompanyInfoModelImpl
 	public Map<String, Function<CompanyInfo, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<CompanyInfo, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<CompanyInfo, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<CompanyInfo, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<CompanyInfo, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<CompanyInfo, Object>>();
-		Map<String, BiConsumer<CompanyInfo, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<CompanyInfo, ?>>();
+		private static final Map<String, Function<CompanyInfo, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", CompanyInfo::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<CompanyInfo, Long>)CompanyInfo::setMvccVersion);
-		attributeGetterFunctions.put(
-			"companyInfoId", CompanyInfo::getCompanyInfoId);
-		attributeSetterBiConsumers.put(
-			"companyInfoId",
-			(BiConsumer<CompanyInfo, Long>)CompanyInfo::setCompanyInfoId);
-		attributeGetterFunctions.put("companyId", CompanyInfo::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<CompanyInfo, Long>)CompanyInfo::setCompanyId);
-		attributeGetterFunctions.put("key", CompanyInfo::getKey);
-		attributeSetterBiConsumers.put(
-			"key", (BiConsumer<CompanyInfo, String>)CompanyInfo::setKey);
+		static {
+			Map<String, Function<CompanyInfo, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap<String, Function<CompanyInfo, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", CompanyInfo::getMvccVersion);
+			attributeGetterFunctions.put(
+				"companyInfoId", CompanyInfo::getCompanyInfoId);
+			attributeGetterFunctions.put(
+				"companyId", CompanyInfo::getCompanyId);
+			attributeGetterFunctions.put("key", CompanyInfo::getKey);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<CompanyInfo, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<CompanyInfo, ?>> attributeSetterBiConsumers =
+				new LinkedHashMap<String, BiConsumer<CompanyInfo, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<CompanyInfo, Long>)CompanyInfo::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"companyInfoId",
+				(BiConsumer<CompanyInfo, Long>)CompanyInfo::setCompanyInfoId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<CompanyInfo, Long>)CompanyInfo::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"key", (BiConsumer<CompanyInfo, String>)CompanyInfo::setKey);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -542,37 +558,6 @@ public class CompanyInfoModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<CompanyInfo, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<CompanyInfo, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<CompanyInfo, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((CompanyInfo)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, CompanyInfo>
@@ -590,8 +575,9 @@ public class CompanyInfoModelImpl
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
-		Function<CompanyInfo, Object> function = _attributeGetterFunctions.get(
-			columnName);
+		Function<CompanyInfo, Object> function =
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

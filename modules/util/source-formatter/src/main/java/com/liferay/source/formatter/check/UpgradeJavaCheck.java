@@ -36,6 +36,10 @@ public class UpgradeJavaCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws Exception {
 
+		if (!fileName.endsWith(".java")) {
+			return content;
+		}
+
 		JavaClass javaClass = JavaClassParser.parseJavaClass(fileName, content);
 
 		return _fixImports(javaClass, content);
@@ -50,7 +54,7 @@ public class UpgradeJavaCheck extends BaseFileCheck {
 			String newImportName = importsMap.get(importName);
 
 			if (newImportName != null) {
-				return StringUtil.replace(
+				content = StringUtil.replace(
 					content, StringBundler.concat("import ", importName, ";"),
 					StringBundler.concat("import ", newImportName, ";"));
 			}
@@ -61,7 +65,7 @@ public class UpgradeJavaCheck extends BaseFileCheck {
 
 	private synchronized Map<String, String> _getImportsMap() throws Exception {
 		if (_importsMap == null) {
-			_importsMap = _getMap("/java/imports.txt");
+			_importsMap = _getMap("/imports.txt");
 		}
 
 		return _importsMap;
@@ -72,7 +76,8 @@ public class UpgradeJavaCheck extends BaseFileCheck {
 
 		File importsFile = SourceFormatterUtil.getFile(
 			getBaseDirName(),
-			SourceFormatterUtil.UPGRADE_INPUT_DATA_DIRECTORY_NAME + fileName,
+			"modules/util/source-formatter/src/main/resources/dependencies/" +
+				fileName,
 			getMaxDirLevel());
 
 		if (importsFile == null) {
@@ -81,17 +86,12 @@ public class UpgradeJavaCheck extends BaseFileCheck {
 
 		String[] lines = StringUtil.splitLines(FileUtil.read(importsFile));
 
-		String oldValue = null;
-
 		for (String line : lines) {
-			if (line.matches("\\d+\\.old:.+")) {
-				oldValue = line.substring(line.indexOf(":") + 1);
-			}
-			else if (line.matches("\\d+\\.new:.+") && (oldValue != null)) {
-				map.put(oldValue, line.substring(line.indexOf(":") + 1));
+			int separatorIndex = line.indexOf("=");
 
-				oldValue = null;
-			}
+			map.put(
+				line.substring(0, separatorIndex),
+				line.substring(separatorIndex + 1));
 		}
 
 		return map;

@@ -14,8 +14,8 @@
 
 package com.liferay.friendly.url.internal.servlet;
 
-import com.liferay.friendly.url.internal.configuration.FriendlyURLRedirectionConfiguration;
-import com.liferay.friendly.url.internal.configuration.admin.service.FriendlyURLRedirectionManagedServiceFactory;
+import com.liferay.friendly.url.configuration.FriendlyURLRedirectionConfiguration;
+import com.liferay.friendly.url.configuration.FriendlyURLRedirectionConfigurationProvider;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
@@ -39,17 +39,20 @@ import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualLayoutConstants;
 import com.liferay.portal.kernel.portlet.LayoutFriendlyURLSeparatorComposite;
+import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.InactiveRequestHandler;
 import com.liferay.portal.kernel.servlet.PortalMessages;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
@@ -75,6 +78,7 @@ import com.liferay.site.service.SiteFriendlyURLLocalService;
 
 import java.io.IOException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -130,6 +134,7 @@ public class FriendlyURLServlet extends HttpServlet {
 				groupFriendlyURL, companyId, group, locale);
 
 		String layoutFriendlyURL = null;
+		Redirect redirectProviderRedirect = null;
 
 		if ((pos != -1) && ((pos + 1) != path.length())) {
 			layoutFriendlyURL = path.substring(pos);
@@ -139,24 +144,14 @@ public class FriendlyURLServlet extends HttpServlet {
 					0, layoutFriendlyURL.length() - 1);
 			}
 
-			RedirectProvider currentRedirectProvider = redirectProvider;
+			redirectProviderRedirect = _getRedirectProviderRedirect(
+				group.getGroupId(), httpServletRequest, layoutFriendlyURL,
+				redirectProvider);
 
-			if (currentRedirectProvider != null) {
-				HttpServletRequest originalHttpServletRequest =
-					portal.getOriginalServletRequest(httpServletRequest);
+			if ((redirectProviderRedirect != null) &&
+				!_isSkipRedirect(httpServletRequest)) {
 
-				RedirectProvider.Redirect redirectProviderRedirect =
-					redirectProvider.getRedirect(
-						group.getGroupId(),
-						_normalizeFriendlyURL(layoutFriendlyURL),
-						_normalizeFriendlyURL(
-							originalHttpServletRequest.getRequestURI()));
-
-				if (redirectProviderRedirect != null) {
-					return new Redirect(
-						redirectProviderRedirect.getDestinationURL(), true,
-						redirectProviderRedirect.isPermanent());
-				}
+				return redirectProviderRedirect;
 			}
 		}
 		else {
@@ -224,9 +219,10 @@ public class FriendlyURLServlet extends HttpServlet {
 			Layout layout = layoutFriendlyURLSeparatorComposite.getLayout();
 
 			if (layout != null) {
+				User user = _getUser(httpServletRequest);
+
 				PermissionChecker permissionChecker =
-					PermissionCheckerFactoryUtil.create(
-						_getUser(httpServletRequest));
+					PermissionCheckerFactoryUtil.create(user);
 
 				if (!LayoutPermissionUtil.contains(
 						permissionChecker, layout, ActionKeys.VIEW)) {
@@ -241,6 +237,21 @@ public class FriendlyURLServlet extends HttpServlet {
 					}
 
 					throw new LayoutPermissionException();
+				}
+
+				if (user.isGuestUser() && layout.isSystem() &&
+					Objects.equals(
+						layout.getFriendlyURL(),
+						PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL)) {
+
+					throw new NoSuchLayoutException();
+				}
+
+				if ((redirectProviderRedirect != null) &&
+					!LayoutPermissionUtil.containsLayoutUpdatePermission(
+						permissionChecker, layout)) {
+
+					return redirectProviderRedirect;
 				}
 			}
 
@@ -334,7 +345,18 @@ public class FriendlyURLServlet extends HttpServlet {
 			Layout redirectLayout = null;
 
 			if (layoutFriendlyURL == null) {
-				redirectLayout = defaultLayout;
+				if (exception instanceof LayoutPermissionException) {
+					List<Layout> layouts = layoutService.getLayouts(
+						group.getGroupId(), _private,
+						LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, 0, 1);
+
+					if (!layouts.isEmpty()) {
+						redirectLayout = layouts.get(0);
+					}
+				}
+				else {
+					redirectLayout = defaultLayout;
+				}
 			}
 			else {
 				List<Layout> layouts = layoutLocalService.getLayouts(
@@ -365,7 +387,9 @@ public class FriendlyURLServlet extends HttpServlet {
 					group, _normalizeFriendlyURL(layoutFriendlyURL));
 			}
 
-			if (exception instanceof NoSuchLayoutException) {
+			if (exception instanceof LayoutPermissionException ||
+				exception instanceof NoSuchLayoutException) {
+
 				if (Validator.isNotNull(
 						PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND)) {
 
@@ -406,6 +430,10 @@ public class FriendlyURLServlet extends HttpServlet {
 
 				actualURL = HttpComponentsUtil.setParameter(
 					actualURL, "doAsUserId", encDoAsUserId);
+
+				params = new HashMap<>(params);
+
+				params.remove("doAsUserId");
 			}
 			catch (EncryptorException encryptorException) {
 				if (_log.isDebugEnabled()) {
@@ -657,8 +685,8 @@ public class FriendlyURLServlet extends HttpServlet {
 	protected FriendlyURLNormalizer friendlyURLNormalizer;
 
 	@Reference
-	protected FriendlyURLRedirectionManagedServiceFactory
-		friendlyURLRedirectionManagedServiceFactory;
+	protected FriendlyURLRedirectionConfigurationProvider
+		friendlyURLRedirectionConfigurationProvider;
 
 	@Reference
 	protected GroupLocalService groupLocalService;
@@ -671,6 +699,9 @@ public class FriendlyURLServlet extends HttpServlet {
 
 	@Reference
 	protected LayoutLocalService layoutLocalService;
+
+	@Reference
+	protected LayoutService layoutService;
 
 	@Reference
 	protected Portal portal;
@@ -742,6 +773,15 @@ public class FriendlyURLServlet extends HttpServlet {
 		return alternativeSiteFriendlyURL;
 	}
 
+	private String _getFriendlyURLRedirectionType(long companyId) {
+		FriendlyURLRedirectionConfiguration
+			friendlyURLRedirectionConfiguration =
+				friendlyURLRedirectionConfigurationProvider.
+					getCompanyFriendlyURLRedirectionConfiguration(companyId);
+
+		return friendlyURLRedirectionConfiguration.redirectionType();
+	}
+
 	private Group _getGroup(String path, String friendlyURL, long companyId)
 		throws NoSuchGroupException {
 
@@ -807,6 +847,33 @@ public class FriendlyURLServlet extends HttpServlet {
 		return requestURI.substring(_pathInfoOffset, pos);
 	}
 
+	private Redirect _getRedirectProviderRedirect(
+		long groupId, HttpServletRequest httpServletRequest,
+		String layoutFriendlyURL, RedirectProvider redirectProvider) {
+
+		if ((redirectProvider == null) ||
+			LiferayWindowState.isExclusive(httpServletRequest) ||
+			LiferayWindowState.isPopUp(httpServletRequest)) {
+
+			return null;
+		}
+
+		HttpServletRequest originalHttpServletRequest =
+			portal.getOriginalServletRequest(httpServletRequest);
+
+		RedirectProvider.Redirect redirect = redirectProvider.getRedirect(
+			groupId, _normalizeFriendlyURL(layoutFriendlyURL),
+			_normalizeFriendlyURL(originalHttpServletRequest.getRequestURI()),
+			httpServletRequest.getHeader(HttpHeaders.USER_AGENT));
+
+		if (redirect == null) {
+			return null;
+		}
+
+		return new Redirect(
+			redirect.getDestinationURL(), true, redirect.isPermanent());
+	}
+
 	private ServiceContext _getServiceContext(
 			Group group, HttpServletRequest httpServletRequest)
 		throws PortalException {
@@ -835,7 +902,7 @@ public class FriendlyURLServlet extends HttpServlet {
 		User user = portal.getUser(httpServletRequest);
 
 		if (user == null) {
-			user = userLocalService.getDefaultUser(
+			user = userLocalService.getGuestUser(
 				portal.getCompanyId(httpServletRequest));
 		}
 
@@ -857,14 +924,8 @@ public class FriendlyURLServlet extends HttpServlet {
 	}
 
 	private boolean _isPermanentRedirect(long companyId) {
-		FriendlyURLRedirectionConfiguration
-			friendlyURLRedirectionConfiguration =
-				friendlyURLRedirectionManagedServiceFactory.
-					getCompanyFriendlyURLConfiguration(companyId);
-
 		if (Objects.equals(
-				friendlyURLRedirectionConfiguration.redirectionType(),
-				"permanent")) {
+				_getFriendlyURLRedirectionType(companyId), "permanent")) {
 
 			return true;
 		}
@@ -872,14 +933,40 @@ public class FriendlyURLServlet extends HttpServlet {
 		return false;
 	}
 
-	private String _normalizeFriendlyURL(String friendlyURL) {
-		if (Validator.isNotNull(friendlyURL) &&
-			friendlyURL.startsWith(StringPool.SLASH)) {
+	private boolean _isSkipRedirect(HttpServletRequest httpServletRequest) {
+		String refererURL = httpServletRequest.getHeader(HttpHeaders.REFERER);
 
-			return friendlyURL.substring(1);
+		if (Validator.isNotNull(refererURL)) {
+			int index = refererURL.indexOf(CharPool.QUESTION);
+
+			if (index != -1) {
+				refererURL = refererURL.substring(0, index);
+			}
 		}
 
-		return friendlyURL;
+		if (Validator.isNotNull(refererURL)) {
+			return refererURL.contains(
+				VirtualLayoutConstants.CANONICAL_URL_SEPARATOR +
+					GroupConstants.CONTROL_PANEL_FRIENDLY_URL);
+		}
+
+		return false;
+	}
+
+	private String _normalizeFriendlyURL(String friendlyURL) {
+		if (Validator.isNull(friendlyURL)) {
+			return friendlyURL;
+		}
+
+		String normalizedFriendlyURL =
+			friendlyURLNormalizer.normalizeWithEncoding(
+				HttpComponentsUtil.decodeURL(friendlyURL));
+
+		if (normalizedFriendlyURL.startsWith(StringPool.SLASH)) {
+			return normalizedFriendlyURL.substring(1);
+		}
+
+		return normalizedFriendlyURL;
 	}
 
 	private Locale _setAlternativeLayoutFriendlyURL(

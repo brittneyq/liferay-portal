@@ -1,3 +1,4 @@
+/* eslint-disable @liferay/portal/no-global-fetch */
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -12,11 +13,32 @@
  * details.
  */
 
-import {axios} from '../../../common/services/liferay/api';
-
 const DeliveryAPI = 'o/headless-admin-user';
+const baseURL = window.location.origin + Liferay.ThemeDisplay.getPathContext();
 
-export async function createAccount(
+const fetchHeadless = async (url, options) => {
+	const response = await fetch(`${baseURL}/${url}`, {
+		...options,
+		headers: {
+			'Content-Type': 'application/json',
+			'x-csrf-token': Liferay.authToken,
+		},
+	});
+
+	if (!response.ok) {
+		const error = new Error('An error occurred while fetching the data.');
+
+		error.info = await response.json();
+		error.status = response.status;
+		throw error;
+	}
+
+	const data = await response.json();
+
+	return data;
+};
+
+export function createUserAccount(
 	firstName,
 	lastName,
 	emailAddress,
@@ -31,16 +53,24 @@ export async function createAccount(
 		password,
 	};
 
+	return fetchHeadless(
+		`${DeliveryAPI}/v1.0/user-accounts?captchaText=${captcha}`,
+		{
+			body: JSON.stringify(userPayload),
+			method: 'POST',
+		}
+	);
+}
+
+export function createAccount(name) {
 	const accountPayload = {
-		name: `${firstName} ${lastName}`,
+		name,
 		status: 0,
 		type: 'business',
 	};
 
-	await axios.post(
-		`${DeliveryAPI}/v1.0/user-accounts?captchaText=${captcha}`,
-		userPayload
-	);
-
-	return axios.post(`${DeliveryAPI}/v1.0/accounts`, accountPayload);
+	return fetchHeadless(`${DeliveryAPI}/v1.0/accounts`, {
+		body: JSON.stringify(accountPayload),
+		method: 'POST',
+	});
 }

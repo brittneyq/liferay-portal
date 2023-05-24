@@ -14,7 +14,10 @@
 
 package com.liferay.knowledge.base.service;
 
+import com.liferay.knowledge.base.model.KBFolder;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link KBFolderLocalService}.
@@ -47,14 +50,12 @@ public class KBFolderLocalServiceWrapper
 	 * @return the kb folder that was added
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder addKBFolder(
-		com.liferay.knowledge.base.model.KBFolder kbFolder) {
-
+	public KBFolder addKBFolder(KBFolder kbFolder) {
 		return _kbFolderLocalService.addKBFolder(kbFolder);
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder addKBFolder(
+	public KBFolder addKBFolder(
 			String externalReferenceCode, long userId, long groupId,
 			long parentResourceClassNameId, long parentResourcePrimKey,
 			String name, String description,
@@ -73,9 +74,7 @@ public class KBFolderLocalServiceWrapper
 	 * @return the new kb folder
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder createKBFolder(
-		long kbFolderId) {
-
+	public KBFolder createKBFolder(long kbFolderId) {
 		return _kbFolderLocalService.createKBFolder(kbFolderId);
 	}
 
@@ -101,9 +100,7 @@ public class KBFolderLocalServiceWrapper
 	 * @return the kb folder that was removed
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder deleteKBFolder(
-		com.liferay.knowledge.base.model.KBFolder kbFolder) {
-
+	public KBFolder deleteKBFolder(KBFolder kbFolder) {
 		return _kbFolderLocalService.deleteKBFolder(kbFolder);
 	}
 
@@ -119,8 +116,7 @@ public class KBFolderLocalServiceWrapper
 	 * @throws PortalException if a kb folder with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder deleteKBFolder(
-			long kbFolderId)
+	public KBFolder deleteKBFolder(long kbFolderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.deleteKBFolder(kbFolderId);
@@ -247,8 +243,7 @@ public class KBFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder fetchFirstChildKBFolder(
-			long groupId, long kbFolderId)
+	public KBFolder fetchFirstChildKBFolder(long groupId, long kbFolderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.fetchFirstChildKBFolder(
@@ -256,10 +251,10 @@ public class KBFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder fetchFirstChildKBFolder(
+	public KBFolder fetchFirstChildKBFolder(
 			long groupId, long kbFolderId,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.knowledge.base.model.KBFolder> orderByComparator)
+			com.liferay.portal.kernel.util.OrderByComparator<KBFolder>
+				orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.fetchFirstChildKBFolder(
@@ -267,50 +262,25 @@ public class KBFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder fetchKBFolder(
-		long kbFolderId) {
-
+	public KBFolder fetchKBFolder(long kbFolderId) {
 		return _kbFolderLocalService.fetchKBFolder(kbFolderId);
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder fetchKBFolder(
-		String uuid, long groupId) {
-
+	public KBFolder fetchKBFolder(String uuid, long groupId) {
 		return _kbFolderLocalService.fetchKBFolder(uuid, groupId);
 	}
 
-	/**
-	 * Returns the kb folder with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the kb folder's external reference code
-	 * @return the matching kb folder, or <code>null</code> if a matching kb folder could not be found
-	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder
-		fetchKBFolderByExternalReferenceCode(
-			long groupId, String externalReferenceCode) {
+	public KBFolder fetchKBFolderByExternalReferenceCode(
+		String externalReferenceCode, long groupId) {
 
 		return _kbFolderLocalService.fetchKBFolderByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchKBFolderByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.knowledge.base.model.KBFolder
-		fetchKBFolderByReferenceCode(
-			long groupId, String externalReferenceCode) {
-
-		return _kbFolderLocalService.fetchKBFolderByReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder fetchKBFolderByUrlTitle(
+	public KBFolder fetchKBFolderByUrlTitle(
 			long groupId, long parentKbFolderId, String urlTitle)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -326,9 +296,7 @@ public class KBFolderLocalServiceWrapper
 	 * @return the matching kb folder, or <code>null</code> if a matching kb folder could not be found
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder
-		fetchKBFolderByUuidAndGroupId(String uuid, long groupId) {
-
+	public KBFolder fetchKBFolderByUuidAndGroupId(String uuid, long groupId) {
 		return _kbFolderLocalService.fetchKBFolderByUuidAndGroupId(
 			uuid, groupId);
 	}
@@ -365,33 +333,23 @@ public class KBFolderLocalServiceWrapper
 	 * @throws PortalException if a kb folder with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder getKBFolder(
-			long kbFolderId)
+	public KBFolder getKBFolder(long kbFolderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.getKBFolder(kbFolderId);
 	}
 
-	/**
-	 * Returns the kb folder with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the kb folder's external reference code
-	 * @return the matching kb folder
-	 * @throws PortalException if a matching kb folder could not be found
-	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder
-			getKBFolderByExternalReferenceCode(
-				long groupId, String externalReferenceCode)
+	public KBFolder getKBFolderByExternalReferenceCode(
+			String externalReferenceCode, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.getKBFolderByExternalReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder getKBFolderByUrlTitle(
+	public KBFolder getKBFolderByUrlTitle(
 			long groupId, long parentKbFolderId, String urlTitle)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -408,8 +366,7 @@ public class KBFolderLocalServiceWrapper
 	 * @throws PortalException if a matching kb folder could not be found
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder
-			getKBFolderByUuidAndGroupId(String uuid, long groupId)
+	public KBFolder getKBFolderByUuidAndGroupId(String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.getKBFolderByUuidAndGroupId(uuid, groupId);
@@ -427,16 +384,13 @@ public class KBFolderLocalServiceWrapper
 	 * @return the range of kb folders
 	 */
 	@Override
-	public java.util.List<com.liferay.knowledge.base.model.KBFolder>
-		getKBFolders(int start, int end) {
-
+	public java.util.List<KBFolder> getKBFolders(int start, int end) {
 		return _kbFolderLocalService.getKBFolders(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.knowledge.base.model.KBFolder>
-			getKBFolders(
-				long groupId, long parentKBFolderId, int start, int end)
+	public java.util.List<KBFolder> getKBFolders(
+			long groupId, long parentKBFolderId, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderLocalService.getKBFolders(
@@ -470,8 +424,8 @@ public class KBFolderLocalServiceWrapper
 	 * @return the matching kb folders, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.knowledge.base.model.KBFolder>
-		getKBFoldersByUuidAndCompanyId(String uuid, long companyId) {
+	public java.util.List<KBFolder> getKBFoldersByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _kbFolderLocalService.getKBFoldersByUuidAndCompanyId(
 			uuid, companyId);
@@ -488,11 +442,10 @@ public class KBFolderLocalServiceWrapper
 	 * @return the range of matching kb folders, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.knowledge.base.model.KBFolder>
-		getKBFoldersByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.knowledge.base.model.KBFolder> orderByComparator) {
+	public java.util.List<KBFolder> getKBFoldersByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<KBFolder>
+			orderByComparator) {
 
 		return _kbFolderLocalService.getKBFoldersByUuidAndCompanyId(
 			uuid, companyId, start, end, orderByComparator);
@@ -555,14 +508,12 @@ public class KBFolderLocalServiceWrapper
 	 * @return the kb folder that was updated
 	 */
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder updateKBFolder(
-		com.liferay.knowledge.base.model.KBFolder kbFolder) {
-
+	public KBFolder updateKBFolder(KBFolder kbFolder) {
 		return _kbFolderLocalService.updateKBFolder(kbFolder);
 	}
 
 	@Override
-	public com.liferay.knowledge.base.model.KBFolder updateKBFolder(
+	public KBFolder updateKBFolder(
 			long parentResourceClassNameId, long parentResourcePrimKey,
 			long kbFolderId, String name, String description,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -571,6 +522,25 @@ public class KBFolderLocalServiceWrapper
 		return _kbFolderLocalService.updateKBFolder(
 			parentResourceClassNameId, parentResourcePrimKey, kbFolderId, name,
 			description, serviceContext);
+	}
+
+	@Override
+	public CTPersistence<KBFolder> getCTPersistence() {
+		return _kbFolderLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<KBFolder> getModelClass() {
+		return _kbFolderLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<KBFolder>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return _kbFolderLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

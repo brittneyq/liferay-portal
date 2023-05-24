@@ -4,8 +4,8 @@
 	}
 
 	&-cards {
-		margin-left: 15rem;
-		margin-right: 15rem;
+		margin-left: 35vw;
+		margin-right: 35vw;
 	}
 
 	&-card {
@@ -13,10 +13,29 @@
 		margin-top: 5rem;
 	}
 
-	&-management-tollbar {
-		box-shadow: 0 0.125rem 0.75rem rgb(0 0 0 / 8%);
-		position: fixed;
-		width: 100%;
-		z-index: 1;
+	&-label {
+		margin-left: 32px;
+		margin-top: 1px;
 	}
 }
+
+.lfr-objects__card {
+	margin: 1.5rem 0 0 !important;
+}
+
+@mixin responsiveCards($maxWidth, $margin) {
+	@media (max-width: #{$maxWidth}) {
+		.lfr__notification-template {
+			&-cards {
+				margin-left: #{$margin};
+				margin-right: #{$margin};
+			}
+		}
+	}
+}
+
+@include responsiveCards(3840px, 40rem);
+@include responsiveCards(2160px, 29rem);
+@include responsiveCards(1920px, 21rem);
+@include responsiveCards(1600px, 11rem);
+@include responsiveCards(1280px, 5rem);

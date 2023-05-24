@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		RedirectEntryModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.redirect.model.impl.RedirectEntryImpl",
+		"table.name=RedirectEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class RedirectEntryModelArgumentsResolver implements ArgumentsResolver {
 

@@ -20,15 +20,14 @@ import com.liferay.commerce.inventory.model.CommerceInventoryWarehouseItem;
 import com.liferay.commerce.inventory.service.CommerceInventoryReplenishmentItemService;
 import com.liferay.commerce.inventory.service.CommerceInventoryWarehouseItemService;
 import com.liferay.headless.commerce.admin.inventory.dto.v1_0.ReplenishmentItem;
-import com.liferay.headless.commerce.admin.inventory.internal.dto.v1_0.ReplenishmentItemDTOConverter;
 import com.liferay.headless.commerce.admin.inventory.resource.v1_0.ReplenishmentItemResource;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -38,7 +37,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Crescenzo Rega
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/replenishment-item.properties",
 	scope = ServiceScope.PROTOTYPE, service = ReplenishmentItemResource.class
 )
@@ -100,7 +98,7 @@ public class ReplenishmentItemResourceImpl
 		throws Exception {
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_commerceInventoryReplenishmentItemService.
 					getCommerceInventoryReplenishmentItemsByCompanyIdAndSku(
 						contextCompany.getCompanyId(), sku,
@@ -119,7 +117,7 @@ public class ReplenishmentItemResourceImpl
 		throws Exception {
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_commerceInventoryReplenishmentItemService.
 					getCommerceInventoryReplenishmentItemsByCommerceInventoryWarehouseId(
 						warehouseId, pagination.getStartPosition(),
@@ -249,7 +247,10 @@ public class ReplenishmentItemResourceImpl
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@Reference
-	private ReplenishmentItemDTOConverter _replenishmentItemDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.inventory.internal.dto.v1_0.converter.ReplenishmentItemDTOConverter)"
+	)
+	private DTOConverter<CommerceInventoryReplenishmentItem, ReplenishmentItem>
+		_replenishmentItemDTOConverter;
 
 }

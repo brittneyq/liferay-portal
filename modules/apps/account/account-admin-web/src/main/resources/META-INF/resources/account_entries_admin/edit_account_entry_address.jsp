@@ -56,7 +56,7 @@ renderResponse.setTitle((accountEntryAddressId == 0) ? LanguageUtil.get(request,
 			<%
 			String[] types = null;
 
-			if (Objects.equals("billing", defaultType) || Objects.equals("shipping", defaultType)) {
+			if (Objects.equals(defaultType, "billing") || Objects.equals(defaultType, "shipping")) {
 				types = new String[] {defaultType, AccountListTypeConstants.ACCOUNT_ENTRY_ADDRESS_TYPE_BILLING_AND_SHIPPING};
 			}
 			else {
@@ -66,7 +66,7 @@ renderResponse.setTitle((accountEntryAddressId == 0) ? LanguageUtil.get(request,
 			ListType addressListType = null;
 
 			if (address != null) {
-				addressListType = address.getType();
+				addressListType = address.getListType();
 			}
 
 			for (String type : types) {
@@ -135,9 +135,9 @@ renderResponse.setTitle((accountEntryAddressId == 0) ? LanguageUtil.get(request,
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
-		<aui:button type="submit" />
-
-		<aui:button href="<%= backURL %>" type="cancel" />
+		<liferay-frontend:edit-form-buttons
+			redirect="<%= backURL %>"
+		/>
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>
 

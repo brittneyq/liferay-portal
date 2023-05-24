@@ -16,10 +16,8 @@ package com.liferay.layout.admin.web.internal.product.navigation.control.menu;
 
 import com.liferay.layout.admin.web.internal.constants.LayoutAdminWebKeys;
 import com.liferay.layout.admin.web.internal.display.context.LayoutActionsDisplayContext;
-import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -46,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Jürgen Kappler
  */
 @Component(
-	immediate = true,
 	property = {
 		"product.navigation.control.menu.category.key=" + ProductNavigationControlMenuCategoryKeys.USER,
 		"product.navigation.control.menu.entry.order:Integer=100"
@@ -103,8 +100,9 @@ public class LayoutActionsProductNavigationControlMenuEntry
 		String layoutMode = ParamUtil.getString(
 			httpServletRequest, "p_l_mode", Constants.VIEW);
 
-		if (!layoutMode.equals(Constants.EDIT) || layout.isTypeControlPanel() ||
-			isEmbeddedPersonalApplicationLayout(layout) ||
+		if (!layoutMode.equals(Constants.EDIT) ||
+			layout.isEmbeddedPersonalApplication() ||
+			layout.isTypeControlPanel() ||
 			!(themeDisplay.isShowLayoutTemplatesIcon() ||
 			  themeDisplay.isShowPageSettingsIcon())) {
 
@@ -112,10 +110,9 @@ public class LayoutActionsProductNavigationControlMenuEntry
 		}
 
 		if (layout.isSystem()) {
-			return _layoutPermission.contains(
+			return _layoutPermission.containsLayoutRestrictedUpdatePermission(
 				themeDisplay.getPermissionChecker(),
-				_layoutLocalService.getLayout(layout.getClassPK()),
-				ActionKeys.UPDATE);
+				_layoutLocalService.getLayout(layout.getClassPK()));
 		}
 
 		return super.isShow(httpServletRequest);
@@ -128,10 +125,6 @@ public class LayoutActionsProductNavigationControlMenuEntry
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private LayoutPageTemplateEntryLocalService
-		_layoutPageTemplateEntryLocalService;
 
 	@Reference
 	private LayoutPermission _layoutPermission;

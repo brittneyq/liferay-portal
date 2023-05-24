@@ -15,6 +15,8 @@
 package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.configuration.LayoutExportImportConfiguration;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
@@ -24,9 +26,12 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.sites.kernel.util.Sites;
 
+import java.util.Map;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -34,7 +39,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
+	configurationPid = "com.liferay.layout.configuration.LayoutExportImportConfiguration",
 	property = {
 		"javax.portlet.name=" + LayoutAdminPortletKeys.GROUP_PAGES,
 		"mvc.command.name=/layout_admin/reset_prototype"
@@ -42,6 +47,12 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class ResetPrototypeMVCActionCommand extends BaseMVCActionCommand {
+
+	@Activate
+	protected void activate(Map<String, Object> properties) {
+		_layoutExportImportConfiguration = ConfigurableUtil.createConfigurable(
+			LayoutExportImportConfiguration.class, properties);
+	}
 
 	@Override
 	protected void doProcessAction(
@@ -57,7 +68,9 @@ public class ResetPrototypeMVCActionCommand extends BaseMVCActionCommand {
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
-		if (draftLayout != null) {
+		if ((draftLayout != null) &&
+			_layoutExportImportConfiguration.exportDraftLayout()) {
+
 			_sites.resetPrototype(draftLayout);
 		}
 
@@ -65,6 +78,9 @@ public class ResetPrototypeMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest,
 			_portal.getPortletId(actionRequest) + "requestProcessed");
 	}
+
+	private volatile LayoutExportImportConfiguration
+		_layoutExportImportConfiguration;
 
 	@Reference
 	private Portal _portal;

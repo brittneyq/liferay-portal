@@ -16,8 +16,7 @@
 
 declare module Liferay {
 	export const Icons: {
-		basePath: string;
+		controlPanelSpritemap: string;
 		spritemap: string;
-		systemSpritemap: string;
 	};
 }

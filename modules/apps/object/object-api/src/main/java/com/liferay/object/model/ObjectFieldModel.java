@@ -98,6 +98,21 @@ public interface ObjectFieldModel
 	public void setUuid(String uuid);
 
 	/**
+	 * Returns the external reference code of this object field.
+	 *
+	 * @return the external reference code of this object field
+	 */
+	@AutoEscape
+	public String getExternalReferenceCode();
+
+	/**
+	 * Sets the external reference code of this object field.
+	 *
+	 * @param externalReferenceCode the external reference code of this object field
+	 */
+	public void setExternalReferenceCode(String externalReferenceCode);
+
+	/**
 	 * Returns the object field ID of this object field.
 	 *
 	 * @return the object field ID of this object field
@@ -209,21 +224,6 @@ public interface ObjectFieldModel
 	public void setModifiedDate(Date modifiedDate);
 
 	/**
-	 * Returns the external reference code of this object field.
-	 *
-	 * @return the external reference code of this object field
-	 */
-	@AutoEscape
-	public String getExternalReferenceCode();
-
-	/**
-	 * Sets the external reference code of this object field.
-	 *
-	 * @param externalReferenceCode the external reference code of this object field
-	 */
-	public void setExternalReferenceCode(String externalReferenceCode);
-
-	/**
 	 * Returns the list type definition ID of this object field.
 	 *
 	 * @return the list type definition ID of this object field
@@ -310,21 +310,6 @@ public interface ObjectFieldModel
 	 * @param dbType the db type of this object field
 	 */
 	public void setDBType(String dbType);
-
-	/**
-	 * Returns the default value of this object field.
-	 *
-	 * @return the default value of this object field
-	 */
-	@AutoEscape
-	public String getDefaultValue();
-
-	/**
-	 * Sets the default value of this object field.
-	 *
-	 * @param defaultValue the default value of this object field
-	 */
-	public void setDefaultValue(String defaultValue);
 
 	/**
 	 * Returns the indexed of this object field.
@@ -483,6 +468,27 @@ public interface ObjectFieldModel
 	public void setLabelMap(Map<Locale, String> labelMap, Locale defaultLocale);
 
 	/**
+	 * Returns the localized of this object field.
+	 *
+	 * @return the localized of this object field
+	 */
+	public boolean getLocalized();
+
+	/**
+	 * Returns <code>true</code> if this object field is localized.
+	 *
+	 * @return <code>true</code> if this object field is localized; <code>false</code> otherwise
+	 */
+	public boolean isLocalized();
+
+	/**
+	 * Sets whether this object field is localized.
+	 *
+	 * @param localized the localized of this object field
+	 */
+	public void setLocalized(boolean localized);
+
+	/**
 	 * Returns the name of this object field.
 	 *
 	 * @return the name of this object field
@@ -590,5 +596,9 @@ public interface ObjectFieldModel
 
 	@Override
 	public ObjectField cloneWithOriginalValues();
+
+	public default String toXmlString() {
+		return null;
+	}
 
 }

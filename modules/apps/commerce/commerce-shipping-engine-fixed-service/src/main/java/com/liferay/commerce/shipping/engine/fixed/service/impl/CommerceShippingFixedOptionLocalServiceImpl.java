@@ -59,12 +59,9 @@ import com.liferay.portal.kernel.util.Validator;
 import java.math.BigDecimal;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -73,7 +70,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.shipping.engine.fixed.model.CommerceShippingFixedOption",
 	service = AopService.class
 )
@@ -209,7 +205,7 @@ public class CommerceShippingFixedOptionLocalServiceImpl
 			String keywords, int start, int end)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, groupId, commerceShippingMethodId, keywords, start, end);
 
 		BaseModelSearchResult<CommerceShippingFixedOption>
@@ -233,7 +229,7 @@ public class CommerceShippingFixedOptionLocalServiceImpl
 			String keywords)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, groupId, commerceShippingMethodId, keywords, 0, 0);
 
 		Indexer<CommerceShippingFixedOption> indexer =
@@ -257,7 +253,7 @@ public class CommerceShippingFixedOptionLocalServiceImpl
 			Hits hits = indexer.search(searchContext);
 
 			List<CommerceShippingFixedOption> commerceShippingFixedOptions =
-				getCommerceShippingFixedOptions(hits);
+				_getCommerceShippingFixedOptions(hits);
 
 			if (commerceShippingFixedOptions != null) {
 				return new BaseModelSearchResult<>(
@@ -296,7 +292,7 @@ public class CommerceShippingFixedOptionLocalServiceImpl
 			commerceShippingFixedOption);
 	}
 
-	protected SearchContext buildSearchContext(
+	private SearchContext _buildSearchContext(
 		long companyId, long groupId, long commerceShippingMethodId,
 		String keywords, int start, int end) {
 
@@ -322,7 +318,7 @@ public class CommerceShippingFixedOptionLocalServiceImpl
 		return searchContext;
 	}
 
-	protected List<CommerceShippingFixedOption> getCommerceShippingFixedOptions(
+	private List<CommerceShippingFixedOption> _getCommerceShippingFixedOptions(
 			Hits hits)
 		throws PortalException {
 
@@ -406,15 +402,13 @@ public class CommerceShippingFixedOptionLocalServiceImpl
 			nameMap.get(LocaleThreadLocal.getDefaultLocale()));
 
 		if (Validator.isNull(key)) {
-			Collection<String> values = nameMap.values();
+			for (String value : nameMap.values()) {
+				if (Validator.isNotNull(value)) {
+					key = FriendlyURLNormalizerUtil.normalize(value);
 
-			Stream<String> stream = values.stream();
-
-			Optional<String> firstOptional = stream.filter(
-				value -> Validator.isNotNull(value)
-			).findFirst();
-
-			key = FriendlyURLNormalizerUtil.normalize(firstOptional.get());
+					break;
+				}
+			}
 		}
 
 		CommerceShippingFixedOption commerceShippingFixedOption =

@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Juergen Kappler
  */
 @Component(
-	immediate = true,
 	property = "layout.type=" + FullPageApplicationLayoutTypeControllerConstants.LAYOUT_TYPE_FULL_PAGE_APPLICATION,
 	service = LayoutTypeController.class
 )
@@ -149,13 +148,6 @@ public class FullPageApplicationLayoutTypeController
 		super.removeAttributes(httpServletRequest);
 	}
 
-	@Reference(unbind = "-")
-	protected void setPortletLocalService(
-		PortletLocalService portletLocalService) {
-
-		_portletLocalService = portletLocalService;
-	}
-
 	private static final String _EDIT_PAGE =
 		"/layout/edit/full_page_application.jsp";
 
@@ -166,6 +158,7 @@ public class FullPageApplicationLayoutTypeController
 	private static final String _VIEW_PAGE =
 		"/layout/view/full_page_application.jsp";
 
+	@Reference
 	private PortletLocalService _portletLocalService;
 
 	@Reference(

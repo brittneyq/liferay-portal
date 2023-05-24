@@ -27,10 +27,9 @@ import com.liferay.object.rest.context.path.RESTContextPathResolverRegistry;
 import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
-import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
-import com.liferay.object.system.SystemObjectDefinitionMetadata;
-import com.liferay.object.system.SystemObjectDefinitionMetadataTracker;
+import com.liferay.object.system.SystemObjectDefinitionManager;
+import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -38,7 +37,6 @@ import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
@@ -55,12 +53,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + ObjectDDMFormFieldTypeConstants.OBJECT_RELATIONSHIP,
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		ObjectRelationshipDDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class ObjectRelationshipDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
@@ -159,7 +153,7 @@ public class ObjectRelationshipDDMFormFieldTemplateContextContributor
 		String restContextPath = restContextPathResolver.getRESTContextPath(
 			_getGroupId(ddmFormFieldRenderingContext, objectDefinition));
 
-		return apiURL + restContextPath;
+		return apiURL + _portal.getPathContext() + restContextPath;
 	}
 
 	private long _getGroupId(
@@ -209,7 +203,14 @@ public class ObjectRelationshipDDMFormFieldTemplateContextContributor
 				objectDefinition.getTitleObjectFieldId());
 
 			if (objectField != null) {
-				return objectField.getName();
+				String objectFieldName = objectField.getName();
+
+				objectFieldName = StringUtil.replace(
+					objectFieldName, "createDate", "dateCreated");
+				objectFieldName = StringUtil.replace(
+					objectFieldName, "modifiedDate", "dateModified");
+
+				return objectFieldName;
 			}
 		}
 
@@ -227,15 +228,15 @@ public class ObjectRelationshipDDMFormFieldTemplateContextContributor
 	private String _getValueKey(DDMFormField ddmFormField) {
 		ObjectDefinition objectDefinition = _getObjectDefinition(ddmFormField);
 
-		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata =
-			_systemObjectDefinitionMetadataTracker.
-				getSystemObjectDefinitionMetadata(objectDefinition.getName());
+		SystemObjectDefinitionManager systemObjectDefinitionManager =
+			_systemObjectDefinitionManagerRegistry.
+				getSystemObjectDefinitionManager(objectDefinition.getName());
 
-		if (systemObjectDefinitionMetadata == null) {
+		if (systemObjectDefinitionManager == null) {
 			return "id";
 		}
 
-		return systemObjectDefinitionMetadata.getRESTDTOIdPropertyName();
+		return systemObjectDefinitionManager.getRESTDTOIdPropertyName();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -248,17 +249,10 @@ public class ObjectRelationshipDDMFormFieldTemplateContextContributor
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
-	private ObjectEntryLocalService _objectEntryLocalService;
-
-	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
 
 	@Reference
 	private ObjectScopeProviderRegistry _objectScopeProviderRegistry;
-
-	@Reference
-	private PersistedModelLocalServiceRegistry
-		_persistedModelLocalServiceRegistry;
 
 	@Reference
 	private Portal _portal;
@@ -267,7 +261,7 @@ public class ObjectRelationshipDDMFormFieldTemplateContextContributor
 	private RESTContextPathResolverRegistry _restContextPathResolverRegistry;
 
 	@Reference
-	private SystemObjectDefinitionMetadataTracker
-		_systemObjectDefinitionMetadataTracker;
+	private SystemObjectDefinitionManagerRegistry
+		_systemObjectDefinitionManagerRegistry;
 
 }

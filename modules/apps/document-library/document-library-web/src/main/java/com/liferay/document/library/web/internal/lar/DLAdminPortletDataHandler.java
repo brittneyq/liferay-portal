@@ -14,6 +14,7 @@
 
 package com.liferay.document.library.web.internal.lar;
 
+import com.liferay.data.engine.model.DEDataDefinitionFieldLink;
 import com.liferay.document.library.constants.DLPortletDataHandlerConstants;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFileEntry;
@@ -33,6 +34,7 @@ import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerChoice;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
@@ -139,7 +141,17 @@ public class DLAdminPortletDataHandler extends BasePortletDataHandler {
 				NAMESPACE, "documents", true, false,
 				new PortletDataHandlerControl[] {
 					new PortletDataHandlerBoolean(
-						NAMESPACE, "previews-and-thumbnails")
+						NAMESPACE, "previews-and-thumbnails"),
+					new PortletDataHandlerBoolean(
+						getNamespace(), "referenced-content", true, false,
+						new PortletDataHandlerControl[] {
+							new PortletDataHandlerChoice(
+								getNamespace(), "referenced-content-behavior",
+								0,
+								new String[] {
+									"include-always", "include-if-modified"
+								})
+						})
 				},
 				DLFileEntryConstants.getClassName()),
 			new PortletDataHandlerBoolean(
@@ -361,6 +373,28 @@ public class DLAdminPortletDataHandler extends BasePortletDataHandler {
 			for (Element ddmStructureElement : ddmStructureElements) {
 				StagedModelDataHandlerUtil.importStagedModel(
 					portletDataContext, ddmStructureElement);
+			}
+
+			for (Element ddmStructureElement : ddmStructureElements) {
+				List<Element> deDataDefinitionFieldLinkElements =
+					portletDataContext.getReferenceDataElements(
+						ddmStructureElement, DEDataDefinitionFieldLink.class,
+						null);
+
+				for (Element deDataDefinitionFieldLinkElement :
+						deDataDefinitionFieldLinkElements) {
+
+					String path =
+						deDataDefinitionFieldLinkElement.attributeValue("path");
+
+					DEDataDefinitionFieldLink deDataDefinitionFieldLink =
+						(DEDataDefinitionFieldLink)
+							portletDataContext.getZipEntryAsObject(
+								deDataDefinitionFieldLinkElement, path);
+
+					StagedModelDataHandlerUtil.importStagedModel(
+						portletDataContext, deDataDefinitionFieldLink);
+				}
 			}
 		}
 

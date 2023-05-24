@@ -68,8 +68,7 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 		}
 
 		_checkPackageNameByClassName(
-			fileName, absolutePath, javaClass, javaClass.getName(),
-			packageName);
+			fileName, absolutePath, javaClass.getName(), packageName);
 
 		if (absolutePath.contains("-api/")) {
 			return javaTerm.getContent();
@@ -278,6 +277,18 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 		String fileName, String absolutePath, String packageName,
 		String className) {
 
+		for (String packagePart :
+				StringUtil.split(packageName, CharPool.PERIOD)) {
+
+			if (packagePart.matches("V\\d*(_\\d+)+")) {
+				addMessage(
+					fileName,
+					"Use lower case 'v' when it means version in the package");
+
+				return;
+			}
+		}
+
 		int pos = fileName.lastIndexOf(CharPool.SLASH);
 
 		String filePath = StringUtil.replace(
@@ -349,8 +360,8 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 	}
 
 	private void _checkPackageNameByClassName(
-		String fileName, String absolutePath, JavaClass javaClass,
-		String className, String packageName) {
+		String fileName, String absolutePath, String className,
+		String packageName) {
 
 		if ((className.endsWith("Constants") &&
 			 absolutePath.contains("/portal-kernel/")) ||
@@ -368,38 +379,33 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 			String[] array = StringUtil.split(
 				expectedPackagePathDataEntry, CharPool.COLON);
 
-			if (array.length != 2) {
+			if ((array.length != 2) || !className.matches(array[0])) {
 				continue;
 			}
 
 			String expectedPackagePath = array[1];
 
-			if (StringUtil.startsWith(array[0], CharPool.PERIOD) &&
-				className.matches(array[0]) &&
-				!packageName.endsWith("." + expectedPackagePath) &&
+			if (expectedPackagePath.startsWith(".")) {
+				if (!packageName.endsWith(expectedPackagePath)) {
+					addMessage(
+						fileName,
+						StringBundler.concat(
+							"Class '", className,
+							"' should be in package ending with '", array[1],
+							"'"));
+				}
+
+				continue;
+			}
+
+			if (!packageName.endsWith("." + expectedPackagePath) &&
 				!packageName.contains("." + expectedPackagePath + ".")) {
 
 				addMessage(
 					fileName,
 					StringBundler.concat(
-						"Class '", className,
-						"' should be in package ending with '.", array[1],
-						"'"));
-
-				return;
-			}
-
-			for (String extendedClassName : javaClass.getExtendedClassNames()) {
-				if (extendedClassName.equals(array[0]) &&
-					!packageName.endsWith("." + expectedPackagePath)) {
-
-					addMessage(
-						fileName,
-						StringBundler.concat(
-							"Class extends '", className,
-							"' should be in package ending with '.", array[1],
-							"'"));
-				}
+						"Class '", className, "' should be in package .",
+						array[1], "'"));
 			}
 		}
 	}

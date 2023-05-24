@@ -37,7 +37,7 @@ public class PoshiRunnerResourcesExtension {
 	public PoshiRunnerResourcesExtension(Project project) {
 		_project = project;
 
-		Gradle gradle = _project.getGradle();
+		Gradle gradle = project.getGradle();
 
 		gradle.addBuildListener(_gitRepositoryBuildAdapter);
 
@@ -45,7 +45,7 @@ public class PoshiRunnerResourcesExtension {
 
 			@Override
 			public String call() throws Exception {
-				return _gitRepositoryBuildAdapter.getBranchName(_project);
+				return _gitRepositoryBuildAdapter.getBranchName(project);
 			}
 
 		};
@@ -59,7 +59,7 @@ public class PoshiRunnerResourcesExtension {
 				DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
 				return dateFormat.format(date) + "-" +
-					_gitRepositoryBuildAdapter.getHeadHash(_project);
+					_gitRepositoryBuildAdapter.getHeadHash(project);
 			}
 
 		};
@@ -130,6 +130,6 @@ public class PoshiRunnerResourcesExtension {
 	private final Set<Object> _dirs = new HashSet<>();
 	private final Project _project;
 	private Object _rootDirName;
-	private Object _version = "latest.release";
+	private Object _version = "1.0.14";
 
 }

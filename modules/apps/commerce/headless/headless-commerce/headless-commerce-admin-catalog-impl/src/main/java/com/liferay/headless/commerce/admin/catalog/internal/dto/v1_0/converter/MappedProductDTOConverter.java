@@ -36,9 +36,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.commerce.shop.by.diagram.model.CSDiagramEntry",
-	service = {DTOConverter.class, MappedProductDTOConverter.class}
+	service = DTOConverter.class
 )
 public class MappedProductDTOConverter
 	implements DTOConverter<CSDiagramEntry, MappedProduct> {

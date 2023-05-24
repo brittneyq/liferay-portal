@@ -71,14 +71,14 @@ public class DDMFormInstanceServiceUtil {
 
 	public static DDMFormInstance copyFormInstance(
 			long groupId, Map<java.util.Locale, String> nameMap,
-			DDMFormInstance ddmFormInstance,
+			DDMFormInstance sourceDDMFormInstance,
 			com.liferay.dynamic.data.mapping.storage.DDMFormValues
 				settingsDDMFormValues,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().copyFormInstance(
-			groupId, nameMap, ddmFormInstance, settingsDDMFormValues,
+			groupId, nameMap, sourceDDMFormInstance, settingsDDMFormValues,
 			serviceContext);
 	}
 
@@ -218,6 +218,10 @@ public class DDMFormInstanceServiceUtil {
 
 	public static DDMFormInstanceService getService() {
 		return _service;
+	}
+
+	public static void setService(DDMFormInstanceService service) {
+		_service = service;
 	}
 
 	private static volatile DDMFormInstanceService _service;

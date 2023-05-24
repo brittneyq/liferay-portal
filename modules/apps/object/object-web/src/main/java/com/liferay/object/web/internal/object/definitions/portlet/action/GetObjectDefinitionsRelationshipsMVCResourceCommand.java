@@ -43,7 +43,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Carolina Barbosa
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ObjectPortletKeys.OBJECT_DEFINITIONS,
 		"mvc.command.name=/object_definitions/get_object_definitions_relationships"
@@ -66,11 +65,14 @@ public class GetObjectDefinitionsRelationshipsMVCResourceCommand
 
 		for (ObjectDefinition objectDefinition :
 				_objectDefinitionLocalService.getObjectDefinitions(
-					_portal.getCompanyId(resourceRequest), true, false,
+					_portal.getCompanyId(resourceRequest), true,
 					WorkflowConstants.STATUS_APPROVED)) {
 
 			objectDefinitionsJSONArray.put(
 				JSONUtil.put(
+					"externalReferenceCode",
+					objectDefinition.getExternalReferenceCode()
+				).put(
 					"id", objectDefinition.getObjectDefinitionId()
 				).put(
 					"label",
@@ -91,6 +93,8 @@ public class GetObjectDefinitionsRelationshipsMVCResourceCommand
 
 						return null;
 					}
+				).put(
+					"system", objectDefinition.isSystem()
 				));
 		}
 

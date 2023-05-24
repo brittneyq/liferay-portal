@@ -25,13 +25,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Eduardo García
  */
-@Component(
-	immediate = true,
-	service = {
-		SegmentsContentTargetingUpgradeStepRegistrator.class,
-		UpgradeStepRegistrator.class
-	}
-)
+@Component(service = UpgradeStepRegistrator.class)
 public class SegmentsContentTargetingUpgradeStepRegistrator
 	implements UpgradeStepRegistrator {
 

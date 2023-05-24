@@ -12,10 +12,11 @@
  * details.
  */
 
-import {fetch, openToast} from 'frontend-js-web';
+import {fetch, getOpener, openToast} from 'frontend-js-web';
 
 export default function ({namespace}) {
 	const loading = document.querySelector('.add-group-loading');
+	const container = document.querySelector('.add-group-container');
 	const content = document.querySelector(
 		'.add-group-form .add-group-content'
 	);
@@ -44,6 +45,8 @@ export default function ({namespace}) {
 		loading.classList.remove('d-none');
 		footer.classList.toggle('d-none');
 
+		container.classList.add('align-items-center', 'd-flex', 'h-100');
+
 		const formData = new FormData(form);
 
 		fetch(form.action, {
@@ -62,7 +65,7 @@ export default function ({namespace}) {
 
 					redirectURL.searchParams.set('p_p_state', 'normal');
 
-					const opener = Liferay.Util.getOpener();
+					const opener = getOpener();
 
 					opener.Liferay.fire('closeModal', {
 						id: `${namespace}addSiteDialog`,
@@ -85,6 +88,12 @@ export default function ({namespace}) {
 					loading.classList.remove('d-flex');
 					loading.classList.add('d-none');
 					footer.classList.toggle('d-none');
+
+					container.classList.remove(
+						'align-items-center',
+						'd-flex',
+						'h-100'
+					);
 				}
 			});
 	});

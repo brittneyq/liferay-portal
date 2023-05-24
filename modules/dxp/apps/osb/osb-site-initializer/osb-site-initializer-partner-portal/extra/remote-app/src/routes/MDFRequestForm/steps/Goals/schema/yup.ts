@@ -11,23 +11,46 @@
 
 import {array, number, object, string} from 'yup';
 
-import isObjectEmpty from '../../../utils/isObjectEmpty';
+import isObjectEmpty from '../../../../../common/utils/isObjectEmpty';
 
 const goalsSchema = object({
 	company: object({
 		id: number(),
 		name: string(),
-	}).test('is-empty', 'Required', (value) => !isObjectEmpty(value)),
-	country: object({
+	})
+		.default(undefined)
+		.test('is-empty', 'Required', (value) => !isObjectEmpty(value)),
+	currency: object({
 		key: string(),
 		name: string(),
-	}).test('is-empty', 'Required', (value) => !isObjectEmpty(value)),
+	})
+		.default(undefined)
+		.test('is-empty', 'Required', (value) => !isObjectEmpty(value)),
 	liferayBusinessSalesGoals: array()
 		.min(1, 'Required')
 		.max(3, 'You have exceed the choose limit'),
-	overallCampaign: string()
-		.max(350, 'You have exceeded the character limit')
+	liferayBusinessSalesGoalsOther: string().when(
+		'liferayBusinessSalesGoals',
+		(liferayBusinessSalesGoals, schema) => {
+			return liferayBusinessSalesGoals.includes('Other - Please describe')
+				? string().required('Required')
+				: schema;
+		}
+	),
+	overallCampaignDescription: string()
+		.trim()
+		.max(255, 'You have exceeded the character limit')
 		.required('Required'),
+	overallCampaignName: string()
+		.trim()
+		.max(24, 'You have exceeded the character limit')
+		.required('Required'),
+	partnerCountry: object({
+		key: string(),
+		name: string(),
+	})
+		.default(undefined)
+		.test('is-empty', 'Required', (value) => !isObjectEmpty(value)),
 	targetAudienceRoles: array().min(1, 'Required'),
 	targetMarkets: array()
 		.min(1, 'Required')

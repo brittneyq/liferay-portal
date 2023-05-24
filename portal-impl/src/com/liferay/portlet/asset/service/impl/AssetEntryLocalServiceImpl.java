@@ -20,7 +20,7 @@ import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
-import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
@@ -61,6 +61,7 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.RenderLayoutContentThreadLocal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.view.count.ViewCountManagerUtil;
@@ -438,13 +439,17 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	public void incrementViewCounter(long userId, AssetEntry assetEntry)
 		throws PortalException {
 
+		if (RenderLayoutContentThreadLocal.isRenderLayoutContent()) {
+			return;
+		}
+
 		User user = _userLocalService.getUser(userId);
 
 		assetEntryLocalService.incrementViewCounter(
 			assetEntry.getCompanyId(), user.getUserId(),
 			assetEntry.getClassName(), assetEntry.getClassPK(), 1);
 
-		if (!user.isDefaultUser()) {
+		if (!user.isGuestUser()) {
 			SocialActivityManagerUtil.addActivity(
 				user.getUserId(), assetEntry, SocialActivityConstants.TYPE_VIEW,
 				StringPool.BLANK, 0);
@@ -464,7 +469,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 		AssetEntry assetEntry = getEntry(className, classPK);
 
-		if (!user.isDefaultUser()) {
+		if (!user.isGuestUser()) {
 			SocialActivityManagerUtil.addActivity(
 				user.getUserId(), assetEntry, SocialActivityConstants.TYPE_VIEW,
 				StringPool.BLANK, 0);
@@ -1308,21 +1313,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			};
 		}
 
-		List<AssetRendererFactory<?>> rendererFactories =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactories(
-				companyId);
-
-		long[] classNameIds = new long[rendererFactories.size()];
-
-		for (int i = 0; i < rendererFactories.size(); i++) {
-			AssetRendererFactory<?> assetRendererFactory =
-				rendererFactories.get(i);
-
-			classNameIds[i] = _classNameLocalService.getClassNameId(
-				assetRendererFactory.getClassName());
-		}
-
-		return classNameIds;
+		return AssetRendererFactoryRegistryUtil.getClassNameIds(
+			companyId, true);
 	}
 
 	protected long[] getTagIds(long[] groupIds, String tagName) {
@@ -1334,11 +1326,22 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	}
 
 	protected void reindex(AssetEntry entry) throws PortalException {
-		String className = PortalUtil.getClassName(entry.getClassNameId());
+		Indexer<Object> indexer = IndexerRegistryUtil.getIndexer(
+			entry.getClassName());
 
-		Indexer<?> indexer = IndexerRegistryUtil.nullSafeGetIndexer(className);
+		if (indexer == null) {
+			return;
+		}
 
-		indexer.reindex(className, entry.getClassPK());
+		AssetRenderer<?> assetRenderer = entry.getAssetRenderer();
+
+		if (assetRenderer == null) {
+			indexer.reindex(entry.getClassName(), entry.getClassPK());
+
+			return;
+		}
+
+		indexer.reindex(assetRenderer.getAssetObject());
 	}
 
 	private List<AssetEntryValidator> _getAssetEntryValidators(

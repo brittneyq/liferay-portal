@@ -54,12 +54,13 @@ public class FragmentEntryServiceUtil {
 	}
 
 	public static FragmentEntry copyFragmentEntry(
-			long groupId, long fragmentEntryId, long fragmentCollectionId,
+			long groupId, long sourceFragmentEntryId, long fragmentCollectionId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().copyFragmentEntry(
-			groupId, fragmentEntryId, fragmentCollectionId, serviceContext);
+			groupId, sourceFragmentEntryId, fragmentCollectionId,
+			serviceContext);
 	}
 
 	public static void deleteFragmentEntries(long[] fragmentEntriesIds)
@@ -286,6 +287,13 @@ public class FragmentEntryServiceUtil {
 	}
 
 	public static FragmentEntry updateFragmentEntry(
+			long fragmentEntryId, boolean cacheable)
+		throws PortalException {
+
+		return getService().updateFragmentEntry(fragmentEntryId, cacheable);
+	}
+
+	public static FragmentEntry updateFragmentEntry(
 			long fragmentEntryId, long previewFileEntryId)
 		throws PortalException {
 
@@ -327,6 +335,10 @@ public class FragmentEntryServiceUtil {
 
 	public static FragmentEntryService getService() {
 		return _service;
+	}
+
+	public static void setService(FragmentEntryService service) {
+		_service = service;
 	}
 
 	private static volatile FragmentEntryService _service;

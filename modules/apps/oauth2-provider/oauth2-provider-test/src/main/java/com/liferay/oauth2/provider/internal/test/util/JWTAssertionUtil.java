@@ -14,9 +14,9 @@
 
 package com.liferay.oauth2.provider.internal.test.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.net.URI;
 
@@ -36,8 +36,11 @@ import org.apache.cxf.rt.security.crypto.CryptoUtils;
  */
 public class JWTAssertionUtil {
 
+	public static final String JWK = String.valueOf(
+		_createTestRSAKeyPairJSONObject());
+
 	public static final String JWKS = JSONUtil.put(
-		"keys", JSONUtil.put(_createTestRSAKeyPairJSONWebKey01())
+		"keys", JSONUtil.put(_createTestRSAKeyPairJSONObject())
 	).toString();
 
 	public static String getJWTAssertionHS256(
@@ -133,7 +136,7 @@ public class JWTAssertionUtil {
 		return rsaKeyJSONObject;
 	}
 
-	private static JSONObject _createTestRSAKeyPairJSONWebKey01() {
+	private static JSONObject _createTestRSAKeyPairJSONObject() {
 		return _createRSAKeyPairJSONObject(
 			"RS256",
 

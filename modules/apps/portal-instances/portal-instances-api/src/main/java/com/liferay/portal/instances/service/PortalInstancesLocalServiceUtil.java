@@ -35,22 +35,8 @@ public class PortalInstancesLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.instances.service.impl.PortalInstancesLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static void addCompanyId(long companyId) {
-		getService().addCompanyId(companyId);
-	}
-
-	public static long getCompanyId(
-		javax.servlet.http.HttpServletRequest httpServletRequest) {
-
-		return getService().getCompanyId(httpServletRequest);
-	}
-
 	public static long[] getCompanyIds() {
 		return getService().getCompanyIds();
-	}
-
-	public static long[] getCompanyIdsBySQL() throws java.sql.SQLException {
-		return getService().getCompanyIdsBySQL();
 	}
 
 	public static long getDefaultCompanyId() {
@@ -66,45 +52,11 @@ public class PortalInstancesLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static String[] getWebIds() {
-		return getService().getWebIds();
-	}
-
 	public static void initializePortalInstance(
-			long companyId, String siteInitializerKey,
-			javax.servlet.ServletContext servletContext)
+			long companyId, String siteInitializerKey)
 		throws PortalException {
 
-		getService().initializePortalInstance(
-			companyId, siteInitializerKey, servletContext);
-	}
-
-	public static boolean isAutoLoginIgnoreHost(String host) {
-		return getService().isAutoLoginIgnoreHost(host);
-	}
-
-	public static boolean isAutoLoginIgnorePath(String path) {
-		return getService().isAutoLoginIgnorePath(path);
-	}
-
-	public static boolean isCompanyActive(long companyId) {
-		return getService().isCompanyActive(companyId);
-	}
-
-	public static boolean isVirtualHostsIgnoreHost(String host) {
-		return getService().isVirtualHostsIgnoreHost(host);
-	}
-
-	public static boolean isVirtualHostsIgnorePath(String path) {
-		return getService().isVirtualHostsIgnorePath(path);
-	}
-
-	public static void reload(javax.servlet.ServletContext servletContext) {
-		getService().reload(servletContext);
-	}
-
-	public static void removeCompany(long companyId) {
-		getService().removeCompany(companyId);
+		getService().initializePortalInstance(companyId, siteInitializerKey);
 	}
 
 	public static void synchronizePortalInstances() {
@@ -113,6 +65,10 @@ public class PortalInstancesLocalServiceUtil {
 
 	public static PortalInstancesLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(PortalInstancesLocalService service) {
+		_service = service;
 	}
 
 	private static volatile PortalInstancesLocalService _service;

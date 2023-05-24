@@ -26,7 +26,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -47,22 +47,22 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the cp tax category local service.
@@ -77,8 +77,7 @@ import javax.sql.DataSource;
  */
 public abstract class CPTaxCategoryLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements CPTaxCategoryLocalService, CTService<CPTaxCategory>,
-			   IdentifiableOSGiService {
+	implements AopService, CPTaxCategoryLocalService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -273,48 +272,21 @@ public abstract class CPTaxCategoryLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the cp tax category with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the cp tax category's external reference code
-	 * @return the matching cp tax category, or <code>null</code> if a matching cp tax category could not be found
-	 */
 	@Override
 	public CPTaxCategory fetchCPTaxCategoryByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return cpTaxCategoryPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return cpTaxCategoryPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCPTaxCategoryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public CPTaxCategory fetchCPTaxCategoryByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchCPTaxCategoryByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the cp tax category with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the cp tax category's external reference code
-	 * @return the matching cp tax category
-	 * @throws PortalException if a matching cp tax category could not be found
-	 */
 	@Override
 	public CPTaxCategory getCPTaxCategoryByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return cpTaxCategoryPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return cpTaxCategoryPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -540,102 +512,24 @@ public abstract class CPTaxCategoryLocalServiceBaseImpl
 		return cpTaxCategoryPersistence.update(cpTaxCategory);
 	}
 
-	/**
-	 * Returns the cp tax category local service.
-	 *
-	 * @return the cp tax category local service
-	 */
-	public CPTaxCategoryLocalService getCPTaxCategoryLocalService() {
-		return cpTaxCategoryLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CPTaxCategoryLocalServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the cp tax category local service.
-	 *
-	 * @param cpTaxCategoryLocalService the cp tax category local service
-	 */
-	public void setCPTaxCategoryLocalService(
-		CPTaxCategoryLocalService cpTaxCategoryLocalService) {
-
-		this.cpTaxCategoryLocalService = cpTaxCategoryLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CPTaxCategoryLocalService.class, IdentifiableOSGiService.class,
+			CTService.class, PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Returns the cp tax category persistence.
-	 *
-	 * @return the cp tax category persistence
-	 */
-	public CPTaxCategoryPersistence getCPTaxCategoryPersistence() {
-		return cpTaxCategoryPersistence;
-	}
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		cpTaxCategoryLocalService = (CPTaxCategoryLocalService)aopProxy;
 
-	/**
-	 * Sets the cp tax category persistence.
-	 *
-	 * @param cpTaxCategoryPersistence the cp tax category persistence
-	 */
-	public void setCPTaxCategoryPersistence(
-		CPTaxCategoryPersistence cpTaxCategoryPersistence) {
-
-		this.cpTaxCategoryPersistence = cpTaxCategoryPersistence;
-	}
-
-	/**
-	 * Returns the cp tax category finder.
-	 *
-	 * @return the cp tax category finder
-	 */
-	public CPTaxCategoryFinder getCPTaxCategoryFinder() {
-		return cpTaxCategoryFinder;
-	}
-
-	/**
-	 * Sets the cp tax category finder.
-	 *
-	 * @param cpTaxCategoryFinder the cp tax category finder
-	 */
-	public void setCPTaxCategoryFinder(
-		CPTaxCategoryFinder cpTaxCategoryFinder) {
-
-		this.cpTaxCategoryFinder = cpTaxCategoryFinder;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.commerce.product.model.CPTaxCategory",
-			cpTaxCategoryLocalService);
-
-		_setLocalServiceUtilService(cpTaxCategoryLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.commerce.product.model.CPTaxCategory");
-
-		_setLocalServiceUtilService(null);
+		CPTaxCategoryLocalServiceUtil.setService(cpTaxCategoryLocalService);
 	}
 
 	/**
@@ -695,42 +589,19 @@ public abstract class CPTaxCategoryLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CPTaxCategoryLocalService cpTaxCategoryLocalService) {
-
-		try {
-			Field field = CPTaxCategoryLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpTaxCategoryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(type = CPTaxCategoryLocalService.class)
 	protected CPTaxCategoryLocalService cpTaxCategoryLocalService;
 
-	@BeanReference(type = CPTaxCategoryPersistence.class)
+	@Reference
 	protected CPTaxCategoryPersistence cpTaxCategoryPersistence;
 
-	@BeanReference(type = CPTaxCategoryFinder.class)
+	@Reference
 	protected CPTaxCategoryFinder cpTaxCategoryFinder;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPTaxCategoryLocalServiceBaseImpl.class);
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

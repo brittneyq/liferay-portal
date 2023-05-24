@@ -19,6 +19,8 @@ import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.CSVUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 
@@ -130,11 +132,17 @@ public class ColumnValuesExtractor {
 			Field field = fieldsMap.get(fieldName);
 
 			if (field == null) {
-				throw new IllegalArgumentException("Field " + fieldName);
+				columnDescriptors[localIndex] = ColumnDescriptor._from(
+					null, fieldName, masterIndex++, parentColumnDescriptor,
+					_getUnsafeFunction(fieldsMap, fieldName));
+
+				localIndex++;
+
+				continue;
 			}
 
 			columnDescriptors[localIndex] = ColumnDescriptor._from(
-				field, masterIndex++, parentColumnDescriptor,
+				field, field.getName(), masterIndex++, parentColumnDescriptor,
 				_getUnsafeFunction(fieldsMap, fieldName));
 
 			Class<?> fieldClass = field.getType();
@@ -142,6 +150,20 @@ public class ColumnValuesExtractor {
 			if (ItemClassIndexUtil.isMap(fieldClass) ||
 				ItemClassIndexUtil.isSingleColumnAdoptableArray(fieldClass) ||
 				ItemClassIndexUtil.isSingleColumnAdoptableValue(fieldClass)) {
+
+				localIndex++;
+
+				continue;
+			}
+
+			if (ItemClassIndexUtil.isIterable(fieldClass)) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Mapping collection of ",
+							fieldClass.getDeclaredClasses(),
+							" to a single column may not contain all data"));
+				}
 
 				localIndex++;
 
@@ -331,6 +353,9 @@ public class ColumnValuesExtractor {
 			(value1, value2) -> value1.compareToIgnoreCase(value2));
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		ColumnValuesExtractor.class);
+
 	private final ColumnDescriptor[] _columnDescriptors;
 
 	private static class ColumnDescriptor {
@@ -363,12 +388,13 @@ public class ColumnValuesExtractor {
 		}
 
 		private static ColumnDescriptor _from(
-			Field field, int index, ColumnDescriptor parentColumnDescriptor,
+			Field field, String fieldName, int index,
+			ColumnDescriptor parentColumnDescriptor,
 			UnsafeFunction<Object, Object, ReflectiveOperationException>
 				unsafeFunction) {
 
 			ColumnDescriptor columnDescriptor = new ColumnDescriptor(
-				field, index, unsafeFunction);
+				field, fieldName, index, unsafeFunction);
 
 			if (parentColumnDescriptor == null) {
 				return columnDescriptor;
@@ -380,11 +406,12 @@ public class ColumnValuesExtractor {
 		}
 
 		private ColumnDescriptor(
-			Field field, int index,
+			Field field, String fieldName, int index,
 			UnsafeFunction<Object, Object, ReflectiveOperationException>
 				unsafeFunction) {
 
 			_field = field;
+			_fieldName = fieldName;
 			_index = index;
 			_unsafeFunction = unsafeFunction;
 		}
@@ -403,11 +430,11 @@ public class ColumnValuesExtractor {
 				(_parentColumnDescriptors.size() * 2) + 2);
 
 			for (ColumnDescriptor columnDescriptor : _parentColumnDescriptors) {
-				sb.append(_getSanitizedFieldName(columnDescriptor._field));
+				sb.append(columnDescriptor._getSanitizedFieldName());
 				sb.append(StringPool.PERIOD);
 			}
 
-			sb.append(_getSanitizedFieldName(_field));
+			sb.append(_getSanitizedFieldName());
 
 			return sb.toString();
 		}
@@ -423,14 +450,12 @@ public class ColumnValuesExtractor {
 			return columnDescriptor.hashCode();
 		}
 
-		private String _getSanitizedFieldName(Field field) {
-			String name = field.getName();
-
-			if (name.startsWith(StringPool.UNDERLINE)) {
-				return name.substring(1);
+		private String _getSanitizedFieldName() {
+			if (_fieldName.startsWith(StringPool.UNDERLINE)) {
+				return _fieldName.substring(1);
 			}
 
-			return name;
+			return _fieldName;
 		}
 
 		private Object _getValue(Object object)
@@ -462,6 +487,7 @@ public class ColumnValuesExtractor {
 		}
 
 		private final Field _field;
+		private final String _fieldName;
 		private final int _index;
 		private final List<ColumnDescriptor> _parentColumnDescriptors =
 			new ArrayList<>();

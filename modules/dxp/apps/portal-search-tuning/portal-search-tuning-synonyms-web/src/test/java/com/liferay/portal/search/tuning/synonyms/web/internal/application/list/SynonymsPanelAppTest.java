@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.search.engine.SearchEngineInformation;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import org.junit.Assert;
@@ -45,6 +46,9 @@ public class SynonymsPanelAppTest {
 
 		ReflectionTestUtil.setFieldValue(
 			_synonymsPanelApp, "_portletLocalService", _portletLocalService);
+		ReflectionTestUtil.setFieldValue(
+			_synonymsPanelApp, "searchEngineInformation",
+			_searchEngineInformation);
 	}
 
 	@Test
@@ -69,19 +73,34 @@ public class SynonymsPanelAppTest {
 			_synonymsPanelApp.isShow(
 				Mockito.mock(PermissionChecker.class),
 				Mockito.mock(Group.class)));
-	}
 
-	@Test
-	public void testSetPortlet() {
-		Portlet portlet = Mockito.mock(Portlet.class);
+		Mockito.doReturn(
+			true
+		).when(
+			portlet
+		).isActive();
 
-		_synonymsPanelApp.setPortlet(portlet);
+		Assert.assertTrue(
+			_synonymsPanelApp.isShow(
+				Mockito.mock(PermissionChecker.class),
+				Mockito.mock(Group.class)));
 
-		Assert.assertEquals(portlet, _synonymsPanelApp.getPortlet());
+		Mockito.doReturn(
+			"Solr"
+		).when(
+			_searchEngineInformation
+		).getVendorString();
+
+		Assert.assertFalse(
+			_synonymsPanelApp.isShow(
+				Mockito.mock(PermissionChecker.class),
+				Mockito.mock(Group.class)));
 	}
 
 	private final PortletLocalService _portletLocalService = Mockito.mock(
 		PortletLocalService.class);
+	private final SearchEngineInformation _searchEngineInformation =
+		Mockito.mock(SearchEngineInformation.class);
 	private SynonymsPanelApp _synonymsPanelApp;
 
 }

@@ -18,12 +18,16 @@ import {
 	AutoComplete,
 	FormError,
 	Input,
+	REQUIRED_MSG,
 	SingleSelect,
+	filterArrayByQuery,
+	getLocalizableLabel,
 	invalidateRequired,
-	stringIncludesQuery,
 	useForm,
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useMemo, useState} from 'react';
+
+import {defaultLanguageId} from '../../utils/constants';
 
 export enum ObjectRelationshipType {
 	MANY_TO_MANY = 'manyToMany',
@@ -53,10 +57,6 @@ const ONE_TO_ONE = {
 	value: ObjectRelationshipType.ONE_TO_ONE,
 };
 
-const REQUIRED_MSG = Liferay.Language.get('required');
-
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
-
 export function useObjectRelationshipForm({
 	initialValues,
 	onSubmit,
@@ -65,8 +65,7 @@ export function useObjectRelationshipForm({
 	const validate = (relationship: Partial<ObjectRelationship>) => {
 		const errors: FormError<ObjectRelationship> = {};
 
-		const label =
-			relationship.label?.[Liferay.ThemeDisplay.getDefaultLanguageId()];
+		const label = relationship.label?.[defaultLanguageId];
 
 		if (invalidateRequired(label)) {
 			errors.label = REQUIRED_MSG;
@@ -87,9 +86,9 @@ export function useObjectRelationshipForm({
 		if (
 			parameterRequired &&
 			relationship.type === ObjectRelationshipType.ONE_TO_MANY &&
-			!relationship.parameterObjectFieldId
+			!relationship.parameterObjectFieldName
 		) {
-			errors.parameterObjectFieldId = REQUIRED_MSG;
+			errors.parameterObjectFieldName = REQUIRED_MSG;
 		}
 
 		return errors;
@@ -112,8 +111,12 @@ export function ObjectRelationshipFormBase({
 	setValues,
 	values,
 }: IPros) {
+	const [creationLanguageId, setCreationLanguageId] = useState<
+		Liferay.Language.Locale
+	>();
+
 	const [objectDefinitions, setObjectDefinitions] = useState<
-		ObjectDefinition[]
+		Partial<ObjectDefinition>[]
 	>([]);
 	const [query, setQuery] = useState<string>('');
 
@@ -127,20 +130,48 @@ export function ObjectRelationshipFormBase({
 	}, [ffOneToOneRelationshipConfigurationEnabled, values.type]);
 
 	useEffect(() => {
+		const makeFetch = async () => {
+			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
+				values.objectDefinitionExternalReferenceCode1!
+			);
+
+			setCreationLanguageId(objectDefinition.defaultLanguageId);
+		};
+		makeFetch();
+	}, [values]);
+
+	useEffect(() => {
 		const fetchObjectDefinitions = async () => {
 			const items = await API.getAllObjectDefinitions();
 
 			const currentObjectDefinition = items.find(
-				({id}) => values.objectDefinitionId1 === id
+				({externalReferenceCode}) =>
+					values.objectDefinitionExternalReferenceCode1 ===
+					externalReferenceCode
 			)!;
 
 			const objectDefinitions = items.filter(
-				({parameterRequired, storageType, system}) =>
-					(!currentObjectDefinition.system || !system) &&
-					(!Liferay.FeatureFlags['LPS-135430'] ||
-						storageType === 'default') &&
-					!parameterRequired
+				({modifiable, parameterRequired, storageType, system}) => {
+					if (Liferay.FeatureFlags['LPS-167253']) {
+						return (
+							(currentObjectDefinition.modifiable ||
+								modifiable) &&
+							(!Liferay.FeatureFlags['LPS-135430'] ||
+								storageType === 'default') &&
+							!parameterRequired
+						);
+					}
+
+					return (
+						(!currentObjectDefinition.system || !system) &&
+						(!Liferay.FeatureFlags['LPS-135430'] ||
+							storageType === 'default') &&
+						!parameterRequired
+					);
+				}
 			);
+
+			setCreationLanguageId(currentObjectDefinition.defaultLanguageId);
 
 			setObjectDefinitions(objectDefinitions);
 		};
@@ -148,6 +179,7 @@ export function ObjectRelationshipFormBase({
 		if (readonly) {
 			setObjectDefinitions([
 				{
+					externalReferenceCode: values.objectDefinitionExternalReferenceCode2 as string,
 					id: values.objectDefinitionId2 as number,
 					label: values.label as LocalizedValue<string>,
 					name: values.objectDefinitionName2 as string,
@@ -161,30 +193,14 @@ export function ObjectRelationshipFormBase({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [readonly, values.objectDefinitionId1]);
 
-	const filteredObjectDefinitions = useMemo(
-		() =>
-			values.type === ObjectRelationshipType.MANY_TO_MANY
-				? objectDefinitions.filter(
-						({id}) => id !== values.objectDefinitionId1
-				  )
-				: objectDefinitions,
-		[objectDefinitions, values.objectDefinitionId1, values.type]
-	);
-
 	const filteredRelationships = useMemo(() => {
-		if (Liferay.FeatureFlags['LPS-158478']) {
-			return objectDefinitions.filter(({label}) =>
-				stringIncludesQuery(label[defaultLanguageId] as string, query)
-			);
-		}
-		else {
-			return filteredObjectDefinitions.filter(({label}) => {
-				return label[defaultLanguageId]
-					?.toLocaleLowerCase()
-					.includes(query.toLowerCase());
-			});
-		}
-	}, [filteredObjectDefinitions, objectDefinitions, query]);
+		return filterArrayByQuery({
+			array: objectDefinitions,
+			creationLanguageId,
+			query,
+			str: 'label',
+		});
+	}, [creationLanguageId, objectDefinitions, query]);
 
 	return (
 		<>
@@ -208,7 +224,10 @@ export function ObjectRelationshipFormBase({
 				value={selectedType}
 			/>
 
-			<AutoComplete
+			<AutoComplete<Partial<ObjectDefinition>>
+				creationLanguageId={
+					creationLanguageId as Liferay.Language.Locale
+				}
 				disabled={readonly}
 				emptyStateMessage={Liferay.Language.get(
 					'no-objects-were-found'
@@ -217,8 +236,10 @@ export function ObjectRelationshipFormBase({
 				items={filteredRelationships}
 				label={Liferay.Language.get('object')}
 				onChangeQuery={setQuery}
-				onSelectItem={(item: ObjectDefinition) => {
+				onSelectItem={(item) => {
 					setValues({
+						objectDefinitionExternalReferenceCode2:
+							item.externalReferenceCode,
 						objectDefinitionId2: item.id,
 						objectDefinitionName2: item.name,
 					});
@@ -229,7 +250,13 @@ export function ObjectRelationshipFormBase({
 			>
 				{({label, name, system}) => (
 					<div className="d-flex justify-content-between">
-						<div>{label[defaultLanguageId] ?? name}</div>
+						<div>
+							{getLocalizableLabel(
+								creationLanguageId as Liferay.Language.Locale,
+								label,
+								name
+							)}
+						</div>
 
 						<ClayLabel displayType={system ? 'info' : 'warning'}>
 							{system
@@ -257,10 +284,3 @@ interface IPros {
 	setValues: (values: Partial<ObjectRelationship>) => void;
 	values: Partial<ObjectRelationship>;
 }
-
-type ObjectDefinition = {
-	id: number;
-	label: LocalizedValue<string>;
-	name: string;
-	system: boolean;
-};

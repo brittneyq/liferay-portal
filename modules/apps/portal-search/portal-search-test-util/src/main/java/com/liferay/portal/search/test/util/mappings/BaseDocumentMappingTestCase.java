@@ -17,6 +17,7 @@ package com.liferay.portal.search.test.util.mappings;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchResponse;
@@ -24,7 +25,6 @@ import com.liferay.portal.search.test.util.document.BaseDocumentTestCase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,20 +41,15 @@ public abstract class BaseDocumentMappingTestCase extends BaseDocumentTestCase {
 
 		addDocuments(
 			screenName -> document -> populate(document, screenName),
-			getScreenNamesStream());
+			SCREEN_NAMES);
 	}
 
 	@Test
 	public void testFirstNamesSearchResults() throws Exception {
-		Stream<String> stream = getScreenNamesStream();
-
-		stream.forEach(
-			screenName -> {
-				String firstName = screenName.replaceFirst(
-					"user", StringPool.BLANK);
-
-				assertMappings(firstName);
-			});
+		for (String screenName : SCREEN_NAMES) {
+			assertMappings(
+				StringUtil.replaceFirst(screenName, "user", StringPool.BLANK));
+		}
 	}
 
 	@Test
@@ -103,9 +98,10 @@ public abstract class BaseDocumentMappingTestCase extends BaseDocumentTestCase {
 					searchEngineAdapter.execute(
 						new SearchSearchRequest() {
 							{
-								setIndexNames(String.valueOf(getCompanyId()));
+								setIndexNames(getIndexName());
 								setQuery(
 									BaseDocumentTestCase.getQuery(keywords));
+								setSelectedFieldNames(StringPool.STAR);
 							}
 						});
 
@@ -115,7 +111,7 @@ public abstract class BaseDocumentMappingTestCase extends BaseDocumentTestCase {
 
 				Assert.assertNotEquals(0, documents.length);
 
-				for (Document document : hits.getDocs()) {
+				for (Document document : documents) {
 					assertMappings(document);
 				}
 			});
@@ -140,6 +136,8 @@ public abstract class BaseDocumentMappingTestCase extends BaseDocumentTestCase {
 
 		return list.toArray(new Float[0]);
 	}
+
+	protected abstract String getIndexName();
 
 	protected Integer[] getIntegerArray(Document document) {
 		List<Integer> list = new ArrayList<>();

@@ -27,7 +27,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Di Giorgi
  */
 @Component(
-	immediate = true,
 	property = {
 		"panel.app.order:Integer=300",
 		"panel.category.key=" + PanelCategoryKeys.CONTROL_PANEL_CONFIGURATION
@@ -37,17 +36,18 @@ import org.osgi.service.component.annotations.Reference;
 public class PushNotificationsPanelApp extends BasePanelApp {
 
 	@Override
+	public Portlet getPortlet() {
+		return _portlet;
+	}
+
+	@Override
 	public String getPortletId() {
 		return PushNotificationsPortletKeys.PUSH_NOTIFICATIONS;
 	}
 
-	@Override
 	@Reference(
-		target = "(javax.portlet.name=" + PushNotificationsPortletKeys.PUSH_NOTIFICATIONS + ")",
-		unbind = "-"
+		target = "(javax.portlet.name=" + PushNotificationsPortletKeys.PUSH_NOTIFICATIONS + ")"
 	)
-	public void setPortlet(Portlet portlet) {
-		super.setPortlet(portlet);
-	}
+	private Portlet _portlet;
 
 }

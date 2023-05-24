@@ -19,12 +19,12 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.language.override.web.internal.display.LanguageItemDisplay;
 
 import java.util.List;
@@ -89,7 +89,7 @@ public class ViewManagementToolbarDisplayContext
 
 		String navigation = getNavigation();
 
-		if (Objects.equals("all", navigation)) {
+		if (Objects.equals(navigation, "all")) {
 			return labelItems;
 		}
 
@@ -113,11 +113,6 @@ public class ViewManagementToolbarDisplayContext
 	@Override
 	public String getSearchActionURL() {
 		return String.valueOf(searchContainer.getIteratorURL());
-	}
-
-	@Override
-	public Boolean isDisabled() {
-		return false;
 	}
 
 	@Override

@@ -252,6 +252,15 @@ public class CSDiagramEntryLocalServiceUtil {
 			cpDefinitionId);
 	}
 
+	public static List<CSDiagramEntry> getCProductCSDiagramEntries(
+			long cProductId, int start, int end,
+			OrderByComparator<CSDiagramEntry> orderByComparator)
+		throws PortalException {
+
+		return getService().getCProductCSDiagramEntries(
+			cProductId, start, end, orderByComparator);
+	}
+
 	/**
 	 * Returns a range of all the cs diagram entries.
 	 *
@@ -360,6 +369,10 @@ public class CSDiagramEntryLocalServiceUtil {
 
 	public static CSDiagramEntryLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(CSDiagramEntryLocalService service) {
+		_service = service;
 	}
 
 	private static volatile CSDiagramEntryLocalService _service;

@@ -22,22 +22,20 @@ import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryService;
 import com.liferay.account.service.AccountEntryUserRelService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
-import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -54,49 +52,47 @@ import org.osgi.service.component.annotations.Reference;
  * @author Albert Lee
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_ADMIN,
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT,
 		"mvc.command.name=/account_admin/edit_account_entry"
 	},
-	service = AopService.class
+	service = MVCActionCommand.class
 )
 public class EditAccountEntryMVCActionCommand
-	extends BaseMVCActionCommand implements AopService, MVCActionCommand {
+	extends BaseTransactionalMVCActionCommand {
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public boolean processAction(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws PortletException {
-
-		return super.processAction(actionRequest, actionResponse);
-	}
-
-	@Override
-	protected void doProcessAction(
+	protected void doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
 		try {
-			String redirect = ParamUtil.getString(actionRequest, "redirect");
+			AccountEntry accountEntry = null;
 
 			if (cmd.equals(Constants.ADD)) {
-				AccountEntry accountEntry = _addAccountEntry(actionRequest);
+				accountEntry = _addAccountEntry(actionRequest);
 
-				redirect = HttpComponentsUtil.setParameter(
-					redirect, actionResponse.getNamespace() + "accountEntryId",
-					accountEntry.getAccountEntryId());
+				actionRequest.setAttribute(
+					WebKeys.REDIRECT,
+					HttpComponentsUtil.setParameter(
+						ParamUtil.getString(actionRequest, "redirect"),
+						actionResponse.getNamespace() + "accountEntryId",
+						accountEntry.getAccountEntryId()));
 			}
 			else if (cmd.equals(Constants.UPDATE)) {
-				updateAccountEntry(actionRequest);
+				accountEntry = updateAccountEntry(actionRequest);
 			}
 
-			if (Validator.isNotNull(redirect)) {
-				sendRedirect(actionRequest, actionResponse, redirect);
+			if (accountEntry != null) {
+				accountEntry.setRestrictMembership(
+					ParamUtil.getBoolean(
+						actionRequest, "restrictMembership",
+						accountEntry.isRestrictMembership()));
+
+				_accountEntryService.updateAccountEntry(accountEntry);
 			}
 		}
 		catch (Exception exception) {
@@ -110,23 +106,17 @@ public class EditAccountEntryMVCActionCommand
 					 exception instanceof
 						 DuplicateAccountEntryExternalReferenceCodeException) {
 
-				SessionErrors.add(actionRequest, exception.getClass());
-
 				hideDefaultErrorMessage(actionRequest);
+				hideDefaultSuccessMessage(actionRequest);
 
-				actionResponse.setRenderParameter(
-					"mvcRenderCommandName",
-					"/account_admin/edit_account_entry");
+				sendRedirect(actionRequest, actionResponse);
 			}
 
-			throw exception;
-		}
-		catch (Throwable throwable) {
-			throw new Exception(throwable);
+			throw new PortletException(exception);
 		}
 	}
 
-	protected void updateAccountEntry(ActionRequest actionRequest)
+	protected AccountEntry updateAccountEntry(ActionRequest actionRequest)
 		throws Exception {
 
 		long accountEntryId = ParamUtil.getLong(
@@ -138,7 +128,13 @@ public class EditAccountEntryMVCActionCommand
 		String name = ParamUtil.getString(actionRequest, "name");
 		String description = ParamUtil.getString(actionRequest, "description");
 		boolean deleteLogo = ParamUtil.getBoolean(actionRequest, "deleteLogo");
-		String[] domains = ParamUtil.getStringValues(actionRequest, "domains");
+
+		String[] domains = accountEntry.getDomainsArray();
+
+		if (_isAllowUpdateDomains(accountEntry.getType())) {
+			domains = ParamUtil.getStringValues(actionRequest, "domains");
+		}
+
 		String emailAddress = ParamUtil.getString(
 			actionRequest, "emailAddress");
 		String taxIdNumber = ParamUtil.getString(actionRequest, "taxIdNumber");
@@ -146,8 +142,7 @@ public class EditAccountEntryMVCActionCommand
 		accountEntry = _accountEntryService.updateAccountEntry(
 			accountEntryId, accountEntry.getParentAccountEntryId(), name,
 			description, deleteLogo, domains, emailAddress,
-			_getLogoBytes(actionRequest), taxIdNumber,
-			_getStatus(actionRequest),
+			_getLogoBytes(actionRequest), taxIdNumber, accountEntry.getStatus(),
 			ServiceContextFactory.getInstance(
 				AccountEntry.class.getName(), actionRequest));
 
@@ -172,6 +167,8 @@ public class EditAccountEntryMVCActionCommand
 						accountEntryId);
 			}
 		}
+
+		return accountEntry;
 	}
 
 	private AccountEntry _addAccountEntry(ActionRequest actionRequest)
@@ -191,9 +188,7 @@ public class EditAccountEntryMVCActionCommand
 			actionRequest, "type",
 			AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS);
 
-		if (Objects.equals(
-				AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS, type)) {
-
+		if (_isAllowUpdateDomains(type)) {
 			domains = ParamUtil.getStringValues(actionRequest, "domains");
 		}
 
@@ -201,7 +196,7 @@ public class EditAccountEntryMVCActionCommand
 			themeDisplay.getUserId(), AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT,
 			name, description, domains, emailAddress,
 			_getLogoBytes(actionRequest), taxIdNumber, type,
-			_getStatus(actionRequest),
+			WorkflowConstants.STATUS_APPROVED,
 			ServiceContextFactory.getInstance(
 				AccountEntry.class.getName(), actionRequest));
 
@@ -219,17 +214,17 @@ public class EditAccountEntryMVCActionCommand
 
 		FileEntry fileEntry = _dlAppLocalService.getFileEntry(fileEntryId);
 
-		return FileUtil.getBytes(fileEntry.getContentStream());
+		return _file.getBytes(fileEntry.getContentStream());
 	}
 
-	private int _getStatus(ActionRequest actionRequest) {
-		boolean active = ParamUtil.getBoolean(actionRequest, "active");
+	private boolean _isAllowUpdateDomains(String type) {
+		if (Objects.equals(
+				AccountConstants.ACCOUNT_ENTRY_TYPE_BUSINESS, type)) {
 
-		if (active) {
-			return WorkflowConstants.STATUS_APPROVED;
+			return true;
 		}
 
-		return WorkflowConstants.STATUS_INACTIVE;
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -243,5 +238,11 @@ public class EditAccountEntryMVCActionCommand
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private File _file;
+
+	@Reference
+	private Portal _portal;
 
 }

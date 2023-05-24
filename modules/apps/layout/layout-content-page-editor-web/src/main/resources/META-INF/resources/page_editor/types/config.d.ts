@@ -53,6 +53,7 @@ export interface Config {
 
 	changeMasterLayoutURL: string;
 	changeStyleBookEntryURL: string;
+	contentPagePersonalizationLearnURL: string;
 	collectionSelectorURL: string;
 
 	commonStyles: Array<{
@@ -116,7 +117,7 @@ export interface Config {
 			label: string;
 			name: string;
 			value: string;
-		};
+		} | string;
 	};
 	getAvailableTemplatesURL: string;
 	getCollectionConfigurationURL: string;
@@ -161,7 +162,6 @@ export interface Config {
 	plid: string;
 	pluginsRootPath: string;
 	portletNamespace: string;
-	previewPageURL: string;
 	publishURL: string;
 	redirectURL: string;
 	renderFragmentEntryURL: string;
@@ -210,7 +210,7 @@ export interface Config {
 		toolbarPluginId: string;
 	}>;
 
-	unmarkItemForDeletionURL: string;
+	unmarkItemsForDeletionURL: string;
 	updateCollectionDisplayConfigURL: string;
 	updateConfigurationValuesURL: string;
 	updateFormItemConfigURL: string;

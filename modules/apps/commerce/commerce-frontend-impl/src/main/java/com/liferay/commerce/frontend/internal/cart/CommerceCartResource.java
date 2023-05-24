@@ -66,7 +66,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, service = CommerceCartResource.class)
+@Component(service = CommerceCartResource.class)
 public class CommerceCartResource {
 
 	@Path("/order/{orderId}/coupon-code/{couponCode}")
@@ -202,7 +202,7 @@ public class CommerceCartResource {
 			CommerceOrderItem commerceOrderItem =
 				_commerceOrderItemService.addOrUpdateCommerceOrderItem(
 					commerceOrder.getCommerceOrderId(), cpInstanceId, options,
-					quantity, 0, commerceContext, serviceContext);
+					quantity, 0, 0, commerceContext, serviceContext);
 
 			cart = _commerceCartResourceUtil.getCart(
 				commerceOrderItem.getCommerceOrderId(),

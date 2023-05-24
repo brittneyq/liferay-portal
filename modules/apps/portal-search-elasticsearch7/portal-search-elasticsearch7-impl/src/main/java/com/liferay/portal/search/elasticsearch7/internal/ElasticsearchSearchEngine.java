@@ -20,13 +20,12 @@ import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.BaseSearchEngine;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.IndexWriter;
 import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -78,13 +77,9 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
-	property = {
-		"search.engine.id=SYSTEM_ENGINE", "search.engine.impl=Elasticsearch"
-	},
-	service = {ElasticsearchSearchEngine.class, SearchEngine.class}
+	property = "search.engine.impl=Elasticsearch", service = SearchEngine.class
 )
-public class ElasticsearchSearchEngine extends BaseSearchEngine {
+public class ElasticsearchSearchEngine implements SearchEngine {
 
 	@Override
 	public synchronized String backup(long companyId, String backupName)
@@ -118,36 +113,22 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 	}
 
 	@Override
-	public Collection<Long> getIndexedCompanyIds() {
-		Collection<Long> companyIds = new ArrayList<>();
+	public IndexSearcher getIndexSearcher() {
+		return _indexSearcher;
+	}
 
-		String firstIndexName = _indexNameBuilder.getIndexName(0);
+	@Override
+	public IndexWriter getIndexWriter() {
+		return _indexWriter;
+	}
 
-		String prefix = firstIndexName.substring(
-			0, firstIndexName.length() - 1);
-
-		GetIndexIndexResponse getIndexIndexResponse =
-			_searchEngineAdapter.execute(
-				new GetIndexIndexRequest(prefix + StringPool.STAR));
-
-		for (String indexName : getIndexIndexResponse.getIndexNames()) {
-			long companyId = GetterUtil.getLong(
-				StringUtil.removeSubstring(indexName, prefix));
-
-			if (companyId == 0) {
-				continue;
-			}
-
-			companyIds.add(companyId);
-		}
-
-		return companyIds;
+	@Override
+	public String getVendor() {
+		return "Elasticsearch";
 	}
 
 	@Override
 	public void initialize(long companyId) {
-		super.initialize(companyId);
-
 		_waitForYellowStatus();
 
 		RestHighLevelClient restHighLevelClient =
@@ -182,8 +163,6 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 
 	@Override
 	public void removeCompany(long companyId) {
-		super.removeCompany(companyId);
-
 		CrossClusterReplicationHelper crossClusterReplicationHelper =
 			_crossClusterReplicationHelper;
 
@@ -239,39 +218,17 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 		_waitForYellowStatus();
 	}
 
-	@Override
-	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
-	public void setIndexSearcher(IndexSearcher indexSearcher) {
-		super.setIndexSearcher(indexSearcher);
-	}
-
-	@Override
-	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
-	public void setIndexWriter(IndexWriter indexWriter) {
-		super.setIndexWriter(indexWriter);
-	}
-
-	public void unsetElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = null;
-	}
-
-	public void unsetIndexFactory(IndexFactory indexFactory) {
-		_indexFactory = null;
-	}
-
 	@Activate
 	protected void activate(Map<String, Object> properties) {
 		_checkNodeVersions();
 
-		setVendor(MapUtil.getString(properties, "search.engine.impl"));
-
 		if (StartupHelperUtil.isDBNew()) {
-			for (long companyId : getIndexedCompanyIds()) {
+			for (long companyId : _getIndexedCompanyIds()) {
 				removeCompany(companyId);
 			}
 		}
+
+		initialize(CompanyConstants.SYSTEM);
 	}
 
 	protected void createBackupRepository() {
@@ -296,44 +253,6 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 		}
 
 		return false;
-	}
-
-	@Reference(unbind = "-")
-	protected void setElasticsearchConfigurationWrapper(
-		ElasticsearchConfigurationWrapper elasticsearchConfigurationWrapper) {
-
-		_elasticsearchConfigurationWrapper = elasticsearchConfigurationWrapper;
-	}
-
-	@Reference
-	protected void setElasticsearchConnectionManager(
-		ElasticsearchConnectionManager elasticsearchConnectionManager) {
-
-		_elasticsearchConnectionManager = elasticsearchConnectionManager;
-	}
-
-	@Reference
-	protected void setIndexFactory(IndexFactory indexFactory) {
-		_indexFactory = indexFactory;
-	}
-
-	@Reference(unbind = "-")
-	protected void setIndexNameBuilder(IndexNameBuilder indexNameBuilder) {
-		_indexNameBuilder = indexNameBuilder;
-	}
-
-	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
-	protected void setSearchEngineAdapter(
-		SearchEngineAdapter searchEngineAdapter) {
-
-		_searchEngineAdapter = searchEngineAdapter;
-	}
-
-	@Reference(unbind = "-")
-	protected void setSearchEngineInformation(
-		SearchEngineInformation searchEngineInformation) {
-
-		_searchEngineInformation = searchEngineInformation;
 	}
 
 	private void _checkNodeVersions() {
@@ -373,6 +292,32 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 				}
 			}
 		}
+	}
+
+	private Collection<Long> _getIndexedCompanyIds() {
+		Collection<Long> companyIds = new ArrayList<>();
+
+		String firstIndexName = _indexNameBuilder.getIndexName(0);
+
+		String prefix = firstIndexName.substring(
+			0, firstIndexName.length() - 1);
+
+		GetIndexIndexResponse getIndexIndexResponse =
+			_searchEngineAdapter.execute(
+				new GetIndexIndexRequest(prefix + StringPool.STAR));
+
+		for (String indexName : getIndexIndexResponse.getIndexNames()) {
+			long companyId = GetterUtil.getLong(
+				StringUtil.removeSubstring(indexName, prefix));
+
+			if (companyId == 0) {
+				continue;
+			}
+
+			companyIds.add(companyId);
+		}
+
+		return companyIds;
 	}
 
 	private boolean _hasBackupRepository() {
@@ -466,12 +411,29 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 	private volatile CrossClusterReplicationHelper
 		_crossClusterReplicationHelper;
 
+	@Reference
 	private volatile ElasticsearchConfigurationWrapper
 		_elasticsearchConfigurationWrapper;
+
+	@Reference
 	private ElasticsearchConnectionManager _elasticsearchConnectionManager;
+
+	@Reference
 	private IndexFactory _indexFactory;
+
+	@Reference
 	private IndexNameBuilder _indexNameBuilder;
+
+	@Reference(target = "(search.engine.impl=Elasticsearch)")
+	private IndexSearcher _indexSearcher;
+
+	@Reference(target = "(search.engine.impl=Elasticsearch)")
+	private IndexWriter _indexWriter;
+
+	@Reference(target = "(search.engine.impl=Elasticsearch)")
 	private SearchEngineAdapter _searchEngineAdapter;
+
+	@Reference
 	private SearchEngineInformation _searchEngineInformation;
 
 }

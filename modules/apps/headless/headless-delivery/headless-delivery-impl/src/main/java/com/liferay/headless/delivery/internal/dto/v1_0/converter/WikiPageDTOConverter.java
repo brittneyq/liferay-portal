@@ -27,6 +27,7 @@ import com.liferay.headless.delivery.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.AggregateRatingUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.RelatedContentUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.TaxonomyCategoryBriefUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -34,16 +35,12 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
-import com.liferay.portal.vulcan.util.TransformUtil;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
 import com.liferay.subscription.service.SubscriptionLocalService;
 import com.liferay.wiki.service.WikiPageService;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -53,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "dto.class.name=com.liferay.wiki.model.WikiPage",
-	service = {DTOConverter.class, WikiPageDTOConverter.class}
+	service = DTOConverter.class
 )
 public class WikiPageDTOConverter
 	implements DTOConverter<com.liferay.wiki.model.WikiPage, WikiPage> {
@@ -70,9 +67,6 @@ public class WikiPageDTOConverter
 		com.liferay.wiki.model.WikiPage wikiPage = _wikiPageService.getPage(
 			(Long)dtoConverterContext.getId());
 
-		Optional<UriInfo> uriInfoOptional =
-			dtoConverterContext.getUriInfoOptional();
-
 		return new WikiPage() {
 			{
 				actions = dtoConverterContext.getActions();
@@ -82,7 +76,7 @@ public class WikiPageDTOConverter
 						wikiPage.getResourcePrimKey()));
 				content = wikiPage.getContent();
 				creator = CreatorUtil.toCreator(
-					_portal, dtoConverterContext.getUriInfoOptional(),
+					_portal, dtoConverterContext.getUriInfo(),
 					_userLocalService.fetchUser(wikiPage.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(
 					dtoConverterContext.isAcceptAllLanguages(),
@@ -101,13 +95,6 @@ public class WikiPageDTOConverter
 						BlogsEntry.class.getName(), wikiPage.getPageId()),
 					AssetTag.NAME_ACCESSOR);
 				numberOfAttachments = wikiPage.getAttachmentsFileEntriesCount();
-				numberOfWikiPages = Optional.ofNullable(
-					wikiPage.getChildPages()
-				).map(
-					List::size
-				).orElse(
-					0
-				);
 				relatedContents = RelatedContentUtil.toRelatedContents(
 					_assetEntryLocalService, _assetLinkLocalService,
 					_dtoConverterRegistry, wikiPage.getModelClassName(),
@@ -131,10 +118,22 @@ public class WikiPageDTOConverter
 								dtoConverterContext.getHttpServletRequest(),
 								assetCategory.getCategoryId(),
 								dtoConverterContext.getLocale(),
-								uriInfoOptional.orElse(null),
+								dtoConverterContext.getUriInfo(),
 								dtoConverterContext.getUser())),
 					TaxonomyCategoryBrief.class);
+				wikiNodeId = wikiPage.getNodeId();
 
+				setNumberOfWikiPages(
+					() -> {
+						List<com.liferay.wiki.model.WikiPage> wikiPages =
+							wikiPage.getChildPages();
+
+						if (wikiPages != null) {
+							return wikiPages.size();
+						}
+
+						return 0;
+					});
 				setParentWikiPageId(
 					() -> {
 						com.liferay.wiki.model.WikiPage parentWikiPage =
@@ -148,7 +147,6 @@ public class WikiPageDTOConverter
 
 						return parentWikiPage.getResourcePrimKey();
 					});
-				wikiNodeId = wikiPage.getNodeId();
 			}
 		};
 	}

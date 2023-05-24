@@ -17,15 +17,19 @@ import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
+import {useSessionState} from '@liferay/layout-content-page-editor-web';
 import {
 	fetch,
+	getPortletNamespace,
 	objectToFormData,
 	openConfirmModal,
 	runScriptsInElement,
 } from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useRef, useState} from 'react';
+import {flushSync} from 'react-dom';
 
+import {APP_LAYOUT_CONTENT_CLASS_NAME} from '../constants/appLayoutClassName';
 import {useConstants} from '../contexts/ConstantsContext';
 import {
 	useSelectedMenuItemId,
@@ -42,10 +46,15 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 	const selectedMenuItemId = useSelectedMenuItemId();
 	const setSelectedMenuItemId = useSetSelectedMenuItemId();
 	const setSidebarPanelId = useSetSidebarPanelId();
+	const sidebarBodyRef = useRef(null);
 
 	const {portletId, redirect} = useConstants();
 
-	const namespace = Liferay.Util.getPortletNamespace(portletId);
+	const namespace = getPortletNamespace(portletId);
+
+	const [scrollPosition, setScrollPosition] = useSessionState(
+		`${namespace}_scrollPosition`
+	);
 
 	useEffect(() => {
 		if (changedRef.current) {
@@ -58,6 +67,25 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 
 		setBody(null);
 
+		const updateScrollPosition = () => {
+			const scrollContainer = document.querySelector(
+				`.${APP_LAYOUT_CONTENT_CLASS_NAME}`
+			);
+
+			if (!scrollContainer) {
+				return;
+			}
+
+			setScrollPosition(scrollContainer.scrollTop);
+		};
+
+		const handleFormSubmit = () => {
+			updateScrollPosition();
+			setSelectedMenuItemId(selectedMenuItemId, {persist: true});
+		};
+
+		let formElements = [];
+
 		fetch(contentUrl, {
 			body: objectToFormData(
 				Liferay.Util.ns(namespace, {redirect, ...contentRequestBody})
@@ -67,10 +95,26 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 			.then((response) => response.text())
 			.then((responseContent) => {
 				if (isMounted()) {
-					setBody(responseContent);
+					flushSync(() => {
+						setBody(responseContent);
+					});
+
 					changedRef.current = false;
+
+					formElements =
+						sidebarBodyRef.current?.querySelectorAll('form') || [];
+
+					formElements.forEach((element) =>
+						element.addEventListener('submit', handleFormSubmit)
+					);
 				}
 			});
+
+		return () => {
+			formElements.forEach((formElement) => {
+				formElement.removeEventListener('submit', handleFormSubmit);
+			});
+		};
 	}, [
 		contentRequestBody,
 		contentUrl,
@@ -78,8 +122,26 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 		namespace,
 		redirect,
 		selectedMenuItemId,
+		setSelectedMenuItemId,
+		setScrollPosition,
 		title,
 	]);
+
+	const scrollPositionRef = useRef(scrollPosition);
+	scrollPositionRef.current = scrollPosition;
+
+	useEffect(() => {
+		const scrollContainer = document.querySelector(
+			`.${APP_LAYOUT_CONTENT_CLASS_NAME}`
+		);
+
+		if (!scrollContainer || !scrollPositionRef.current) {
+			return;
+		}
+
+		scrollContainer.scrollTop = scrollPositionRef.current;
+		setScrollPosition(null);
+	}, [setScrollPosition]);
 
 	return (
 		<>
@@ -95,6 +157,9 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 
 					<ClayLayout.ContentCol>
 						<ClayButton
+							aria-label={Liferay.Language.get(
+								'close-configuration-panel'
+							)}
 							displayType="unstyled"
 							monospaced
 							onClick={() => {
@@ -105,6 +170,9 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 								setSelectedMenuItemId(null);
 								setSidebarPanelId(null);
 							}}
+							title={Liferay.Language.get(
+								'close-configuration-panel'
+							)}
 						>
 							<ClayIcon symbol="times" />
 						</ClayButton>
@@ -112,7 +180,7 @@ export function SidebarPanelContent({contentRequestBody, contentUrl, title}) {
 				</ClayLayout.ContentRow>
 			</div>
 
-			<div className="sidebar-body">
+			<div className="sidebar-body" ref={sidebarBodyRef}>
 				{!body ? (
 					<ClayLoadingIndicator />
 				) : (

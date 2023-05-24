@@ -259,33 +259,15 @@ public class CommerceCatalogLocalServiceUtil {
 		return getService().fetchCommerceCatalog(commerceCatalogId);
 	}
 
-	/**
-	 * Returns the commerce catalog with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce catalog's external reference code
-	 * @return the matching commerce catalog, or <code>null</code> if a matching commerce catalog could not be found
-	 */
 	public static CommerceCatalog fetchCommerceCatalogByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
 		return getService().fetchCommerceCatalogByExternalReferenceCode(
-			companyId, externalReferenceCode);
+			externalReferenceCode, companyId);
 	}
 
 	public static CommerceCatalog fetchCommerceCatalogByGroupId(long groupId) {
 		return getService().fetchCommerceCatalogByGroupId(groupId);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommerceCatalogByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	public static CommerceCatalog fetchCommerceCatalogByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return getService().fetchCommerceCatalogByReferenceCode(
-			companyId, externalReferenceCode);
 	}
 
 	/**
@@ -328,20 +310,12 @@ public class CommerceCatalogLocalServiceUtil {
 		return getService().getCommerceCatalog(commerceCatalogId);
 	}
 
-	/**
-	 * Returns the commerce catalog with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce catalog's external reference code
-	 * @return the matching commerce catalog
-	 * @throws PortalException if a matching commerce catalog could not be found
-	 */
 	public static CommerceCatalog getCommerceCatalogByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
 		return getService().getCommerceCatalogByExternalReferenceCode(
-			companyId, externalReferenceCode);
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -489,6 +463,10 @@ public class CommerceCatalogLocalServiceUtil {
 
 	public static CommerceCatalogLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(CommerceCatalogLocalService service) {
+		_service = service;
 	}
 
 	private static volatile CommerceCatalogLocalService _service;

@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		DDLRecordSetModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.dynamic.data.lists.model.impl.DDLRecordSetImpl",
+		"table.name=DDLRecordSet"
+	},
+	service = ArgumentsResolver.class
 )
 public class DDLRecordSetModelArgumentsResolver implements ArgumentsResolver {
 

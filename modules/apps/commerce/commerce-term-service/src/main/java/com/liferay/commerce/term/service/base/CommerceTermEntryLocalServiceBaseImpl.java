@@ -20,7 +20,6 @@ import com.liferay.commerce.term.service.CommerceTermEntryLocalService;
 import com.liferay.commerce.term.service.CommerceTermEntryLocalServiceUtil;
 import com.liferay.commerce.term.service.persistence.CTermEntryLocalizationPersistence;
 import com.liferay.commerce.term.service.persistence.CommerceTermEntryPersistence;
-import com.liferay.commerce.term.service.persistence.CommerceTermEntryRelPersistence;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -63,8 +62,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -289,48 +286,21 @@ public abstract class CommerceTermEntryLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the commerce term entry with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce term entry's external reference code
-	 * @return the matching commerce term entry, or <code>null</code> if a matching commerce term entry could not be found
-	 */
 	@Override
 	public CommerceTermEntry fetchCommerceTermEntryByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return commerceTermEntryPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceTermEntryPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommerceTermEntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public CommerceTermEntry fetchCommerceTermEntryByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchCommerceTermEntryByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the commerce term entry with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce term entry's external reference code
-	 * @return the matching commerce term entry
-	 * @throws PortalException if a matching commerce term entry could not be found
-	 */
 	@Override
 	public CommerceTermEntry getCommerceTermEntryByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return commerceTermEntryPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceTermEntryPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -770,7 +740,7 @@ public abstract class CommerceTermEntryLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommerceTermEntryLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -785,7 +755,8 @@ public abstract class CommerceTermEntryLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		commerceTermEntryLocalService = (CommerceTermEntryLocalService)aopProxy;
 
-		_setLocalServiceUtilService(commerceTermEntryLocalService);
+		CommerceTermEntryLocalServiceUtil.setService(
+			commerceTermEntryLocalService);
 	}
 
 	/**
@@ -831,50 +802,18 @@ public abstract class CommerceTermEntryLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CommerceTermEntryLocalService commerceTermEntryLocalService) {
-
-		try {
-			Field field =
-				CommerceTermEntryLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceTermEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected CommerceTermEntryLocalService commerceTermEntryLocalService;
 
 	@Reference
 	protected CommerceTermEntryPersistence commerceTermEntryPersistence;
 
 	@Reference
-	protected CommerceTermEntryRelPersistence commerceTermEntryRelPersistence;
-
-	@Reference
-	protected CTermEntryLocalizationPersistence
-		cTermEntryLocalizationPersistence;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
 	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
+	protected CTermEntryLocalizationPersistence
+		cTermEntryLocalizationPersistence;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceTermEntryLocalServiceBaseImpl.class);

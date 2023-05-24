@@ -17,6 +17,8 @@ package com.liferay.commerce.service;
 import com.liferay.commerce.model.CommerceShippingOptionAccountEntryRel;
 import com.liferay.portal.kernel.exception.PortalException;
 
+import java.util.List;
+
 /**
  * Provides the remote service utility for CommerceShippingOptionAccountEntryRel. This utility wraps
  * <code>com.liferay.commerce.service.impl.CommerceShippingOptionAccountEntryRelServiceImpl</code> and is an
@@ -65,6 +67,31 @@ public class CommerceShippingOptionAccountEntryRelServiceUtil {
 			accountEntryId, commerceChannelId);
 	}
 
+	public static CommerceShippingOptionAccountEntryRel
+			getCommerceShippingOptionAccountEntryRel(
+				long commerceShippingOptionAccountEntryRelId)
+		throws PortalException {
+
+		return getService().getCommerceShippingOptionAccountEntryRel(
+			commerceShippingOptionAccountEntryRelId);
+	}
+
+	public static List<CommerceShippingOptionAccountEntryRel>
+			getCommerceShippingOptionAccountEntryRels(long accountEntryId)
+		throws Exception {
+
+		return getService().getCommerceShippingOptionAccountEntryRels(
+			accountEntryId);
+	}
+
+	public static int getCommerceShippingOptionAccountEntryRelsCount(
+			long accountEntryId)
+		throws Exception {
+
+		return getService().getCommerceShippingOptionAccountEntryRelsCount(
+			accountEntryId);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
@@ -88,6 +115,12 @@ public class CommerceShippingOptionAccountEntryRelServiceUtil {
 
 	public static CommerceShippingOptionAccountEntryRelService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		CommerceShippingOptionAccountEntryRelService service) {
+
+		_service = service;
 	}
 
 	private static volatile CommerceShippingOptionAccountEntryRelService

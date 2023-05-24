@@ -20,17 +20,20 @@ import com.liferay.document.library.kernel.exception.DirectoryNameException;
 import com.liferay.document.library.kernel.store.DLStore;
 import com.liferay.document.library.kernel.store.DLStoreRequest;
 import com.liferay.document.library.kernel.store.Store;
+import com.liferay.document.library.kernel.store.StoreArea;
 import com.liferay.document.library.kernel.util.DLValidatorUtil;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.io.ByteArrayFileInputStream;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -46,8 +49,8 @@ import java.io.InputStream;
  */
 public class DLStoreImpl implements DLStore {
 
-	public DLStoreImpl() {
-		_storeFactory = StoreFactory.getInstance();
+	public static void setStore(Store store) {
+		_store = store;
 	}
 
 	@Override
@@ -62,9 +65,7 @@ public class DLStoreImpl implements DLStore {
 			AntivirusScannerUtil.scan(bytes);
 		}
 
-		Store store = _storeFactory.getStore();
-
-		store.addFile(
+		_store.addFile(
 			dlStoreRequest.getCompanyId(), dlStoreRequest.getRepositoryId(),
 			dlStoreRequest.getFileName(), dlStoreRequest.getVersionLabel(),
 			new UnsyncByteArrayInputStream(bytes));
@@ -82,10 +83,8 @@ public class DLStoreImpl implements DLStore {
 			AntivirusScannerUtil.scan(file);
 		}
 
-		Store store = _storeFactory.getStore();
-
 		try (InputStream inputStream = new FileInputStream(file)) {
-			store.addFile(
+			_store.addFile(
 				dlStoreRequest.getCompanyId(), dlStoreRequest.getRepositoryId(),
 				dlStoreRequest.getFileName(), dlStoreRequest.getVersionLabel(),
 				inputStream);
@@ -112,139 +111,7 @@ public class DLStoreImpl implements DLStore {
 			dlStoreRequest.getFileName(),
 			dlStoreRequest.isValidateFileExtension());
 
-		Store store = _storeFactory.getStore();
-
-		if (PropsValues.DL_STORE_ANTIVIRUS_ENABLED &&
-			AntivirusScannerUtil.isActive()) {
-
-			File tempFile = null;
-
-			try {
-				tempFile = FileUtil.createTempFile();
-
-				FileUtil.write(tempFile, inputStream1);
-
-				AntivirusScannerUtil.scan(tempFile);
-
-				try (InputStream inputStream2 = new FileInputStream(tempFile)) {
-					store.addFile(
-						dlStoreRequest.getCompanyId(),
-						dlStoreRequest.getRepositoryId(),
-						dlStoreRequest.getFileName(),
-						dlStoreRequest.getVersionLabel(), inputStream2);
-				}
-			}
-			catch (IOException ioException) {
-				throw new SystemException(
-					"Unable to scan file " + dlStoreRequest.getFileName(),
-					ioException);
-			}
-			finally {
-				if (tempFile != null) {
-					tempFile.delete();
-				}
-			}
-		}
-		else {
-			try {
-				store.addFile(
-					dlStoreRequest.getCompanyId(),
-					dlStoreRequest.getRepositoryId(),
-					dlStoreRequest.getFileName(),
-					dlStoreRequest.getVersionLabel(), inputStream1);
-			}
-			catch (AccessDeniedException accessDeniedException) {
-				throw new PrincipalException(accessDeniedException);
-			}
-		}
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName,
-			boolean validateFileExtension, byte[] bytes)
-		throws PortalException {
-
-		addFile(
-			DLStoreRequest.builder(
-				companyId, repositoryId, fileName
-			).validateFileExtension(
-				validateFileExtension
-			).build(),
-			bytes);
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName,
-			boolean validateFileExtension, File file)
-		throws PortalException {
-
-		addFile(
-			DLStoreRequest.builder(
-				companyId, repositoryId, fileName
-			).validateFileExtension(
-				validateFileExtension
-			).build(),
-			file);
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName,
-			boolean validateFileExtension, InputStream inputStream)
-		throws PortalException {
-
-		addFile(
-			DLStoreRequest.builder(
-				companyId, repositoryId, fileName
-			).validateFileExtension(
-				validateFileExtension
-			).build(),
-			inputStream);
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName, byte[] bytes)
-		throws PortalException {
-
-		addFile(
-			DLStoreRequest.builder(
-				companyId, repositoryId, fileName
-			).validateFileExtension(
-				true
-			).build(),
-			bytes);
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName, File file)
-		throws PortalException {
-
-		addFile(
-			DLStoreRequest.builder(
-				companyId, repositoryId, fileName
-			).validateFileExtension(
-				true
-			).build(),
-			file);
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName,
-			InputStream inputStream)
-		throws PortalException {
-
-		addFile(
-			DLStoreRequest.builder(
-				companyId, repositoryId, fileName
-			).validateFileExtension(
-				true
-			).build(),
-			inputStream);
+		_addFile(dlStoreRequest, inputStream1);
 	}
 
 	@Override
@@ -253,26 +120,38 @@ public class DLStoreImpl implements DLStore {
 			String fromVersionLabel, String toVersionLabel)
 		throws PortalException {
 
-		Store store = _storeFactory.getStore();
-
-		InputStream inputStream = store.getFileAsStream(
+		InputStream inputStream = _store.getFileAsStream(
 			companyId, repositoryId, fileName, fromVersionLabel);
 
 		if (inputStream == null) {
 			inputStream = new UnsyncByteArrayInputStream(new byte[0]);
 		}
 
-		store.addFile(
+		_store.addFile(
 			companyId, repositoryId, fileName, toVersionLabel, inputStream);
 	}
 
 	@Override
 	public void deleteDirectory(
-		long companyId, long repositoryId, String dirName) {
+			long companyId, long repositoryId, String dirName)
+		throws PortalException {
 
-		Store store = _storeFactory.getStore();
+		if (FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+			for (String fileName :
+					_store.getFileNames(companyId, repositoryId, dirName)) {
 
-		store.deleteDirectory(companyId, repositoryId, dirName);
+				for (String versionLabel :
+						_store.getFileVersions(
+							companyId, repositoryId, fileName)) {
+
+					_copy(
+						StoreArea.DELETED, companyId, repositoryId, fileName,
+						versionLabel);
+				}
+			}
+		}
+
+		_store.deleteDirectory(companyId, repositoryId, dirName);
 	}
 
 	@Override
@@ -281,12 +160,16 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false);
 
-		Store store = _storeFactory.getStore();
-
 		for (String versionLabel :
-				store.getFileVersions(companyId, repositoryId, fileName)) {
+				_store.getFileVersions(companyId, repositoryId, fileName)) {
 
-			store.deleteFile(companyId, repositoryId, fileName, versionLabel);
+			if (FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+				_copy(
+					StoreArea.DELETED, companyId, repositoryId, fileName,
+					versionLabel);
+			}
+
+			_store.deleteFile(companyId, repositoryId, fileName, versionLabel);
 		}
 	}
 
@@ -298,10 +181,14 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false, versionLabel);
 
-		Store store = _storeFactory.getStore();
-
 		try {
-			store.deleteFile(companyId, repositoryId, fileName, versionLabel);
+			if (FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+				_copy(
+					StoreArea.DELETED, companyId, repositoryId, fileName,
+					versionLabel);
+			}
+
+			_store.deleteFile(companyId, repositoryId, fileName, versionLabel);
 		}
 		catch (AccessDeniedException accessDeniedException) {
 			throw new PrincipalException(accessDeniedException);
@@ -315,11 +202,9 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false);
 
-		Store store = _storeFactory.getStore();
-
 		try {
 			return StreamUtil.toByteArray(
-				store.getFileAsStream(
+				_store.getFileAsStream(
 					companyId, repositoryId, fileName, StringPool.BLANK));
 		}
 		catch (IOException ioException) {
@@ -335,11 +220,9 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false, versionLabel);
 
-		Store store = _storeFactory.getStore();
-
 		try {
 			return StreamUtil.toByteArray(
-				store.getFileAsStream(
+				_store.getFileAsStream(
 					companyId, repositoryId, fileName, versionLabel));
 		}
 		catch (IOException ioException) {
@@ -354,9 +237,7 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false);
 
-		Store store = _storeFactory.getStore();
-
-		return store.getFileAsStream(
+		return _store.getFileAsStream(
 			companyId, repositoryId, fileName, StringPool.BLANK);
 	}
 
@@ -368,9 +249,7 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false, versionLabel);
 
-		Store store = _storeFactory.getStore();
-
-		return store.getFileAsStream(
+		return _store.getFileAsStream(
 			companyId, repositoryId, fileName, versionLabel);
 	}
 
@@ -383,9 +262,7 @@ public class DLStoreImpl implements DLStore {
 			throw new DirectoryNameException(dirName);
 		}
 
-		Store store = _storeFactory.getStore();
-
-		return store.getFileNames(companyId, repositoryId, dirName);
+		return _store.getFileNames(companyId, repositoryId, dirName);
 	}
 
 	@Override
@@ -394,9 +271,7 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false);
 
-		Store store = _storeFactory.getStore();
-
-		return store.getFileSize(
+		return _store.getFileSize(
 			companyId, repositoryId, fileName, StringPool.BLANK);
 	}
 
@@ -406,9 +281,7 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false);
 
-		Store store = _storeFactory.getStore();
-
-		return store.hasFile(
+		return _store.hasFile(
 			companyId, repositoryId, fileName, Store.VERSION_DEFAULT);
 	}
 
@@ -420,9 +293,7 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, false, versionLabel);
 
-		Store store = _storeFactory.getStore();
-
-		return store.hasFile(companyId, repositoryId, fileName, versionLabel);
+		return _store.hasFile(companyId, repositoryId, fileName, versionLabel);
 	}
 
 	@Override
@@ -434,16 +305,14 @@ public class DLStoreImpl implements DLStore {
 			dlStoreRequest.getSourceFileName(),
 			dlStoreRequest.isValidateFileExtension());
 
-		DLValidatorUtil.validateVersionLabel(dlStoreRequest.getVersionLabel());
+		_validateVersionLabel(dlStoreRequest.getVersionLabel());
 
 		if (PropsValues.DL_STORE_ANTIVIRUS_ENABLED) {
 			AntivirusScannerUtil.scan(file);
 		}
 
-		Store store = _storeFactory.getStore();
-
 		try (InputStream inputStream = new FileInputStream(file)) {
-			store.addFile(
+			_store.addFile(
 				dlStoreRequest.getCompanyId(), dlStoreRequest.getRepositoryId(),
 				dlStoreRequest.getFileName(), dlStoreRequest.getVersionLabel(),
 				inputStream);
@@ -463,20 +332,17 @@ public class DLStoreImpl implements DLStore {
 			dlStoreRequest.getSourceFileName(),
 			dlStoreRequest.isValidateFileExtension());
 
+		_validateVersionLabel(dlStoreRequest.getVersionLabel());
+
 		if (inputStream1 instanceof ByteArrayFileInputStream) {
 			ByteArrayFileInputStream byteArrayFileInputStream =
 				(ByteArrayFileInputStream)inputStream1;
-
-			DLValidatorUtil.validateVersionLabel(
-				dlStoreRequest.getVersionLabel());
 
 			if (PropsValues.DL_STORE_ANTIVIRUS_ENABLED) {
 				AntivirusScannerUtil.scan(byteArrayFileInputStream.getFile());
 			}
 
-			Store store = _storeFactory.getStore();
-
-			store.addFile(
+			_store.addFile(
 				dlStoreRequest.getCompanyId(), dlStoreRequest.getRepositoryId(),
 				dlStoreRequest.getFileName(), dlStoreRequest.getVersionLabel(),
 				inputStream1);
@@ -484,53 +350,7 @@ public class DLStoreImpl implements DLStore {
 			return;
 		}
 
-		DLValidatorUtil.validateVersionLabel(dlStoreRequest.getVersionLabel());
-
-		Store store = _storeFactory.getStore();
-
-		if (PropsValues.DL_STORE_ANTIVIRUS_ENABLED &&
-			AntivirusScannerUtil.isActive()) {
-
-			File tempFile = null;
-
-			try {
-				tempFile = FileUtil.createTempFile();
-
-				FileUtil.write(tempFile, inputStream1);
-
-				AntivirusScannerUtil.scan(tempFile);
-
-				try (InputStream inputStream = new FileInputStream(tempFile)) {
-					store.addFile(
-						dlStoreRequest.getCompanyId(),
-						dlStoreRequest.getRepositoryId(),
-						dlStoreRequest.getFileName(),
-						dlStoreRequest.getVersionLabel(), inputStream);
-				}
-			}
-			catch (IOException ioException) {
-				throw new SystemException(
-					"Unable to scan file " + dlStoreRequest.getFileName(),
-					ioException);
-			}
-			finally {
-				if (tempFile != null) {
-					tempFile.delete();
-				}
-			}
-		}
-		else {
-			try {
-				store.addFile(
-					dlStoreRequest.getCompanyId(),
-					dlStoreRequest.getRepositoryId(),
-					dlStoreRequest.getFileName(),
-					dlStoreRequest.getVersionLabel(), inputStream1);
-			}
-			catch (AccessDeniedException accessDeniedException) {
-				throw new PrincipalException(accessDeniedException);
-			}
-		}
+		_addFile(dlStoreRequest, inputStream1);
 	}
 
 	@Override
@@ -539,17 +359,21 @@ public class DLStoreImpl implements DLStore {
 			String fileName)
 		throws PortalException {
 
-		Store store = _storeFactory.getStore();
-
 		for (String versionLabel :
-				store.getFileVersions(companyId, repositoryId, fileName)) {
+				_store.getFileVersions(companyId, repositoryId, fileName)) {
 
-			store.addFile(
+			_store.addFile(
 				companyId, newRepositoryId, fileName, versionLabel,
-				store.getFileAsStream(
+				_store.getFileAsStream(
 					companyId, repositoryId, fileName, versionLabel));
 
-			store.deleteFile(companyId, repositoryId, fileName, versionLabel);
+			if (FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+				_copy(
+					StoreArea.DELETED, companyId, repositoryId, fileName,
+					versionLabel);
+			}
+
+			_store.deleteFile(companyId, repositoryId, fileName, versionLabel);
 		}
 	}
 
@@ -604,19 +428,23 @@ public class DLStoreImpl implements DLStore {
 			String fromVersionLabel, String toVersionLabel)
 		throws PortalException {
 
-		Store store = _storeFactory.getStore();
-
-		InputStream inputStream = store.getFileAsStream(
+		InputStream inputStream = _store.getFileAsStream(
 			companyId, repositoryId, fileName, fromVersionLabel);
 
 		if (inputStream == null) {
 			inputStream = new UnsyncByteArrayInputStream(new byte[0]);
 		}
 
-		store.addFile(
+		_store.addFile(
 			companyId, repositoryId, fileName, toVersionLabel, inputStream);
 
-		store.deleteFile(companyId, repositoryId, fileName, fromVersionLabel);
+		if (FeatureFlagManagerUtil.isEnabled("LPS-174816")) {
+			_copy(
+				StoreArea.DELETED, companyId, repositoryId, fileName,
+				fromVersionLabel);
+		}
+
+		_store.deleteFile(companyId, repositoryId, fileName, fromVersionLabel);
 	}
 
 	@Override
@@ -713,7 +541,7 @@ public class DLStoreImpl implements DLStore {
 
 		validate(fileName, validateFileExtension);
 
-		DLValidatorUtil.validateVersionLabel(versionLabel);
+		_validateVersionLabel(versionLabel);
 	}
 
 	protected void validate(
@@ -725,7 +553,7 @@ public class DLStoreImpl implements DLStore {
 			fileName, fileExtension, sourceFileName, validateFileExtension,
 			file);
 
-		DLValidatorUtil.validateVersionLabel(versionLabel);
+		_validateVersionLabel(versionLabel);
 	}
 
 	protected void validate(
@@ -738,9 +566,85 @@ public class DLStoreImpl implements DLStore {
 			fileName, fileExtension, sourceFileName, validateFileExtension,
 			inputStream);
 
+		_validateVersionLabel(versionLabel);
+	}
+
+	private void _addFile(
+			DLStoreRequest dlStoreRequest, InputStream inputStream)
+		throws PortalException {
+
+		if (PropsValues.DL_STORE_ANTIVIRUS_ENABLED &&
+			AntivirusScannerUtil.isActive()) {
+
+			File tempFile = null;
+
+			try {
+				tempFile = FileUtil.createTempFile();
+
+				FileUtil.write(tempFile, inputStream);
+
+				AntivirusScannerUtil.scan(tempFile);
+
+				try (InputStream inputStream2 = new FileInputStream(tempFile)) {
+					_store.addFile(
+						dlStoreRequest.getCompanyId(),
+						dlStoreRequest.getRepositoryId(),
+						dlStoreRequest.getFileName(),
+						dlStoreRequest.getVersionLabel(), inputStream2);
+				}
+			}
+			catch (IOException ioException) {
+				throw new SystemException(
+					"Unable to scan file " + dlStoreRequest.getFileName(),
+					ioException);
+			}
+			finally {
+				if (tempFile != null) {
+					tempFile.delete();
+				}
+			}
+		}
+		else {
+			try {
+				_store.addFile(
+					dlStoreRequest.getCompanyId(),
+					dlStoreRequest.getRepositoryId(),
+					dlStoreRequest.getFileName(),
+					dlStoreRequest.getVersionLabel(), inputStream);
+			}
+			catch (AccessDeniedException accessDeniedException) {
+				throw new PrincipalException(accessDeniedException);
+			}
+		}
+	}
+
+	private void _copy(
+			StoreArea storeArea, long companyId, long repositoryId,
+			String fileName, String versionLabel)
+		throws PortalException {
+
+		try (InputStream inputStream = _store.getFileAsStream(
+				companyId, repositoryId, fileName, versionLabel)) {
+
+			StoreArea.withStoreArea(
+				storeArea,
+				() -> _store.addFile(
+					companyId, repositoryId, fileName, versionLabel,
+					inputStream));
+		}
+		catch (IOException ioException) {
+			throw new SystemException(ioException);
+		}
+	}
+
+	private void _validateVersionLabel(String versionLabel)
+		throws PortalException {
+
 		DLValidatorUtil.validateVersionLabel(versionLabel);
 	}
 
-	private final StoreFactory _storeFactory;
+	private static volatile Store _store =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			Store.class, DLStoreImpl.class, "_store", "(default=true)", true);
 
 }

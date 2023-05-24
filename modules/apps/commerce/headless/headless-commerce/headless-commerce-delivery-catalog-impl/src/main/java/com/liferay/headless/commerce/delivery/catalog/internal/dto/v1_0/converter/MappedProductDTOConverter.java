@@ -22,11 +22,11 @@ import com.liferay.commerce.discount.CommerceDiscountValue;
 import com.liferay.commerce.inventory.CPDefinitionInventoryEngine;
 import com.liferay.commerce.inventory.constants.CommerceInventoryAvailabilityConstants;
 import com.liferay.commerce.inventory.engine.CommerceInventoryEngine;
+import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.price.CommerceProductPrice;
 import com.liferay.commerce.price.CommerceProductPriceCalculation;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPDefinitionOptionRel;
-import com.liferay.commerce.product.model.CPDefinitionOptionValueRel;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.permission.CommerceProductViewPermission;
@@ -43,13 +43,14 @@ import com.liferay.headless.commerce.core.util.LanguageUtils;
 import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.Availability;
 import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.MappedProduct;
 import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.Price;
+import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.ProductConfiguration;
 import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.ProductOption;
-import com.liferay.headless.commerce.delivery.catalog.dto.v1_0.SkuOption;
+import com.liferay.headless.commerce.delivery.catalog.internal.dto.v1_0.converter.constants.DTOConverterConstants;
+import com.liferay.headless.commerce.delivery.catalog.internal.util.v1_0.SkuOptionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -61,7 +62,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
@@ -71,9 +71,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.commerce.shop.by.diagram.model.CSDiagramEntry",
-	service = {DTOConverter.class, MappedProductDTOConverter.class}
+	service = DTOConverter.class
 )
 public class MappedProductDTOConverter
 	implements DTOConverter<CSDiagramEntry, MappedProduct> {
@@ -141,8 +140,6 @@ public class MappedProductDTOConverter
 					mappedProductDTOConverterContext.getLocale(), 1);
 				quantity = csDiagramEntry.getQuantity();
 				sequence = csDiagramEntry.getSequence();
-				sku = csDiagramEntry.getSku();
-				skuOptions = _getSkuOptions(cpInstance);
 
 				setAvailability(
 					() -> {
@@ -318,6 +315,14 @@ public class MappedProductDTOConverter
 
 						return null;
 					});
+				setSku(
+					() -> {
+						if (cpInstance == null) {
+							return csDiagramEntry.getSku();
+						}
+
+						return cpInstance.getSku();
+					});
 				setSkuExternalReferenceCode(
 					() -> {
 						if (cpInstance == null) {
@@ -333,6 +338,24 @@ public class MappedProductDTOConverter
 						}
 
 						return cpInstance.getCPInstanceId();
+					});
+				setSkuOptions(
+					() -> {
+						if (cpInstance == null) {
+							return null;
+						}
+
+						JSONArray jsonArray = _jsonHelper.toJSONArray(
+							_cpDefinitionOptionRelLocalService.
+								getCPDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys(
+									cpInstance.getCPInstanceId()));
+
+						return SkuOptionUtil.getSkuOptions(
+							_cpInstanceHelper.getCPDefinitionOptionValueRelsMap(
+								cpInstance.getCPDefinitionId(),
+								jsonArray.toString()),
+							_language.getLanguageId(
+								mappedProductDTOConverterContext.getLocale()));
 					});
 				setThumbnail(
 					() -> {
@@ -382,7 +405,8 @@ public class MappedProductDTOConverter
 		if (_cpDefinitionInventoryEngine.isDisplayAvailability(cpInstance)) {
 			if (Objects.equals(
 					_commerceInventoryEngine.getAvailabilityStatus(
-						cpInstance.getCompanyId(), commerceChannelGroupId,
+						cpInstance.getCompanyId(), cpInstance.getGroupId(),
+						commerceChannelGroupId,
 						_cpDefinitionInventoryEngine.getMinStockQuantity(
 							cpInstance),
 						cpInstance.getSku()),
@@ -401,7 +425,8 @@ public class MappedProductDTOConverter
 		if (_cpDefinitionInventoryEngine.isDisplayStockQuantity(cpInstance)) {
 			availability.setStockQuantity(
 				_commerceInventoryEngine.getStockQuantity(
-					companyId, commerceChannelGroupId, sku));
+					companyId, cpInstance.getGroupId(), commerceChannelGroupId,
+					sku));
 		}
 
 		return availability;
@@ -498,52 +523,6 @@ public class MappedProductDTOConverter
 		return price;
 	}
 
-	private SkuOption[] _getSkuOptions(CPInstance cpInstance) throws Exception {
-		if (cpInstance == null) {
-			return null;
-		}
-
-		List<SkuOption> skuOptions = new ArrayList<>();
-
-		JSONArray keyValuesJSONArray = _jsonHelper.toJSONArray(
-			_cpDefinitionOptionRelLocalService.
-				getCPDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys(
-					cpInstance.getCPInstanceId()));
-
-		Map<CPDefinitionOptionRel, List<CPDefinitionOptionValueRel>>
-			cpDefinitionOptionValueRelsMap =
-				_cpInstanceHelper.getCPDefinitionOptionValueRelsMap(
-					cpInstance.getCPDefinitionId(),
-					keyValuesJSONArray.toString());
-
-		for (Map.Entry<CPDefinitionOptionRel, List<CPDefinitionOptionValueRel>>
-				entry : cpDefinitionOptionValueRelsMap.entrySet()) {
-
-			CPDefinitionOptionRel cpDefinitionOptionRel = entry.getKey();
-
-			List<CPDefinitionOptionValueRel> cpDefinitionOptionValueRels =
-				entry.getValue();
-
-			for (CPDefinitionOptionValueRel cpDefinitionOptionValueRel :
-					cpDefinitionOptionValueRels) {
-
-				SkuOption skuOption = new SkuOption() {
-					{
-						key =
-							cpDefinitionOptionRel.getCPDefinitionOptionRelId();
-						value =
-							cpDefinitionOptionValueRel.
-								getCPDefinitionOptionValueRelId();
-					}
-				};
-
-				skuOptions.add(skuOption);
-			}
-		}
-
-		return skuOptions.toArray(new SkuOption[0]);
-	}
-
 	@Reference
 	private CommerceInventoryEngine _commerceInventoryEngine;
 
@@ -555,9 +534,6 @@ public class MappedProductDTOConverter
 
 	@Reference
 	private CommerceProductViewPermission _commerceProductViewPermission;
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
 
 	@Reference
 	private CPDefinitionInventoryEngine _cpDefinitionInventoryEngine;
@@ -590,10 +566,14 @@ public class MappedProductDTOConverter
 	@Reference
 	private Language _language;
 
-	@Reference
-	private ProductConfigurationDTOConverter _productConfigurationDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.delivery.catalog.internal.dto.v1_0.converter.ProductConfigurationDTOConverter)"
+	)
+	private DTOConverter<CPDefinitionInventory, ProductConfiguration>
+		_productConfigurationDTOConverter;
 
-	@Reference
-	private ProductOptionDTOConverter _productOptionDTOConverter;
+	@Reference(target = DTOConverterConstants.PRODUCT_OPTION_DTO_CONVERTER)
+	private DTOConverter<CPDefinitionOptionRel, ProductOption>
+		_productOptionDTOConverter;
 
 }

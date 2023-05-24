@@ -12,33 +12,40 @@
  * details.
  */
 
+import ClayLabel from '@clayui/label';
+import {
+	Panel,
+	PanelSimpleBody,
+	getLocalizableLabel,
+} from '@liferay/object-js-components-web';
 import React from 'react';
 
-import Panel from '../../Panel/Panel';
 import {TYPES, useLayoutContext} from '../objectLayoutContext';
-import HeaderDropdown from './HeaderDropdown';
-import RequiredLabel from './RequiredLabel';
+import {HeaderDropdown} from './HeaderDropdown';
 
-interface IObjectLayoutFieldProps extends React.HTMLAttributes<HTMLElement> {
+interface ObjectLayoutFieldProps extends React.HTMLAttributes<HTMLElement> {
 	boxIndex: number;
 	columnIndex: number;
-	objectFieldId: number;
+	objectFieldName: string;
 	rowIndex: number;
 	tabIndex: number;
 }
 
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
-
-const ObjectLayoutField: React.FC<IObjectLayoutFieldProps> = ({
+export function ObjectLayoutField({
 	boxIndex,
 	columnIndex,
-	objectFieldId,
+	objectFieldName,
 	rowIndex,
 	tabIndex,
-}) => {
-	const [{objectFieldTypes, objectFields}, dispatch] = useLayoutContext();
+}: ObjectLayoutFieldProps) {
+	const [
+		{creationLanguageId, objectFieldTypes, objectFields},
+		dispatch,
+	] = useLayoutContext();
 
-	const objectField = objectFields.find(({id}) => id === objectFieldId)!;
+	const objectField = objectFields.find(
+		({name}) => name === objectFieldName
+	)!;
 
 	const objectFieldType = objectFieldTypes.find(
 		({businessType}) => businessType === objectField.businessType
@@ -46,8 +53,8 @@ const ObjectLayoutField: React.FC<IObjectLayoutFieldProps> = ({
 
 	return (
 		<>
-			<Panel key={`field_${objectFieldId}`}>
-				<Panel.SimpleBody
+			<Panel key={`field_${objectFieldName}`}>
+				<PanelSimpleBody
 					contentRight={
 						<HeaderDropdown
 							deleteElement={() => {
@@ -55,7 +62,7 @@ const ObjectLayoutField: React.FC<IObjectLayoutFieldProps> = ({
 									payload: {
 										boxIndex,
 										columnIndex,
-										objectFieldId,
+										objectFieldName,
 										rowIndex,
 										tabIndex,
 									},
@@ -64,17 +71,42 @@ const ObjectLayoutField: React.FC<IObjectLayoutFieldProps> = ({
 							}}
 						/>
 					}
-					title={objectField?.label[defaultLanguageId]!}
+					title={getLocalizableLabel(
+						creationLanguageId,
+						objectField.label,
+						objectField.name
+					)}
 				>
 					<small className="text-secondary">
 						{objectFieldType?.label} |{' '}
 					</small>
 
-					<RequiredLabel required={objectField?.required} />
-				</Panel.SimpleBody>
+					<ClayLabel
+						className="label-inside-custom-select"
+						displayType={
+							objectField?.required ? 'warning' : 'success'
+						}
+					>
+						{objectField?.required
+							? Liferay.Language.get('mandatory')
+							: Liferay.Language.get('optional')}
+					</ClayLabel>
+
+					{Liferay.FeatureFlags['LPS-159913'] &&
+						objectField.objectFieldSettings?.find(
+							(fieldSetting: ObjectFieldSetting) =>
+								fieldSetting.value === 'true' ||
+								fieldSetting.value === 'conditional'
+						) && (
+							<ClayLabel
+								className="label-inside-custom-select"
+								displayType="secondary"
+							>
+								{Liferay.Language.get('read-only')}
+							</ClayLabel>
+						)}
+				</PanelSimpleBody>
 			</Panel>
 		</>
 	);
-};
-
-export default ObjectLayoutField;
+}

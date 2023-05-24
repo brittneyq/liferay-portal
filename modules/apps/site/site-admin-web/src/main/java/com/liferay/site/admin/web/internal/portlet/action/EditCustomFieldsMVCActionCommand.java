@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ParamUtil;
 
@@ -35,7 +34,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SITE_SETTINGS,
 		"mvc.command.name=/site_admin/edit_custom_fields"
@@ -52,8 +50,8 @@ public class EditCustomFieldsMVCActionCommand
 
 		long liveGroupId = ParamUtil.getLong(actionRequest, "liveGroupId");
 
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			Group.class.getName(), actionRequest);
+		ServiceContext serviceContext = ActionUtil.getServiceContext(
+			actionRequest, liveGroupId);
 
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 

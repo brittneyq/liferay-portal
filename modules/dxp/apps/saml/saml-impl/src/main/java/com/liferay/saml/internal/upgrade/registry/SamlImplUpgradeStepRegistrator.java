@@ -31,12 +31,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Stian Sigvartsen
  */
-@Component(
-	immediate = true,
-	service = {
-		SamlImplUpgradeStepRegistrator.class, UpgradeStepRegistrator.class
-	}
-)
+@Component(service = UpgradeStepRegistrator.class)
 public class SamlImplUpgradeStepRegistrator implements UpgradeStepRegistrator {
 
 	@Override

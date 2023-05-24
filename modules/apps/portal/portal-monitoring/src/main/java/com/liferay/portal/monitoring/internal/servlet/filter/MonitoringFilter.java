@@ -58,7 +58,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * @author Michael C. Han
  */
 @Component(
-	enabled = false, immediate = true,
+	enabled = false,
 	property = {
 		"after-filter=Absolute Redirects Filter", "dispatcher=FORWARD",
 		"dispatcher=REQUEST", "servlet-context-name=",
@@ -160,10 +160,8 @@ public class MonitoringFilter
 			else if (exception instanceof ServletException) {
 				throw (ServletException)exception;
 			}
-			else {
-				throw new ServletException(
-					"Unable to execute request", exception);
-			}
+
+			throw new ServletException("Unable to execute request", exception);
 		}
 		finally {
 			if (portalRequestDataSample != null) {
@@ -180,25 +178,6 @@ public class MonitoringFilter
 				_processFilterCount.remove();
 			}
 		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setDataSampleFactory(DataSampleFactory dataSampleFactory) {
-		_dataSampleFactory = dataSampleFactory;
-	}
-
-	@Reference(unbind = "-")
-	protected final void setPortletMonitoringControl(
-		PortletMonitoringControl portletMonitoringControl) {
-
-		_portletMonitoringControl = portletMonitoringControl;
-	}
-
-	@Reference(unbind = "-")
-	protected void setServiceMonitoringControl(
-		ServiceMonitoringControl serviceMonitoringControl) {
-
-		_serviceMonitoringControl = serviceMonitoringControl;
 	}
 
 	private int _decrementProcessFilterCount() {
@@ -253,6 +232,7 @@ public class MonitoringFilter
 			MonitoringFilter.class + "._processFilterCount",
 			AtomicInteger::new);
 
+	@Reference
 	private DataSampleFactory _dataSampleFactory;
 
 	@Reference(
@@ -270,7 +250,10 @@ public class MonitoringFilter
 	@Reference
 	private Portal _portal;
 
+	@Reference
 	private PortletMonitoringControl _portletMonitoringControl;
+
+	@Reference
 	private ServiceMonitoringControl _serviceMonitoringControl;
 
 }

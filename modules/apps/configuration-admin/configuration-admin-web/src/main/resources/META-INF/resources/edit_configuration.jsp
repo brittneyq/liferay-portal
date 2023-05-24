@@ -87,11 +87,8 @@ renderResponse.setTitle(categoryDisplayName);
 	<clay:col
 		size="12"
 	>
-		<liferay-ui:breadcrumb
-			showCurrentGroup="<%= false %>"
-			showGuestGroup="<%= false %>"
-			showLayout="<%= false %>"
-			showParentGroups="<%= false %>"
+		<liferay-site-navigation:breadcrumb
+			breadcrumbEntries="<%= BreadcrumbEntriesUtil.getBreadcrumbEntries(request, false, false, false, false, true) %>"
 		/>
 	</clay:col>
 </clay:container-fluid>
@@ -216,9 +213,9 @@ renderResponse.setTitle(categoryDisplayName);
 					</c:if>
 
 					<c:if test="<%= !configurationModel.hasScopeConfiguration(configurationScopeDisplayContext.getScope()) %>">
-						<aui:alert closeable="<%= false %>" id="errorAlert" type="info">
-							<liferay-ui:message key="this-configuration-is-not-saved-yet.-the-values-shown-are-the-default" />
-						</aui:alert>
+						<clay:alert
+							message="this-configuration-is-not-saved-yet.-the-values-shown-are-the-default"
+						/>
 					</c:if>
 
 					<liferay-util:dynamic-include key='<%= "com.liferay.configuration.admin.web#/edit_configuration.jsp#" + configurationModel.getFactoryPid() + "#pre" %>' />
@@ -252,7 +249,7 @@ renderResponse.setTitle(categoryDisplayName);
 								</c:otherwise>
 							</c:choose>
 
-							<aui:button href="<%= redirect %>" name="cancel" type="cancel" />
+							<aui:button cssClass="ml-3" href="<%= redirect %>" name="cancel" type="cancel" />
 
 							<c:if test="<%= Validator.isNotNull(configurationModel.getLiferayLearnMessageKey()) && Validator.isNotNull(configurationModel.getLiferayLearnMessageResource()) %>">
 								<div class="btn float-right">

@@ -14,22 +14,29 @@
 
 package com.liferay.commerce.media.internal;
 
+import com.liferay.account.constants.AccountConstants;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
 import com.liferay.commerce.media.CommerceMediaResolver;
 import com.liferay.commerce.media.constants.CommerceMediaConstants;
 import com.liferay.commerce.product.constants.CPAttachmentFileEntryConstants;
 import com.liferay.commerce.product.model.CPAttachmentFileEntry;
 import com.liferay.commerce.product.model.CPDefinition;
+import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.permission.CommerceProductViewPermission;
 import com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
+import com.liferay.commerce.product.type.virtual.order.model.CommerceVirtualOrderItem;
+import com.liferay.commerce.product.type.virtual.order.service.CommerceVirtualOrderItemLocalService;
+import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -49,7 +56,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, service = CommerceMediaResolver.class)
+@Component(service = CommerceMediaResolver.class)
 public class DefaultCommerceMediaResolver implements CommerceMediaResolver {
 
 	@Override
@@ -65,6 +72,74 @@ public class DefaultCommerceMediaResolver implements CommerceMediaResolver {
 		throws PortalException {
 
 		return getURL(commerceAccountId, cpAttachmentFileEntryId, true, false);
+	}
+
+	@Override
+	public String getDownloadVirtualOrderItemURL(
+			long commerceVirtualOrderItemId)
+		throws PortalException {
+
+		CommerceVirtualOrderItem commerceVirtualOrderItem =
+			_commerceVirtualOrderItemLocalService.fetchCommerceVirtualOrderItem(
+				commerceVirtualOrderItemId);
+
+		FileEntry fileEntry = _dlAppService.getFileEntry(
+			commerceVirtualOrderItem.getFileEntryId());
+
+		return StringBundler.concat(
+			_portal.getPathModule(), StringPool.SLASH,
+			CommerceMediaConstants.SERVLET_PATH,
+			CommerceMediaConstants.URL_SEPARATOR_VIRTUAL_ORDER_ITEM,
+			commerceVirtualOrderItemId,
+			CommerceMediaConstants.URL_SEPARATOR_FILE,
+			fileEntry.getFileEntryId());
+	}
+
+	@Override
+	public String getDownloadVirtualProductSampleURL(
+			String className, long classPK, long commerceAccountId,
+			long fileEntryId)
+		throws PortalException {
+
+		if (className.equals(CPInstance.class.getName())) {
+			return StringBundler.concat(
+				_portal.getPathModule(), StringPool.SLASH,
+				CommerceMediaConstants.SERVLET_PATH, "/accounts/",
+				commerceAccountId,
+				CommerceMediaConstants.URL_SEPARATOR_VIRTUAL_SKU_SAMPLE,
+				classPK, CommerceMediaConstants.URL_SEPARATOR_FILE,
+				fileEntryId);
+		}
+
+		return StringBundler.concat(
+			_portal.getPathModule(), StringPool.SLASH,
+			CommerceMediaConstants.SERVLET_PATH, "/accounts/",
+			commerceAccountId,
+			CommerceMediaConstants.URL_SEPARATOR_VIRTUAL_PRODUCT_SAMPLE,
+			classPK, CommerceMediaConstants.URL_SEPARATOR_FILE, fileEntryId);
+	}
+
+	@Override
+	public String getDownloadVirtualProductURL(
+			String className, long classPK, long commerceAccountId,
+			long fileEntryId)
+		throws PortalException {
+
+		if (className.equals(CPInstance.class.getName())) {
+			return StringBundler.concat(
+				_portal.getPathModule(), StringPool.SLASH,
+				CommerceMediaConstants.SERVLET_PATH, "/accounts/",
+				commerceAccountId,
+				CommerceMediaConstants.URL_SEPARATOR_VIRTUAL_SKU, classPK,
+				CommerceMediaConstants.URL_SEPARATOR_FILE, fileEntryId);
+		}
+
+		return StringBundler.concat(
+			_portal.getPathModule(), StringPool.SLASH,
+			CommerceMediaConstants.SERVLET_PATH, "/accounts/",
+			commerceAccountId,
+			CommerceMediaConstants.URL_SEPARATOR_VIRTUAL_PRODUCT, classPK,
+			CommerceMediaConstants.URL_SEPARATOR_FILE, fileEntryId);
 	}
 
 	@Override
@@ -125,6 +200,18 @@ public class DefaultCommerceMediaResolver implements CommerceMediaResolver {
 		}
 
 		if (secure) {
+			DLFileEntry dlFileEntry = _dlFileEntryLocalService.fetchDLFileEntry(
+				cpAttachmentFileEntry.getFileEntryId());
+
+			if ((dlFileEntry != null) &&
+				!cpAttachmentFileEntry.isCDNEnabled() &&
+				!_dlFileEntryModelResourcePermission.contains(
+					PermissionThreadLocal.getPermissionChecker(), dlFileEntry,
+					ActionKeys.VIEW)) {
+
+				return getDefaultURL(cpAttachmentFileEntry.getGroupId());
+			}
+
 			String className = cpAttachmentFileEntry.getClassName();
 
 			if (className.equals(AssetCategory.class.getName())) {
@@ -141,7 +228,7 @@ public class DefaultCommerceMediaResolver implements CommerceMediaResolver {
 			}
 			else if (className.equals(CPDefinition.class.getName())) {
 				if (commerceAccountId ==
-						CommerceAccountConstants.ACCOUNT_ID_ADMIN) {
+						AccountConstants.ACCOUNT_ENTRY_ID_ADMIN) {
 
 					CPDefinition cpDefinition =
 						_cpDefinitionLocalService.getCPDefinition(
@@ -207,6 +294,10 @@ public class DefaultCommerceMediaResolver implements CommerceMediaResolver {
 	private CommerceProductViewPermission _commerceProductViewPermission;
 
 	@Reference
+	private CommerceVirtualOrderItemLocalService
+		_commerceVirtualOrderItemLocalService;
+
+	@Reference
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
@@ -215,6 +306,18 @@ public class DefaultCommerceMediaResolver implements CommerceMediaResolver {
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
+
+	@Reference
+	private DLAppService _dlAppService;
+
+	@Reference
+	private DLFileEntryLocalService _dlFileEntryLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.document.library.kernel.model.DLFileEntry)"
+	)
+	private ModelResourcePermission<DLFileEntry>
+		_dlFileEntryModelResourcePermission;
 
 	@Reference
 	private Portal _portal;

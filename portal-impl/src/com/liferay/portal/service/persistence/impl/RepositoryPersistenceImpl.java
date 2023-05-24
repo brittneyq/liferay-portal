@@ -50,7 +50,6 @@ import com.liferay.portal.model.impl.RepositoryModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -193,7 +192,7 @@ public class RepositoryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Repository>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Repository repository : list) {
@@ -582,7 +581,8 @@ public class RepositoryPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -718,7 +718,7 @@ public class RepositoryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof Repository) {
@@ -838,7 +838,8 @@ public class RepositoryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1010,7 +1011,7 @@ public class RepositoryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Repository>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Repository repository : list) {
@@ -1431,7 +1432,8 @@ public class RepositoryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1592,7 +1594,7 @@ public class RepositoryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Repository>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Repository repository : list) {
@@ -1957,7 +1959,8 @@ public class RepositoryPersistenceImpl
 
 			finderArgs = new Object[] {groupId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2088,7 +2091,7 @@ public class RepositoryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByG_N_P, finderArgs);
+				_finderPathFetchByG_N_P, finderArgs, this);
 		}
 
 		if (result instanceof Repository) {
@@ -2227,7 +2230,8 @@ public class RepositoryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, name, portletId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2924,7 +2928,7 @@ public class RepositoryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Repository>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3000,7 +3004,7 @@ public class RepositoryPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3222,28 +3226,13 @@ public class RepositoryPersistenceImpl
 			},
 			new String[] {"groupId", "name", "portletId"}, false);
 
-		_setRepositoryUtilPersistence(this);
+		RepositoryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setRepositoryUtilPersistence(null);
+		RepositoryUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(RepositoryImpl.class.getName());
-	}
-
-	private void _setRepositoryUtilPersistence(
-		RepositoryPersistence repositoryPersistence) {
-
-		try {
-			Field field = RepositoryUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, repositoryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_REPOSITORY =

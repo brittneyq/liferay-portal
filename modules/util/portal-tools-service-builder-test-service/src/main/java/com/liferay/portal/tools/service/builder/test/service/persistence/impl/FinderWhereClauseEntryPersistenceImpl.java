@@ -41,7 +41,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.FinderW
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
@@ -178,7 +177,7 @@ public class FinderWhereClauseEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<FinderWhereClauseEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (FinderWhereClauseEntry finderWhereClauseEntry : list) {
@@ -571,7 +570,7 @@ public class FinderWhereClauseEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {name};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -620,10 +619,10 @@ public class FinderWhereClauseEntryPersistenceImpl
 	}
 
 	private static final String _FINDER_COLUMN_NAME_NICKNAME_NAME_2 =
-		"finderWhereClauseEntry.name = ? AND finderWhereClauseEntry.nickname is not NULL";
+		"finderWhereClauseEntry.name = ? AND finderWhereClauseEntry.nickname IS NOT NULL";
 
 	private static final String _FINDER_COLUMN_NAME_NICKNAME_NAME_3 =
-		"(finderWhereClauseEntry.name IS NULL OR finderWhereClauseEntry.name = '') AND finderWhereClauseEntry.nickname is not NULL";
+		"(finderWhereClauseEntry.name IS NULL OR finderWhereClauseEntry.name = '') AND finderWhereClauseEntry.nickname IS NOT NULL";
 
 	public FinderWhereClauseEntryPersistenceImpl() {
 		setModelClass(FinderWhereClauseEntry.class);
@@ -1032,7 +1031,7 @@ public class FinderWhereClauseEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<FinderWhereClauseEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1102,7 +1101,7 @@ public class FinderWhereClauseEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1185,29 +1184,13 @@ public class FinderWhereClauseEntryPersistenceImpl
 			new String[] {String.class.getName()}, new String[] {"name"},
 			false);
 
-		_setFinderWhereClauseEntryUtilPersistence(this);
+		FinderWhereClauseEntryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setFinderWhereClauseEntryUtilPersistence(null);
+		FinderWhereClauseEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(FinderWhereClauseEntryImpl.class.getName());
-	}
-
-	private void _setFinderWhereClauseEntryUtilPersistence(
-		FinderWhereClauseEntryPersistence finderWhereClauseEntryPersistence) {
-
-		try {
-			Field field = FinderWhereClauseEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, finderWhereClauseEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = EntityCache.class)

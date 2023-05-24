@@ -14,6 +14,7 @@
 
 import ClayForm, {ClaySelectWithOption} from '@clayui/form';
 import classNames from 'classnames';
+import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
@@ -25,12 +26,12 @@ import {useCollectionConfig} from '../../app/contexts/CollectionItemContext';
 import {useDispatch, useSelector} from '../../app/contexts/StoreContext';
 import {selectPageContents} from '../../app/selectors/selectPageContents';
 import InfoItemService from '../../app/services/InfoItemService';
-import isMapped from '../../app/utils/editable-value/isMapped';
-import isMappedToInfoItem from '../../app/utils/editable-value/isMappedToInfoItem';
-import isMappedToStructure from '../../app/utils/editable-value/isMappedToStructure';
+import isMapped from '../../app/utils/editable_value/isMapped';
+import isMappedToInfoItem from '../../app/utils/editable_value/isMappedToInfoItem';
+import isMappedToStructure from '../../app/utils/editable_value/isMappedToStructure';
 import getMappingFieldsKey from '../../app/utils/getMappingFieldsKey';
-import itemSelectorValueToInfoItem from '../../app/utils/item-selector-value/itemSelectorValueToInfoItem';
-import {useId} from '../../core/hooks/useId';
+import itemSelectorValueToInfoItem from '../../app/utils/item_selector_value/itemSelectorValueToInfoItem';
+import {useId} from '../hooks/useId';
 import ItemSelector from './ItemSelector';
 import MappingFieldSelector from './MappingFieldSelector';
 
@@ -46,11 +47,16 @@ const UNMAPPED_OPTION = {
 	value: 'unmapped',
 };
 
-function filterFields(fields, fieldType) {
+function filterFields(fields, fieldType, filterLinkTypes) {
 	return fields.reduce((acc, fieldSet) => {
 		const newFields = fieldSet.fields.filter((field) => {
 			if (fieldType === EDITABLE_TYPES['date-time']) {
 				return field.type === 'date';
+			}
+			else if (fieldType === EDITABLE_TYPES.link && filterLinkTypes) {
+				return (
+					field.type !== EDITABLE_TYPES.image && field.type !== 'date'
+				);
 			}
 			else if (
 				fieldType === EDITABLE_TYPES.image ||
@@ -116,6 +122,7 @@ function loadMappingFields({dispatch, item, sourceType}) {
 
 export default function MappingSelectorWrapper({
 	fieldType,
+	filterLinkTypes = false,
 	mappedItem,
 	onMappingSelect,
 }) {
@@ -144,9 +151,11 @@ export default function MappingSelectorWrapper({
 		const fields = mappingFields[key];
 
 		if (fields) {
-			setCollectionFields(filterFields(fields, fieldType));
+			setCollectionFields(
+				filterFields(fields, fieldType, filterLinkTypes)
+			);
 		}
-	}, [collectionConfig, mappingFields, fieldType]);
+	}, [collectionConfig, mappingFields, fieldType, filterLinkTypes]);
 
 	useEffect(() => {
 		if (!collectionConfig?.collection?.itemType) {
@@ -226,13 +235,19 @@ export default function MappingSelectorWrapper({
 	) : (
 		<MappingSelector
 			fieldType={fieldType}
+			filterLinkTypes={filterLinkTypes}
 			mappedItem={mappedItem}
 			onMappingSelect={onMappingSelect}
 		/>
 	);
 }
 
-function MappingSelector({fieldType, mappedItem, onMappingSelect}) {
+function MappingSelector({
+	fieldType,
+	filterLinkTypes,
+	mappedItem,
+	onMappingSelect,
+}) {
 	const dispatch = useDispatch();
 	const mappingFields = useSelector((state) => state.mappingFields);
 	const pageContents = useSelector(selectPageContents);
@@ -348,7 +363,7 @@ function MappingSelector({fieldType, mappedItem, onMappingSelect}) {
 		const fields = mappingFields[key];
 
 		if (fields) {
-			setItemFields(filterFields(fields, fieldType));
+			setItemFields(filterFields(fields, fieldType, filterLinkTypes));
 		}
 		else {
 			loadMappingFields({
@@ -362,6 +377,7 @@ function MappingSelector({fieldType, mappedItem, onMappingSelect}) {
 	}, [
 		dispatch,
 		fieldType,
+		filterLinkTypes,
 		pageContents,
 		mappingFields,
 		selectedItem,
@@ -391,7 +407,7 @@ function MappingSelector({fieldType, mappedItem, onMappingSelect}) {
 						}}
 						options={[
 							{
-								label: Liferay.Util.sub(
+								label: sub(
 									Liferay.Language.get('x-default'),
 									selectedMappingTypes.subtype
 										? selectedMappingTypes.subtype.label

@@ -15,6 +15,7 @@
 package com.liferay.headless.admin.taxonomy.internal.resource.v1_0;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
+import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
@@ -67,8 +68,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
@@ -96,7 +95,7 @@ public class TaxonomyVocabularyResourceImpl
 		AssetVocabulary assetVocabulary =
 			_assetVocabularyLocalService.
 				getAssetVocabularyByExternalReferenceCode(
-					assetLibraryId, externalReferenceCode);
+					externalReferenceCode, assetLibraryId);
 
 		_assetVocabularyService.deleteVocabulary(
 			assetVocabulary.getVocabularyId());
@@ -110,7 +109,7 @@ public class TaxonomyVocabularyResourceImpl
 		AssetVocabulary assetVocabulary =
 			_assetVocabularyLocalService.
 				getAssetVocabularyByExternalReferenceCode(
-					siteId, externalReferenceCode);
+					externalReferenceCode, siteId);
 
 		_assetVocabularyService.deleteVocabulary(
 			assetVocabulary.getVocabularyId());
@@ -129,7 +128,35 @@ public class TaxonomyVocabularyResourceImpl
 			Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		return getSiteTaxonomyVocabulariesPage(
+		return _getTaxonomyVocabulariesPage(
+			HashMapBuilder.put(
+				"create",
+				addAction(
+					ActionKeys.ADD_VOCABULARY,
+					"postAssetLibraryTaxonomyVocabulary",
+					AssetCategoriesPermission.RESOURCE_NAME, assetLibraryId)
+			).put(
+				"createBatch",
+				addAction(
+					ActionKeys.ADD_VOCABULARY,
+					"postAssetLibraryTaxonomyVocabularyBatch",
+					AssetCategoriesPermission.RESOURCE_NAME, assetLibraryId)
+			).put(
+				"deleteBatch",
+				addAction(
+					ActionKeys.DELETE, "deleteTaxonomyVocabularyBatch",
+					AssetCategoriesPermission.RESOURCE_NAME, null)
+			).put(
+				"get",
+				addAction(
+					ActionKeys.VIEW, "getAssetLibraryTaxonomyVocabulariesPage",
+					AssetCategoriesPermission.RESOURCE_NAME, assetLibraryId)
+			).put(
+				"updateBatch",
+				addAction(
+					ActionKeys.UPDATE, "putTaxonomyVocabularyBatch",
+					AssetCategoriesPermission.RESOURCE_NAME, null)
+			).build(),
 			assetLibraryId, search, aggregation, filter, pagination, sorts);
 	}
 
@@ -155,7 +182,7 @@ public class TaxonomyVocabularyResourceImpl
 			Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		return SearchUtil.search(
+		return _getTaxonomyVocabulariesPage(
 			HashMapBuilder.put(
 				"create",
 				addAction(
@@ -183,21 +210,7 @@ public class TaxonomyVocabularyResourceImpl
 					ActionKeys.UPDATE, "putTaxonomyVocabularyBatch",
 					AssetCategoriesPermission.RESOURCE_NAME, null)
 			).build(),
-			booleanQuery -> {
-			},
-			filter, AssetVocabulary.class.getName(), search, pagination,
-			queryConfig -> queryConfig.setSelectedFieldNames(
-				Field.ASSET_VOCABULARY_ID),
-			searchContext -> {
-				searchContext.addVulcanAggregation(aggregation);
-				searchContext.setCompanyId(contextCompany.getCompanyId());
-				searchContext.setGroupIds(new long[] {siteId});
-			},
-			sorts,
-			document -> _toTaxonomyVocabulary(
-				_assetVocabularyService.getVocabulary(
-					GetterUtil.getLong(
-						document.get(Field.ASSET_VOCABULARY_ID)))));
+			siteId, search, aggregation, filter, pagination, sorts);
 	}
 
 	@Override
@@ -260,12 +273,12 @@ public class TaxonomyVocabularyResourceImpl
 		return _toTaxonomyVocabulary(
 			_assetVocabularyService.updateVocabulary(
 				assetVocabulary.getVocabularyId(), null,
-				LocalizedMapUtil.patch(
+				LocalizedMapUtil.patchLocalizedMap(
 					assetVocabulary.getTitleMap(),
 					contextAcceptLanguage.getPreferredLocale(),
 					taxonomyVocabulary.getName(),
 					taxonomyVocabulary.getName_i18n()),
-				LocalizedMapUtil.patch(
+				LocalizedMapUtil.patchLocalizedMap(
 					assetVocabulary.getDescriptionMap(),
 					contextAcceptLanguage.getPreferredLocale(),
 					taxonomyVocabulary.getDescription(),
@@ -303,7 +316,7 @@ public class TaxonomyVocabularyResourceImpl
 		AssetVocabulary assetVocabulary =
 			_assetVocabularyLocalService.
 				fetchAssetVocabularyByExternalReferenceCode(
-					assetLibraryId, externalReferenceCode);
+					externalReferenceCode, assetLibraryId);
 
 		if (assetVocabulary != null) {
 			return _toTaxonomyVocabulary(
@@ -324,7 +337,7 @@ public class TaxonomyVocabularyResourceImpl
 		AssetVocabulary assetVocabulary =
 			_assetVocabularyLocalService.
 				fetchAssetVocabularyByExternalReferenceCode(
-					siteId, externalReferenceCode);
+					externalReferenceCode, siteId);
 
 		if (assetVocabulary != null) {
 			return _toTaxonomyVocabulary(
@@ -418,8 +431,8 @@ public class TaxonomyVocabularyResourceImpl
 
 						AssetRendererFactory<?> assetRendererFactory =
 							AssetRendererFactoryRegistryUtil.
-								getAssetRendererFactoryByClassName(
-									_portal.getClassName(classNameId));
+								getAssetRendererFactoryByClassNameId(
+									classNameId);
 
 						ClassTypeReader classTypeReader =
 							assetRendererFactory.getClassTypeReader();
@@ -460,8 +473,8 @@ public class TaxonomyVocabularyResourceImpl
 
 						return _getModelResource(
 							AssetRendererFactoryRegistryUtil.
-								getAssetRendererFactoryByClassName(
-									_portal.getClassName(classNameId)));
+								getAssetRendererFactoryByClassNameId(
+									classNameId));
 					});
 			}
 		};
@@ -520,26 +533,27 @@ public class TaxonomyVocabularyResourceImpl
 			return AssetCategoryConstants.ALL_CLASS_NAME_ID;
 		}
 
+		String className = null;
+
 		List<AssetRendererFactory<?>> categorizableAssetRenderFactories =
 			ListUtil.filter(
 				AssetRendererFactoryRegistryUtil.getAssetRendererFactories(
 					contextCompany.getCompanyId()),
 				AssetRendererFactory::isCategorizable);
 
-		Stream<AssetRendererFactory<?>> stream =
-			categorizableAssetRenderFactories.stream();
+		for (AssetRendererFactory<?> assetRendererFactory :
+				categorizableAssetRenderFactories) {
 
-		Optional<AssetRendererFactory<?>> assetRendererFactoryOptional =
-			stream.filter(
-				assetRendererFactory -> assetTypeType.equals(
-					_getModelResource(assetRendererFactory))
-			).findFirst();
+			if (assetTypeType.equals(_getModelResource(assetRendererFactory))) {
+				className = assetRendererFactory.getClassName();
 
-		String className = assetRendererFactoryOptional.map(
-			AssetRendererFactory::getClassName
-		).orElse(
-			_assetTypeTypeToClassNames.get(assetTypeType)
-		);
+				break;
+			}
+		}
+
+		if (className == null) {
+			className = _assetTypeTypeToClassNames.get(assetTypeType);
+		}
 
 		if (className == null) {
 			throw new BadRequestException(
@@ -556,7 +570,7 @@ public class TaxonomyVocabularyResourceImpl
 	private long _getClassTypePK(long classNameId, String subtype, long groupId)
 		throws Exception {
 
-		if (Objects.equals("AllAssetSubtypes", subtype) ||
+		if (Objects.equals(subtype, "AllAssetSubtypes") ||
 			(classNameId == AssetCategoryConstants.ALL_CLASS_NAME_ID) ||
 			(subtype == null)) {
 
@@ -564,8 +578,8 @@ public class TaxonomyVocabularyResourceImpl
 		}
 
 		AssetRendererFactory<?> assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
-				_portal.getClassName(classNameId));
+			AssetRendererFactoryRegistryUtil.
+				getAssetRendererFactoryByClassNameId(classNameId);
 
 		ClassTypeReader classTypeReader =
 			assetRendererFactory.getClassTypeReader();
@@ -630,6 +644,31 @@ public class TaxonomyVocabularyResourceImpl
 		return assetVocabularySettingsHelper.toString();
 	}
 
+	private Page<TaxonomyVocabulary> _getTaxonomyVocabulariesPage(
+			Map<String, Map<String, String>> actions, Long groupId,
+			String search, Aggregation aggregation, Filter filter,
+			Pagination pagination, Sort[] sorts)
+		throws Exception {
+
+		return SearchUtil.search(
+			actions,
+			booleanQuery -> {
+			},
+			filter, AssetVocabulary.class.getName(), search, pagination,
+			queryConfig -> queryConfig.setSelectedFieldNames(
+				Field.ASSET_VOCABULARY_ID),
+			searchContext -> {
+				searchContext.addVulcanAggregation(aggregation);
+				searchContext.setCompanyId(contextCompany.getCompanyId());
+				searchContext.setGroupIds(new long[] {groupId});
+			},
+			sorts,
+			document -> _toTaxonomyVocabulary(
+				_assetVocabularyService.getVocabulary(
+					GetterUtil.getLong(
+						document.get(Field.ASSET_VOCABULARY_ID)))));
+	}
+
 	private TaxonomyVocabulary _toTaxonomyVocabulary(
 		AssetVocabulary assetVocabulary) {
 
@@ -638,7 +677,7 @@ public class TaxonomyVocabularyResourceImpl
 
 		return new TaxonomyVocabulary() {
 			{
-				actions = HashMapBuilder.put(
+				actions = HashMapBuilder.<String, Map<String, String>>put(
 					"delete",
 					addAction(
 						ActionKeys.DELETE, assetVocabulary,
@@ -684,14 +723,19 @@ public class TaxonomyVocabularyResourceImpl
 				name_i18n = LocalizedMapUtil.getI18nMap(
 					contextAcceptLanguage.isAcceptAllLanguages(),
 					assetVocabulary.getTitleMap());
-				numberOfTaxonomyCategories = Optional.ofNullable(
-					assetVocabulary.getCategories()
-				).map(
-					List::size
-				).orElse(
-					0
-				);
 				siteId = GroupUtil.getSiteId(group);
+
+				setNumberOfTaxonomyCategories(
+					() -> {
+						List<AssetCategory> assetCategories =
+							assetVocabulary.getCategories();
+
+						if (assetCategories != null) {
+							return assetCategories.size();
+						}
+
+						return 0;
+					});
 			}
 		};
 	}

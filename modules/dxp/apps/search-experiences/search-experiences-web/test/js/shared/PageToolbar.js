@@ -19,9 +19,6 @@ import '@testing-library/jest-dom/extend-expect';
 
 jest.useFakeTimers();
 
-const onChangeTitleAndDescription = jest.fn();
-const onSubmit = jest.fn();
-
 const context = {
 	availableLanguages: {
 		de_DE: 'German (Germany)',
@@ -33,28 +30,33 @@ const context = {
 	locale: 'en_US',
 };
 
-const title = {
-	'en-US': 'Title in English',
-	'es-ES': 'Titulo en Espanol',
-};
-const description = {
+const description_i18n = {
 	'en-US': 'Description in English',
 	'es-ES': 'Descripcion en Espanol',
 };
+const title_i18n = {
+	'en-US': 'Title in English',
+	'es-ES': 'Titulo en Espanol',
+};
+
+const onSubmit = jest.fn();
+const onTitleAndDescriptionChange = jest.fn();
 
 function PageToolbarComponent(props) {
 	return (
 		<PageToolbar
-			description={description}
+			description={description_i18n['en-US']}
+			descriptionI18n={description_i18n}
 			onCancel="/link"
 			onChangeTab={jest.fn()}
-			onChangeTitleAndDescription={onChangeTitleAndDescription}
 			onSubmit={onSubmit}
+			onTitleAndDescriptionChange={onTitleAndDescriptionChange}
 			tab="query-builder"
 			tabs={{
 				'query-builder': 'query-builder',
 			}}
-			title={title}
+			title={title_i18n['en-US']}
+			titleI18n={title_i18n}
 			{...props}
 		/>
 	);
@@ -82,13 +84,13 @@ describe('PageToolbar', () => {
 	it('renders the title', () => {
 		const {getByText} = renderPageToolbar();
 
-		getByText(title['en-US']);
+		getByText(title_i18n['en-US']);
 	});
 
-	it('calls onChangeTitleAndDescription when updating title', () => {
+	it('calls onTitleAndDescriptionChange when updating title', () => {
 		const {getByLabelText, getByText} = renderPageToolbar();
 
-		getByText(title['en-US']);
+		getByText(title_i18n['en-US']);
 
 		fireEvent.click(getByLabelText('edit-title'));
 
@@ -102,13 +104,13 @@ describe('PageToolbar', () => {
 
 		act(() => jest.runAllTimers());
 
-		expect(onChangeTitleAndDescription).toHaveBeenCalled();
+		expect(onTitleAndDescriptionChange).toHaveBeenCalled();
 	});
 
-	it('calls onChangeTitleAndDescription when updating description', () => {
+	it('calls onTitleAndDescriptionChange when updating description', () => {
 		const {getByLabelText, getByText} = renderPageToolbar();
 
-		getByText(description['en-US']);
+		getByText(description_i18n['en-US']);
 
 		fireEvent.click(getByLabelText('edit-description'));
 
@@ -122,7 +124,7 @@ describe('PageToolbar', () => {
 
 		act(() => jest.runAllTimers());
 
-		expect(onChangeTitleAndDescription).toHaveBeenCalled();
+		expect(onTitleAndDescriptionChange).toHaveBeenCalled();
 	});
 
 	it('offers link to cancel', () => {
@@ -145,7 +147,10 @@ describe('PageToolbar', () => {
 		expect(getByText('save')).toBeDisabled();
 	});
 
-	it('focuses on the title input when clicked on', () => {
+	// Disabled, behavior when opening Modal focuses on the modal first to
+	// announce that it is open.
+
+	xit('focuses on the title input when clicked on', () => {
 		const {getByLabelText} = renderPageToolbar();
 
 		fireEvent.click(getByLabelText('edit-title'));
@@ -155,7 +160,10 @@ describe('PageToolbar', () => {
 		expect(getByLabelText('title')).toHaveFocus();
 	});
 
-	it('focuses on the description input when clicked on', () => {
+	// Disabled, behavior when opening Modal focuses on the modal first to
+	// announce that it is open.
+
+	xit('focuses on the description input when clicked on', () => {
 		const {getByLabelText} = renderPageToolbar();
 
 		fireEvent.click(getByLabelText('edit-description'));
@@ -163,16 +171,6 @@ describe('PageToolbar', () => {
 		act(() => jest.runAllTimers());
 
 		expect(getByLabelText('description')).toHaveFocus();
-	});
-
-	it('displays the title and description based on locale', () => {
-		const {getByText} = renderPageToolbarWithContext({
-			...context,
-			locale: 'es_ES',
-		});
-
-		getByText(title['es-ES']);
-		getByText(description['es-ES']);
 	});
 
 	it('switches locales in modal with language selector', () => {
@@ -192,7 +190,7 @@ describe('PageToolbar', () => {
 
 		fireEvent.click(getAllByText('es-ES')[0]);
 
-		getByDisplayValue(title['es-ES']);
-		getByText(description['es-ES']);
+		getByDisplayValue(title_i18n['es-ES']);
+		getByText(description_i18n['es-ES']);
 	});
 });

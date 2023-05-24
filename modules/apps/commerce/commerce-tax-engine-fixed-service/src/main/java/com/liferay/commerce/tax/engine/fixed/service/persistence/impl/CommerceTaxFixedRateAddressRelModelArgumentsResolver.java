@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CommerceTaxFixedRateAddressRelModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.commerce.tax.engine.fixed.model.impl.CommerceTaxFixedRateAddressRelImpl",
+		"table.name=CommerceTaxFixedRateAddressRel"
+	},
+	service = ArgumentsResolver.class
 )
 public class CommerceTaxFixedRateAddressRelModelArgumentsResolver
 	implements ArgumentsResolver {

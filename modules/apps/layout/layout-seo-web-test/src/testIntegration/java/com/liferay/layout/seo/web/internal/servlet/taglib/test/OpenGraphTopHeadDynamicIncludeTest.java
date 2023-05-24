@@ -33,14 +33,14 @@ import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemDetails;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.type.WebImage;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
-import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
+import com.liferay.layout.display.page.LayoutDisplayPageProviderRegistry;
 import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -93,12 +93,10 @@ import com.liferay.translation.info.item.provider.InfoItemLanguagesProvider;
 
 import java.nio.charset.StandardCharsets;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -1032,16 +1030,13 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 			document, _getAvailableLocalesLayoutTranslatedLanguages());
 		_assertMetaTag(document, "og:locale", _group.getDefaultLanguageId());
 
-		Stream<String> stream = Arrays.stream(
-			_layout.getAvailableLanguageIds());
+		Set<Locale> locales = new HashSet<>();
 
-		_assertAlternateLocalesTag(
-			document,
-			stream.map(
-				LocaleUtil::fromLanguageId
-			).collect(
-				Collectors.toSet()
-			));
+		for (String availableLanguageId : _layout.getAvailableLanguageIds()) {
+			locales.add(LocaleUtil.fromLanguageId(availableLanguageId));
+		}
+
+		_assertAlternateLocalesTag(document, locales);
 	}
 
 	@Test
@@ -1543,7 +1538,7 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 		HttpServletRequest httpServletRequest = _getHttpServletRequest();
 
 		InfoItemObjectProvider<?> infoItemObjectProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
+			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemObjectProvider.class, className);
 
 		Object infoItem = infoItemObjectProvider.getInfoItem(
@@ -1552,7 +1547,7 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 		httpServletRequest.setAttribute(InfoDisplayWebKeys.INFO_ITEM, infoItem);
 
 		InfoItemDetailsProvider infoItemDetailsProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
+			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemDetailsProvider.class, className);
 
 		httpServletRequest.setAttribute(
@@ -1560,7 +1555,7 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 			infoItemDetailsProvider.getInfoItemDetails(infoItem));
 
 		LayoutDisplayPageProvider<?> layoutDisplayPageProvider =
-			_layoutDisplayPageProviderTracker.
+			_layoutDisplayPageProviderRegistry.
 				getLayoutDisplayPageProviderByClassName(className);
 
 		httpServletRequest.setAttribute(
@@ -1581,27 +1576,24 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 		throws Exception {
 
 		InfoItemLanguagesProvider<Object> infoItemLanguagesProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
+			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemLanguagesProvider.class, Layout.class.getName());
 
 		if (infoItemLanguagesProvider == null) {
 			return _language.getAvailableLocales(_group.getGroupId());
 		}
 
-		Stream<String> stream = Arrays.stream(
-			infoItemLanguagesProvider.getAvailableLanguageIds(_layout));
+		Set<Locale> availableLocales = new HashSet<>();
 
-		Stream<Locale> localesStream = stream.map(LocaleUtil::fromLanguageId);
+		for (String availableLanguageId :
+				infoItemLanguagesProvider.getAvailableLanguageIds(_layout)) {
 
-		Set<Locale> availableLocales = localesStream.collect(
-			Collectors.toSet());
-
-		Locale siteDefaultLocale = _portal.getSiteDefaultLocale(
-			_layout.getGroupId());
-
-		if (!availableLocales.contains(siteDefaultLocale)) {
-			availableLocales.add(siteDefaultLocale);
+			availableLocales.add(
+				LocaleUtil.fromLanguageId(availableLanguageId));
 		}
+
+		availableLocales.add(
+			_portal.getSiteDefaultLocale(_layout.getGroupId()));
 
 		return availableLocales;
 	}
@@ -1808,7 +1800,7 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 	private GroupLocalService _groupLocalService;
 
 	@Inject
-	private InfoItemServiceTracker _infoItemServiceTracker;
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Inject
 	private Language _language;
@@ -1816,7 +1808,8 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 	private Layout _layout;
 
 	@Inject
-	private LayoutDisplayPageProviderTracker _layoutDisplayPageProviderTracker;
+	private LayoutDisplayPageProviderRegistry
+		_layoutDisplayPageProviderRegistry;
 
 	@Inject
 	private LayoutLocalService _layoutLocalService;

@@ -126,6 +126,8 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 							renderResponse
 						).setMVCPath(
 							"/view_content.jsp"
+						).setRedirect(
+							currentURL
 						).buildPortletURL();
 
 						if (trashEntry.getRootEntry() != null) {
@@ -174,12 +176,14 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 								<c:choose>
 									<c:when test="<%= trashEntry.getRootEntry() == null %>">
 										<clay:dropdown-actions
+											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
 											propsTransformer="js/EntriesPropsTransformer"
 										/>
 									</c:when>
 									<c:otherwise>
 										<clay:dropdown-actions
+											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(trashRenderer.getClassName(), trashRenderer.getClassPK()) %>"
 											propsTransformer="js/EntriesPropsTransformer"
 										/>
@@ -220,6 +224,8 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 											renderResponse
 										).setMVCPath(
 											"/view_content.jsp"
+										).setRedirect(
+											currentURL
 										).setParameter(
 											"trashEntryId", rootEntry.getEntryId()
 										).buildString();
@@ -229,11 +235,9 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 									<liferay-util:buffer
 										var="rootEntryIcon"
 									>
-										<liferay-ui:icon
-											label="<%= true %>"
-											message="<%= HtmlUtil.escape(rootTrashRenderer.getTitle(locale)) %>"
-											method="get"
-											url="<%= viewRootContentURLString %>"
+										<clay:link
+											href="<%= viewRootContentURLString %>"
+											label="<%= HtmlUtil.escape(rootTrashRenderer.getTitle(locale)) %>"
 										/>
 									</liferay-util:buffer>
 
@@ -263,12 +267,14 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 								<c:choose>
 									<c:when test="<%= trashEntry.getRootEntry() == null %>">
 										<clay:dropdown-actions
+											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
 											propsTransformer="js/EntriesPropsTransformer"
 										/>
 									</c:when>
 									<c:otherwise>
 										<clay:dropdown-actions
+											aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 											dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(trashRenderer.getClassName(), trashRenderer.getClassPK()) %>"
 											propsTransformer="js/EntriesPropsTransformer"
 										/>

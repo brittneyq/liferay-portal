@@ -85,7 +85,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Joan Kim
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.css-class-wrapper=marketplace-app-manager-portlet",
 		"com.liferay.portlet.display-category=category.hidden",
@@ -390,42 +389,6 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		super.doDispatch(renderRequest, renderResponse);
 	}
 
-	@Reference(unbind = "-")
-	protected void setAppService(AppService appService) {
-		_appService = appService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPanelAppRegistry(PanelAppRegistry panelAppRegistry) {
-		_panelAppRegistry = panelAppRegistry;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPanelCategoryRegistry(
-		PanelCategoryRegistry panelCategoryRegistry) {
-
-		_panelCategoryRegistry = panelCategoryRegistry;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPluginSettingLocalService(
-		PluginSettingLocalService pluginSettingLocalService) {
-
-		_pluginSettingLocalService = pluginSettingLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPluginSettingService(
-		PluginSettingService pluginSettingService) {
-
-		_pluginSettingService = pluginSettingService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPortletService(PortletService portletService) {
-		_portletService = portletService;
-	}
-
 	private void _checkOmniAdmin() throws PortletException {
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
@@ -526,6 +489,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		}
 	}
 
+	@Reference
 	private AppService _appService;
 
 	@Reference
@@ -537,14 +501,22 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 	@Reference
 	private Http _http;
 
+	@Reference
 	private PanelAppRegistry _panelAppRegistry;
+
+	@Reference
 	private PanelCategoryRegistry _panelCategoryRegistry;
+
+	@Reference
 	private PluginSettingLocalService _pluginSettingLocalService;
+
+	@Reference
 	private PluginSettingService _pluginSettingService;
 
 	@Reference
 	private Portal _portal;
 
+	@Reference
 	private PortletService _portletService;
 
 }

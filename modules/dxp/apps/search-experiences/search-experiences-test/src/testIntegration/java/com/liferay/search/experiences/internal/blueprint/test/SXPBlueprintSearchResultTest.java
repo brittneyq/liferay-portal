@@ -448,10 +448,7 @@ public class SXPBlueprintSearchResultTest {
 			_addAssetCategory("Promoted", _user)
 		).build();
 
-		User guestUser = _userLocalService.getDefaultUser(
-			_group.getCompanyId());
-
-		_setCurrentUser(guestUser);
+		_setCurrentUser(_userLocalService.getGuestUser(_group.getCompanyId()));
 
 		_updateElementInstancesJSON(
 			new Object[] {
@@ -1185,10 +1182,7 @@ public class SXPBlueprintSearchResultTest {
 
 		_assertSearchIgnoreRelevance("[Guest Users, Non-Guest Users]");
 
-		User guestUser = _userLocalService.getDefaultUser(
-			_group.getCompanyId());
-
-		_setCurrentUser(guestUser);
+		_setCurrentUser(_userLocalService.getGuestUser(_group.getCompanyId()));
 
 		_assertSearchIgnoreRelevance("[Guest Users]");
 
@@ -2231,10 +2225,9 @@ public class SXPBlueprintSearchResultTest {
 			_getScore(searchResponse) + searchResponse.getRequestString();
 
 		DocumentsAssert.assertValues(
-			message, searchResponse.getDocumentsStream(), "title_en_US",
-			expected);
+			message, searchResponse.getDocuments(), "title_en_US", expected);
 
-		if (!Objects.equals("{}", _sxpBlueprint.getElementInstancesJSON())) {
+		if (!Objects.equals(_sxpBlueprint.getElementInstancesJSON(), "{}")) {
 			searchResponse = _getSearchResponsePreview(
 				searchRequestBuilderConsumer);
 
@@ -2242,7 +2235,7 @@ public class SXPBlueprintSearchResultTest {
 				_getScore(searchResponse) + searchResponse.getRequestString();
 
 			DocumentsAssert.assertValues(
-				message, searchResponse.getDocumentsStream(), "title_en_US",
+				message, searchResponse.getDocuments(), "title_en_US",
 				expected);
 		}
 	}
@@ -2256,16 +2249,16 @@ public class SXPBlueprintSearchResultTest {
 			searchRequestBuilderConsumer);
 
 		DocumentsAssert.assertValuesIgnoreRelevance(
-			searchResponse.getRequestString(),
-			searchResponse.getDocumentsStream(), "title_en_US", expected);
+			searchResponse.getRequestString(), searchResponse.getDocuments(),
+			"title_en_US", expected);
 
-		if (!Objects.equals("{}", _sxpBlueprint.getElementInstancesJSON())) {
+		if (!Objects.equals(_sxpBlueprint.getElementInstancesJSON(), "{}")) {
 			searchResponse = _getSearchResponsePreview(
 				searchRequestBuilderConsumer);
 
 			DocumentsAssert.assertValuesIgnoreRelevance(
 				searchResponse.getRequestString(),
-				searchResponse.getDocumentsStream(), "title_en_US", expected);
+				searchResponse.getDocuments(), "title_en_US", expected);
 		}
 	}
 
@@ -2337,6 +2330,8 @@ public class SXPBlueprintSearchResultTest {
 			_searchRequestBuilderFactory.builder(
 			).companyId(
 				TestPropsValues.getCompanyId()
+			).emptySearchEnabled(
+				true
 			).queryString(
 				_keywords
 			).withSearchContext(
@@ -2368,6 +2363,8 @@ public class SXPBlueprintSearchResultTest {
 			_searchRequestBuilderFactory.builder(
 			).companyId(
 				TestPropsValues.getCompanyId()
+			).emptySearchEnabled(
+				true
 			).queryString(
 				_keywords
 			).withSearchContext(

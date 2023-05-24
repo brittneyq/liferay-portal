@@ -25,13 +25,14 @@ import React, {
 	useState,
 } from 'react';
 
-import {TAB_KEYCODE} from '../../../app/config/constants/keycodes';
+import {TAB_KEY_CODE} from '../../../app/config/constants/keyboardCodes';
 import SearchForm from '../../../common/components/SearchForm';
 
 export function DropdownColorPicker({
 	active,
 	colors,
 	fieldLabel = null,
+	inherited = false,
 	label = null,
 	onValueChange = () => {},
 	onSetActive,
@@ -98,7 +99,7 @@ export function DropdownColorPicker({
 		let activeItem = items[items.length - 1];
 		let nextItem = items[0];
 
-		if (event.keyCode === TAB_KEYCODE) {
+		if (event.nativeEvent.code === TAB_KEY_CODE) {
 			if (event.shiftKey) {
 				activeItem = items[0];
 				nextItem = items[items.length - 1];
@@ -131,18 +132,11 @@ export function DropdownColorPicker({
 			{showSelector ? (
 				<ClayButton
 					aria-label={label}
-					className={classNames(
-						'align-items-center border-0 d-flex page-editor__dropdown-color-picker__selector w-100',
-						{
-							'font-weight-normal':
-								Liferay.FeatureFlags['LPS-143206'],
-							'text-body': Liferay.FeatureFlags['LPS-143206'],
-						}
-					)}
+					className="align-items-center border-0 d-flex font-weight-normal page-editor__dropdown-color-picker__selector text-body w-100"
 					displayType="secondary"
 					onClick={() => onSetActive((active) => !active)}
 					ref={triggerElementRef}
-					small={small}
+					size={small ? 'sm' : null}
 				>
 					<span className="c-inner" tabIndex="-1">
 						<span
@@ -155,15 +149,23 @@ export function DropdownColorPicker({
 						/>
 
 						<span className="text-truncate">{label}</span>
+
+						{inherited ? (
+							<span
+								className="inherited"
+								title={Liferay.Language.get('inherited-value')}
+							></span>
+						) : null}
 					</span>
 				</ClayButton>
 			) : (
 				<ClayButtonWithIcon
+					aria-label={Liferay.Language.get('value-from-stylebook')}
 					className="border-0 flex-shrink-0"
 					displayType="secondary"
 					onClick={() => onSetActive(!active)}
 					ref={triggerElementRef}
-					small={small}
+					size={small ? 'sm' : null}
 					symbol="theme"
 					title={Liferay.Language.get('value-from-stylebook')}
 				/>

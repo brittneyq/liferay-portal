@@ -14,9 +14,9 @@
 
 package com.liferay.commerce.price.test;
 
+import com.liferay.account.model.AccountEntry;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.service.CommerceAccountLocalService;
+import com.liferay.commerce.account.test.util.CommerceAccountTestUtil;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.model.CommerceMoney;
@@ -35,7 +35,6 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
-import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CommerceCatalogLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalServiceUtil;
 import com.liferay.commerce.product.test.util.CPTestUtil;
@@ -91,9 +90,8 @@ public class CommerceProductPriceCalculationWithTaxV2Test {
 
 		_user = UserTestUtil.addUser();
 
-		_commerceAccount =
-			_commerceAccountLocalService.getPersonalCommerceAccount(
-				_user.getUserId());
+		_accountEntry = CommerceAccountTestUtil.getPersonAccountEntry(
+			_user.getUserId());
 
 		_commerceCurrency = CommerceCurrencyTestUtil.addCommerceCurrency(
 			_group.getCompanyId());
@@ -158,8 +156,8 @@ public class CommerceProductPriceCalculationWithTaxV2Test {
 			commercePriceList.getCommercePriceListId(), price);
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, _commerceChannel, _user, _group,
-			_commerceAccount, null);
+			_accountEntry, _commerceCurrency, _commerceChannel, _user, _group,
+			null);
 
 		int quantity = 1;
 
@@ -192,7 +190,7 @@ public class CommerceProductPriceCalculationWithTaxV2Test {
 				commerceTaxIncludedChannel.getSiteGroupId(),
 				commerceTaxIncludedChannel.getName(),
 				commerceTaxIncludedChannel.getType(),
-				commerceTaxIncludedChannel.getTypeSettingsProperties(),
+				commerceTaxIncludedChannel.getTypeSettingsUnicodeProperties(),
 				commerceTaxIncludedChannel.getCommerceCurrencyCode(),
 				CommercePricingConstants.TAX_INCLUDED_IN_PRICE,
 				commerceTaxIncludedChannel.isDiscountsTargetNetPrice());
@@ -244,8 +242,8 @@ public class CommerceProductPriceCalculationWithTaxV2Test {
 			commercePriceList.getCommercePriceListId(), price);
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceTaxIncludedChannel, _user, _group,
-			_commerceAccount, null);
+			_accountEntry, _commerceCurrency, commerceTaxIncludedChannel, _user,
+			_group, null);
 
 		int quantity = 1;
 
@@ -358,10 +356,8 @@ public class CommerceProductPriceCalculationWithTaxV2Test {
 
 	private static User _user;
 
-	private CommerceAccount _commerceAccount;
-
-	@Inject
-	private CommerceAccountLocalService _commerceAccountLocalService;
+	@DeleteAfterTestRun
+	private AccountEntry _accountEntry;
 
 	@Inject
 	private CommerceCatalogLocalService _commerceCatalogLocalService;
@@ -382,9 +378,6 @@ public class CommerceProductPriceCalculationWithTaxV2Test {
 
 	@Inject
 	private CPDefinitionLocalService _cpDefinitionLocalService;
-
-	@Inject
-	private CPInstanceLocalService _cpInstanceLocalService;
 
 	private Group _group;
 	private ServiceContext _serviceContext;

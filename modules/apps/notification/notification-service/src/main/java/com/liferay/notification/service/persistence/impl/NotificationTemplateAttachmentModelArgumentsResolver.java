@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		NotificationTemplateAttachmentModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.notification.model.impl.NotificationTemplateAttachmentImpl",
+		"table.name=NTemplateAttachment"
+	},
+	service = ArgumentsResolver.class
 )
 public class NotificationTemplateAttachmentModelArgumentsResolver
 	implements ArgumentsResolver {

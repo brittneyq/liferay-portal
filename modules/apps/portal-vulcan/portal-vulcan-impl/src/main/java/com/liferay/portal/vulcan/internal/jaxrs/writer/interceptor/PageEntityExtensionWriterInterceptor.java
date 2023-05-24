@@ -18,8 +18,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.vulcan.internal.extension.EntityExtensionHandler;
-import com.liferay.portal.vulcan.internal.jaxrs.extension.ExtendedEntity;
+import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
+import com.liferay.portal.vulcan.jaxrs.extension.ExtendedEntity;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
@@ -31,7 +31,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
@@ -71,8 +70,9 @@ public class PageEntityExtensionWriterInterceptor implements WriterInterceptor {
 	}
 
 	private void _extendPageEntities(
-		EntityExtensionHandler entityExtensionHandler,
-		WriterInterceptorContext writerInterceptorContext) {
+			EntityExtensionHandler entityExtensionHandler,
+			WriterInterceptorContext writerInterceptorContext)
+		throws IOException {
 
 		Page<?> page = (Page<?>)writerInterceptorContext.getEntity();
 
@@ -92,7 +92,7 @@ public class PageEntityExtensionWriterInterceptor implements WriterInterceptor {
 		catch (Exception exception) {
 			_log.error(exception);
 
-			throw new WebApplicationException(exception);
+			throw new IOException(exception);
 		}
 
 		Pagination pagination = Pagination.of(

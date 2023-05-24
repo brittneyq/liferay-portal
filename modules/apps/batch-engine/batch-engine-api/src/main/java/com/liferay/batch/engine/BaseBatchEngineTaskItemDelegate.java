@@ -17,16 +17,22 @@ package com.liferay.batch.engine;
 import com.liferay.batch.engine.strategy.BatchEngineImportStrategy;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.odata.entity.EntityModel;
 
 import java.io.Serializable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.ws.rs.core.UriInfo;
 
 /**
  * @author Ivica Cardic
+ * @author Igor Beslic
  */
 public abstract class BaseBatchEngineTaskItemDelegate<T>
 	implements BatchEngineTaskItemDelegate<T> {
@@ -59,10 +65,38 @@ public abstract class BaseBatchEngineTaskItemDelegate<T>
 	}
 
 	@Override
+	public Set<String> getAvailableCreateStrategies() {
+		return _availableCreateStrategies;
+	}
+
+	@Override
+	public Set<String> getAvailableUpdateStrategies() {
+		return _availableUpdateStrategies;
+	}
+
+	@Override
 	public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap)
 		throws Exception {
 
 		return null;
+	}
+
+	@Override
+	public boolean hasCreateStrategy(String createStrategy) {
+		if (_availableCreateStrategies.contains(createStrategy)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean hasUpdateStrategy(String updateStrategy) {
+		if (_availableUpdateStrategies.contains(updateStrategy)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -75,6 +109,11 @@ public abstract class BaseBatchEngineTaskItemDelegate<T>
 	@Override
 	public void setContextCompany(Company contextCompany) {
 		this.contextCompany = contextCompany;
+	}
+
+	@Override
+	public void setContextUriInfo(UriInfo uriInfo) {
+		this.uriInfo = uriInfo;
 	}
 
 	@Override
@@ -105,5 +144,11 @@ public abstract class BaseBatchEngineTaskItemDelegate<T>
 	protected Company contextCompany;
 	protected User contextUser;
 	protected String languageId;
+	protected UriInfo uriInfo;
+
+	private final Set<String> _availableCreateStrategies =
+		Collections.unmodifiableSet(SetUtil.fromArray("INSERT"));
+	private final Set<String> _availableUpdateStrategies =
+		Collections.unmodifiableSet(SetUtil.fromArray("UPDATE"));
 
 }

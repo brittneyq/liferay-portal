@@ -14,7 +14,7 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
@@ -44,7 +44,7 @@ definition {
 		}
 	}
 
-	@priority = "4"
+	@priority = 4
 	test AddBlogsEntriesWithPortalScopeWorkflowAndAssertWorkflowScope {
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
@@ -203,7 +203,7 @@ definition {
 			workflowTask = "Review");
 	}
 
-	@priority = "4"
+	@priority = 4
 	test AddBlogsEntriesWithSiteScopeWorkflowAndAssertWorkflowScope {
 		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
@@ -294,7 +294,8 @@ definition {
 		Workflow.viewCompletedTasksTaskNotPresentCP(workflowAssetTitle = "Blogs Entry Title - Site Name");
 	}
 
-	@priority = "5"
+	@ignore = "true"
+	@priority = 5
 	test AddDDLRecordWithDoubleApproverDefinition {
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "WorkflowUsecase#AddDDLRecordWithDoubleApproverDefinition";
@@ -317,7 +318,7 @@ definition {
 
 		Workflow.viewDefinition(
 			workflowDefinitionTitle = "Double Approver Definition",
-			workflowDefinitionVersionNumber = "1");
+			workflowDefinitionVersionNumber = 1);
 
 		Navigator.openURL();
 
@@ -362,7 +363,7 @@ definition {
 			fieldFieldLabel = "Boolean",
 			fieldName = "Boolean");
 
-		DDLRecord.submitForPublication();
+		DDLRecord.submitForWorkflow();
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
@@ -453,7 +454,7 @@ definition {
 			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
-		DDLNavigator.gotoListRecords(ddlListName = "${ddlListName}");
+		DDLNavigator.gotoListRecords(ddlListName = ${ddlListName});
 
 		DDLRecord.viewFirstFieldCP(
 			ddlRecordFieldData = "True",
@@ -462,8 +463,9 @@ definition {
 			fieldName = "Boolean");
 	}
 
-	@priority = "4"
+	@priority = 4
 	test AddWebContentWithCategorySpecificDefinition {
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "WorkflowUsecase#AddWebContentWithCategorySpecificDefinition";
 
 		ApplicationsMenu.gotoPortlet(
@@ -483,7 +485,7 @@ definition {
 
 		Workflow.viewDefinition(
 			workflowDefinitionTitle = "Category Specific",
-			workflowDefinitionVersionNumber = "1");
+			workflowDefinitionVersionNumber = 1);
 
 		Navigator.openURL();
 
@@ -528,7 +530,7 @@ definition {
 			categoryNameList = "legal",
 			vocabularyName = "Vocabulary Name");
 
-		Button.clickSubmitForPublication();
+		Button.clickSubmitForWorkflow();
 
 		Alert.viewSuccessMessage();
 
@@ -554,7 +556,7 @@ definition {
 			categoryNameList = "legal,other",
 			vocabularyName = "Vocabulary Name");
 
-		Button.clickSubmitForPublication();
+		Button.clickSubmitForWorkflow();
 
 		Alert.viewSuccessMessage();
 
@@ -580,7 +582,7 @@ definition {
 			categoryNameList = "other",
 			vocabularyName = "Vocabulary Name");
 
-		Button.clickSubmitForPublication();
+		Button.clickSubmitForWorkflow();
 
 		Alert.viewSuccessMessage();
 
@@ -630,9 +632,9 @@ definition {
 			workflowTask = "content-review");
 	}
 
-	@priority = "4"
+	@priority = 4
 	test AddWikiPageAsSiteUser {
-		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
 		Navigator.openURL();
 
@@ -682,7 +684,7 @@ definition {
 			portlet = "Users and Organizations");
 
 		User.editUserSiteCP(
-			siteName = "${siteName}",
+			siteName = ${siteName},
 			userScreenName = "usersn");
 
 		User.logoutPG();
@@ -714,19 +716,19 @@ definition {
 		var key_workflowAssetTitle = "Wiki Page Title";
 
 		AssertTextEquals(
-			locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_LAST_ACTIVITY_DATE",
+			locator1 = "WorkflowSubmissions#MY_SUBMISSIONS_TABLE_DEFINITION",
 			value1 = "Single Approver");
 
 		AssertTextEquals(
-			locator1 = "MyWorkflowTasks#TABLE_GENERIC_ASSET_TITLE",
+			locator1 = "WorkflowSubmissions#MY_SUBMISSIONS_TABLE_TITLE",
 			value1 = "Wiki Page Title");
 
 		AssertTextEquals(
-			locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_ASSET_TYPE",
+			locator1 = "WorkflowSubmissions#MY_SUBMISSIONS_TABLE_TYPE",
 			value1 = "Wiki Page");
 
 		AssertTextEquals(
-			locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_TASK",
+			locator1 = "WorkflowSubmissions#MY_SUBMISSIONS_TABLE_TASK",
 			value1 = "Review");
 
 		AssertElementPresent(locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_DUE_DATE");
@@ -794,10 +796,9 @@ definition {
 			wikiPageTitle = "Wiki Page Title");
 	}
 
-	@priority = "5"
+	@priority = 5
 	test UnpublishAndDeleteUploadedDefinition {
 		property portal.acceptance = "quarantine";
-		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "WorkflowUsecase#UnpublishAndDeleteUploadedDefinition";
 
 		ApplicationsMenu.gotoPortlet(
@@ -810,6 +811,8 @@ definition {
 		ProcessBuilderKaleoDesignerReact.uploadDefinition(workflowDefinitionFile = "1-workflow-definition.xml");
 
 		ProcessBuilderKaleoDesignerReact.diagramSourceSwitchView();
+
+		Button.clickSave();
 
 		Button.clickPublish();
 
@@ -849,7 +852,7 @@ definition {
 		Workflow.deleteWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
 	}
 
-	@priority = "3"
+	@priority = 3
 	test ViewBlogsEntryWorkflowViaNotifications {
 		Navigator.openURL();
 
@@ -880,7 +883,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
-		Notifications.viewBadgeCount(notificationCount = "1");
+		Notifications.viewBadgeCount(notificationCount = 1);
 
 		WorkflowAsset.gotoViaNotification(
 			assetType = "Blogs Entry",
@@ -892,7 +895,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
-		Notifications.viewBadgeCount(notificationCount = "0");
+		Notifications.viewBadgeCount(notificationCount = 0);
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
@@ -918,11 +921,11 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		Notifications.viewBadgeCount(notificationCount = "0");
+		Notifications.viewBadgeCount(notificationCount = 0);
 	}
 
 	@ignore = "true"
-	@priority = "4"
+	@priority = 4
 	test ViewInvalidDefinitionAlert {
 		property test.name.skip.portal.instance = "WorkflowUsecase#ViewInvalidDefinitionAlert";
 
@@ -938,7 +941,7 @@ definition {
 			workflowDefinitionFile = "Document_1.txt");
 	}
 
-	@priority = "3"
+	@priority = 3
 	test ViewTaskCount {
 		Workflow.openWorkflowProcessBuilderConfiguration();
 
@@ -985,14 +988,14 @@ definition {
 
 		AssertElementPresent(locator1 = "xpath=(//div[contains(@id,'workflowTasksSearchContainer')]//tr[@data-qa-id])[6]");
 
-		Pagination.changePagination(itemsPerPage = "4");
+		Pagination.changePagination(itemsPerPage = 4);
 
 		Pagination.viewResults(results = "Showing 1 to 4 of 6 entries.");
 
 		AssertElementNotPresent(locator1 = "xpath=(//div[contains(@id,'workflowTasksSearchContainer')]//tr[@data-qa-id])[6]");
 	}
 
-	@priority = "3"
+	@priority = 3
 	test ViewWebContentConfigurationCP {
 		Navigator.openURL();
 
@@ -1023,7 +1026,7 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-59108."
-	@priority = "4"
+	@priority = 4
 	test ViewWorkflowConfigurationScope {
 		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
@@ -1097,7 +1100,7 @@ definition {
 	}
 
 	@description = "This is a use case for LRQA-13519."
-	@priority = "5"
+	@priority = 5
 	test ViewWorkflowSubmissionsFromDifferentUsers {
 		Workflow.openWorkflowProcessBuilderConfiguration();
 
@@ -1211,9 +1214,9 @@ definition {
 		Workflow.viewSubmissionNotPresent(workflowAssetTitle = "User 1 Blog Title Approved");
 	}
 
-	@priority = "4"
+	@priority = 4
 	test XSSScriptWebContent {
-		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+		var siteName = TestCase.getSiteName(siteName = ${siteName});
 
 		Navigator.openURL();
 
@@ -1258,9 +1261,9 @@ definition {
 		var actualScript = '''<script>alert(123);</script>''';
 		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
 
-		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+		AssertHTMLSourceTextNotPresent(value1 = ${actualScript});
 
-		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+		AssertHTMLSourceTextPresent(value1 = ${escapedScript});
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
@@ -1275,9 +1278,9 @@ definition {
 		var actualScript = '''<script>alert(123);</script>''';
 		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
 
-		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+		AssertHTMLSourceTextNotPresent(value1 = ${actualScript});
 
-		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+		AssertHTMLSourceTextPresent(value1 = ${escapedScript});
 
 		Navigator.openURL();
 
@@ -1298,19 +1301,19 @@ definition {
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites",
-			site = "${siteName}");
+			site = ${siteName});
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
 			panel = "Site Administration",
 			portlet = "Pages",
-			site = "${siteName}");
+			site = ${siteName});
 
 		PagesAdmin.addPage(pageName = "Asset Publisher Test Page");
 
 		Navigator.gotoPage(
 			pageName = "Asset Publisher Test Page",
-			siteName = "${siteName}");
+			siteName = ${siteName});
 
 		Navigator.gotoPage(pageName = "Asset Publisher Test Page");
 

@@ -1,6 +1,5 @@
 @import 'atlas-variables';
 
-@import '../ddm_template_editor/components/PortletIcon';
 @import '../ddm_template_editor/components/PropertiesPanel';
 
 $toolbarDesktopHeight: 4rem;
@@ -119,8 +118,7 @@ $productMenuWidth: 320px;
 					}
 
 					> .tbar-item:first-child {
-						border-top: solid thin #e7e7ed;
-						order: 1;
+						border-bottom: solid thin #e7e7ed;
 						width: 100%;
 					}
 
@@ -166,8 +164,7 @@ $productMenuWidth: 320px;
 
 				> .container-fluid > .tbar-nav {
 					> .tbar-item:first-child {
-						border-top: none;
-						order: 0;
+						border-bottom: none;
 						width: auto;
 					}
 
@@ -182,13 +179,19 @@ $productMenuWidth: 320px;
 			}
 		}
 
-		.contextual-sidebar-content {
-			margin-top: $toolbarHeight;
-
+		.article-content-content {
 			@include media-breakpoint-up(lg) {
 				margin-top: $toolbarDesktopHeight;
 			}
 
+			.ddm-form-builder-app {
+				@include media-breakpoint-down(md) {
+					margin-top: $toolbarHeight;
+				}
+			}
+		}
+
+		.contextual-sidebar-content {
 			@include media-breakpoint-down(md) {
 				> .container-fluid {
 					margin: 0 auto;
@@ -223,6 +226,7 @@ $productMenuWidth: 320px;
 			box-shadow: none;
 			margin-top: $toolbarHeight;
 			max-width: 90vw;
+			outline: 0;
 			overflow-y: scroll;
 			padding-top: 0;
 			position: fixed;

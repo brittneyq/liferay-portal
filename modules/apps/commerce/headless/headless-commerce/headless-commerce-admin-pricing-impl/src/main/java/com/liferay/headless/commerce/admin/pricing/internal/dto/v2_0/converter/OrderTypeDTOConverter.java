@@ -28,9 +28,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.commerce.model.CommerceOrderType",
-	service = {DTOConverter.class, OrderTypeDTOConverter.class}
+	service = DTOConverter.class
 )
 public class OrderTypeDTOConverter
 	implements DTOConverter<CommerceOrderType, OrderType> {

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -259,6 +258,22 @@ public class MessageBoardThreadSerDes {
 			}
 
 			sb.append("]");
+		}
+
+		if (messageBoardThread.getLastPostDate() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"lastPostDate\": ");
+
+			sb.append("\"");
+
+			sb.append(
+				liferayToJSONDateFormat.format(
+					messageBoardThread.getLastPostDate()));
+
+			sb.append("\"");
 		}
 
 		if (messageBoardThread.getLocked() != null) {
@@ -621,6 +636,16 @@ public class MessageBoardThreadSerDes {
 				"keywords", String.valueOf(messageBoardThread.getKeywords()));
 		}
 
+		if (messageBoardThread.getLastPostDate() == null) {
+			map.put("lastPostDate", null);
+		}
+		else {
+			map.put(
+				"lastPostDate",
+				liferayToJSONDateFormat.format(
+					messageBoardThread.getLastPostDate()));
+		}
+
 		if (messageBoardThread.getLocked() == null) {
 			map.put("locked", null);
 		}
@@ -815,14 +840,18 @@ public class MessageBoardThreadSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "customFields")) {
 				if (jsonParserFieldValue != null) {
-					messageBoardThread.setCustomFields(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> CustomFieldSerDes.toDTO((String)object)
-						).toArray(
-							size -> new CustomField[size]
-						));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					CustomField[] customFieldsArray =
+						new CustomField[jsonParserFieldValues.length];
+
+					for (int i = 0; i < customFieldsArray.length; i++) {
+						customFieldsArray[i] = CustomFieldSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					messageBoardThread.setCustomFields(customFieldsArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "dateCreated")) {
@@ -873,6 +902,12 @@ public class MessageBoardThreadSerDes {
 						toStrings((Object[])jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "lastPostDate")) {
+				if (jsonParserFieldValue != null) {
+					messageBoardThread.setLastPostDate(
+						toDate((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "locked")) {
 				if (jsonParserFieldValue != null) {
 					messageBoardThread.setLocked((Boolean)jsonParserFieldValue);
@@ -913,14 +948,18 @@ public class MessageBoardThreadSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "relatedContents")) {
 				if (jsonParserFieldValue != null) {
-					messageBoardThread.setRelatedContents(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> RelatedContentSerDes.toDTO((String)object)
-						).toArray(
-							size -> new RelatedContent[size]
-						));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					RelatedContent[] relatedContentsArray =
+						new RelatedContent[jsonParserFieldValues.length];
+
+					for (int i = 0; i < relatedContentsArray.length; i++) {
+						relatedContentsArray[i] = RelatedContentSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					messageBoardThread.setRelatedContents(relatedContentsArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "seen")) {
@@ -955,15 +994,22 @@ public class MessageBoardThreadSerDes {
 						jsonParserFieldName, "taxonomyCategoryBriefs")) {
 
 				if (jsonParserFieldValue != null) {
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					TaxonomyCategoryBrief[] taxonomyCategoryBriefsArray =
+						new TaxonomyCategoryBrief[jsonParserFieldValues.length];
+
+					for (int i = 0; i < taxonomyCategoryBriefsArray.length;
+						 i++) {
+
+						taxonomyCategoryBriefsArray[i] =
+							TaxonomyCategoryBriefSerDes.toDTO(
+								(String)jsonParserFieldValues[i]);
+					}
+
 					messageBoardThread.setTaxonomyCategoryBriefs(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> TaxonomyCategoryBriefSerDes.toDTO(
-								(String)object)
-						).toArray(
-							size -> new TaxonomyCategoryBrief[size]
-						));
+						taxonomyCategoryBriefsArray);
 				}
 			}
 			else if (Objects.equals(

@@ -13,20 +13,13 @@
  */
 
 import {render} from '@liferay/frontend-js-react-web';
+import {localStorage} from 'frontend-js-web';
 import React from 'react';
 
-import Walkthrough from './Walkthrough';
-import {LOCAL_STORAGE_KEYS} from './localStorageKeys';
+import Walkthrough from './components/Walkthrough';
+import {LOCAL_STORAGE_KEYS} from './utils';
 
 const DEFAULT_CONTAINER_ID = 'walkthroughContainer';
-
-const DEFAULT_PROPS = {
-	closeOnClickOutside: false,
-	closeable: true,
-	pages: {},
-	skippable: true,
-	steps: [],
-};
 
 const getDefaultContainer = () => {
 	let container = document.getElementById(DEFAULT_CONTAINER_ID);
@@ -41,8 +34,13 @@ const getDefaultContainer = () => {
 };
 
 function Root(props) {
-	if (!localStorage.getItem(LOCAL_STORAGE_KEYS.SKIPPABLE)) {
-		return <Walkthrough {...DEFAULT_PROPS} {...props} />;
+	if (
+		!localStorage.getItem(
+			LOCAL_STORAGE_KEYS.SKIPPABLE,
+			localStorage.TYPES.NECESSARY
+		)
+	) {
+		return <Walkthrough {...props} />;
 	}
 
 	return null;

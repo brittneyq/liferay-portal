@@ -293,6 +293,13 @@ public class PortletPreferenceValueLocalServiceUtil {
 		return getService().getPortletPreferenceValuesCount();
 	}
 
+	public static int getPortletPreferenceValuesCount(
+		long companyId, String name, String smallValue) {
+
+		return getService().getPortletPreferenceValuesCount(
+			companyId, name, smallValue);
+	}
+
 	public static javax.portlet.PortletPreferences getPreferences(
 		com.liferay.portal.kernel.model.PortletPreferences portletPreferences) {
 
@@ -318,6 +325,10 @@ public class PortletPreferenceValueLocalServiceUtil {
 
 	public static PortletPreferenceValueLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(PortletPreferenceValueLocalService service) {
+		_service = service;
 	}
 
 	private static volatile PortletPreferenceValueLocalService _service;

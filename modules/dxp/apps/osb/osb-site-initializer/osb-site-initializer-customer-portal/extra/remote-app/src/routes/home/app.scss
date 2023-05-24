@@ -1,24 +1,8 @@
 @import '../../../src/common/styles/global';
-@import 'components/components';
 
-.cp-home-projects {
-	column-gap: var(--spacer-5);
-	row-gap: 2rem;
+@import './components/ProjectsList/project-list';
+@import './components/SearchHeader/search-header';
 
-	&-sm {
-		gap: 1rem;
-	}
-}
-
-.cp-project-cards-container {
-	max-width: 1217px;
-
-	@media screen and (min-width: 1441px) {
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	&-sm {
-		max-width: 700px;
-	}
+.cp-home-wrapper {
+	min-height: 51.5vh;
 }

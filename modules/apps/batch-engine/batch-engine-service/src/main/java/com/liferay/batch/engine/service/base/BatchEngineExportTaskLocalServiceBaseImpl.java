@@ -60,8 +60,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import java.io.InputStream;
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.sql.Blob;
 
 import java.util.List;
@@ -290,50 +288,23 @@ public abstract class BatchEngineExportTaskLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the batch engine export task with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the batch engine export task's external reference code
-	 * @return the matching batch engine export task, or <code>null</code> if a matching batch engine export task could not be found
-	 */
 	@Override
 	public BatchEngineExportTask
 		fetchBatchEngineExportTaskByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long companyId) {
 
-		return batchEngineExportTaskPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return batchEngineExportTaskPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchBatchEngineExportTaskByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public BatchEngineExportTask fetchBatchEngineExportTaskByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchBatchEngineExportTaskByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the batch engine export task with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the batch engine export task's external reference code
-	 * @return the matching batch engine export task
-	 * @throws PortalException if a matching batch engine export task could not be found
-	 */
 	@Override
 	public BatchEngineExportTask
 			getBatchEngineExportTaskByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return batchEngineExportTaskPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return batchEngineExportTaskPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -636,7 +607,7 @@ public abstract class BatchEngineExportTaskLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		BatchEngineExportTaskLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -652,7 +623,8 @@ public abstract class BatchEngineExportTaskLocalServiceBaseImpl
 		batchEngineExportTaskLocalService =
 			(BatchEngineExportTaskLocalService)aopProxy;
 
-		_setLocalServiceUtilService(batchEngineExportTaskLocalService);
+		BatchEngineExportTaskLocalServiceUtil.setService(
+			batchEngineExportTaskLocalService);
 	}
 
 	/**
@@ -695,23 +667,6 @@ public abstract class BatchEngineExportTaskLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		BatchEngineExportTaskLocalService batchEngineExportTaskLocalService) {
-
-		try {
-			Field field =
-				BatchEngineExportTaskLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, batchEngineExportTaskLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

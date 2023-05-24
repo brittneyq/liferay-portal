@@ -39,19 +39,17 @@ SegmentsSimulationDisplayContext segmentsSimulationDisplayContext = (SegmentsSim
 							dismissible="<%= true %>"
 							displayType="warning"
 						>
-							<strong><%= LanguageUtil.get(request, "experiences-cannot-be-displayed-because-segmentation-is-disabled") %></strong>
+							<strong><liferay-ui:message key="experiences-cannot-be-displayed-because-segmentation-is-disabled" /></strong>
 
 							<c:choose>
 								<c:when test="<%= segmentsSimulationDisplayContext.getSegmentsCompanyConfigurationURL() != null %>">
 									<clay:link
 										href="<%= segmentsSimulationDisplayContext.getSegmentsCompanyConfigurationURL() %>"
-										label='<%=
-											LanguageUtil.get(request, "to-enable,-go-to-instance-settings")
-										%>'
+										label='<%= LanguageUtil.get(request, "to-enable,-go-to-instance-settings") %>'
 									/>
 								</c:when>
 								<c:otherwise>
-									<span><%= LanguageUtil.get(request, "contact-your-system-administrator-to-enable-it") %></span>
+									<span><liferay-ui:message key="contact-your-system-administrator-to-enable-it" /></span>
 								</c:otherwise>
 							</c:choose>
 						</clay:alert>
@@ -61,7 +59,7 @@ SegmentsSimulationDisplayContext segmentsSimulationDisplayContext = (SegmentsSim
 					for (SegmentsEntry segmentsEntry : segmentsSimulationDisplayContext.getSegmentsEntries()) {
 					%>
 
-						<li class="bg-transparent list-group-item list-group-item-flex pb-3 pt-0 px-0">
+						<li class="bg-transparent border-0 list-group-item list-group-item-flex pb-3 pt-0 px-0">
 							<span>
 								<div class="custom-checkbox">
 									<label class="position-relative">
@@ -84,15 +82,16 @@ SegmentsSimulationDisplayContext segmentsSimulationDisplayContext = (SegmentsSim
 				</ul>
 			</aui:form>
 
-			<aui:script use="liferay-portlet-segments-simulation">
-				new Liferay.Portlet.SegmentsSimulation({
-					deactivateSimulationUrl:
-						'<%= segmentsSimulationDisplayContext.getDeactivateSimulationURL() %>',
-					form: document.<portlet:namespace />segmentsSimulationFm,
-					simulateSegmentsEntriesUrl:
-						'<%= segmentsSimulationDisplayContext.getSimulateSegmentsEntriesURL() %>',
-				});
-			</aui:script>
+			<liferay-frontend:component
+				context='<%=
+					HashMapBuilder.<String, Object>put(
+						"deactivateSimulationURL", segmentsSimulationDisplayContext.getDeactivateSimulationURL()
+					).put(
+						"simulateSegmentsEntriesURL", segmentsSimulationDisplayContext.getSimulateSegmentsEntriesURL()
+					).build()
+				%>'
+				module="js/main"
+			/>
 		</c:otherwise>
 	</c:choose>
 </clay:container-fluid>

@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.payment.internal.util;
 
-import com.liferay.commerce.constants.CommercePaymentConstants;
+import com.liferay.commerce.constants.CommercePaymentMethodConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.payment.method.CommercePaymentMethod;
@@ -50,9 +50,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Luca Pellizzon
  */
-@Component(
-	enabled = false, immediate = true, service = CommercePaymentUtils.class
-)
+@Component(service = CommercePaymentUtils.class)
 public class CommercePaymentUtilsImpl implements CommercePaymentUtils {
 
 	@Override
@@ -103,9 +101,8 @@ public class CommercePaymentUtilsImpl implements CommercePaymentUtils {
 		String cancelUrl = null;
 		String returnUrl = null;
 
-		if (CommercePaymentConstants.
-				COMMERCE_PAYMENT_METHOD_TYPE_ONLINE_REDIRECT ==
-					commercePaymentMethod.getPaymentType()) {
+		if (CommercePaymentMethodConstants.TYPE_ONLINE_REDIRECT ==
+				commercePaymentMethod.getPaymentType()) {
 
 			cancelUrl = _getCancelUrl(
 				httpServletRequest, commerceOrder, checkoutStepUrl,
@@ -135,9 +132,7 @@ public class CommercePaymentUtilsImpl implements CommercePaymentUtils {
 		if (commercePaymentRequestProvider == null) {
 			commercePaymentRequestProvider =
 				_commercePaymentRequestProviderRegistry.
-					getCommercePaymentRequestProvider(
-						CommercePaymentConstants.
-							DEFAULT_PAYMENT_REQUEST_PROVIDER_KEY);
+					getCommercePaymentRequestProvider("default");
 		}
 
 		return commercePaymentRequestProvider;

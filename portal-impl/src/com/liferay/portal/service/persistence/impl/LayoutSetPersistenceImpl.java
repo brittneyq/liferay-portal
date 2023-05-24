@@ -49,7 +49,6 @@ import com.liferay.portal.model.impl.LayoutSetModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -191,7 +190,7 @@ public class LayoutSetPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<LayoutSet>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutSet layoutSet : list) {
@@ -555,7 +554,8 @@ public class LayoutSetPersistenceImpl
 
 			finderArgs = new Object[] {groupId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -706,7 +706,7 @@ public class LayoutSetPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<LayoutSet>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutSet layoutSet : list) {
@@ -1112,7 +1112,8 @@ public class LayoutSetPersistenceImpl
 
 			finderArgs = new Object[] {layoutSetPrototypeUuid};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1250,7 +1251,7 @@ public class LayoutSetPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByG_P, finderArgs);
+				_finderPathFetchByG_P, finderArgs, this);
 		}
 
 		if (result instanceof LayoutSet) {
@@ -1357,7 +1358,8 @@ public class LayoutSetPersistenceImpl
 
 			finderArgs = new Object[] {groupId, privateLayout};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1519,7 +1521,7 @@ public class LayoutSetPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<LayoutSet>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutSet layoutSet : list) {
@@ -1945,7 +1947,8 @@ public class LayoutSetPersistenceImpl
 
 			finderArgs = new Object[] {companyId, layoutSetPrototypeUuid};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2086,7 +2089,7 @@ public class LayoutSetPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByP_L, finderArgs);
+				_finderPathFetchByP_L, finderArgs, this);
 		}
 
 		if (result instanceof LayoutSet) {
@@ -2210,7 +2213,8 @@ public class LayoutSetPersistenceImpl
 
 			finderArgs = new Object[] {privateLayout, logoId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2866,7 +2870,7 @@ public class LayoutSetPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<LayoutSet>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2942,7 +2946,7 @@ public class LayoutSetPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3158,28 +3162,13 @@ public class LayoutSetPersistenceImpl
 			new String[] {Boolean.class.getName(), Long.class.getName()},
 			new String[] {"privateLayout", "logoId"}, false);
 
-		_setLayoutSetUtilPersistence(this);
+		LayoutSetUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setLayoutSetUtilPersistence(null);
+		LayoutSetUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(LayoutSetImpl.class.getName());
-	}
-
-	private void _setLayoutSetUtilPersistence(
-		LayoutSetPersistence layoutSetPersistence) {
-
-		try {
-			Field field = LayoutSetUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, layoutSetPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_LAYOUTSET =

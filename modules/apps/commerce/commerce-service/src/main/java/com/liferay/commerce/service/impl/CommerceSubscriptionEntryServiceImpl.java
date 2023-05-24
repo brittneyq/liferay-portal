@@ -20,21 +20,30 @@ import com.liferay.commerce.model.CommerceSubscriptionEntry;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.base.CommerceSubscriptionEntryServiceBaseImpl;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.List;
-import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = {
+		"json.web.service.context.name=commerce",
+		"json.web.service.context.path=CommerceSubscriptionEntry"
+	},
+	service = AopService.class
+)
 public class CommerceSubscriptionEntryServiceImpl
 	extends CommerceSubscriptionEntryServiceBaseImpl {
 
@@ -147,19 +156,14 @@ public class CommerceSubscriptionEntryServiceImpl
 			getPermissionChecker(), null,
 			CommerceActionKeys.MANAGE_COMMERCE_SUBSCRIPTIONS);
 
-		List<CommerceChannel> commerceChannels =
-			_commerceChannelLocalService.search(companyId);
-
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
-
 		return commerceSubscriptionEntryLocalService.
 			searchCommerceSubscriptionEntries(
-				companyId, commerceChannelGroupIds, maxSubscriptionCycles,
-				subscriptionStatus, keywords, start, end, sort);
+				companyId,
+				TransformUtil.transformToLongArray(
+					_commerceChannelLocalService.search(companyId),
+					CommerceChannel::getGroupId),
+				maxSubscriptionCycles, subscriptionStatus, keywords, start, end,
+				sort);
 	}
 
 	/**
@@ -239,14 +243,12 @@ public class CommerceSubscriptionEntryServiceImpl
 			commerceSubscriptionEntryId, subscriptionStatus);
 	}
 
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				CommerceSubscriptionEntryServiceImpl.class,
-				"_portletResourcePermission",
-				CommerceConstants.RESOURCE_NAME_COMMERCE_SUBSCRIPTION);
-
-	@ServiceReference(type = CommerceChannelLocalService.class)
+	@Reference
 	private CommerceChannelLocalService _commerceChannelLocalService;
+
+	@Reference(
+		target = "(resource.name=" + CommerceConstants.RESOURCE_NAME_COMMERCE_SUBSCRIPTION + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
 
 }

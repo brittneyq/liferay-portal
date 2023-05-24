@@ -14,8 +14,8 @@
 
 package com.liferay.source.formatter.check;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 
@@ -34,11 +34,11 @@ public class XMLUpgradeDTDVersionCheck extends XMLDTDVersionCheck {
 		_upgradeToVersion = getAttributeValue(
 			SourceFormatterUtil.UPGRADE_TO_VERSION, absolutePath);
 
-		if (_upgradeToVersion == null) {
+		if ((_upgradeToVersion == null) || !fileName.endsWith(".xml")) {
 			return content;
 		}
 
-		return super.doProcess(fileName, absolutePath, content);
+		return checkDTDVersion(content);
 	}
 
 	@Override

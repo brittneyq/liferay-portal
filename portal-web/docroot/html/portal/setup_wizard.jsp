@@ -177,12 +177,7 @@
 									</c:choose>
 
 									<c:if test="<%= Validator.isNull(PropsValues.JDBC_DEFAULT_JNDI_NAME) %>">
-										<a
-											href="<%=
-												HttpComponentsUtil.addParameter(themeDisplay.getPathMain() + "/portal/setup_wizard", "defaultDatabase", false)
-											%>"
-											id="customDatabaseOptionsLink"
-										>
+										<a href="<%= HttpComponentsUtil.addParameter(themeDisplay.getPathMain() + "/portal/setup_wizard", "defaultDatabase", false) %>" id="customDatabaseOptionsLink">
 											(<liferay-ui:message key="change" />)
 										</a>
 									</c:if>
@@ -376,7 +371,7 @@
 						);
 
 						var updateMessage = function(message) {
-							connectionMessages.html('<div class="alert alert-danger"><span class="alert-indicator"><svg aria-hidden="true" class="lexicon-icon lexicon-icon-exclamation-full"><use xlink:href="<%= FrontendIconsUtil.getSpritemap(themeDisplay) %>#exclamation-full"></use></svg></span><strong class="lead"><liferay-ui:message key="error-colon" /></strong>' + message + '</div>');
+							connectionMessages.html('<div class="alert alert-danger"><span class="alert-indicator"><svg aria-hidden="true" class="lexicon-icon lexicon-icon-exclamation-full"><use xlink:href="<%= themeDisplay.getPathThemeSpritemap() %>#exclamation-full"></use></svg></span><strong class="lead"><liferay-ui:message key="error-colon" /></strong>' + message + '</div>');
 						};
 
 						var startInstall = function() {
@@ -440,7 +435,7 @@
 							<div class="alert alert-success">
 								<span class="alert-indicator">
 									<svg aria-hidden="true" class="lexicon-icon lexicon-icon-check-circle-full">
-										<use xlink:href="<%= FrontendIconsUtil.getSpritemap(themeDisplay) %>#check-circle-full"></use>
+										<use xlink:href="<%= themeDisplay.getPathThemeSpritemap() %>#check-circle-full"></use>
 									</svg>
 								</span>
 
@@ -469,7 +464,7 @@
 							<div class="alert alert-info">
 								<span class="alert-indicator">
 									<svg aria-hidden="true" class="lexicon-icon lexicon-icon-info-circle">
-										<use xlink:href="<%= FrontendIconsUtil.getSpritemap(themeDisplay) %>#info-circle"></use>
+										<use xlink:href="<%= themeDisplay.getPathThemeSpritemap() %>#info-circle"></use>
 									</svg>
 								</span>
 
@@ -481,7 +476,7 @@
 								<div class="alert alert-warning">
 									<span class="alert-indicator">
 										<svg aria-hidden="true" class="lexicon-icon lexicon-icon-warning-full">
-											<use xlink:href="<%= FrontendIconsUtil.getSpritemap(themeDisplay) %>#warning-full"></use>
+											<use xlink:href="<%= themeDisplay.getPathThemeSpritemap() %>#warning-full"></use>
 										</svg>
 									</span>
 

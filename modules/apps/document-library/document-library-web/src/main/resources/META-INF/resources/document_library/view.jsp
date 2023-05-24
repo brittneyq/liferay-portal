@@ -50,6 +50,20 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 		<clay:management-toolbar
 			additionalProps='<%=
 				HashMapBuilder.<String, Object>put(
+					"bulkPermissionsConfiguration",
+					HashMapBuilder.<String, Object>put(
+						"defaultModelClassName", Folder.class.getSimpleName()
+					).put(
+						"permissionsURLs",
+						HashMapBuilder.<String, Object>put(
+							DLFileShortcut.class.getSimpleName(), dlViewDisplayContext.getPermissionURL(DLFileShortcutConstants.getClassName())
+						).put(
+							FileEntry.class.getSimpleName(), dlViewDisplayContext.getPermissionURL(DLFileEntryConstants.getClassName())
+						).put(
+							Folder.class.getSimpleName(), dlViewDisplayContext.getPermissionURL(DLFolderConstants.getClassName())
+						).build()
+					).build()
+				).put(
 					"collectDigitalSignaturePortlet", DigitalSignaturePortletKeys.COLLECT_DIGITAL_SIGNATURE
 				).put(
 					"downloadEntryURL", dlViewDisplayContext.getDownloadEntryURL()
@@ -70,7 +84,9 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				).put(
 					"openViewMoreFileEntryTypesURL", dlViewDisplayContext.getViewMoreFileEntryTypesURL()
 				).put(
-					"permissionsURL", dlViewDisplayContext.getPermissionURL()
+					"selectAssetTagsURL", dlViewDisplayContext.getSelectAssetTagsURL()
+				).put(
+					"selectExtensionURL", dlViewDisplayContext.getSelectExtensionURL()
 				).put(
 					"selectFileEntryTypeURL", dlViewDisplayContext.getSelectFileEntryTypeURL()
 				).put(
@@ -116,6 +132,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 				<liferay-frontend:sidebar-panel
 					resourceURL="<%= dlViewDisplayContext.getSidebarPanelURL() %>"
 					searchContainerId="entries"
+					title='<%= LanguageUtil.get(request, "info-panel") %>'
 				>
 					<liferay-util:include page="/document_library/info_panel.jsp" servletContext="<%= application %>" />
 				</liferay-frontend:sidebar-panel>
@@ -128,11 +145,8 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 							DLBreadcrumbUtil.addPortletBreadcrumbEntries(dlViewDisplayContext.getFolder(), request, liferayPortletResponse);
 							%>
 
-							<liferay-ui:breadcrumb
-								showCurrentGroup="<%= false %>"
-								showGuestGroup="<%= false %>"
-								showLayout="<%= false %>"
-								showParentGroups="<%= false %>"
+							<liferay-site-navigation:breadcrumb
+								breadcrumbEntries="<%= BreadcrumbEntriesUtil.getBreadcrumbEntries(request, false, false, false, false, true) %>"
 							/>
 						</c:if>
 					</div>
@@ -160,6 +174,19 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 						<liferay-ui:error exception="<%= FileEntryLockException.MustOwnLock.class %>" message="you-can-only-checkin-documents-you-have-checked-out-yourself" />
 						<liferay-ui:error key="externalServiceFailed" message="you-cannot-access-external-service-because-you-are-not-allowed-to-or-it-is-unavailable" />
 
+						<c:if test='<%= SessionErrors.contains(renderRequest, "googleDriveFileMissing") %>'>
+							<aui:script>
+								Liferay.Util.openToast({
+									message: '<liferay-ui:message key="the-google-drive-file-was-missing" />',
+									title: Liferay.Language.get('warning'),
+									toastProps: {
+										autoClose: 5000,
+									},
+									type: 'warning',
+								});
+							</aui:script>
+						</c:if>
+
 						<c:choose>
 							<c:when test="<%= dlViewDisplayContext.isSearch() %>">
 								<liferay-util:include page="/document_library/search_resources.jsp" servletContext="<%= application %>" />
@@ -170,23 +197,9 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 						</c:choose>
 
 						<div class="d-none" id="<portlet:namespace />appViewEntryTemplates">
-							<liferay-frontend:icon-vertical-card
-								cssClass="card-type-asset display-icon entry-display-style file-card form-check form-check-card"
-								icon="documents-and-media"
-								title="{title}"
-								url="<%= dlViewDisplayContext.getUploadURL() %>"
-							>
-								<liferay-frontend:vertical-card-sticker-bottom>
-									<clay:sticker
-										cssClass="file-icon-color-0 sticker-bottom-left sticker-document"
-										icon="document-default"
-									/>
-								</liferay-frontend:vertical-card-sticker-bottom>
-
-								<liferay-frontend:vertical-card-header>
-									<liferay-ui:message arguments="<%= HtmlUtil.escape(user.getFullName()) %>" key="right-now-by-x" />
-								</liferay-frontend:vertical-card-header>
-							</liferay-frontend:icon-vertical-card>
+							<clay:vertical-card
+								verticalCard="<%= new FileEntryTemplateVerticalCard(dlViewDisplayContext, request) %>"
+							/>
 
 							<dd class="display-descriptive entry-display-style list-group-item list-group-item-flex">
 								<div class="autofit-col"></div>
@@ -228,117 +241,39 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 		}
 		%>
 
-		<c:choose>
-			<c:when test='<%= GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-118829")) %>'>
-				<liferay-frontend:component
-					context='<%=
-						HashMapBuilder.<String, Object>put(
-							"editEntryUrl", dlViewDisplayContext.getEditEntryURL()
-						).put(
-							"namespace", "<portlet:namespace />"
-						).put(
-							"searchContainerId", "entries"
-						).put(
-							"selectFolderURL", dlViewDisplayContext.getSelectFolderURL()
-						).build()
-					%>'
-					module="document_library/js/DocumentLibrary"
-				/>
-			</c:when>
-			<c:otherwise>
-				<aui:script>
-					function <portlet:namespace />move(
-						itemsSelected,
-						parameterName,
-						parameterValue
-					) {
-						var dlComponent = Liferay.component('<portlet:namespace />DocumentLibrary');
-
-						if (dlComponent) {
-							dlComponent.showFolderDialog(
-								itemsSelected,
-								parameterName,
-								parameterValue
-							);
-						}
-					}
-				</aui:script>
-
-				<aui:script use="liferay-document-library">
-					Liferay.component(
-						'<portlet:namespace />DocumentLibrary',
-						new Liferay.Portlet.DocumentLibrary({
-							columnNames: ['<%= dlViewDisplayContext.getColumnNames() %>'],
-
-							<%
-							DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance(locale);
-							%>
-
-							decimalSeparator: '<%= decimalFormatSymbols.getDecimalSeparator() %>',
-							displayStyle:
-								'<%= HtmlUtil.escapeJS(dlAdminDisplayContext.getDisplayStyle()) %>',
-							editEntryUrl: '<%= dlViewDisplayContext.getEditEntryURL() %>',
-							downloadEntryUrl: '<%= dlViewDisplayContext.getDownloadEntryURL() %>',
-							folders: {
-								defaultParentFolderId: '<%= dlViewDisplayContext.getFolderId() %>',
-								dimensions: {
-									height:
-										'<%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT) %>',
-									width:
-										'<%= PrefsPropsUtil.getLong(PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH) %>',
-								},
-							},
-							form: {
-								method: 'POST',
-								node: A.one(document.<portlet:namespace />fm2),
-							},
-							maxFileSize: <%= DLValidatorUtil.getMaxAllowableSize(themeDisplay.getScopeGroupId(), null) %>,
-							namespace: '<portlet:namespace />',
-							openViewMoreFileEntryTypesURL:
-								'<%= dlViewDisplayContext.getViewMoreFileEntryTypesURL() %>',
-							portletId:
-								'<%= HtmlUtil.escapeJS(dlRequestHelper.getResourcePortletId()) %>',
-							redirect: encodeURIComponent('<%= currentURL %>'),
-							selectFileEntryTypeURL:
-								'<%= dlViewDisplayContext.getSelectFileEntryTypeURL() %>',
-							selectFolderURL: '<%= dlViewDisplayContext.getSelectFolderURL() %>',
-							scopeGroupId: <%= scopeGroupId %>,
-							searchContainerId: 'entries',
-							trashEnabled: <%= dlTrashHelper.isTrashEnabled(scopeGroupId, dlViewDisplayContext.getRepositoryId()) %>,
-							uploadable: <%= dlViewDisplayContext.isUploadable() %>,
-							uploadURL: '<%= dlViewDisplayContext.getUploadURL() %>',
-							viewFileEntryTypeURL:
-								'<%= dlViewDisplayContext.getViewFileEntryTypeURL() %>',
-							viewFileEntryURL: '<%= dlViewDisplayContext.getViewFileEntryURL() %>',
-						}),
-						{
-							destroyOnNavigate: true,
-							portletId:
-								'<%= HtmlUtil.escapeJS(dlRequestHelper.getResourcePortletId()) %>',
-						}
-					);
-
-					var changeScopeHandles = function (event) {
-						documentLibrary.destroy();
-
-						Liferay.detach('changeScope', changeScopeHandles);
-					};
-
-					Liferay.on('changeScope', changeScopeHandles);
-
-					var editFileEntryHandler = function (event) {
-						var uri = '<%= dlViewDisplayContext.getAddFileEntryURL() %>';
-
-						location.href = Liferay.Util.addParams(
-							'<portlet:namespace />fileEntryTypeId' + '=' + event.fileEntryTypeId,
-							uri
-						);
-					};
-
-					Liferay.on('<portlet:namespace />selectAddMenuItem', editFileEntryHandler);
-				</aui:script>
-			</c:otherwise>
-		</c:choose>
+		<liferay-frontend:component
+			context='<%=
+				HashMapBuilder.<String, Object>put(
+					"columnNames", dlViewDisplayContext.getEntryColumnNames()
+				).put(
+					"defaultParentFolderId", dlViewDisplayContext.getFolderId()
+				).put(
+					"displayStyle", HtmlUtil.escapeJS(dlAdminDisplayContext.getDisplayStyle())
+				).put(
+					"editEntryUrl", dlViewDisplayContext.getEditEntryURL()
+				).put(
+					"maxFileSize", DLValidatorUtil.getMaxAllowableSize(themeDisplay.getScopeGroupId(), null)
+				).put(
+					"namespace", "<portlet:namespace />"
+				).put(
+					"redirect", currentURL
+				).put(
+					"scopeGroupId", scopeGroupId
+				).put(
+					"searchContainerId", "entries"
+				).put(
+					"selectFolderURL", dlViewDisplayContext.getSelectFolderURL()
+				).put(
+					"uploadable", dlViewDisplayContext.isUploadable()
+				).put(
+					"uploadURL", dlViewDisplayContext.getUploadURL()
+				).put(
+					"viewFileEntryURL", dlViewDisplayContext.getViewFileEntryURL()
+				).build()
+			%>'
+			destroyOnNavigate="<%= true %>"
+			module="document_library/js/DocumentLibrary"
+		/>
 
 		<%
 		long[] groupIds = PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId);

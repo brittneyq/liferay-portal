@@ -14,28 +14,21 @@
  */
 --%>
 
-<%@ include file="/init.jsp" %>
+<%@ include file="/configuration/icon/init.jsp" %>
 
-<portlet:actionURL name="emptyTrash" var="emptyTrashURL">
-	<portlet:param name="groupId" value="<%= String.valueOf(themeDisplay.getScopeGroupId()) %>" />
-</portlet:actionURL>
-
-<liferay-util:buffer
-	var="onClickFn"
->
-	Liferay.Util.openConfirmModal({
-		message: '<liferay-ui:message key="are-you-sure-you-want-to-empty-the-recycle-bin" />',
-		onConfirm: (isConfirmed) => {
-			if (isConfirmed) {
-				submitForm(document.hrefFm, '<%= emptyTrashURL.toString() %>');
-			}
+<aui:script>
+	Liferay.Util.setPortletConfigurationIconAction(
+		'<portlet:namespace />emptyTrash',
+		(event, data) => {
+			Liferay.Util.openConfirmModal({
+				message:
+					'<liferay-ui:message key="are-you-sure-you-want-to-empty-the-recycle-bin" />',
+				onConfirm: (isConfirmed) => {
+					if (isConfirmed) {
+						submitForm(document.hrefFm, data.emptyTrashURL);
+					}
+				},
+			});
 		}
-	});
-</liferay-util:buffer>
-
-<liferay-ui:icon
-	id="emptyRecycleBinButton"
-	message="empty-the-recycle-bin"
-	onClick="<%= onClickFn %>"
-	url="javascript:void(0);"
-/>
+	);
+</aui:script>

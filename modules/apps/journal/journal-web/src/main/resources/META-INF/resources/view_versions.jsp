@@ -21,6 +21,7 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 %>
 
 <liferay-ui:search-container
+	cssClass='<%= journalDisplayContext.isSearch() ? "pt-0" : StringPool.BLANK %>'
 	emptyResultsMessage="no-web-content-was-found"
 	searchContainer="<%= journalDisplayContext.getSearchContainer() %>"
 >
@@ -60,7 +61,11 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 					</h5>
 
 					<h6 class="text-default">
-						<aui:workflow-status markupView="lexicon" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= articleVersion.getStatus() %>" version="<%= String.valueOf(articleVersion.getVersion()) %>" />
+						<liferay-portal-workflow:status
+							showStatusLabel="<%= false %>"
+							status="<%= articleVersion.getStatus() %>"
+							version="<%= String.valueOf(articleVersion.getVersion()) %>"
+						/>
 					</h6>
 				</liferay-ui:search-container-column-text>
 
@@ -71,6 +76,7 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 								"trashEnabled", componentContext.get("trashEnabled")
 							).build()
 						%>'
+						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= journalDisplayContext.getArticleVersionActionDropdownItems(articleVersion) %>"
 						propsTransformer="js/ElementsDefaultPropsTransformer"
 					/>
@@ -130,6 +136,7 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 								"trashEnabled", componentContext.get("trashEnabled")
 							).build()
 						%>'
+						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 						dropdownItems="<%= journalDisplayContext.getArticleVersionActionDropdownItems(articleVersion) %>"
 						propsTransformer="js/ElementsDefaultPropsTransformer"
 					/>

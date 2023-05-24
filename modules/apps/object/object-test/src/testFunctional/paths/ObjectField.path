@@ -8,6 +8,11 @@
 <thead><tr><td rowspan="1" colspan="3">ObjectField</td></tr></thead>
 <tbody>
 	<tr>
+		<td>ANY_DROPDOWN_LABEL</td>
+		<td>//*[@class='form-group' and contains(.,'${dropdownLabel}')] //*[@class="dropdown"]</td>
+		<td></td>
+	</tr>
+	<tr>
 		<td>DOCUMENT_NAME</td>
 		<td>//p[contains(@class,'card-title text-truncate')]//a</td>
 		<td></td>
@@ -19,7 +24,7 @@
 	</tr>
 	<tr>
 		<td>VIEW_HOME_FOLDER</td>
-		<td>//span[@class='active breadcrumb-text-truncate' and contains(text(),'${key_viewHomeFolder}')]</td>
+		<td>//span[@class='breadcrumb-text-truncate' and contains(text(),'${key_viewHomeFolder}')]</td>
 		<td></td>
 	</tr>
 	<tr>
@@ -73,6 +78,11 @@
 		<td></td>
 	</tr>
 	<tr>
+		<td>MANDATORY_FIELD</td>
+		<td>//label[contains(text(),'${key_fieldName}')]/*[contains(text(),'Mandatory')]</td>
+		<td></td>
+	</tr>
+	<tr>
 		<td>MANDATORY_TOGGLE_DISABLED</td>
 		<td>//input[@name="required" and @disabled]</td>
 		<td></td>
@@ -98,8 +108,13 @@
 		<td></td>
 	</tr>
 	<tr>
+		<td>SELECT_FORMULA_FIELD_OPTION</td>
+		<td>//*[contains(@class,'menu show')]//button[contains(@class,'dropdown-item')]//div[text()='${key_dropdownItem}']</td>
+		<td></td>
+	</tr>
+	<tr>
 		<td>SEARCHABLE_LANGUAGE_SELECT</td>
-		<td>//select[@name="indexedLanguageId"]</td>
+		<td>//div[@class="lfr-objects__card"]//input[@value="${selected}"]</td>
 		<td></td>
 	</tr>
 	<tr>
@@ -155,6 +170,26 @@
 	<tr>
 		<td>MARK_AS_STATE_TOGGLE</td>
 		<td>//input[@name="state"]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>SOURCE_FIELD</td>
+		<td>//div[contains(@class, 'dnd-tr') and contains(., '${key_label}') and contains(., '${key_source}')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LABEL_RELATIONSHIP</td>
+		<td>//label[contains(.,'Relationship')]//..//div[contains(@aria-controls,'clay-dropdown-menu')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LABEL_FIELD</td>
+		<td>//label[contains(.,'Field')]//..//div[contains(@aria-controls,'clay-dropdown-menu')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LABEL_DEFAULT_VALUE</td>
+		<td>//label[contains(.,'Default Value')]//..//div[contains(@class,'input-group-item')]</td>
 		<td></td>
 	</tr>
 </tbody>

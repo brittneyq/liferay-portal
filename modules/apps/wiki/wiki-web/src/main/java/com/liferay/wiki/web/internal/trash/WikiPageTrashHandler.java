@@ -15,7 +15,6 @@
 package com.liferay.wiki.web.internal.trash;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -24,6 +23,7 @@ import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.SystemEvent;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -42,7 +42,7 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.trash.TrashHelper;
 import com.liferay.trash.constants.TrashActionKeys;
 import com.liferay.trash.constants.TrashEntryConstants;
-import com.liferay.trash.kernel.exception.RestoreEntryException;
+import com.liferay.trash.exception.RestoreEntryException;
 import com.liferay.trash.kernel.model.TrashEntry;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.engine.WikiEngineRenderer;
@@ -142,11 +142,11 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 			try {
 				WikiPage parentPage = page.getParentPage();
 
-				while (parentPage.isInTrashImplicitly()) {
+				while (_trashHelper.isInTrashImplicitly(parentPage)) {
 					parentPage = parentPage.getParentPage();
 				}
 
-				if (parentPage.isInTrashExplicitly()) {
+				if (_trashHelper.isInTrashExplicitly(parentPage)) {
 					return parentPage;
 				}
 			}
@@ -327,7 +327,7 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 			return false;
 		}
 
-		return !page.isInTrashContainer();
+		return !_trashHelper.isInTrashContainer(page);
 	}
 
 	@Override
@@ -464,6 +464,11 @@ public class WikiPageTrashHandler extends BaseWikiTrashHandler {
 
 		return _wikiPageModelResourcePermission.contains(
 			permissionChecker, classPK, actionId);
+	}
+
+	@Override
+	protected boolean isInTrashExplicitly(WikiPage page) {
+		return _trashHelper.isInTrashExplicitly(page);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

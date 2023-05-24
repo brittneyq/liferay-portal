@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"osgi.command.function=createProducts", "osgi.command.scope=commerce"
 	},
@@ -54,7 +53,7 @@ public class CPOSGiCommands {
 
 		Group group = _groupLocalService.getGroup(groupId);
 
-		User user = _userLocalService.getDefaultUser(group.getCompanyId());
+		User user = _userLocalService.getGuestUser(group.getCompanyId());
 
 		List<CommerceCatalog> commerceCatalogs =
 			_commerceCatalogLocalService.getCommerceCatalogs(

@@ -44,9 +44,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false, immediate = true, service = UpgradeStepRegistrator.class
-)
+@Component(service = UpgradeStepRegistrator.class)
 public class CommercePriceListServiceUpgradeStepRegistrator
 	implements UpgradeStepRegistrator {
 
@@ -106,7 +104,7 @@ public class CommercePriceListServiceUpgradeStepRegistrator
 			new MVCCVersionUpgradeProcess() {
 
 				@Override
-				protected String[] getModuleTableNames() {
+				protected String[] getTableNames() {
 					return new String[] {
 						"CPLCommerceGroupAccountRel", "CommercePriceEntry",
 						"CommercePriceList", "CommercePriceListAccountRel",
@@ -150,6 +148,11 @@ public class CommercePriceListServiceUpgradeStepRegistrator
 			});
 
 		registry.register("2.6.0", "2.6.1", new DummyUpgradeStep());
+
+		registry.register(
+			"2.6.1", "2.7.0",
+			new com.liferay.commerce.price.list.internal.upgrade.v2_7_0.
+				CommercePriceEntryUpgradeProcess());
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Commerce price list upgrade step registrator finished");

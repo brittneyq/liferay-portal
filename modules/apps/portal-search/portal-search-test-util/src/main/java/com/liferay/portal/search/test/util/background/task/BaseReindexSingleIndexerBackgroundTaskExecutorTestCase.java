@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.search.background.task.ReindexBackgroundTaskConstants;
 import com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSender;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -65,8 +66,9 @@ public abstract class BaseReindexSingleIndexerBackgroundTaskExecutorTestCase {
 
 		SearchEngineHelper searchEngineHelper = new SearchEngineHelperImpl();
 
-		searchEngineHelper.setSearchEngine(
-			"test", searchEngineFixture.getSearchEngine());
+		ReflectionTestUtil.setFieldValue(
+			searchEngineHelper, "_searchEngine",
+			searchEngineFixture.getSearchEngine());
 
 		_companyId = companyId;
 		_searchEngineFixture = searchEngineFixture;

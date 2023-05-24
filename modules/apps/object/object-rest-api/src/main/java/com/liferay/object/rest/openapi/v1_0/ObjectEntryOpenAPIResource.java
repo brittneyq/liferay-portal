@@ -16,7 +16,11 @@ package com.liferay.object.rest.openapi.v1_0;
 
 import com.liferay.portal.vulcan.batch.engine.Field;
 
+import io.swagger.v3.oas.models.media.Schema;
+
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -26,12 +30,12 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface ObjectEntryOpenAPIResource {
 
-	public Map<String, Field> getFields(
-			long objectDefinitionId, UriInfo uriInfo)
-		throws Exception;
+	public Map<String, Field> getFields(UriInfo uriInfo) throws Exception;
 
 	public Response getOpenAPI(
-			long objectDefinitionId, String type, UriInfo uriInfo)
+			HttpServletRequest httpServletRequest, String type, UriInfo uriInfo)
 		throws Exception;
+
+	public Map<String, Schema> getSchemas() throws Exception;
 
 }

@@ -64,8 +64,6 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -293,49 +291,22 @@ public abstract class ClientExtensionEntryLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the client extension entry with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the client extension entry's external reference code
-	 * @return the matching client extension entry, or <code>null</code> if a matching client extension entry could not be found
-	 */
 	@Override
 	public ClientExtensionEntry
 		fetchClientExtensionEntryByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long companyId) {
 
-		return clientExtensionEntryPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return clientExtensionEntryPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchClientExtensionEntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public ClientExtensionEntry fetchClientExtensionEntryByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchClientExtensionEntryByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the client extension entry with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the client extension entry's external reference code
-	 * @return the matching client extension entry
-	 * @throws PortalException if a matching client extension entry could not be found
-	 */
 	@Override
 	public ClientExtensionEntry getClientExtensionEntryByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return clientExtensionEntryPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return clientExtensionEntryPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -612,7 +583,7 @@ public abstract class ClientExtensionEntryLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		ClientExtensionEntryLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -629,7 +600,8 @@ public abstract class ClientExtensionEntryLocalServiceBaseImpl
 		clientExtensionEntryLocalService =
 			(ClientExtensionEntryLocalService)aopProxy;
 
-		_setLocalServiceUtilService(clientExtensionEntryLocalService);
+		ClientExtensionEntryLocalServiceUtil.setService(
+			clientExtensionEntryLocalService);
 	}
 
 	/**
@@ -687,23 +659,6 @@ public abstract class ClientExtensionEntryLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		ClientExtensionEntryLocalService clientExtensionEntryLocalService) {
-
-		try {
-			Field field =
-				ClientExtensionEntryLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, clientExtensionEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

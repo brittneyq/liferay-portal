@@ -341,7 +341,7 @@
 		<field name="mimeType" type="String" />
 		<field name="title" type="String">
 			<hint name="max-length">255</hint>
-			<validator name="required" />
+			<validator error-message="title-is-required" name="required" />
 		</field>
 		<field name="description" type="String">
 			<hint-collection name="TEXTAREA" />
@@ -354,6 +354,9 @@
 		<field name="version" type="String" />
 		<field name="size" type="long" />
 		<field name="checksum" type="String" />
+		<field name="storeUUID" type="String">
+			<hint name="max-length">255</hint>
+		</field>
 		<field name="expirationDate" type="Date">
 			<hint name="default-year-delta">1</hint>
 		</field>
@@ -479,6 +482,7 @@
 			<hint name="display-width">210</hint>
 		</default-hints>
 		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="externalReferenceCode" type="String" />
 		<field name="addressId" type="long" />
@@ -562,6 +566,8 @@
 		<field name="industry" type="String" />
 		<field name="type" type="String" />
 		<field name="size" type="String" />
+		<field name="indexNameCurrent" type="String" />
+		<field name="indexNameNext" type="String" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.CompanyInfo">
 		<field name="mvccVersion" type="long" />
@@ -591,8 +597,8 @@
 		<field name="firstName" type="String" />
 		<field name="middleName" type="String" />
 		<field name="lastName" type="String" />
-		<field name="prefixId" type="long" />
-		<field name="suffixId" type="long" />
+		<field name="prefixListTypeId" type="long" />
+		<field name="suffixListTypeId" type="long" />
 		<field name="male" type="boolean" />
 		<field name="birthday" type="Date">
 			<hint name="year-range-delta">70</hint>
@@ -656,6 +662,7 @@
 	</model>
 	<model name="com.liferay.portal.kernel.model.EmailAddress">
 		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="emailAddressId" type="long" />
 		<field name="companyId" type="long" />
@@ -670,7 +677,7 @@
 			<hint name="display-width">210</hint>
 			<validator name="email" />
 		</field>
-		<field name="typeId" type="long" />
+		<field name="listTypeId" type="long" />
 		<field name="primary" type="boolean" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.Group">
@@ -831,6 +838,7 @@
 	</model>
 	<model name="com.liferay.portal.kernel.model.LayoutPrototype">
 		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="layoutPrototypeId" type="long" />
 		<field name="companyId" type="long" />
@@ -1015,7 +1023,7 @@
 		<field name="recursable" type="boolean" />
 		<field name="regionId" type="long" />
 		<field name="countryId" type="long" />
-		<field name="statusId" type="long" />
+		<field name="statusListTypeId" type="long" />
 		<field name="comments" type="String">
 			<hint-collection name="TEXTAREA" />
 			<hint name="display-width">400</hint>
@@ -1027,7 +1035,7 @@
 		<field name="orgLaborId" type="long" />
 		<field name="companyId" type="long" />
 		<field name="organizationId" type="long" />
-		<field name="typeId" type="long" />
+		<field name="listTypeId" type="long" />
 		<field name="sunOpen" type="int" />
 		<field name="sunClose" type="int" />
 		<field name="monOpen" type="int" />
@@ -1118,6 +1126,7 @@
 	</model>
 	<model name="com.liferay.portal.kernel.model.Phone">
 		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="phoneId" type="long" />
 		<field name="companyId" type="long" />
@@ -1133,7 +1142,7 @@
 		<field name="extension" type="String">
 			<hint name="display-width">50</hint>
 		</field>
-		<field name="typeId" type="long" />
+		<field name="listTypeId" type="long" />
 		<field name="primary" type="boolean" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.PluginSetting">
@@ -1397,7 +1406,7 @@
 			<hint name="max-length">4000</hint>
 		</field>
 		<field localized="true" name="description" type="String">
-			<hint-collection name="TEXTAREA" />
+			<hint-collection name="CLOB" />
 		</field>
 		<field name="type" type="int" />
 		<field name="subtype" type="String" />
@@ -1490,7 +1499,6 @@
 		<field name="companyId" type="long" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
-		<field name="defaultUser" type="boolean" />
 		<field name="contactId" type="long" />
 		<field name="password" type="String" />
 		<field name="passwordEncrypted" type="boolean" />
@@ -1544,6 +1552,7 @@
 		<field name="lockoutDate" type="Date" />
 		<field name="agreedToTermsOfUse" type="boolean" />
 		<field name="emailAddressVerified" type="boolean" />
+		<field name="type" type="int" />
 		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.UserGroup">
@@ -1696,7 +1705,7 @@
 			<hint name="display-width">210</hint>
 			<validator name="url" />
 		</field>
-		<field name="typeId" type="long" />
+		<field name="listTypeId" type="long" />
 		<field name="primary" type="boolean" />
 		<field name="lastPublishDate" type="Date" />
 	</model>

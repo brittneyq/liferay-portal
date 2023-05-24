@@ -49,7 +49,6 @@ import com.liferay.ratings.kernel.service.persistence.RatingsStatsUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -224,7 +223,7 @@ public class RatingsStatsPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsStats>)FinderCacheUtil.getResult(
-				_finderPathWithPaginationFindByC_C, finderArgs);
+				_finderPathWithPaginationFindByC_C, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (RatingsStats ratingsStats : list) {
@@ -418,7 +417,7 @@ public class RatingsStatsPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByC_C, finderArgs);
+				_finderPathFetchByC_C, finderArgs, this);
 		}
 
 		if (result instanceof RatingsStats) {
@@ -525,7 +524,8 @@ public class RatingsStatsPersistenceImpl
 
 			finderArgs = new Object[] {classNameId, classPK};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -596,7 +596,7 @@ public class RatingsStatsPersistenceImpl
 			finderArgs = new Object[] {classNameId, StringUtil.merge(classPKs)};
 
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByC_C, finderArgs);
+				_finderPathWithPaginationCountByC_C, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1270,7 +1270,7 @@ public class RatingsStatsPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsStats>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1346,7 +1346,7 @@ public class RatingsStatsPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -1502,29 +1502,13 @@ public class RatingsStatsPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"classNameId", "classPK"}, false);
 
-		_setRatingsStatsUtilPersistence(this);
+		RatingsStatsUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setRatingsStatsUtilPersistence(null);
+		RatingsStatsUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(RatingsStatsImpl.class.getName());
-	}
-
-	private void _setRatingsStatsUtilPersistence(
-		RatingsStatsPersistence ratingsStatsPersistence) {
-
-		try {
-			Field field = RatingsStatsUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ratingsStatsPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_RATINGSSTATS =

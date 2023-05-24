@@ -1,6 +1,7 @@
 @component-name = "portal-security"
 definition {
 
+	property ci.retries.disabled = "true";
 	property log.context.enabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
@@ -15,9 +16,8 @@ definition {
 	}
 
 	@description = "LPS-133646 and LPS-133653 TC-1: Verify that information is present in the logs after enabling log context & Incoming X-Request-ID."
-	@priority = "5"
+	@priority = 5
 	test AssertAuditConsoleInformationIsPresentAfterEnabledLog {
-		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Audit#AssertAuditConsoleInformationIsPresentAfterEnabledLog";
 
 		var companyId = JSONCompany.getCompanyId();
@@ -38,19 +38,43 @@ definition {
 
 			var curl = '''http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address''';
 
-			var runGet = JSONCurlUtil.get("${curl}");
+			var runGet = JSONCurlUtil.get(${curl});
 
-			for (var logString : list "xRequestId,sessionId,companyId=${companyId},virtualHostName,clientIP,emailAddress,serverName,userId=${userId}") {
-				AuditLog.viewLogFileContent(logString = "${logString}");
+			for (var logString : list "xRequestId,companyId=${companyId},virtualHostName,clientIP,userEmailAddress,serverName,userId=${userId}") {
+				AuditLog.viewLogFileContent(logString = ${logString});
 			}
 		}
 	}
 
+	@description = "This is a use case for LPS-155728. TC-1: Assert the email address is present in the audit log context in a human-readable format."
+	@priority = 2
+	test AssertEmailAddressIsPresentInReadable {
+		property test.name.skip.portal.instance = "Audit#AssertEmailAddressIsPresentInReadable";
+
+		task ("Given: Enable log context and Incoming X-Request-ID") {
+			Audit.gotoSystemSettings(portlet = "Audit Log Context");
+
+			Click(locator1 = "Audit#AUDIT_LOG_CONTEXT_ENABLED_BUTTON");
+
+			Click(locator1 = "Audit#AUDIT_LOG_CONTEXT_USE_X-REQUEST-ID");
+
+			PortletEntry.save();
+		}
+
+		task ("When: Trigger audit log") {
+			Navigator.openURL(baseURL = "http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address");
+		}
+
+		task ("Then: Assert the email address is present in the audit log context in a human-readable format") {
+			AuditLog.viewLogFileContent(logString = "userEmailAddress=test@liferay.com");
+		}
+	}
+
 	@description = "LPS-133646 and LPS-133653 TC-2: Verify that Console outputs a different X-Request-ID if an invalid X-Request-ID was inputted."
-	@priority = "5"
+	@priority = 5
 	test AssertInvalidXRequestId {
 		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.wiring.internal.configuration.AuditLogContextConfiguration.config";
-		property osgi.module.configurations = "enabled=&quot;true&quot;${line.separator}useIncomingXRequestId=&quot;true&quot;";
+		property osgi.module.configurations = "enabled=\"true\"${line.separator}useIncomingXRequestId=\"true\"";
 		property test.name.skip.portal.instance = "Audit#AssertInvalidXRequestId";
 
 		var companyId = JSONCompany.getCompanyId();
@@ -63,19 +87,84 @@ definition {
 
 			var curl = '''http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address -H 'X-Request-Id:${invalidXRequestId}' ''';
 
-			var userId = JSONCurlUtil.get("${curl}");
+			var userId = JSONCurlUtil.get(${curl});
 
-			AssertConsoleTextNotPresent(value1 = "${invalidXRequestId}");
+			AssertConsoleTextNotPresent(value1 = ${invalidXRequestId});
 
 			AuditLog.viewLogFileContent(logString = "xRequestId");
 		}
 	}
 
+	@description = "This is a use case for LPS-140258. TC-1: Assert that sessionId is not present in the audit log context."
+	@priority = 2
+	test AssertSessionIdIsNotPresentInAuditLogContext {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "Audit#AssertSessionIdIsNotPresentInAuditLogContext";
+
+		task ("Given: Enable log context and Incoming X-Request-ID") {
+			Audit.gotoSystemSettings(portlet = "Audit Log Context");
+
+			Click(locator1 = "Audit#AUDIT_LOG_CONTEXT_ENABLED_BUTTON");
+
+			Click(locator1 = "Audit#AUDIT_LOG_CONTEXT_USE_X-REQUEST-ID");
+
+			PortletEntry.save();
+		}
+
+		task ("When: Trigger audit log") {
+			User.logoutPG();
+
+			Navigator.openURL(baseURL = "http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address");
+		}
+
+		task ("Then: Assert that sessionId is not present in the audit log context") {
+			AssertConsoleTextNotPresent(value1 = "AuditLogContext.sessionId");
+		}
+	}
+
+	@description = "This is a use case for LPS-140258. TC-2: Assert that sessionId is not present in the Audit Log portlet's UI."
+	@priority = 2
+	test AssertSessionIdIsNotPresentInAuditLogPortlet {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "Audit#AssertSessionIdIsNotPresentInAuditLogPortlet";
+
+		task ("Given: Enable log context and Incoming X-Request-ID") {
+			Audit.gotoSystemSettings(portlet = "Audit Log Context");
+
+			Click(locator1 = "Audit#AUDIT_LOG_CONTEXT_ENABLED_BUTTON");
+
+			Click(locator1 = "Audit#AUDIT_LOG_CONTEXT_USE_X-REQUEST-ID");
+
+			PortletEntry.save();
+		}
+
+		task ("And: Trigger audit log and assert sessionId is not present in audit log context") {
+			User.logoutPG();
+
+			Navigator.openURL(baseURL = "http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address");
+
+			AssertConsoleTextNotPresent(value1 = "AuditLogContext.sessionId");
+		}
+
+		task ("When: Go to control panel > Audit") {
+			User.loginPG();
+
+			ApplicationsMenu.gotoPortlet(
+				category = "Security",
+				panel = "Control Panel",
+				portlet = "Audit");
+		}
+
+		task ("Then: Assert that sessionId is not present in the Audit Log portlet's UI") {
+			AssertElementNotPresent(locator1 = "//tr/th[contains(@class,'session-id')]");
+		}
+	}
+
 	@description = "LPS-133646 and LPS-133653 TC-3: Verify that Console outputs the same X-Request-ID as inputted X-Request-ID."
-	@priority = "5"
+	@priority = 5
 	test AssertValidXRequestId {
 		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.wiring.internal.configuration.AuditLogContextConfiguration.config";
-		property osgi.module.configurations = "enabled=&quot;true&quot;${line.separator}useIncomingXRequestId=&quot;true&quot;";
+		property osgi.module.configurations = "enabled=\"true\"${line.separator}useIncomingXRequestId=\"true\"";
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Audit#AssertValidXRequestId";
 
@@ -85,21 +174,162 @@ definition {
 		task ("Assert that console outputs the same X-Request-ID as inputted X-Request-ID") {
 			Navigator.openURL(baseURL = "http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address");
 
-			var validXRequestId = StringUtil.randomString("40");
+			var validXRequestId = StringUtil.randomString(40);
 
 			var curl = '''http://localhost:8080/api/jsonws/user/get-user-by-email-address/company-id/email-address -H 'X-Request-Id:${validXRequestId}' ''';
 
-			var userId = JSONCurlUtil.get("${curl}");
+			var userId = JSONCurlUtil.get(${curl});
 
-			AuditLog.viewLogFileContent(logString = "${validXRequestId}");
+			AuditLog.viewLogFileContent(logString = ${validXRequestId});
+		}
+	}
+
+	@description = "This is a use case for LPS-174421 TC-1. Verify that the user is able to export the filtered audit data as a CSV format file."
+	@priority = 5
+	test CanExportCSVFilteredAuditDataFile {
+		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.router.configuration.PersistentAuditMessageProcessorConfiguration.config";
+		property osgi.module.configurations = "enabled=B\"true\"";
+		property test.name.skip.portal.instance = "Audit#CanExportCSVFilteredAuditDataFile";
+
+		task ("Given Login portal with wrong password login with correct password search LOGIN_FAILURE in Audit") {
+			User.logoutPG();
+
+			Navigator.gotoLoginPage();
+
+			Type.typePause(
+				locator1 = "TextInput#EMAIL_ADDRESS",
+				value1 = "test@liferay.com");
+
+			Type.typePause(
+				locator1 = "TextInput#PASSWORD",
+				value1 = "test1");
+
+			Click(locator1 = "Button#SIGN_IN");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_DISMISSIBLE",
+				value1 = "Authentication failed. Please try again.");
+
+			Navigator.openURL();
+
+			User.loginPG(
+				password = "test",
+				userEmailAddress = "test@liferay.com");
+
+			Audit.openAuditAdmin();
+
+			Audit.searchViaKeywords(
+				resourceName = "com.liferay.portal.kernel.model.User",
+				searchTerm = "LOGIN_FAILURE",
+				userName = "Test Test");
+
+			AssertTextEquals(
+				key_resourceAction = "LOGIN_FAILURE",
+				key_resourceName = "Test Test",
+				locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_ACTION",
+				value1 = "LOGIN_FAILURE");
+
+			AssertElementNotPresent(
+				key_resourceAction = "LOGIN_FAILURE",
+				key_resourceName = "Test Test",
+				locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_ACTION_2");
+		}
+
+		task ("When Export audit events") {
+			Audit.exportAuditEvents();
+		}
+
+		task ("Then Assert that confoirmation pop-up csv file downloaled correct list right event") {
+			AssertConfirm.assertConfirmationNoError(value1 = "Warning: This CSV file contains user supplied inputs. Opening a CSV file in a spreadsheet program may be dangerous.");
+
+			DownloadTempFile();
+
+			DMDocument.assertFileNameFromTempFolder(fileName = "audit_events.csv");
+
+			var fileContent = TestCase.getTempFileContent(fileName = "audit_events.csv");
+
+			echo(${fileContent});
+
+			DMDocument.assertDownloadedFileContent(
+				downloadedContent = '''LOGIN_FAILURE''',
+				fileName = "audit_events.csv");
+		}
+	}
+
+	@description = "This is a use case for LPS-174421 TC-2. Verify that the user is able to export the filtered audit data as a CSV format file on virtual instance."
+	@priority = 5
+	test CanExportCSVFilteredAuditDataFileOnVirtualInstance {
+		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.router.configuration.PersistentAuditMessageProcessorConfiguration.config";
+		property osgi.module.configurations = "enabled=B\"true\"";
+		property test.name.skip.portal.instance = "Audit#CanExportCSVFilteredAuditDataFileOnVirtualInstance";
+
+		task ("Given Add virtual instance login with wrong password login with correct password search LOGIN_FAILURE in Audit") {
+			HeadlessPortalInstanceAPI.addPortalInstance(
+				domain = "www.able.com",
+				portalInstanceId = "www.able.com",
+				virtualHost = "www.able.com");
+
+			UserBar.signOut();
+
+			User.firstLoginUI(
+				password = "test1",
+				specificURL = "http://www.able.com:8080",
+				userEmailAddress = "test@www.able.com");
+
+			User.firstLoginUI(
+				password = "test",
+				specificURL = "http://www.able.com:8080",
+				userEmailAddress = "test@www.able.com");
+
+			ApplicationsMenu.gotoPortlet(
+				category = "Security",
+				panel = "Control Panel",
+				portlet = "Audit");
+
+			Audit.searchViaKeywords(
+				resourceName = "com.liferay.portal.kernel.model.User",
+				searchTerm = "LOGIN_FAILURE",
+				userName = "Test Test");
+
+			AssertTextEquals(
+				key_resourceAction = "LOGIN_FAILURE",
+				key_resourceName = "Test Test",
+				locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_ACTION",
+				value1 = "LOGIN_FAILURE");
+
+			AssertElementNotPresent(
+				key_resourceAction = "LOGIN_FAILURE",
+				key_resourceName = "Test Test",
+				locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_ACTION_2",
+				value1 = "LOGIN_FAILURE");
+		}
+
+		task ("When Export audit events") {
+			Audit.exportAuditEvents();
+		}
+
+		task ("Then Assert that confoirmation pop-up csv file downloaled correct list right event") {
+			AssertConfirm.assertConfirmationNoError(value1 = "Warning: This CSV file contains user supplied inputs. Opening a CSV file in a spreadsheet program may be dangerous.");
+
+			DownloadTempFile();
+
+			DMDocument.assertFileNameFromTempFolder(fileName = "audit_events.csv");
+
+			var fileContent = TestCase.getTempFileContent(fileName = "audit_events.csv");
+
+			echo(${fileContent});
+
+			DMDocument.assertDownloadedFileContent(
+				downloadedContent = '''LOGIN_FAILURE''',
+				fileName = "audit_events.csv");
 		}
 	}
 
 	@description = "This is a use case for LPS-150300. Verify that Console outputs the correct clientIP when reading of the X-Forwarded-For http header."
-	@priority = "5"
+	@priority = 5
 	test VerifyCorrectClientIP {
 		property osgi.module.configuration.file.names = "com.liferay.portal.security.audit.wiring.internal.configuration.AuditLogContextConfiguration.config";
-		property osgi.module.configurations = "enabled=&quot;true&quot;${line.separator}useIncomingXRequestId=&quot;true&quot;";
+		property osgi.module.configurations = "enabled=\"true\"${line.separator}useIncomingXRequestId=\"true\"";
 		property test.name.skip.portal.instance = "Audit#VerifyCorrectClientIP";
 
 		task ("Add the OSGI configuration file") {
@@ -120,7 +350,7 @@ definition {
 
 			echo("## * Read of the X-Forwarded-For http header:");
 
-			var runGet = JSONCurlUtil.get("${curl}");
+			var runGet = JSONCurlUtil.get(${curl});
 
 			AuditLog.viewLogFileContent(logString = "clientIP=127.0.0.1");
 		}

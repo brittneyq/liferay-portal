@@ -12,17 +12,21 @@
  * details.
  */
 
-import ClayButton from '@clayui/button';
+import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
+import ClayTooltip from '@clayui/tooltip';
+import {ReactPortal} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
-import React, {useEffect, useRef, useState} from 'react';
+import {sub} from 'frontend-js-web';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {useGlobalContext} from '../../app/contexts/GlobalContext';
+import {useSelector} from '../../app/contexts/StoreContext';
+import {getResetLabelByViewport} from '../../app/utils/getResetLabelByViewport';
 import isValidStyleValue from '../../app/utils/isValidStyleValue';
-import {LengthField} from '../../common/components/LengthField';
-import {useId} from '../../core/hooks/useId';
-import {useStyleBook} from '../../plugins/page-design-options/hooks/useStyleBook';
-import {Tooltip} from './Tooltip';
+import {LengthInput} from '../../common/components/LengthField';
+import {useStyleBook} from '../../plugins/page_design_options/hooks/useStyleBook';
+import {useId} from '../hooks/useId';
 
 /**
  * These elements must be sorted from the most outer circle to the most inner
@@ -54,6 +58,8 @@ const REVERSED_POSITION = {
 
 const BUTTON_CLASSNAME = 'page-editor__spacing-selector__button';
 const DROPDOWN_CLASSNAME = 'page-editor__spacing-selector__dropdown';
+
+const TOOLTIP_SHOW_DELAY = 600;
 
 export default function SpacingBox({
 	canSetCustomValue,
@@ -173,15 +179,31 @@ function SpacingSelectorButton({
 	const {tokenValues} = useStyleBook();
 	const tooltipId = useId();
 	const triggerId = useId();
+	const headerId = useId();
 	const [triggerElement, setTriggerElement] = useState(null);
+
+	const selectedViewportSize = useSelector(
+		(state) => state.selectedViewportSize
+	);
+
+	const resetButtonLabel = useMemo(
+		() => getResetLabelByViewport(selectedViewportSize),
+		[selectedViewportSize]
+	);
 
 	useEffect(() => {
 		if (active && itemListRef.current) {
-			itemListRef.current
-				.querySelector(
-					`button[data-value="${value || field?.defaultValue}"]`
-				)
-				?.focus();
+			setTimeout(
+				() =>
+					itemListRef.current
+						.querySelector(
+							`button[data-value="${
+								value || field?.defaultValue
+							}"]`
+						)
+						?.focus(),
+				10
+			);
 		}
 	}, [active, field, value]);
 
@@ -244,30 +266,71 @@ function SpacingSelectorButton({
 		>
 			<div ref={itemListRef}>
 				<ClayDropDown.ItemList aria-labelledby={triggerId}>
-					<ClayDropDown.Group header={field?.label}>
-						{Liferay.FeatureFlags['LPS-143206'] &&
-						active &&
-						canSetCustomValue ? (
-							<LengthField
-								className="mb-3 mt-2 px-3"
-								field={field}
-								onEnter={() => {
-									setActive(false);
-									triggerElement?.focus();
-								}}
-								onValueSelect={onChange}
-								showLabel={false}
-								value={
-									isValidStyleValue(field.cssProperty, value)
-										? value
-										: ''
-								}
-							/>
-						) : null}
+					{active && canSetCustomValue ? (
+						<>
+							<li
+								aria-hidden="true"
+								className={`align-items-center d-flex dropdown-subheader justify-content-between my-2 pr-2 py-0  text-3 ${DROPDOWN_CLASSNAME}__header`}
+								id={headerId}
+								role="presentation"
+							>
+								{field?.label}
 
+								{value && (
+									<ClayButtonWithIcon
+										aria-label={resetButtonLabel}
+										borderless
+										className="lfr-portal-tooltip text-3"
+										displayType="secondary"
+										onClick={() => {
+											setActive(false);
+
+											onChange(field.name, null, {
+												isReset: true,
+											});
+										}}
+										size="sm"
+										symbol="restore"
+										title={resetButtonLabel}
+									/>
+								)}
+							</li>
+
+							<li role="presentation">
+								<ul
+									aria-labelledby={headerId}
+									className="list-unstyled"
+									role="group"
+								>
+									<LengthInput
+										className="mb-3 mt-2 px-3"
+										field={field}
+										onEnter={() => {
+											setActive(false);
+											triggerElement?.focus();
+										}}
+										onValueSelect={onChange}
+										showLabel={false}
+										value={
+											isValidStyleValue(
+												field.cssProperty,
+												value
+											)
+												? value
+												: ''
+										}
+									/>
+								</ul>
+							</li>
+						</>
+					) : null}
+
+					<ClayDropDown.Group
+						header={Liferay.Language.get('existing-tokens')}
+					>
 						{field?.typeOptions?.validValues?.map((option) => (
 							<ClayDropDown.Item
-								aria-label={Liferay.Util.sub(
+								aria-label={sub(
 									Liferay.Language.get('set-x-to-x'),
 									[field.label, option.label]
 								)}
@@ -346,6 +409,59 @@ function SpacingOptionValue({
 	]);
 
 	return value === undefined ? '' : value;
+}
+
+function Tooltip({hoverElement, id: tooltipId, label, positionElement}) {
+	const [tooltipStyle, setTooltipStyle] = useState(null);
+
+	useEffect(() => {
+		if (!hoverElement || !positionElement) {
+			return;
+		}
+
+		let showTimeoutId;
+
+		const handleMouseLeave = () => {
+			clearTimeout(showTimeoutId);
+			setTooltipStyle(null);
+		};
+
+		const handleMouseOver = () => {
+			clearTimeout(showTimeoutId);
+
+			showTimeoutId = setTimeout(() => {
+				const rect = positionElement.getBoundingClientRect();
+
+				setTooltipStyle({
+					left: rect.left + rect.width / 2,
+					top: rect.top,
+				});
+			}, TOOLTIP_SHOW_DELAY);
+		};
+
+		hoverElement.addEventListener('mouseleave', handleMouseLeave);
+		hoverElement.addEventListener('mouseover', handleMouseOver);
+
+		return () => {
+			clearTimeout(showTimeoutId);
+			hoverElement.removeEventListener('mouseleave', handleMouseLeave);
+			hoverElement.removeEventListener('mouseover', handleMouseOver);
+		};
+	}, [hoverElement, positionElement]);
+
+	return tooltipStyle ? (
+		<ReactPortal className="cadmin">
+			<ClayTooltip
+				alignPosition="top"
+				className="page-editor__tooltip position-fixed"
+				id={tooltipId}
+				show
+				style={tooltipStyle}
+			>
+				{label}
+			</ClayTooltip>
+		</ReactPortal>
+	) : null;
 }
 
 function capitalize(str) {

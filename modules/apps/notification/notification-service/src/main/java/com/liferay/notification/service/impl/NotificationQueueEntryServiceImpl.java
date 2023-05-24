@@ -72,8 +72,8 @@ public class NotificationQueueEntryServiceImpl
 			getPermissionChecker(), notificationQueueEntryId,
 			ActionKeys.UPDATE);
 
-		return notificationQueueEntryLocalService.updateSent(
-			notificationQueueEntryId, false);
+		return notificationQueueEntryLocalService.resendNotificationQueueEntry(
+			notificationQueueEntryId);
 	}
 
 	@Reference

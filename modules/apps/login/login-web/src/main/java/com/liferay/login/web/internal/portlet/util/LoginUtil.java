@@ -15,9 +15,10 @@
 package com.liferay.login.web.internal.portlet.util;
 
 import com.liferay.login.web.constants.LoginPortletKeys;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
+import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
+import com.liferay.portal.kernel.cookies.constants.CookiesConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -25,11 +26,11 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -141,7 +142,7 @@ public class LoginUtil {
 
 		if (xml == null) {
 			PortletPreferences companyPortletPreferences =
-				PrefsPropsUtil.getPreferences(companyId, true);
+				PrefsPropsUtil.getPreferences(companyId);
 
 			String defaultContent = null;
 
@@ -153,7 +154,8 @@ public class LoginUtil {
 			catch (IOException ioException) {
 				_log.error(
 					"Unable to read the content for " +
-						PropsUtil.get(portalPropertiesTemplateKey));
+						PropsUtil.get(portalPropertiesTemplateKey),
+					ioException);
 			}
 
 			xml = LocalizationUtil.getLocalizationXmlFromPreferences(
@@ -172,8 +174,8 @@ public class LoginUtil {
 		String login = httpServletRequest.getParameter(paramName);
 
 		if ((login == null) || login.equals(StringPool.NULL)) {
-			login = CookieKeys.getCookie(
-				httpServletRequest, CookieKeys.LOGIN, false);
+			login = CookiesManagerUtil.getCookieValue(
+				CookiesConstants.NAME_LOGIN, httpServletRequest, false);
 
 			String authType = company.getAuthType();
 

@@ -14,46 +14,56 @@
 
 package com.liferay.segments.web.internal.display.context;
 
+import com.liferay.analytics.settings.configuration.AnalyticsConfiguration;
+import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.PrefsPropsUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
+import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
+import com.liferay.roles.item.selector.RoleItemSelectorCriterion;
 import com.liferay.segments.configuration.provider.SegmentsConfigurationProvider;
-import com.liferay.segments.constants.SegmentsActionKeys;
 import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.service.SegmentsEntryService;
 import com.liferay.segments.web.internal.security.permission.resource.SegmentsEntryPermission;
-import com.liferay.segments.web.internal.security.permission.resource.SegmentsResourcePermission;
 import com.liferay.segments.web.internal.util.comparator.SegmentsEntryModifiedDateComparator;
 import com.liferay.segments.web.internal.util.comparator.SegmentsEntryNameComparator;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -66,30 +76,59 @@ import javax.servlet.http.HttpServletRequest;
 public class SegmentsDisplayContext {
 
 	public SegmentsDisplayContext(
-		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		AnalyticsSettingsManager analyticsSettingsManager,
+		GroupLocalService groupLocalService, ItemSelector itemSelector,
+		Language language, Portal portal, RenderRequest renderRequest,
 		RenderResponse renderResponse,
+		RoleTypeContributorProvider roleTypeContributorProvider,
 		SegmentsConfigurationProvider segmentsConfigurationProvider,
 		SegmentsEntryService segmentsEntryService) {
 
-		_httpServletRequest = httpServletRequest;
+		_analyticsSettingsManager = analyticsSettingsManager;
+		_groupLocalService = groupLocalService;
+		_itemSelector = itemSelector;
+		_language = language;
+		_portal = portal;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
+		_roleTypeContributorProvider = roleTypeContributorProvider;
 		_segmentsConfigurationProvider = segmentsConfigurationProvider;
 		_segmentsEntryService = segmentsEntryService;
 
-		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+		_httpServletRequest = portal.getHttpServletRequest(renderRequest);
+
+		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+
+		_permissionChecker = _themeDisplay.getPermissionChecker();
 	}
 
-	public List<DropdownItem> getActionDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.putData("action", "deleteSegmentsEntries");
-				dropdownItem.setIcon("times-circle");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "delete"));
-				dropdownItem.setQuickAction(true);
+	public Map<String, Object> getAssignUserRolesDataMap(
+		SegmentsEntry segmentsEntry) {
+
+		return HashMapBuilder.<String, Object>put(
+			"itemSelectorURL",
+			() -> {
+				RoleItemSelectorCriterion roleItemSelectorCriterion =
+					new RoleItemSelectorCriterion(RoleConstants.TYPE_SITE);
+
+				roleItemSelectorCriterion.setCheckedRoleIds(
+					segmentsEntry.getRoleIds());
+				roleItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+					new UUIDItemSelectorReturnType());
+				roleItemSelectorCriterion.setExcludedRoleNames(
+					_getExcludedRoleNames());
+
+				PortletURL portletURL = _itemSelector.getItemSelectorURL(
+					RequestBackedPortletURLFactoryUtil.create(_renderRequest),
+					(String)_httpServletRequest.getAttribute(
+						"view.jsp-eventName"),
+					roleItemSelectorCriterion);
+
+				return portletURL.toString();
 			}
+		).put(
+			"segmentsEntryId", segmentsEntry.getSegmentsEntryId()
 		).build();
 	}
 
@@ -106,14 +145,6 @@ public class SegmentsDisplayContext {
 		return StringPool.BLANK;
 	}
 
-	public String getClearResultsURL() {
-		return PortletURLBuilder.create(
-			_getPortletURL()
-		).setKeywords(
-			StringPool.BLANK
-		).buildString();
-	}
-
 	public CreationMenu getCreationMenu() {
 		return CreationMenuBuilder.addPrimaryDropdownItem(
 			dropdownItem -> {
@@ -122,9 +153,21 @@ public class SegmentsDisplayContext {
 					"/segments/edit_segments_entry", "type",
 					User.class.getName());
 				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "user-segment"));
+					_language.get(_httpServletRequest, "add-new-user-segment"));
 			}
 		).build();
+	}
+
+	public String getDeleteURL(SegmentsEntry segmentsEntry) {
+		return PortletURLBuilder.createActionURL(
+			_renderResponse
+		).setActionName(
+			"/segments/delete_segments_entry"
+		).setRedirect(
+			_portal.getCurrentURL(_renderRequest)
+		).setParameter(
+			"segmentsEntryId", segmentsEntry.getSegmentsEntryId()
+		).buildString();
 	}
 
 	public String getDisplayStyle() {
@@ -138,22 +181,16 @@ public class SegmentsDisplayContext {
 		return _displayStyle;
 	}
 
-	public List<DropdownItem> getFilterItemsDropdownItems() {
-		return DropdownItemListBuilder.addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(
-					_getFilterNavigationDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "filter-by-navigation"));
-			}
-		).addGroup(
-			dropdownGroupItem -> {
-				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
-				dropdownGroupItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "order-by"));
-			}
-		).build();
+	public String getEditURL(SegmentsEntry segmentsEntry) {
+		return PortletURLBuilder.createRenderURL(
+			_renderResponse
+		).setMVCRenderCommandName(
+			"/segments/edit_segments_entry"
+		).setRedirect(
+			_portal.getCurrentURL(_renderRequest)
+		).setParameter(
+			"segmentsEntryId", segmentsEntry.getSegmentsEntryId()
+		).buildString();
 	}
 
 	public String getOrderByType() {
@@ -167,8 +204,55 @@ public class SegmentsDisplayContext {
 		return _orderByType;
 	}
 
-	public String getSearchActionURL() {
-		return String.valueOf(_getPortletURL());
+	public String getPermissionURL(SegmentsEntry segmentsEntry) {
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				_httpServletRequest,
+				"com_liferay_portlet_configuration_web_portlet_" +
+					"PortletConfigurationPortlet",
+				ActionRequest.RENDER_PHASE)
+		).setMVCPath(
+			"/edit_permissions.jsp"
+		).setRedirect(
+			_portal.getCurrentURL(_renderRequest)
+		).setParameter(
+			"modelResource", SegmentsEntry.class.getName()
+		).setParameter(
+			"modelResourceDescription",
+			segmentsEntry.getName(_themeDisplay.getLocale())
+		).setParameter(
+			"resourcePrimKey", segmentsEntry.getSegmentsEntryId()
+		).setWindowState(
+			LiferayWindowState.POP_UP
+		).buildString();
+	}
+
+	public String getPreviewMembersURL(SegmentsEntry segmentsEntry) {
+		return PortletURLBuilder.createRenderURL(
+			_renderResponse
+		).setMVCRenderCommandName(
+			"/segments/preview_segments_entry_users"
+		).setRedirect(
+			_portal.getCurrentURL(_renderRequest)
+		).setParameter(
+			"clearSessionCriteria", true
+		).setParameter(
+			"segmentsEntryId", segmentsEntry.getSegmentsEntryId()
+		).setWindowState(
+			LiferayWindowState.POP_UP
+		).buildString();
+	}
+
+	public String getScopeName(SegmentsEntry segmentsEntry) {
+		if (_themeDisplay.getCompanyGroupId() == segmentsEntry.getGroupId()) {
+			return _language.get(_themeDisplay.getLocale(), "global");
+		}
+
+		if (segmentsEntry.getGroupId() == _themeDisplay.getScopeGroupId()) {
+			return _language.get(_themeDisplay.getLocale(), "current-site");
+		}
+
+		return _language.get(_themeDisplay.getLocale(), "parent-site");
 	}
 
 	public SearchContainer<SegmentsEntry> getSearchContainer()
@@ -178,7 +262,7 @@ public class SegmentsDisplayContext {
 			return _searchContainer;
 		}
 
-		SearchContainer<SegmentsEntry> searchContainer = new SearchContainer(
+		SearchContainer<SegmentsEntry> searchContainer = new SearchContainer<>(
 			_renderRequest, _getPortletURL(), null, "there-are-no-segments");
 
 		searchContainer.setId("segmentsEntries");
@@ -226,23 +310,30 @@ public class SegmentsDisplayContext {
 		return StringPool.BLANK;
 	}
 
-	public String getSegmentsEntryURL(SegmentsEntry segmentsEntry) {
+	public String getSegmentsEntryURL(SegmentsEntry segmentsEntry)
+		throws ConfigurationException {
+
 		if (segmentsEntry == null) {
 			return StringPool.BLANK;
 		}
 
 		if (Objects.equals(
 				segmentsEntry.getSource(),
-				SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND)) {
+				SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND) &&
+			Validator.isNull(segmentsEntry.getCriteria())) {
 
-			String asahFaroURL = PrefsPropsUtil.getString(
-				segmentsEntry.getCompanyId(), "liferayAnalyticsURL");
+			AnalyticsConfiguration analyticsConfiguration =
+				_analyticsSettingsManager.getAnalyticsConfiguration(
+					segmentsEntry.getCompanyId());
 
-			if (Validator.isNull(asahFaroURL)) {
+			String liferayAnalyticsURL =
+				analyticsConfiguration.liferayAnalyticsURL();
+
+			if (Validator.isNull(liferayAnalyticsURL)) {
 				return StringPool.BLANK;
 			}
 
-			return asahFaroURL + "/contacts/segments/" +
+			return liferayAnalyticsURL + "/contacts/segments/" +
 				segmentsEntry.getSegmentsEntryKey();
 		}
 
@@ -251,7 +342,7 @@ public class SegmentsDisplayContext {
 		).setMVCRenderCommandName(
 			"/segments/edit_segments_entry"
 		).setRedirect(
-			PortalUtil.getCurrentURL(_renderRequest)
+			_portal.getCurrentURL(_renderRequest)
 		).setParameter(
 			"segmentsEntryId", segmentsEntry.getSegmentsEntryId()
 		).setParameter(
@@ -262,21 +353,13 @@ public class SegmentsDisplayContext {
 	public String getSegmentsEntryURLTarget(SegmentsEntry segmentsEntry) {
 		if (Objects.equals(
 				segmentsEntry.getSource(),
-				SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND)) {
+				SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND) &&
+			Validator.isNull(segmentsEntry.getCriteria())) {
 
 			return "_blank";
 		}
 
 		return "_self";
-	}
-
-	public String getSortingURL() {
-		return PortletURLBuilder.create(
-			_getPortletURL()
-		).setParameter(
-			"orderByType",
-			Objects.equals(getOrderByType(), "asc") ? "desc" : "asc"
-		).buildString();
 	}
 
 	public int getTotalItems() throws PortalException {
@@ -285,14 +368,8 @@ public class SegmentsDisplayContext {
 		return searchContainer.getTotal();
 	}
 
-	public boolean isAsahEnabled(long companyId) {
-		if (Validator.isNotNull(
-				PrefsPropsUtil.getString(companyId, "liferayAnalyticsURL"))) {
-
-			return true;
-		}
-
-		return false;
+	public boolean isAsahEnabled(long companyId) throws Exception {
+		return _analyticsSettingsManager.isAnalyticsEnabled(companyId);
 	}
 
 	public boolean isDisabledManagementBar() throws PortalException {
@@ -327,27 +404,93 @@ public class SegmentsDisplayContext {
 		return false;
 	}
 
-	public boolean isShowCreationMenu() {
-		if (SegmentsResourcePermission.contains(
-				_themeDisplay.getPermissionChecker(),
-				_themeDisplay.getScopeGroupId(),
-				SegmentsActionKeys.MANAGE_SEGMENTS_ENTRIES)) {
+	public boolean isShowAssignUserRolesAction(SegmentsEntry segmentsEntry) {
+		try {
+			Group group = _groupLocalService.getGroup(
+				segmentsEntry.getGroupId());
 
-			return true;
+			if (!group.isCompany() &&
+				SegmentsEntryPermission.contains(
+					_permissionChecker, segmentsEntry,
+					ActionKeys.ASSIGN_USER_ROLES)) {
+
+				return true;
+			}
+
+			return false;
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
 		}
 
 		return false;
 	}
 
-	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(true);
-				dropdownItem.setHref(_renderResponse.createRenderURL());
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "all"));
+	public boolean isShowDeleteAction(SegmentsEntry segmentsEntry) {
+		try {
+			if ((segmentsEntry.getGroupId() ==
+					_themeDisplay.getScopeGroupId()) &&
+				SegmentsEntryPermission.contains(
+					_permissionChecker, segmentsEntry, ActionKeys.DELETE)) {
+
+				return true;
 			}
-		).build();
+
+			return false;
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
+		}
+
+		return false;
+	}
+
+	public boolean isShowPermissionAction(SegmentsEntry segmentsEntry) {
+		try {
+			return SegmentsEntryPermission.contains(
+				_permissionChecker, segmentsEntry, ActionKeys.PERMISSIONS);
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
+		}
+
+		return false;
+	}
+
+	public boolean isShowUpdateAction(SegmentsEntry segmentsEntry) {
+		try {
+			return SegmentsEntryPermission.contains(
+				_permissionChecker, segmentsEntry, ActionKeys.UPDATE);
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
+		}
+
+		return false;
+	}
+
+	public boolean isShowViewAction(SegmentsEntry segmentsEntry) {
+		try {
+			return SegmentsEntryPermission.contains(
+				_permissionChecker, segmentsEntry, ActionKeys.VIEW);
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException);
+		}
+
+		return false;
+	}
+
+	private String[] _getExcludedRoleNames() {
+		RoleTypeContributor roleTypeContributor =
+			_roleTypeContributorProvider.getRoleTypeContributor(
+				RoleConstants.TYPE_SITE);
+
+		if (roleTypeContributor != null) {
+			return roleTypeContributor.getExcludedRoleNames();
+		}
+
+		return new String[0];
 	}
 
 	private String _getKeywords() {
@@ -391,27 +534,6 @@ public class SegmentsDisplayContext {
 		}
 
 		return orderByComparator;
-	}
-
-	private List<DropdownItem> _getOrderByDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.setActive(
-					Objects.equals(_getOrderByCol(), "modified-date"));
-				dropdownItem.setHref(
-					_getPortletURL(), "orderByCol", "modified-date");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "modified-date"));
-			}
-		).add(
-			dropdownItem -> {
-				dropdownItem.setActive(
-					Objects.equals(_getOrderByCol(), "name"));
-				dropdownItem.setHref(_getPortletURL(), "orderByCol", "name");
-				dropdownItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "name"));
-			}
-		).build();
 	}
 
 	private PortletURL _getPortletURL() {
@@ -479,13 +601,20 @@ public class SegmentsDisplayContext {
 	private static final Log _log = LogFactoryUtil.getLog(
 		SegmentsDisplayContext.class);
 
+	private final AnalyticsSettingsManager _analyticsSettingsManager;
 	private String _displayStyle;
+	private final GroupLocalService _groupLocalService;
 	private final HttpServletRequest _httpServletRequest;
+	private final ItemSelector _itemSelector;
 	private String _keywords;
+	private final Language _language;
 	private String _orderByCol;
 	private String _orderByType;
+	private final PermissionChecker _permissionChecker;
+	private final Portal _portal;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
+	private final RoleTypeContributorProvider _roleTypeContributorProvider;
 	private SearchContainer<SegmentsEntry> _searchContainer;
 	private final SegmentsConfigurationProvider _segmentsConfigurationProvider;
 	private final SegmentsEntryService _segmentsEntryService;

@@ -42,16 +42,11 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
-import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
-import com.liferay.portal.kernel.service.persistence.UserFinder;
-import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -418,29 +413,6 @@ public abstract class ExportImportConfigurationLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the export import local service.
-	 *
-	 * @return the export import local service
-	 */
-	public com.liferay.exportimport.kernel.service.ExportImportLocalService
-		getExportImportLocalService() {
-
-		return exportImportLocalService;
-	}
-
-	/**
-	 * Sets the export import local service.
-	 *
-	 * @param exportImportLocalService the export import local service
-	 */
-	public void setExportImportLocalService(
-		com.liferay.exportimport.kernel.service.ExportImportLocalService
-			exportImportLocalService) {
-
-		this.exportImportLocalService = exportImportLocalService;
-	}
-
-	/**
 	 * Returns the export import configuration local service.
 	 *
 	 * @return the export import configuration local service
@@ -511,29 +483,6 @@ public abstract class ExportImportConfigurationLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the staging local service.
-	 *
-	 * @return the staging local service
-	 */
-	public com.liferay.exportimport.kernel.service.StagingLocalService
-		getStagingLocalService() {
-
-		return stagingLocalService;
-	}
-
-	/**
-	 * Sets the staging local service.
-	 *
-	 * @param stagingLocalService the staging local service
-	 */
-	public void setStagingLocalService(
-		com.liferay.exportimport.kernel.service.StagingLocalService
-			stagingLocalService) {
-
-		this.stagingLocalService = stagingLocalService;
-	}
-
-	/**
 	 * Returns the counter local service.
 	 *
 	 * @return the counter local service
@@ -556,143 +505,20 @@ public abstract class ExportImportConfigurationLocalServiceBaseImpl
 		this.counterLocalService = counterLocalService;
 	}
 
-	/**
-	 * Returns the class name local service.
-	 *
-	 * @return the class name local service
-	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService
-		getClassNameLocalService() {
-
-		return classNameLocalService;
-	}
-
-	/**
-	 * Sets the class name local service.
-	 *
-	 * @param classNameLocalService the class name local service
-	 */
-	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService
-			classNameLocalService) {
-
-		this.classNameLocalService = classNameLocalService;
-	}
-
-	/**
-	 * Returns the class name persistence.
-	 *
-	 * @return the class name persistence
-	 */
-	public ClassNamePersistence getClassNamePersistence() {
-		return classNamePersistence;
-	}
-
-	/**
-	 * Sets the class name persistence.
-	 *
-	 * @param classNamePersistence the class name persistence
-	 */
-	public void setClassNamePersistence(
-		ClassNamePersistence classNamePersistence) {
-
-		this.classNamePersistence = classNamePersistence;
-	}
-
-	/**
-	 * Returns the resource local service.
-	 *
-	 * @return the resource local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceLocalService
-		getResourceLocalService() {
-
-		return resourceLocalService;
-	}
-
-	/**
-	 * Sets the resource local service.
-	 *
-	 * @param resourceLocalService the resource local service
-	 */
-	public void setResourceLocalService(
-		com.liferay.portal.kernel.service.ResourceLocalService
-			resourceLocalService) {
-
-		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the user local service.
-	 *
-	 * @return the user local service
-	 */
-	public com.liferay.portal.kernel.service.UserLocalService
-		getUserLocalService() {
-
-		return userLocalService;
-	}
-
-	/**
-	 * Sets the user local service.
-	 *
-	 * @param userLocalService the user local service
-	 */
-	public void setUserLocalService(
-		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
-
-		this.userLocalService = userLocalService;
-	}
-
-	/**
-	 * Returns the user persistence.
-	 *
-	 * @return the user persistence
-	 */
-	public UserPersistence getUserPersistence() {
-		return userPersistence;
-	}
-
-	/**
-	 * Sets the user persistence.
-	 *
-	 * @param userPersistence the user persistence
-	 */
-	public void setUserPersistence(UserPersistence userPersistence) {
-		this.userPersistence = userPersistence;
-	}
-
-	/**
-	 * Returns the user finder.
-	 *
-	 * @return the user finder
-	 */
-	public UserFinder getUserFinder() {
-		return userFinder;
-	}
-
-	/**
-	 * Sets the user finder.
-	 *
-	 * @param userFinder the user finder
-	 */
-	public void setUserFinder(UserFinder userFinder) {
-		this.userFinder = userFinder;
-	}
-
 	public void afterPropertiesSet() {
 		persistedModelLocalServiceRegistry.register(
 			"com.liferay.exportimport.kernel.model.ExportImportConfiguration",
 			exportImportConfigurationLocalService);
 
-		_setLocalServiceUtilService(exportImportConfigurationLocalService);
+		ExportImportConfigurationLocalServiceUtil.setService(
+			exportImportConfigurationLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.exportimport.kernel.model.ExportImportConfiguration");
 
-		_setLocalServiceUtilService(null);
+		ExportImportConfigurationLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -738,30 +564,6 @@ public abstract class ExportImportConfigurationLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		ExportImportConfigurationLocalService
-			exportImportConfigurationLocalService) {
-
-		try {
-			Field field =
-				ExportImportConfigurationLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, exportImportConfigurationLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(
-		type = com.liferay.exportimport.kernel.service.ExportImportLocalService.class
-	)
-	protected com.liferay.exportimport.kernel.service.ExportImportLocalService
-		exportImportLocalService;
-
 	@BeanReference(type = ExportImportConfigurationLocalService.class)
 	protected ExportImportConfigurationLocalService
 		exportImportConfigurationLocalService;
@@ -774,43 +576,10 @@ public abstract class ExportImportConfigurationLocalServiceBaseImpl
 	protected ExportImportConfigurationFinder exportImportConfigurationFinder;
 
 	@BeanReference(
-		type = com.liferay.exportimport.kernel.service.StagingLocalService.class
-	)
-	protected com.liferay.exportimport.kernel.service.StagingLocalService
-		stagingLocalService;
-
-	@BeanReference(
 		type = com.liferay.counter.kernel.service.CounterLocalService.class
 	)
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@BeanReference(
-		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
-	)
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@BeanReference(type = ClassNamePersistence.class)
-	protected ClassNamePersistence classNamePersistence;
-
-	@BeanReference(
-		type = com.liferay.portal.kernel.service.ResourceLocalService.class
-	)
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@BeanReference(
-		type = com.liferay.portal.kernel.service.UserLocalService.class
-	)
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@BeanReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-
-	@BeanReference(type = UserFinder.class)
-	protected UserFinder userFinder;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportImportConfigurationLocalServiceBaseImpl.class);

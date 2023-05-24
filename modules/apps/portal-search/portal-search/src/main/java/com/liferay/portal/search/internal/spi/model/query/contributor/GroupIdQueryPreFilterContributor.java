@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = QueryPreFilterContributor.class)
+@Component(service = QueryPreFilterContributor.class)
 public class GroupIdQueryPreFilterContributor
 	implements QueryPreFilterContributor {
 
@@ -104,11 +104,6 @@ public class GroupIdQueryPreFilterContributor
 		}
 	}
 
-	@Reference(unbind = "-")
-	public void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
-	}
-
 	private void _addInactiveGroupsBooleanFilter(
 		BooleanFilter booleanFilter, SearchContext searchContext) {
 
@@ -146,6 +141,7 @@ public class GroupIdQueryPreFilterContributor
 		}
 	}
 
+	@Reference
 	private GroupLocalService _groupLocalService;
 
 }

@@ -14,16 +14,16 @@
 
 package com.liferay.segments.web.internal.portlet;
 
+import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
 import com.liferay.item.selector.ItemSelector;
-import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
 import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
 import com.liferay.segments.configuration.provider.SegmentsConfigurationProvider;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.service.SegmentsEntryService;
-import com.liferay.segments.web.internal.constants.SegmentsWebKeys;
 import com.liferay.segments.web.internal.display.context.SegmentsDisplayContext;
 
 import java.io.IOException;
@@ -40,7 +40,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eduardo García
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-segments",
@@ -60,7 +59,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.version=3.0"
 	},
-	service = {Portlet.class, SegmentsPortlet.class}
+	service = Portlet.class
 )
 public class SegmentsPortlet extends MVCPortlet {
 
@@ -70,36 +69,27 @@ public class SegmentsPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		renderRequest.setAttribute(
-			SegmentsWebKeys.EXCLUDED_ROLE_NAMES, _getExcludedRoleNames());
-		renderRequest.setAttribute(
-			SegmentsWebKeys.ITEM_SELECTOR, _itemSelector);
-
-		SegmentsDisplayContext segmentsDisplayContext =
+			SegmentsDisplayContext.class.getName(),
 			new SegmentsDisplayContext(
-				_portal.getHttpServletRequest(renderRequest), renderRequest,
-				renderResponse, _segmentsConfigurationProvider,
-				_segmentsEntryService);
-
-		renderRequest.setAttribute(
-			SegmentsWebKeys.SEGMENTS_DISPLAY_CONTEXT, segmentsDisplayContext);
+				_analyticsSettingsManager, _groupLocalService, _itemSelector,
+				_language, _portal, renderRequest, renderResponse,
+				_roleTypeContributorProvider, _segmentsConfigurationProvider,
+				_segmentsEntryService));
 
 		super.render(renderRequest, renderResponse);
 	}
 
-	private String[] _getExcludedRoleNames() {
-		RoleTypeContributor roleTypeContributor =
-			_roleTypeContributorProvider.getRoleTypeContributor(
-				RoleConstants.TYPE_SITE);
+	@Reference
+	private AnalyticsSettingsManager _analyticsSettingsManager;
 
-		if (roleTypeContributor != null) {
-			return roleTypeContributor.getExcludedRoleNames();
-		}
-
-		return new String[0];
-	}
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private ItemSelector _itemSelector;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private Portal _portal;

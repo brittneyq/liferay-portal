@@ -14,8 +14,8 @@
 
 package com.liferay.commerce.order.rule.internal.validator;
 
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.order.CommerceOrderValidator;
@@ -24,7 +24,6 @@ import com.liferay.commerce.order.rule.entry.type.COREntryType;
 import com.liferay.commerce.order.rule.entry.type.COREntryTypeRegistry;
 import com.liferay.commerce.order.rule.model.COREntry;
 import com.liferay.commerce.order.rule.service.COREntryLocalService;
-import com.liferay.commerce.order.rule.service.COREntryRelLocalService;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
@@ -43,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"commerce.order.validator.key=" + CORCommerceOrderValidator.KEY,
 		"commerce.order.validator.priority:Integer=50"
@@ -64,7 +62,7 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 			Locale locale, CommerceOrder commerceOrder)
 		throws PortalException {
 
-		CommerceAccount commerceAccount = commerceOrder.getCommerceAccount();
+		AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
 		CommerceChannel commerceChannel =
 			_commerceChannelLocalService.getCommerceChannelByOrderGroupId(
@@ -74,7 +72,7 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 			_corEntryLocalService.
 				getAccountEntryAndCommerceChannelAndCommerceOrderTypeCOREntries(
 					commerceOrder.getCompanyId(),
-					commerceAccount.getCommerceAccountId(),
+					accountEntry.getAccountEntryId(),
 					commerceChannel.getCommerceChannelId(),
 					commerceOrder.getCommerceOrderTypeId());
 
@@ -90,8 +88,7 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 
 		corEntries =
 			_corEntryLocalService.getAccountEntryAndCommerceOrderTypeCOREntries(
-				commerceOrder.getCompanyId(),
-				commerceAccount.getCommerceAccountId(),
+				commerceOrder.getCompanyId(), accountEntry.getAccountEntryId(),
 				commerceOrder.getCommerceOrderTypeId());
 
 		if (!corEntries.isEmpty()) {
@@ -106,8 +103,7 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 
 		corEntries =
 			_corEntryLocalService.getAccountEntryAndCommerceChannelCOREntries(
-				commerceOrder.getCompanyId(),
-				commerceAccount.getCommerceAccountId(),
+				commerceOrder.getCompanyId(), accountEntry.getAccountEntryId(),
 				commerceChannel.getCommerceChannelId());
 
 		if (!corEntries.isEmpty()) {
@@ -121,8 +117,7 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 		}
 
 		corEntries = _corEntryLocalService.getAccountEntryCOREntries(
-			commerceOrder.getCompanyId(),
-			commerceAccount.getCommerceAccountId());
+			commerceOrder.getCompanyId(), accountEntry.getAccountEntryId());
 
 		if (!corEntries.isEmpty()) {
 			String errorMessage = _validate(commerceOrder, corEntries, locale);
@@ -135,8 +130,8 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 		}
 
 		long[] commerceAccountGroupIds =
-			_commerceAccountHelper.getCommerceAccountGroupIds(
-				commerceAccount.getCommerceAccountId());
+			_accountGroupLocalService.getAccountGroupIds(
+				accountEntry.getAccountEntryId());
 
 		corEntries =
 			_corEntryLocalService.
@@ -304,16 +299,13 @@ public class CORCommerceOrderValidator implements CommerceOrderValidator {
 	}
 
 	@Reference
-	private CommerceAccountHelper _commerceAccountHelper;
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
 	private COREntryLocalService _corEntryLocalService;
-
-	@Reference
-	private COREntryRelLocalService _corEntryRelLocalService;
 
 	@Reference
 	private COREntryTypeRegistry _corEntryTypeRegistry;

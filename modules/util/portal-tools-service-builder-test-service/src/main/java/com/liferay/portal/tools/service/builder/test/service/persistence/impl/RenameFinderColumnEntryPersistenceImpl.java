@@ -42,7 +42,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.RenameF
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -155,7 +154,7 @@ public class RenameFinderColumnEntryPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByColumnToRename, finderArgs);
+				_finderPathFetchByColumnToRename, finderArgs, this);
 		}
 
 		if (result instanceof RenameFinderColumnEntry) {
@@ -279,7 +278,7 @@ public class RenameFinderColumnEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {columnToRename};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -762,7 +761,7 @@ public class RenameFinderColumnEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<RenameFinderColumnEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -833,7 +832,7 @@ public class RenameFinderColumnEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -909,29 +908,13 @@ public class RenameFinderColumnEntryPersistenceImpl
 			new String[] {String.class.getName()},
 			new String[] {"columnToRename"}, false);
 
-		_setRenameFinderColumnEntryUtilPersistence(this);
+		RenameFinderColumnEntryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setRenameFinderColumnEntryUtilPersistence(null);
+		RenameFinderColumnEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(RenameFinderColumnEntryImpl.class.getName());
-	}
-
-	private void _setRenameFinderColumnEntryUtilPersistence(
-		RenameFinderColumnEntryPersistence renameFinderColumnEntryPersistence) {
-
-		try {
-			Field field = RenameFinderColumnEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, renameFinderColumnEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = EntityCache.class)

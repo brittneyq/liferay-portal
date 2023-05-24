@@ -38,7 +38,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Peter Fellwock
  */
 @Component(
-	enabled = false, immediate = true,
+	enabled = false,
 	property = {
 		"com.liferay.portlet.css-class-wrapper=my-subscriptions-portlet",
 		"com.liferay.portlet.display-category=category.collaboration",
@@ -57,7 +57,8 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.portlet-info.short-title=My Subscriptions",
 		"javax.portlet.portlet-info.title=My Subscriptions",
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user"
+		"javax.portlet.security-role-ref=power-user,user",
+		"javax.portlet.version=3.0"
 	},
 	service = Portlet.class
 )
@@ -94,11 +95,9 @@ public class MySubscriptionsPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.my.subscriptions.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
-		unbind = "-"
+		target = "(&(release.bundle.symbolic.name=com.liferay.my.subscriptions.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))"
 	)
-	protected void setRelease(Release release) {
-	}
+	private Release _release;
 
 	@Reference
 	private SubscriptionLocalService _subscriptionLocalService;

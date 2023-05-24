@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
@@ -221,7 +222,8 @@ public class UserIndexerIndexedFieldsTest {
 
 	protected void setUpIndexedFieldsFixture() {
 		indexedFieldsFixture = new IndexedFieldsFixture(
-			resourcePermissionLocalService, uidFactory, documentBuilderFactory);
+			resourcePermissionLocalService, searchEngineHelper, uidFactory,
+			documentBuilderFactory);
 	}
 
 	protected void setUpIndexerFixture() {
@@ -275,6 +277,9 @@ public class UserIndexerIndexedFieldsTest {
 	protected RoleLocalService roleLocalService;
 
 	@Inject
+	protected SearchEngineHelper searchEngineHelper;
+
+	@Inject
 	protected UIDFactory uidFactory;
 
 	@Inject
@@ -308,6 +313,8 @@ public class UserIndexerIndexedFieldsTest {
 			Field.SCOPE_GROUP_ID, groupId
 		).put(
 			Field.STATUS, String.valueOf(user.getStatus())
+		).put(
+			Field.TYPE, String.valueOf(user.getType())
 		).put(
 			Field.USER_ID, String.valueOf(user.getUserId())
 		).put(

@@ -107,6 +107,14 @@ public class AccountEntryServiceUtil {
 		return getService().fetchAccountEntry(accountEntryId);
 	}
 
+	public static AccountEntry fetchAccountEntryByExternalReferenceCode(
+			long companyId, String externalReferenceCode)
+		throws PortalException {
+
+		return getService().fetchAccountEntryByExternalReferenceCode(
+			companyId, externalReferenceCode);
+	}
+
 	public static List<AccountEntry> getAccountEntries(
 			long companyId, int status, int start, int end,
 			OrderByComparator<AccountEntry> orderByComparator)
@@ -161,6 +169,13 @@ public class AccountEntryServiceUtil {
 			serviceContext);
 	}
 
+	public static AccountEntry updateDomains(
+			long accountEntryId, String[] domains)
+		throws PortalException {
+
+		return getService().updateDomains(accountEntryId, domains);
+	}
+
 	public static AccountEntry updateExternalReferenceCode(
 			long accountEntryId, String externalReferenceCode)
 		throws PortalException {
@@ -169,8 +184,20 @@ public class AccountEntryServiceUtil {
 			accountEntryId, externalReferenceCode);
 	}
 
+	public static AccountEntry updateRestrictMembership(
+			long accountEntryId, boolean restrictMembership)
+		throws PortalException {
+
+		return getService().updateRestrictMembership(
+			accountEntryId, restrictMembership);
+	}
+
 	public static AccountEntryService getService() {
 		return _service;
+	}
+
+	public static void setService(AccountEntryService service) {
+		_service = service;
 	}
 
 	private static volatile AccountEntryService _service;

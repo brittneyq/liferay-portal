@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.service.ServiceComponentLocalServiceUtil;
-import com.liferay.portal.kernel.service.configuration.ServiceComponentConfiguration;
 import com.liferay.portal.kernel.service.configuration.servlet.ServletServiceContextComponentConfiguration;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -70,15 +69,6 @@ public class PluginPackageHotDeployListener extends BaseHotDeployListener {
 			throwHotDeployException(
 				hotDeployEvent, "Error unregistering plugins for ", throwable);
 		}
-	}
-
-	protected void destroyServiceComponent(
-			ServiceComponentConfiguration serviceComponentConfiguration,
-			ClassLoader classLoader)
-		throws Exception {
-
-		ServiceComponentLocalServiceUtil.destroyServiceComponent(
-			serviceComponentConfiguration, classLoader);
 	}
 
 	protected void doInvokeDeploy(HotDeployEvent hotDeployEvent)
@@ -150,10 +140,6 @@ public class PluginPackageHotDeployListener extends BaseHotDeployListener {
 
 		ServletContextPool.remove(servletContextName);
 
-		destroyServiceComponent(
-			new ServletServiceContextComponentConfiguration(servletContext),
-			hotDeployEvent.getContextClassLoader());
-
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Plugin package " + pluginPackage.getModuleId() +
@@ -182,16 +168,12 @@ public class PluginPackageHotDeployListener extends BaseHotDeployListener {
 			ServletContext servletContext, ClassLoader classLoader)
 		throws Exception {
 
-		Configuration serviceBuilderPropertiesConfiguration = null;
+		Configuration serviceBuilderPropertiesConfiguration =
+			ConfigurationFactoryUtil.getConfiguration(classLoader, "service");
 
-		try {
-			serviceBuilderPropertiesConfiguration =
-				ConfigurationFactoryUtil.getConfiguration(
-					classLoader, "service");
-		}
-		catch (Exception exception) {
+		if (serviceBuilderPropertiesConfiguration == null) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to read service.properties", exception);
+				_log.debug("Unable to read service.properties");
 			}
 
 			return;

@@ -54,7 +54,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Di Giorgi
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, immediate = true, service = Indexer.class)
+@Component(service = Indexer.class)
 public class CommerceOrderItemIndexer extends BaseIndexer<CommerceOrderItem> {
 
 	public static final String CLASS_NAME = CommerceOrderItem.class.getName();
@@ -107,8 +107,8 @@ public class CommerceOrderItemIndexer extends BaseIndexer<CommerceOrderItem> {
 			SearchContext searchContext)
 		throws Exception {
 
-		addSearchTerm(searchQuery, searchContext, FIELD_SKU, false);
 		addSearchLocalizedTerm(searchQuery, searchContext, Field.NAME, true);
+		addSearchTerm(searchQuery, searchContext, FIELD_SKU, false);
 
 		LinkedHashMap<String, Object> params =
 			(LinkedHashMap<String, Object>)searchContext.getAttribute("params");
@@ -158,7 +158,6 @@ public class CommerceOrderItemIndexer extends BaseIndexer<CommerceOrderItem> {
 
 		document.addLocalizedKeyword(
 			Field.NAME, commerceOrderItem.getNameMap());
-		document.addKeyword(FIELD_SKU, commerceOrderItem.getSku());
 		document.addNumber(
 			FIELD_COMMERCE_ORDER_ID, commerceOrderItem.getCommerceOrderId());
 		document.addKeyword(
@@ -169,6 +168,7 @@ public class CommerceOrderItemIndexer extends BaseIndexer<CommerceOrderItem> {
 			FIELD_PARENT_COMMERCE_ORDER_ITEM_ID,
 			commerceOrderItem.getParentCommerceOrderItemId());
 		document.addNumber(FIELD_QUANTITY, commerceOrderItem.getQuantity());
+		document.addKeyword(FIELD_SKU, commerceOrderItem.getSku());
 		document.addNumber(FIELD_UNIT_PRICE, commerceOrderItem.getUnitPrice());
 
 		_expandoBridgeIndexer.addAttributes(
@@ -196,8 +196,7 @@ public class CommerceOrderItemIndexer extends BaseIndexer<CommerceOrderItem> {
 		throws Exception {
 
 		_indexWriterHelper.updateDocument(
-			getSearchEngineId(), commerceOrderItem.getCompanyId(),
-			getDocument(commerceOrderItem), isCommitImmediately());
+			commerceOrderItem.getCompanyId(), getDocument(commerceOrderItem));
 	}
 
 	@Override
@@ -238,7 +237,6 @@ public class CommerceOrderItemIndexer extends BaseIndexer<CommerceOrderItem> {
 					}
 				}
 			});
-		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
 	}

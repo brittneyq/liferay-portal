@@ -32,17 +32,15 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
  */
 @Component(
-	immediate = true, property = "javax.portlet.name=" + RSSPortletKeys.RSS,
+	property = "javax.portlet.name=" + RSSPortletKeys.RSS,
 	service = ConfigurationAction.class
 )
 public class RSSConfigurationAction extends DefaultConfigurationAction {
@@ -61,14 +59,6 @@ public class RSSConfigurationAction extends DefaultConfigurationAction {
 		_updateSubscriptions(actionRequest);
 
 		super.processAction(portletConfig, actionRequest, actionResponse);
-	}
-
-	@Override
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.rss.web)", unbind = "-"
-	)
-	public void setServletContext(ServletContext servletContext) {
-		super.setServletContext(servletContext);
 	}
 
 	private void _updateSubscriptions(ActionRequest actionRequest)

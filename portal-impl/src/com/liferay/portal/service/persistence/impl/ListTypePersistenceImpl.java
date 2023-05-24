@@ -43,7 +43,6 @@ import com.liferay.portal.model.impl.ListTypeModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.HashMap;
@@ -176,7 +175,7 @@ public class ListTypePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ListType>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ListType listType : list) {
@@ -556,7 +555,8 @@ public class ListTypePersistenceImpl
 
 		Object[] finderArgs = new Object[] {type};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -687,7 +687,7 @@ public class ListTypePersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByN_T, finderArgs);
+				_finderPathFetchByN_T, finderArgs, this);
 		}
 
 		if (result instanceof ListType) {
@@ -810,7 +810,8 @@ public class ListTypePersistenceImpl
 
 		Object[] finderArgs = new Object[] {name, type};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1280,7 +1281,7 @@ public class ListTypePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ListType>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1350,7 +1351,7 @@ public class ListTypePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1448,28 +1449,13 @@ public class ListTypePersistenceImpl
 			new String[] {String.class.getName(), String.class.getName()},
 			new String[] {"name", "type_"}, false);
 
-		_setListTypeUtilPersistence(this);
+		ListTypeUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setListTypeUtilPersistence(null);
+		ListTypeUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(ListTypeImpl.class.getName());
-	}
-
-	private void _setListTypeUtilPersistence(
-		ListTypePersistence listTypePersistence) {
-
-		try {
-			Field field = ListTypeUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, listTypePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_LISTTYPE =

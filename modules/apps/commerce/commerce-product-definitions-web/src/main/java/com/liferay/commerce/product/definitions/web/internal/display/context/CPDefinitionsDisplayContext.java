@@ -14,10 +14,10 @@
 
 package com.liferay.commerce.product.definitions.web.internal.display.context;
 
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
+import com.liferay.account.constants.AccountConstants;
+import com.liferay.account.model.AccountGroupRel;
+import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.commerce.account.item.selector.criterion.CommerceAccountGroupItemSelectorCriterion;
-import com.liferay.commerce.account.model.CommerceAccountGroupRel;
-import com.liferay.commerce.account.service.CommerceAccountGroupRelService;
 import com.liferay.commerce.frontend.model.HeaderActionModel;
 import com.liferay.commerce.product.configuration.CProductVersionConfiguration;
 import com.liferay.commerce.product.display.context.BaseCPDefinitionsDisplayContext;
@@ -41,18 +41,21 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemBuilder;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.settings.SystemSettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -69,7 +72,6 @@ import com.liferay.taglib.util.CustomAttributesUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -85,7 +87,7 @@ public class CPDefinitionsDisplayContext
 
 	public CPDefinitionsDisplayContext(
 		ActionHelper actionHelper, HttpServletRequest httpServletRequest,
-		CommerceAccountGroupRelService commerceAccountGroupRelService,
+		AccountGroupRelLocalService accountGroupRelLocalService,
 		CommerceCatalogService commerceCatalogService,
 		CommerceChannelRelService commerceChannelRelService,
 		ConfigurationProvider configurationProvider,
@@ -94,7 +96,7 @@ public class CPDefinitionsDisplayContext
 
 		super(actionHelper, httpServletRequest);
 
-		_commerceAccountGroupRelService = commerceAccountGroupRelService;
+		_accountGroupRelLocalService = accountGroupRelLocalService;
 		_commerceCatalogService = commerceCatalogService;
 		_commerceChannelRelService = commerceChannelRelService;
 		_configurationProvider = configurationProvider;
@@ -123,7 +125,11 @@ public class CPDefinitionsDisplayContext
 		).setParameter(
 			"checkedCommerceAccountGroupIds",
 			StringUtil.merge(
-				getCommerceAccountGroupRelCommerceAccountGroupIds())
+				TransformUtil.transformToLongArray(
+					_accountGroupRelLocalService.getAccountGroupRels(
+						CPDefinition.class.getName(), getCPDefinitionId(),
+						QueryUtil.ALL_POS, QueryUtil.ALL_POS, null),
+					AccountGroupRel::getAccountGroupId))
 		).buildString();
 	}
 
@@ -184,7 +190,12 @@ public class CPDefinitionsDisplayContext
 				commerceChannelItemSelectorCriterion)
 		).setParameter(
 			"checkedCommerceChannelIds",
-			StringUtil.merge(getCommerceChannelRelCommerceChannelIds())
+			StringUtil.merge(
+				TransformUtil.transformToLongArray(
+					_commerceChannelRelService.getCommerceChannelRels(
+						CPDefinition.class.getName(), getCPDefinitionId(), null,
+						QueryUtil.ALL_POS, QueryUtil.ALL_POS),
+					CommerceChannelRel::getCommerceChannelId))
 		).buildString();
 	}
 
@@ -212,41 +223,10 @@ public class CPDefinitionsDisplayContext
 		).build();
 	}
 
-	public long[] getCommerceAccountGroupRelCommerceAccountGroupIds()
-		throws PortalException {
-
-		List<CommerceAccountGroupRel> commerceAccountGroupRels =
-			_commerceAccountGroupRelService.getCommerceAccountGroupRels(
-				CPDefinition.class.getName(), getCPDefinitionId(),
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-
-		Stream<CommerceAccountGroupRel> stream =
-			commerceAccountGroupRels.stream();
-
-		return stream.mapToLong(
-			CommerceAccountGroupRel::getCommerceAccountGroupId
-		).toArray();
-	}
-
 	public List<CommerceCatalog> getCommerceCatalogs() throws PortalException {
 		return _commerceCatalogService.search(
 			cpRequestHelper.getCompanyId(), null, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS, null);
-	}
-
-	public long[] getCommerceChannelRelCommerceChannelIds()
-		throws PortalException {
-
-		List<CommerceChannelRel> commerceChannelRels =
-			_commerceChannelRelService.getCommerceChannelRels(
-				CPDefinition.class.getName(), getCPDefinitionId(), null,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-
-		Stream<CommerceChannelRel> stream = commerceChannelRels.stream();
-
-		return stream.mapToLong(
-			CommerceChannelRel::getCommerceChannelId
-		).toArray();
 	}
 
 	public String getCPDefinitionThumbnailURL() throws Exception {
@@ -257,7 +237,7 @@ public class CPDefinitionsDisplayContext
 		}
 
 		return cpDefinition.getDefaultImageThumbnailSrc(
-			CommerceAccountConstants.ACCOUNT_ID_ADMIN);
+			AccountConstants.ACCOUNT_ENTRY_ID_ADMIN);
 	}
 
 	public CProduct getCProduct() throws PortalException {
@@ -358,6 +338,13 @@ public class CPDefinitionsDisplayContext
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems()
 		throws PortalException {
 
+		StringBundler sb = new StringBundler(
+			"/o/headless-commerce-admin-catalog/v1.0/products/{productId}");
+
+		if (_isVersioningEnabled()) {
+			sb.append("/by-version/{version}");
+		}
+
 		return ListUtil.fromArray(
 			new FDSActionDropdownItem(
 				PortletURLBuilder.create(
@@ -372,11 +359,10 @@ public class CPDefinitionsDisplayContext
 					"screenNavigationCategoryKey",
 					CPDefinitionScreenNavigationConstants.CATEGORY_KEY_DETAILS
 				).buildString(),
-				"view", "view", LanguageUtil.get(httpServletRequest, "view"),
+				"pencil", "edit", LanguageUtil.get(httpServletRequest, "edit"),
 				"get", null, null),
 			new FDSActionDropdownItem(
-				"/o/headless-commerce-admin-catalog/v1.0/products/{productId}",
-				"trash", "delete",
+				sb.toString(), "trash", "delete",
 				LanguageUtil.get(httpServletRequest, "delete"), "delete",
 				"delete", "async"),
 			new FDSActionDropdownItem(
@@ -433,7 +419,7 @@ public class CPDefinitionsDisplayContext
 				cpRequestHelper.getScopeGroupId(),
 				CPDefinition.class.getName())) {
 
-			publishButtonLabel = "submit-for-publication";
+			publishButtonLabel = "submit-for-workflow";
 		}
 
 		String additionalClasses = "btn-primary";
@@ -522,8 +508,17 @@ public class CPDefinitionsDisplayContext
 		return false;
 	}
 
-	private final CommerceAccountGroupRelService
-		_commerceAccountGroupRelService;
+	private boolean _isVersioningEnabled() throws PortalException {
+		CProductVersionConfiguration cProductVersionConfiguration =
+			ConfigurationProviderUtil.getConfiguration(
+				CProductVersionConfiguration.class,
+				new SystemSettingsLocator(
+					CProductVersionConfiguration.class.getName()));
+
+		return cProductVersionConfiguration.enabled();
+	}
+
+	private final AccountGroupRelLocalService _accountGroupRelLocalService;
 	private final CommerceCatalogService _commerceCatalogService;
 	private final CommerceChannelRelService _commerceChannelRelService;
 	private final ConfigurationProvider _configurationProvider;

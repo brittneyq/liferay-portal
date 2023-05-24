@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
@@ -42,6 +41,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.service.base.LayoutPrototypeLocalServiceBaseImpl;
+import com.liferay.portal.util.PortalInstances;
 
 import java.util.Date;
 import java.util.List;
@@ -132,7 +132,7 @@ public class LayoutPrototypeLocalServiceImpl
 
 		// Group
 
-		if (!CompanyThreadLocal.isDeleteInProcess()) {
+		if (!PortalInstances.isCurrentCompanyInDeletionProcess()) {
 			int count = _layoutPersistence.countByC_L(
 				layoutPrototype.getCompanyId(), layoutPrototype.getUuid());
 
@@ -178,13 +178,13 @@ public class LayoutPrototypeLocalServiceImpl
 	public void deleteNondefaultLayoutPrototypes(long companyId)
 		throws PortalException {
 
-		long defaultUserId = _userLocalService.getDefaultUserId(companyId);
+		long guestUserId = _userLocalService.getGuestUserId(companyId);
 
 		List<LayoutPrototype> layoutPrototypes =
 			layoutPrototypePersistence.findByCompanyId(companyId);
 
 		for (LayoutPrototype layoutPrototype : layoutPrototypes) {
-			if (layoutPrototype.getUserId() != defaultUserId) {
+			if (layoutPrototype.getUserId() != guestUserId) {
 				layoutPrototypeLocalService.deleteLayoutPrototype(
 					layoutPrototype);
 			}

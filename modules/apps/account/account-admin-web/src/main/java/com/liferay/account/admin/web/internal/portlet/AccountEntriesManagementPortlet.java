@@ -35,11 +35,9 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.display-category=category.accounts",
 		"com.liferay.portlet.preferences-owned-by-group=true",
-		"com.liferay.portlet.single-page-application=false",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Account Management",
 		"javax.portlet.expiration-cache=0",

@@ -20,104 +20,117 @@
 FormNavigatorDisplayContext formNavigatorDisplayContext = new FormNavigatorDisplayContext(request);
 
 List<FormNavigatorEntry<Object>> formNavigatorEntries = (List<FormNavigatorEntry<Object>>)request.getAttribute(FormNavigatorWebKeys.FORM_NAVIGATOR_ENTRIES);
+
+String errorSection = null;
+
+int i = 0;
+
+for (FormNavigatorEntry<Object> curFormNavigatorEntry : formNavigatorEntries) {
+	String sectionId = namespace + formNavigatorDisplayContext.getSectionId(curFormNavigatorEntry.getKey());
+
+	String label = curFormNavigatorEntry.getLabel(locale);
+
+	if ((i == 0) && (formNavigatorEntries.size() == 1) && (formNavigatorDisplayContext.getType() != FormNavigatorConstants.FormNavigatorType.SHEET_SECTIONS)) {
+		label = StringPool.BLANK;
+	}
 %>
 
-<liferay-frontend:fieldset-group>
+	<!-- Begin fragment <%= HtmlUtil.escape(sectionId) %> -->
 
-	<%
-	String errorSection = null;
+	<c:choose>
+		<c:when test="<%= formNavigatorDisplayContext.getType() == FormNavigatorConstants.FormNavigatorType.SHEET_SECTIONS %>">
+			<clay:sheet
+				cssClass="mb-4 ml-0 mt-4"
+			>
+				<clay:sheet-section>
+					<h3 class="mb-4"><%= label %></h3>
 
-	int i = 0;
+					<%
+					PortalIncludeUtil.include(pageContext, curFormNavigatorEntry::include);
+					%>
 
-	for (FormNavigatorEntry<Object> curFormNavigatorEntry : formNavigatorEntries) {
-		String sectionId = namespace + formNavigatorDisplayContext.getSectionId(curFormNavigatorEntry.getKey());
+				</clay:sheet-section>
+			</clay:sheet>
+		</c:when>
+		<c:otherwise>
+			<liferay-frontend:fieldset
+				collapsed="<%= i != 0 %>"
+				collapsible="<%= (i != 0) || (formNavigatorEntries.size() > 1) %>"
+				cssClass="<%= formNavigatorDisplayContext.getFieldSetCssClass() %>"
+				id="<%= formNavigatorDisplayContext.getSectionId(curFormNavigatorEntry.getKey()) %>"
+				label="<%= label %>"
+			>
 
-		String label = curFormNavigatorEntry.getLabel(locale);
+				<%
+				PortalIncludeUtil.include(pageContext, curFormNavigatorEntry::include);
+				%>
 
-		if ((i == 0) && (formNavigatorEntries.size() == 1)) {
-			label = StringPool.BLANK;
-		}
-	%>
+			</liferay-frontend:fieldset>
+		</c:otherwise>
+	</c:choose>
 
-		<!-- Begin fragment <%= HtmlUtil.escape(sectionId) %> -->
+	<!-- End fragment <%= HtmlUtil.escape(sectionId) %> -->
 
-		<liferay-frontend:fieldset
-			collapsed="<%= i != 0 %>"
-			collapsible="<%= (i != 0) || (formNavigatorEntries.size() > 1) %>"
-			cssClass="<%= formNavigatorDisplayContext.getFieldSetCssClass() %>"
-			id="<%= formNavigatorDisplayContext.getSectionId(curFormNavigatorEntry.getKey()) %>"
-			label="<%= label %>"
-		>
+<%
+	String curErrorSection = (String)request.getAttribute(WebKeys.ERROR_SECTION);
 
-			<%
-			PortalIncludeUtil.include(pageContext, curFormNavigatorEntry::include);
-			%>
+	if (Objects.equals(formNavigatorDisplayContext.getSectionId(curFormNavigatorEntry.getKey()), formNavigatorDisplayContext.getSectionId(curErrorSection))) {
+		errorSection = curErrorSection;
 
-		</liferay-frontend:fieldset>
-
-		<!-- End fragment <%= HtmlUtil.escape(sectionId) %> -->
-
-	<%
-		String curErrorSection = (String)request.getAttribute(WebKeys.ERROR_SECTION);
-
-		if (Objects.equals(formNavigatorDisplayContext.getSectionId(curFormNavigatorEntry.getKey()), formNavigatorDisplayContext.getSectionId(curErrorSection))) {
-			errorSection = curErrorSection;
-
-			request.setAttribute(WebKeys.ERROR_SECTION, null);
-		}
-
-		i++;
+		request.setAttribute(WebKeys.ERROR_SECTION, null);
 	}
+
+	i++;
+}
+%>
+
+<c:if test="<%= Validator.isNotNull(errorSection) %>">
+
+	<%
+	String currentTab = (String)request.getAttribute(FormNavigatorWebKeys.CURRENT_TAB);
+
+	request.setAttribute(FormNavigatorWebKeys.ERROR_TAB, currentTab);
 	%>
 
-	<c:if test="<%= Validator.isNotNull(errorSection) %>">
+	<aui:script sandbox="<%= true %>">
+		var focusField;
+
+		var sectionContent = document.querySelector(
+			'#<%= formNavigatorDisplayContext.getSectionId(errorSection) %>Content'
+		);
 
 		<%
-		String currentTab = (String)request.getAttribute(FormNavigatorWebKeys.CURRENT_TAB);
-
-		request.setAttribute(FormNavigatorWebKeys.ERROR_TAB, currentTab);
+		String focusField = (String)request.getAttribute("liferay-ui:error:focusField");
 		%>
 
-		<aui:script sandbox="<%= true %>">
-			var focusField;
+		<c:choose>
+			<c:when test="<%= Validator.isNotNull(focusField) %>">
+				focusField = sectionContent.querySelector(
+					'#<portlet:namespace /><%= HtmlUtil.escapeJS(focusField) %>'
+				);
+			</c:when>
+			<c:otherwise>
+				focusField = sectionContent.querySelector('input:not([type="hidden"]).field');
+			</c:otherwise>
+		</c:choose>
 
-			var sectionContent = document.querySelector(
-				'#<%= formNavigatorDisplayContext.getSectionId(errorSection) %>Content'
-			);
+		Liferay.once('<portlet:namespace />formReady', (event) => {
+			if (!sectionContent.classList.contains('show')) {
+				if (focusField) {
+					Liferay.on('liferay.collapse.shown', (event) => {
+						var panelId = event.panel.getAttribute('id');
 
-			<%
-			String focusField = (String)request.getAttribute("liferay-ui:error:focusField");
-			%>
-
-			<c:choose>
-				<c:when test="<%= Validator.isNotNull(focusField) %>">
-					focusField = sectionContent.querySelector(
-						'#<portlet:namespace /><%= HtmlUtil.escapeJS(focusField) %>'
-					);
-				</c:when>
-				<c:otherwise>
-					focusField = sectionContent.querySelector('input:not([type="hidden"]).field');
-				</c:otherwise>
-			</c:choose>
-
-			Liferay.once('<portlet:namespace />formReady', (event) => {
-				if (!sectionContent.classList.contains('show')) {
-					if (focusField) {
-						Liferay.on('liferay.collapse.shown', (event) => {
-							var panelId = event.panel.getAttribute('id');
-
-							if (panelId === sectionContent.getAttribute('id')) {
-								Liferay.Util.focusFormField(focusField);
-							}
-						});
-					}
-
-					Liferay.CollapseProvider.show({panel: sectionContent});
+						if (panelId === sectionContent.getAttribute('id')) {
+							Liferay.Util.focusFormField(focusField);
+						}
+					});
 				}
-				else if (focusField) {
-					Liferay.Util.focusFormField(focusField);
-				}
-			});
-		</aui:script>
-	</c:if>
-</liferay-frontend:fieldset-group>
+
+				Liferay.CollapseProvider.show({panel: sectionContent});
+			}
+			else if (focusField) {
+				Liferay.Util.focusFormField(focusField);
+			}
+		});
+	</aui:script>
+</c:if>

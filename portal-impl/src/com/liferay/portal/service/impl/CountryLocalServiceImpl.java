@@ -29,11 +29,14 @@ import com.liferay.portal.kernel.exception.CountryA2Exception;
 import com.liferay.portal.kernel.exception.CountryA3Exception;
 import com.liferay.portal.kernel.exception.CountryNameException;
 import com.liferay.portal.kernel.exception.CountryNumberException;
+import com.liferay.portal.kernel.exception.CountryTitleException;
 import com.liferay.portal.kernel.exception.DuplicateCountryException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Country;
+import com.liferay.portal.kernel.model.CountryLocalization;
 import com.liferay.portal.kernel.model.CountryLocalizationTable;
 import com.liferay.portal.kernel.model.CountryTable;
+import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -52,6 +55,7 @@ import com.liferay.portal.service.base.CountryLocalServiceBaseImpl;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -79,12 +83,12 @@ public class CountryLocalServiceImpl extends CountryLocalServiceBaseImpl {
 		country.setUserId(user.getUserId());
 		country.setUserName(user.getFullName());
 
+		country.setDefaultLanguageId(
+			LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
 		country.setA2(a2);
 		country.setA3(a3);
 		country.setActive(active);
 		country.setBillingAllowed(billingAllowed);
-		country.setDefaultLanguageId(
-			LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
 		country.setGroupFilterEnabled(false);
 		country.setIdd(idd);
 		country.setName(name);
@@ -283,6 +287,16 @@ public class CountryLocalServiceImpl extends CountryLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<CountryLocalization> updateCountryLocalizations(
+			Country country, Map<String, String> titleMap)
+		throws PortalException {
+
+		_validateCountryLocalizationTitle(titleMap);
+
+		return super.updateCountryLocalizations(country, titleMap);
+	}
+
+	@Override
 	public Country updateGroupFilterEnabled(
 			long countryId, boolean groupFilterEnabled)
 		throws PortalException {
@@ -437,6 +451,24 @@ public class CountryLocalServiceImpl extends CountryLocalServiceBaseImpl {
 
 			throw new DuplicateCountryException(
 				"Number belongs to another country");
+		}
+	}
+
+	private void _validateCountryLocalizationTitle(Map<String, String> titleMap)
+		throws CountryTitleException.MustNotExceedMaximumLength {
+
+		int titleMaxLength = ModelHintsUtil.getMaxLength(
+			CountryLocalization.class.getName(), "title");
+
+		for (Map.Entry<String, String> entry : titleMap.entrySet()) {
+			String title = entry.getValue();
+
+			if (Validator.isNull(title) || (title.length() <= titleMaxLength)) {
+				continue;
+			}
+
+			throw new CountryTitleException.MustNotExceedMaximumLength(
+				title, titleMaxLength);
 		}
 	}
 

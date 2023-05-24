@@ -118,7 +118,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Raymond Augé
  */
-@Component(immediate = true, service = PortletTracker.class)
+@Component(service = {})
 public class PortletTracker
 	implements ServiceTrackerCustomizer
 		<Portlet, com.liferay.portal.kernel.model.Portlet> {
@@ -273,7 +273,9 @@ public class PortletTracker
 	}
 
 	@Activate
-	protected void activate(BundleContext bundleContext) {
+	protected void activate(
+		BundleContext bundleContext, Map<String, Object> properties) {
+
 		_bundleContext = bundleContext;
 
 		_executorService = _portalExecutorManager.getPortalExecutor(
@@ -282,42 +284,50 @@ public class PortletTracker
 		_serviceTracker = new ServiceTracker<>(
 			_bundleContext, Portlet.class, this);
 
-		FutureTask<Void> futureTask = new FutureTask<>(
-			() -> {
-				_portalPortletModel = _portletLocalService.getPortletById(
-					CompanyConstants.SYSTEM, PortletKeys.PORTAL);
+		DependencyManagerSyncUtil.registerSyncFutureTask(
+			new FutureTask<>(
+				() -> {
+					_portalPortletModel = _portletLocalService.getPortletById(
+						CompanyConstants.SYSTEM, PortletKeys.PORTAL);
 
-				ServiceRegistration<IndividualPortletResourcePermissionProvider>
-					serviceRegistration = bundleContext.registerService(
-						IndividualPortletResourcePermissionProvider.class,
-						new StartupIndividualPortletResourcePermissionProvider(
-							_resourcePermissionLocalService),
-						null);
+					ServiceRegistration
+						<IndividualPortletResourcePermissionProvider>
+							serviceRegistration = bundleContext.registerService(
+								IndividualPortletResourcePermissionProvider.
+									class,
+								new StartupIndividualPortletResourcePermissionProvider(
+									_resourcePermissionLocalService),
+								null);
 
-				DependencyManagerSyncUtil.registerSyncCallable(
-					() -> {
-						serviceRegistration.unregister();
+					DependencyManagerSyncUtil.registerSyncCallable(
+						() -> {
+							serviceRegistration.unregister();
 
-						return null;
-					});
+							return null;
+						});
 
-				_serviceTracker.open();
+					_serviceTracker.open();
 
-				return null;
-			});
-
-		Thread serviceTrackerOpenerThread = new Thread(
-			futureTask,
+					return null;
+				}),
 			PortletTracker.class.getName() + "-ServiceTrackerOpener");
-
-		serviceTrackerOpenerThread.setDaemon(true);
-
-		serviceTrackerOpenerThread.start();
-
-		DependencyManagerSyncUtil.registerSyncFuture(futureTask);
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Activated");
+		}
+
+		List<String> httpServiceEndpoints = StringPlus.asList(
+			properties.get(HttpServiceRuntimeConstants.HTTP_SERVICE_ENDPOINT));
+
+		if (!httpServiceEndpoints.isEmpty()) {
+			_httpServiceEndpoint = httpServiceEndpoints.get(0);
+		}
+
+		if ((_httpServiceEndpoint.length() > 0) &&
+			_httpServiceEndpoint.endsWith("/")) {
+
+			_httpServiceEndpoint = _httpServiceEndpoint.substring(
+				0, _httpServiceEndpoint.length() - 1);
 		}
 	}
 
@@ -336,25 +346,6 @@ public class PortletTracker
 		ServiceReference<Portlet> serviceReference, String property) {
 
 		return serviceReference.getProperty(_NAMESPACE + property);
-	}
-
-	@Reference(unbind = "-")
-	protected void setHttpServiceRuntime(
-		HttpServiceRuntime httpServiceRuntime, Map<String, Object> properties) {
-
-		List<String> httpServiceEndpoints = StringPlus.asList(
-			properties.get(HttpServiceRuntimeConstants.HTTP_SERVICE_ENDPOINT));
-
-		if (!httpServiceEndpoints.isEmpty()) {
-			_httpServiceEndpoint = httpServiceEndpoints.get(0);
-		}
-
-		if ((_httpServiceEndpoint.length() > 0) &&
-			_httpServiceEndpoint.endsWith("/")) {
-
-			_httpServiceEndpoint = _httpServiceEndpoint.substring(
-				0, _httpServiceEndpoint.length() - 1);
-		}
 	}
 
 	private com.liferay.portal.kernel.model.Portlet _addingPortlet(
@@ -422,7 +413,10 @@ public class PortletTracker
 
 			Class<?> portletClazz = portlet.getClass();
 
-			portletModel.setPortletClass(portletClazz.getName());
+			portletModel.setPortletClass(
+				GetterUtil.getString(
+					serviceReference.getProperty("javax.portlet.portlet-class"),
+					portletClazz.getName()));
 
 			_collectJxPortletFeatures(serviceReference, portletModel);
 			_collectLiferayFeatures(serviceReference, portletModel);
@@ -731,6 +725,10 @@ public class PortletTracker
 		portletModel.setFooterPortletJavaScript(
 			StringPlus.asList(
 				get(serviceReference, "footer-portlet-javascript")));
+		portletModel.setFriendlyURLMapperClass(
+			GetterUtil.getString(
+				get(serviceReference, "friendly-url-mapper-class"),
+				portletModel.getFriendlyURLMapperClass()));
 		portletModel.setFriendlyURLMapping(
 			GetterUtil.getString(
 				get(serviceReference, "friendly-url-mapping"),
@@ -1472,6 +1470,9 @@ public class PortletTracker
 
 	private ExecutorService _executorService;
 	private String _httpServiceEndpoint = StringPool.BLANK;
+
+	@Reference
+	private HttpServiceRuntime _httpServiceRuntime;
 
 	@Reference(
 		target = ModuleServiceLifecycle.PORTLETS_INITIALIZED, unbind = "-"

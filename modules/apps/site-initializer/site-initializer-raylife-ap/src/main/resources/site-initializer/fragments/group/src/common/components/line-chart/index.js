@@ -34,7 +34,7 @@ const LineChart = ({
 }) => {
 	return (
 		<ClayIconProvider>
-			<div className="align-items-center d-flex flex-wrap justify-content-center line-chart-container mt-3 py-1">
+			<div className="align-items-center d-flex flex-grow-1 flex-wrap justify-content-center line-chart-container mt-3 py-1">
 				{chartData && (
 					<ClayChart
 						axis={{
@@ -53,6 +53,14 @@ const LineChart = ({
 							pattern: patternColor,
 						}}
 						data={chartData}
+						grid={{
+							x: {
+								show: false,
+							},
+							y: {
+								show: false,
+							},
+						}}
 						legend={{
 							show: false,
 						}}
@@ -70,13 +78,13 @@ const LineChart = ({
 							contents: (data) => {
 								const title = Liferay.Language.get(data[0].id);
 
-								const value = data[0].value.toFixed(1);
+								const value = data[0].value;
 
 								const formatedValue = hasPersonalizedTooltip
 									? value
-									: `$${value}`;
+									: `$${value.toFixed(2)}`;
 
-								return `<div class="line-chart-tooltip w-100 bg-neutral-0 d-flex font-weight-bold rounded-sm p-2"><span class="d-flex font-weight-normal mr-2 w-100">${title}</span> ${formatedValue}</div>`;
+								return `<div class="line-chart-tooltip w-100 bg-neutral-0 d-flex font-weight-bold rounded-sm p-1"><span class="d-flex text-nowrap font-weight-normal mr-1 w-100">${title}</span> ${formatedValue}</div>`;
 							},
 						}}
 					/>

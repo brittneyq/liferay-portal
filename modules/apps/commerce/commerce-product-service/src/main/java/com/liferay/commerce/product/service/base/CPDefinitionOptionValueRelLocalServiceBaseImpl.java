@@ -25,7 +25,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -46,22 +46,22 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the cp definition option value rel local service.
@@ -76,8 +76,8 @@ import javax.sql.DataSource;
  */
 public abstract class CPDefinitionOptionValueRelLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements CPDefinitionOptionValueRelLocalService,
-			   CTService<CPDefinitionOptionValueRel>, IdentifiableOSGiService {
+	implements AopService, CPDefinitionOptionValueRelLocalService,
+			   IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -565,90 +565,27 @@ public abstract class CPDefinitionOptionValueRelLocalServiceBaseImpl
 			cpDefinitionOptionValueRel);
 	}
 
-	/**
-	 * Returns the cp definition option value rel local service.
-	 *
-	 * @return the cp definition option value rel local service
-	 */
-	public CPDefinitionOptionValueRelLocalService
-		getCPDefinitionOptionValueRelLocalService() {
-
-		return cpDefinitionOptionValueRelLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CPDefinitionOptionValueRelLocalServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the cp definition option value rel local service.
-	 *
-	 * @param cpDefinitionOptionValueRelLocalService the cp definition option value rel local service
-	 */
-	public void setCPDefinitionOptionValueRelLocalService(
-		CPDefinitionOptionValueRelLocalService
-			cpDefinitionOptionValueRelLocalService) {
-
-		this.cpDefinitionOptionValueRelLocalService =
-			cpDefinitionOptionValueRelLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CPDefinitionOptionValueRelLocalService.class,
+			IdentifiableOSGiService.class, CTService.class,
+			PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Returns the cp definition option value rel persistence.
-	 *
-	 * @return the cp definition option value rel persistence
-	 */
-	public CPDefinitionOptionValueRelPersistence
-		getCPDefinitionOptionValueRelPersistence() {
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		cpDefinitionOptionValueRelLocalService =
+			(CPDefinitionOptionValueRelLocalService)aopProxy;
 
-		return cpDefinitionOptionValueRelPersistence;
-	}
-
-	/**
-	 * Sets the cp definition option value rel persistence.
-	 *
-	 * @param cpDefinitionOptionValueRelPersistence the cp definition option value rel persistence
-	 */
-	public void setCPDefinitionOptionValueRelPersistence(
-		CPDefinitionOptionValueRelPersistence
-			cpDefinitionOptionValueRelPersistence) {
-
-		this.cpDefinitionOptionValueRelPersistence =
-			cpDefinitionOptionValueRelPersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.commerce.product.model.CPDefinitionOptionValueRel",
+		CPDefinitionOptionValueRelLocalServiceUtil.setService(
 			cpDefinitionOptionValueRelLocalService);
-
-		_setLocalServiceUtilService(cpDefinitionOptionValueRelLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.commerce.product.model.CPDefinitionOptionValueRel");
-
-		_setLocalServiceUtilService(null);
 	}
 
 	/**
@@ -710,43 +647,18 @@ public abstract class CPDefinitionOptionValueRelLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CPDefinitionOptionValueRelLocalService
-			cpDefinitionOptionValueRelLocalService) {
-
-		try {
-			Field field =
-				CPDefinitionOptionValueRelLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpDefinitionOptionValueRelLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(type = CPDefinitionOptionValueRelLocalService.class)
 	protected CPDefinitionOptionValueRelLocalService
 		cpDefinitionOptionValueRelLocalService;
 
-	@BeanReference(type = CPDefinitionOptionValueRelPersistence.class)
+	@Reference
 	protected CPDefinitionOptionValueRelPersistence
 		cpDefinitionOptionValueRelPersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPDefinitionOptionValueRelLocalServiceBaseImpl.class);
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

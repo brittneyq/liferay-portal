@@ -27,10 +27,14 @@ public class CommerceChannelAccountEntryRelConstants {
 
 	public static final int TYPE_DISCOUNT = 5;
 
+	public static final int TYPE_PAYMENT = 8;
+
 	public static final int TYPE_PAYMENT_TERM = 1;
 
 	public static final int TYPE_PRICE_LIST = 4;
 
 	public static final int TYPE_SHIPPING_ADDRESS = 3;
+
+	public static final int TYPE_USER = 7;
 
 }

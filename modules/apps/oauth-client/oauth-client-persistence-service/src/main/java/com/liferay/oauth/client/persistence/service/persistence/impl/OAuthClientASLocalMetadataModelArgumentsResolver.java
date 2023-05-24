@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		OAuthClientASLocalMetadataModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.oauth.client.persistence.model.impl.OAuthClientASLocalMetadataImpl",
+		"table.name=OAuthClientASLocalMetadata"
+	},
+	service = ArgumentsResolver.class
 )
 public class OAuthClientASLocalMetadataModelArgumentsResolver
 	implements ArgumentsResolver {

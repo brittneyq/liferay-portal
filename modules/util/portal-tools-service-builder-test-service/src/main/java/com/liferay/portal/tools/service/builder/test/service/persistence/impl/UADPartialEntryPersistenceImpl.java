@@ -39,8 +39,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.UADPart
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -441,7 +439,7 @@ public class UADPartialEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UADPartialEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -511,7 +509,7 @@ public class UADPartialEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -576,29 +574,13 @@ public class UADPartialEntryPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0], new String[0], false);
 
-		_setUADPartialEntryUtilPersistence(this);
+		UADPartialEntryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setUADPartialEntryUtilPersistence(null);
+		UADPartialEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(UADPartialEntryImpl.class.getName());
-	}
-
-	private void _setUADPartialEntryUtilPersistence(
-		UADPartialEntryPersistence uadPartialEntryPersistence) {
-
-		try {
-			Field field = UADPartialEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, uadPartialEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = EntityCache.class)

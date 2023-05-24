@@ -21,9 +21,9 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.headless.commerce.core.util.ServiceContextHelper;
 import com.liferay.headless.commerce.delivery.cart.dto.v1_0.Cart;
 import com.liferay.headless.commerce.delivery.cart.dto.v1_0.CartComment;
-import com.liferay.headless.commerce.delivery.cart.internal.dto.v1_0.NoteDTOConverter;
 import com.liferay.headless.commerce.delivery.cart.resource.v1_0.CartCommentResource;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
@@ -42,7 +42,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Andrea Sbarra
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/cart-comment.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = {CartCommentResource.class, NestedFieldSupport.class}
@@ -144,8 +143,10 @@ public class CartCommentResourceImpl
 	@Reference
 	private CommerceOrderService _commerceOrderService;
 
-	@Reference
-	private NoteDTOConverter _noteDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.delivery.cart.internal.dto.v1_0.converter.NoteDTOConverter)"
+	)
+	private DTOConverter<CommerceOrderNote, CartComment> _noteDTOConverter;
 
 	@Reference
 	private ServiceContextHelper _serviceContextHelper;

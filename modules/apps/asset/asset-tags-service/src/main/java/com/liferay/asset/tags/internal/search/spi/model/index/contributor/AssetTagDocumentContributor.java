@@ -16,6 +16,7 @@ package com.liferay.asset.tags.internal.search.spi.model.index.contributor;
 
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.GroupedModel;
@@ -28,12 +29,10 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
-import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Portal;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -41,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = DocumentContributor.class)
+@Component(service = DocumentContributor.class)
 public class AssetTagDocumentContributor
 	implements DocumentContributor<AssetTag> {
 
@@ -68,8 +67,6 @@ public class AssetTagDocumentContributor
 	@Reference
 	protected AssetTagLocalService assetTagLocalService;
 
-	protected Localization localization;
-
 	@Reference
 	protected Portal portal;
 
@@ -89,10 +86,8 @@ public class AssetTagDocumentContributor
 			return;
 		}
 
-		Localization localization = _getLocalization();
-
 		document.addText(
-			localization.getLocalizedName(
+			_localization.getLocalizedName(
 				Field.ASSET_TAG_NAMES,
 				LocaleUtil.toLanguageId(_getSiteDefaultLocale(groupId))),
 			_getNames(assetTags));
@@ -126,25 +121,9 @@ public class AssetTagDocumentContributor
 		return null;
 	}
 
-	private Localization _getLocalization() {
-
-		// See LPS-72507 and LPS-76500
-
-		if (localization != null) {
-			return localization;
-		}
-
-		return LocalizationUtil.getLocalization();
-	}
-
 	private String[] _getNames(List<AssetTag> assetTags) {
-		Stream<AssetTag> stream = assetTags.stream();
-
-		return stream.map(
-			AssetTag::getName
-		).toArray(
-			String[]::new
-		);
+		return TransformUtil.transformToArray(
+			assetTags, assetTag -> assetTag.getName(), String.class);
 	}
 
 	private Locale _getSiteDefaultLocale(long groupId) {
@@ -157,13 +136,11 @@ public class AssetTagDocumentContributor
 	}
 
 	private Long[] _getTagIds(List<AssetTag> assetTags) {
-		Stream<AssetTag> stream = assetTags.stream();
-
-		return stream.map(
-			AssetTag::getTagId
-		).toArray(
-			Long[]::new
-		);
+		return TransformUtil.transformToArray(
+			assetTags, assetTag -> assetTag.getTagId(), Long.class);
 	}
+
+	@Reference
+	private Localization _localization;
 
 }

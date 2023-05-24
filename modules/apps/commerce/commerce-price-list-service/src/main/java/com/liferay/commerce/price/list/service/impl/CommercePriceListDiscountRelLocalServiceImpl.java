@@ -39,7 +39,6 @@ import org.osgi.service.component.annotations.Reference;
  * @see CommercePriceListDiscountRelLocalServiceBaseImpl
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.price.list.model.CommercePriceListDiscountRel",
 	service = AopService.class
 )
@@ -67,7 +66,7 @@ public class CommercePriceListDiscountRelLocalServiceImpl
 		commercePriceListDiscountRel.setOrder(order);
 		commercePriceListDiscountRel.setExpandoBridgeAttributes(serviceContext);
 
-		reindexPriceList(commercePriceListId);
+		_reindexPriceList(commercePriceListId);
 
 		return commercePriceListDiscountRelPersistence.update(
 			commercePriceListDiscountRel);
@@ -85,7 +84,8 @@ public class CommercePriceListDiscountRelLocalServiceImpl
 		_expandoRowLocalService.deleteRows(
 			commercePriceListDiscountRel.getCommercePriceListDiscountRelId());
 
-		reindexPriceList(commercePriceListDiscountRel.getCommercePriceListId());
+		_reindexPriceList(
+			commercePriceListDiscountRel.getCommercePriceListId());
 
 		return commercePriceListDiscountRel;
 	}
@@ -141,7 +141,7 @@ public class CommercePriceListDiscountRelLocalServiceImpl
 			countByCommercePriceListId(commercePriceListId);
 	}
 
-	protected void reindexPriceList(long commercePriceListId)
+	private void _reindexPriceList(long commercePriceListId)
 		throws PortalException {
 
 		Indexer<CommercePriceList> indexer =

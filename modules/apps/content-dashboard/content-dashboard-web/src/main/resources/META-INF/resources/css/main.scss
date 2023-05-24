@@ -114,9 +114,8 @@ html#{$cadmin-selector} {
 				width: $sidebarWidth;
 				z-index: $cadmin-zindex-dropdown - 1;
 
-				.sidebar-body {
-					padding-top: 0;
-
+				.sidebar-body,
+				.sidebar-header {
 					.sidebar-section {
 						margin-bottom: 1rem;
 
@@ -128,14 +127,33 @@ html#{$cadmin-selector} {
 					.sidebar-section-subtitle-sm {
 						line-height: 18px;
 					}
+				}
+
+				.sidebar-body {
+					padding-top: 0;
 
 					.file-url-copy-button {
 						.form-group {
 							margin-bottom: 8px;
 						}
 					}
+
+					.sidebar-list-group .list-group-item .autofit-col {
+						padding-bottom: 12px;
+						padding-top: 12px;
+					}
+				}
+
+				.sidebar-header {
+					top: 0;
 				}
 			}
+		}
+
+		.is-sticky {
+			background-color: $cadmin-white;
+			position: sticky;
+			z-index: $z-index-for-sticky-items;
 		}
 
 		.sidebar-wrapper {
@@ -156,7 +174,6 @@ html#{$cadmin-selector} {
 				text-align: center;
 
 				& img {
-					height: calc(100% - 0.25rem);
 					object-fit: contain;
 					width: 100%;
 				}

@@ -11,7 +11,9 @@ html#{$cadmin-selector} {
 		#wrapper,
 		.cadmin.control-menu-container {
 			@include media-breakpoint-up(sm, $cadmin-grid-breakpoints) {
-				@include transition(padding 0.5s ease);
+				@media (prefers-reduced-motion: no-preference) {
+					@include transition(padding 0.5s ease);
+				}
 			}
 		}
 	}
@@ -102,7 +104,7 @@ html#{$cadmin-selector} {
 		}
 
 		.product-menu {
-			a:not(.layout-tree),
+			a:not(.page-type-selector *),
 			button.list-group-heading.navigation-link {
 				color: $product-menu-nav-link-color;
 				outline: 0;

@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -52,7 +51,6 @@ import com.liferay.portal.reports.engine.console.service.persistence.impl.consta
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -79,7 +77,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {SourcePersistence.class, BasePersistence.class})
+@Component(service = SourcePersistence.class)
 public class SourcePersistenceImpl
 	extends BasePersistenceImpl<Source> implements SourcePersistence {
 
@@ -193,7 +191,8 @@ public class SourcePersistenceImpl
 		List<Source> list = null;
 
 		if (useFinderCache) {
-			list = (List<Source>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Source>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Source source : list) {
@@ -573,7 +572,7 @@ public class SourcePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -702,7 +701,7 @@ public class SourcePersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof Source) {
@@ -813,7 +812,7 @@ public class SourcePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, groupId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -977,7 +976,8 @@ public class SourcePersistenceImpl
 		List<Source> list = null;
 
 		if (useFinderCache) {
-			list = (List<Source>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Source>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Source source : list) {
@@ -1387,7 +1387,7 @@ public class SourcePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1540,7 +1540,8 @@ public class SourcePersistenceImpl
 		List<Source> list = null;
 
 		if (useFinderCache) {
-			list = (List<Source>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Source>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Source source : list) {
@@ -2217,7 +2218,7 @@ public class SourcePersistenceImpl
 
 		Object[] finderArgs = new Object[] {groupId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2399,7 +2400,8 @@ public class SourcePersistenceImpl
 		List<Source> list = null;
 
 		if (useFinderCache) {
-			list = (List<Source>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Source>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Source source : list) {
@@ -2754,7 +2756,7 @@ public class SourcePersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -3214,7 +3216,8 @@ public class SourcePersistenceImpl
 		List<Source> list = null;
 
 		if (useFinderCache) {
-			list = (List<Source>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<Source>)finderCache.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3284,7 +3287,7 @@ public class SourcePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -3438,29 +3441,14 @@ public class SourcePersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"companyId"},
 			false);
 
-		_setSourceUtilPersistence(this);
+		SourceUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setSourceUtilPersistence(null);
+		SourceUtil.setPersistence(null);
 
 		entityCache.removeCache(SourceImpl.class.getName());
-	}
-
-	private void _setSourceUtilPersistence(
-		SourcePersistence sourcePersistence) {
-
-		try {
-			Field field = SourceUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, sourcePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3551,8 +3539,5 @@ public class SourcePersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private SourceModelArgumentsResolver _sourceModelArgumentsResolver;
 
 }

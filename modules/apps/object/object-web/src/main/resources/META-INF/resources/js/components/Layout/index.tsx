@@ -22,6 +22,7 @@ import {
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
+import {defaultLanguageId} from '../../utils/constants';
 import {TabsVisitor} from '../../utils/visitor';
 import InfoScreen from './InfoScreen/InfoScreen';
 import LayoutScreen from './LayoutScreen/LayoutScreen';
@@ -36,8 +37,6 @@ import {
 	TObjectLayoutTab,
 	TObjectRelationship,
 } from './types';
-
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
 
 const TABS = [
 	{
@@ -64,12 +63,14 @@ const normalizeObjectFields: TNormalizeObjectFields = ({
 }) => {
 	const visitor = new TabsVisitor(objectLayout);
 
-	const objectFieldIds = objectFields.map(({id}) => id);
+	const objectFieldNames = objectFields.map(({name}) => name);
 
 	const normalizedObjectFields = [...objectFields];
 
 	visitor.mapFields((field) => {
-		const objectFieldIndex = objectFieldIds.indexOf(field.objectFieldId);
+		const objectFieldIndex = objectFieldNames.indexOf(
+			field.objectFieldName
+		);
 		normalizedObjectFields[objectFieldIndex].inLayout = true;
 	});
 
@@ -120,32 +121,40 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 			const {
 				defaultObjectLayout,
 				name,
-				objectDefinitionId,
+				objectDefinitionExternalReferenceCode,
 				objectLayoutTabs,
 			} = await API.fetchJSON<TObjectLayout>(
 				`/o/object-admin/v1.0/object-layouts/${objectLayoutId}`
 			);
 
-			const objectDefinition = await API.getObjectDefinition(
-				objectDefinitionId
+			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
+				objectDefinitionExternalReferenceCode
 			);
 
-			const objectFields = await API.getObjectFields(objectDefinitionId);
+			const objectFields = await API.getObjectFieldsByExternalReferenceCode(
+				objectDefinitionExternalReferenceCode
+			);
 
-			const objectRelationships = await API.getObjectRelationships(
-				objectDefinitionId
+			const objectRelationships = await API.getObjectRelationshipsByExternalReferenceCode(
+				objectDefinitionExternalReferenceCode
 			);
 
 			const objectLayout = {
 				defaultObjectLayout,
 				name,
-				objectDefinitionId,
+				objectDefinitionExternalReferenceCode,
 				objectLayoutTabs,
 			};
 
 			dispatch({
 				payload: {
+					creationLanguageId: objectDefinition.defaultLanguageId,
+					enableCategorization: objectDefinition.enableCategorization,
 					objectLayout,
+					objectRelationships: normalizeObjectRelationships({
+						objectLayoutTabs,
+						objectRelationships,
+					}),
 				},
 				type: TYPES.ADD_OBJECT_LAYOUT,
 			});
@@ -155,11 +164,6 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 			);
 
 			dispatch({
-				payload: {objectDefinition},
-				type: TYPES.ADD_OBJECT_DEFINITION,
-			});
-
-			dispatch({
 				payload: {
 					objectFields: normalizeObjectFields({
 						objectFields: filteredObjectFields,
@@ -167,16 +171,6 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 					}),
 				},
 				type: TYPES.ADD_OBJECT_FIELDS,
-			});
-
-			dispatch({
-				payload: {
-					objectRelationships: normalizeObjectRelationships({
-						objectLayoutTabs,
-						objectRelationships,
-					}),
-				},
-				type: TYPES.ADD_OBJECT_RELATIONSHIPS,
 			});
 
 			setLoading(false);
@@ -231,8 +225,10 @@ const Layout: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 				),
 			});
 		}
-		catch ({message}) {
-			openToast({message: message as string, type: 'danger'});
+		catch (error: unknown) {
+			const {message} = error as Error;
+
+			openToast({message, type: 'danger'});
 		}
 	};
 
@@ -271,11 +267,11 @@ interface ILayoutWrapperProps extends React.HTMLAttributes<HTMLElement> {
 	objectLayoutId: string;
 }
 
-const LayoutWrapper: React.FC<ILayoutWrapperProps> = ({
+export default function LayoutWrapper({
 	isViewOnly,
 	objectFieldTypes,
 	objectLayoutId,
-}) => {
+}: ILayoutWrapperProps) {
 	return (
 		<LayoutContextProvider
 			value={{
@@ -287,6 +283,4 @@ const LayoutWrapper: React.FC<ILayoutWrapperProps> = ({
 			<Layout />
 		</LayoutContextProvider>
 	);
-};
-
-export default LayoutWrapper;
+}

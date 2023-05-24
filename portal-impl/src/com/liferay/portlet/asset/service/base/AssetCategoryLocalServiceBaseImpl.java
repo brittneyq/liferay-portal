@@ -56,8 +56,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -266,48 +264,21 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 		return assetCategoryPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the asset category with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the asset category's external reference code
-	 * @return the matching asset category, or <code>null</code> if a matching asset category could not be found
-	 */
 	@Override
 	public AssetCategory fetchAssetCategoryByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
-		return assetCategoryPersistence.fetchByG_ERC(
-			groupId, externalReferenceCode);
+		return assetCategoryPersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchAssetCategoryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public AssetCategory fetchAssetCategoryByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return fetchAssetCategoryByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the asset category with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the asset category's external reference code
-	 * @return the matching asset category
-	 * @throws PortalException if a matching asset category could not be found
-	 */
 	@Override
 	public AssetCategory getAssetCategoryByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return assetCategoryPersistence.findByG_ERC(
-			groupId, externalReferenceCode);
+		return assetCategoryPersistence.findByERC_G(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -655,14 +626,14 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 			"com.liferay.asset.kernel.model.AssetCategory",
 			assetCategoryLocalService);
 
-		_setLocalServiceUtilService(assetCategoryLocalService);
+		AssetCategoryLocalServiceUtil.setService(assetCategoryLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.asset.kernel.model.AssetCategory");
 
-		_setLocalServiceUtilService(null);
+		AssetCategoryLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -719,22 +690,6 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		AssetCategoryLocalService assetCategoryLocalService) {
-
-		try {
-			Field field = AssetCategoryLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, assetCategoryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

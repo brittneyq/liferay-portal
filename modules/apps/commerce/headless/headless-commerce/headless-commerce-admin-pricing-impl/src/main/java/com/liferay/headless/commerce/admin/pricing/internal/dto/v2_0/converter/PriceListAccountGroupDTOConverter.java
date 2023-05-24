@@ -14,7 +14,7 @@
 
 package com.liferay.headless.commerce.admin.pricing.internal.dto.v2_0.converter;
 
-import com.liferay.commerce.account.model.CommerceAccountGroup;
+import com.liferay.account.model.AccountGroup;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.model.CommercePriceListCommerceAccountGroupRel;
 import com.liferay.commerce.price.list.service.CommercePriceListCommerceAccountGroupRelService;
@@ -29,9 +29,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.commerce.price.list.model.CommercePriceListCommerceAccountGroupRel",
-	service = {DTOConverter.class, PriceListAccountGroupDTOConverter.class}
+	service = DTOConverter.class
 )
 public class PriceListAccountGroupDTOConverter
 	implements DTOConverter
@@ -52,17 +51,16 @@ public class PriceListAccountGroupDTOConverter
 					getCommercePriceListCommerceAccountGroupRel(
 						(Long)dtoConverterContext.getId());
 
-		CommerceAccountGroup commerceAccountGroup =
-			commercePriceListCommerceAccountGroupRel.getCommerceAccountGroup();
+		AccountGroup priceListAccountGroup =
+			commercePriceListCommerceAccountGroupRel.getAccountGroup();
 		CommercePriceList commercePriceList =
 			commercePriceListCommerceAccountGroupRel.getCommercePriceList();
 
 		return new PriceListAccountGroup() {
 			{
 				accountGroupExternalReferenceCode =
-					commerceAccountGroup.getExternalReferenceCode();
-				accountGroupId =
-					commerceAccountGroup.getCommerceAccountGroupId();
+					priceListAccountGroup.getExternalReferenceCode();
+				accountGroupId = priceListAccountGroup.getAccountGroupId();
 				actions = dtoConverterContext.getActions();
 				order = commercePriceListCommerceAccountGroupRel.getOrder();
 				priceListAccountGroupId =

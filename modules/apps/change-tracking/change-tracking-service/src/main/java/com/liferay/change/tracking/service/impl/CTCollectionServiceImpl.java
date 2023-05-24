@@ -14,24 +14,21 @@
 
 package com.liferay.change.tracking.service.impl;
 
-import com.liferay.change.tracking.closure.CTClosureFactory;
 import com.liferay.change.tracking.constants.CTActionKeys;
 import com.liferay.change.tracking.constants.CTConstants;
-import com.liferay.change.tracking.internal.CTServiceRegistry;
 import com.liferay.change.tracking.model.CTAutoResolutionInfo;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTCollectionTable;
+import com.liferay.change.tracking.model.CTProcess;
 import com.liferay.change.tracking.service.CTProcessLocalService;
 import com.liferay.change.tracking.service.base.CTCollectionServiceBaseImpl;
 import com.liferay.change.tracking.service.persistence.CTAutoResolutionInfoPersistence;
-import com.liferay.change.tracking.service.persistence.CTEntryPersistence;
 import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
-import com.liferay.portal.kernel.dao.jdbc.CurrentConnection;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.GroupTable;
@@ -184,6 +181,20 @@ public class CTCollectionServiceImpl extends CTCollectionServiceBaseImpl {
 	}
 
 	@Override
+	public CTProcess moveCTEntries(
+			long fromCTCollectionId, long toCTCollectionId, long[] ctEntryIds)
+		throws PortalException {
+
+		_ctCollectionModelResourcePermission.check(
+			getPermissionChecker(), fromCTCollectionId, ActionKeys.UPDATE);
+		_ctCollectionModelResourcePermission.check(
+			getPermissionChecker(), toCTCollectionId, ActionKeys.UPDATE);
+
+		return _ctProcessLocalService.addCTProcess(
+			getUserId(), fromCTCollectionId, toCTCollectionId, ctEntryIds);
+	}
+
+	@Override
 	public void publishCTCollection(long userId, long ctCollectionId)
 		throws PortalException {
 
@@ -296,9 +307,6 @@ public class CTCollectionServiceImpl extends CTCollectionServiceBaseImpl {
 	@Reference
 	private CTAutoResolutionInfoPersistence _ctAutoResolutionInfoPersistence;
 
-	@Reference
-	private CTClosureFactory _ctClosureFactory;
-
 	@Reference(
 		target = "(model.class.name=com.liferay.change.tracking.model.CTCollection)"
 	)
@@ -306,16 +314,7 @@ public class CTCollectionServiceImpl extends CTCollectionServiceBaseImpl {
 		_ctCollectionModelResourcePermission;
 
 	@Reference
-	private CTEntryPersistence _ctEntryPersistence;
-
-	@Reference
 	private CTProcessLocalService _ctProcessLocalService;
-
-	@Reference
-	private CTServiceRegistry _ctServiceRegistry;
-
-	@Reference
-	private CurrentConnection _currentConnection;
 
 	@Reference
 	private CustomSQL _customSQL;

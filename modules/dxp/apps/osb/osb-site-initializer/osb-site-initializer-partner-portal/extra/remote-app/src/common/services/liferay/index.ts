@@ -18,14 +18,18 @@ interface IThemeDisplay {
 	getPathThemeImages: () => string;
 	getScopeGroupId: () => number;
 	getSiteGroupId: () => number;
+	getUserEmailAddress: () => string;
 	getUserId: () => string;
 	getUserName: () => string;
 }
 interface IUtil {
 	navigate: (path: string) => void;
+	openConfirmModal: (options?: any) => void;
 	openToast: (options?: any) => void;
 }
+
 interface ILiferay {
+	FeatureFlags: {[index: string]: boolean};
 	ThemeDisplay: IThemeDisplay;
 	Util: IUtil;
 	authToken: string;
@@ -36,6 +40,7 @@ declare global {
 	}
 }
 export const Liferay = window.Liferay || {
+	FeatureFlags: {},
 	ThemeDisplay: {
 		getBCP47LanguageId: () => 'en-US',
 		getCompanyGroupId: () => 0,
@@ -45,6 +50,7 @@ export const Liferay = window.Liferay || {
 		getPathThemeImages: () => '',
 		getScopeGroupId: () => 0,
 		getSiteGroupId: () => 0,
+		getUserEmailAddress: () => '',
 		getUserId: () => '0',
 		getUserName: () => 'Test Test',
 	},

@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -32,6 +33,10 @@ import com.liferay.portal.kernel.service.RegionLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -39,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Drew Brokke
  */
 @Component(
-	immediate = true,
 	property = {
 		"osgi.command.function=initializeCompanyCountries",
 		"osgi.command.function=populateCompanyCountries",
@@ -91,9 +95,9 @@ public class PortalAddressOSGiCommands {
 
 				serviceContext.setCompanyId(company.getCompanyId());
 
-				User defaultUser = company.getDefaultUser();
+				User guestUser = company.getGuestUser();
 
-				serviceContext.setUserId(defaultUser.getUserId());
+				serviceContext.setUserId(guestUser.getUserId());
 
 				Country country = _countryLocalService.addCountry(
 					countryJSONObject.getString("a2"),
@@ -102,6 +106,19 @@ public class PortalAddressOSGiCommands {
 					countryJSONObject.getString("number"), 0, true, false,
 					countryJSONObject.getBoolean("zipRequired"),
 					serviceContext);
+
+				Map<String, String> titleMap = new HashMap<>();
+
+				for (Locale locale :
+						_language.getCompanyAvailableLocales(companyId)) {
+
+					titleMap.put(
+						_language.getLanguageId(locale),
+						country.getName(locale));
+				}
+
+				_countryLocalService.updateCountryLocalizations(
+					country, titleMap);
 
 				_processCountryRegions(country);
 			}
@@ -161,13 +178,26 @@ public class PortalAddressOSGiCommands {
 						regionJSONObject.getJSONObject("localizations");
 
 					if (localizationsJSONObject == null) {
-						continue;
-					}
+						Map<String, String> titleMap = new HashMap<>();
 
-					for (String key : localizationsJSONObject.keySet()) {
-						_regionLocalService.updateRegionLocalization(
-							region, key,
-							localizationsJSONObject.getString(key));
+						for (Locale locale :
+								_language.getCompanyAvailableLocales(
+									country.getCompanyId())) {
+
+							titleMap.put(
+								_language.getLanguageId(locale),
+								region.getName());
+						}
+
+						_regionLocalService.updateRegionLocalizations(
+							region, titleMap);
+					}
+					else {
+						for (String key : localizationsJSONObject.keySet()) {
+							_regionLocalService.updateRegionLocalization(
+								region, key,
+								localizationsJSONObject.getString(key));
+						}
 					}
 				}
 				catch (PortalException portalException) {
@@ -193,6 +223,9 @@ public class PortalAddressOSGiCommands {
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private RegionLocalService _regionLocalService;

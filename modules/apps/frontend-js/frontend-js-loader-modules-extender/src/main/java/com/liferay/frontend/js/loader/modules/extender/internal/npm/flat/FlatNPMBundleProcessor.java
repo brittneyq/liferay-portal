@@ -26,7 +26,6 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -77,7 +76,7 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Iván Zaera
  */
-@Component(immediate = true, service = JSBundleProcessor.class)
+@Component(service = JSBundleProcessor.class)
 public class FlatNPMBundleProcessor implements JSBundleProcessor {
 
 	@Override
@@ -86,12 +85,6 @@ public class FlatNPMBundleProcessor implements JSBundleProcessor {
 
 		if (url == null) {
 			return null;
-		}
-
-		FlatJSBundle flatJSBundle = new FlatJSBundle(bundle);
-
-		if (_log.isInfoEnabled()) {
-			_log.info("Processing NPM bundle: " + flatJSBundle);
 		}
 
 		Enumeration<URL> enumeration = bundle.findEntries(
@@ -103,30 +96,32 @@ public class FlatNPMBundleProcessor implements JSBundleProcessor {
 			return null;
 		}
 
-		URL manifestJSONURL = bundle.getEntry(
-			"META-INF/resources/manifest.json");
+		return new FlatJSBundle(
+			bundle,
+			flatJSBundle -> {
+				URL manifestJSONURL = bundle.getEntry(
+					"META-INF/resources/manifest.json");
 
-		Map<URL, JSONObject> jsonObjects = _loadJSONObjects(
-			bundle, enumeration, manifestJSONURL);
+				Map<URL, JSONObject> jsonObjects = _loadJSONObjects(
+					bundle, enumeration, manifestJSONURL);
 
-		JSONObject packagesJSONObject = _removeByURL(
-			jsonObjects, manifestJSONURL);
+				JSONObject packagesJSONObject = _removeByURL(
+					jsonObjects, manifestJSONURL);
 
-		Manifest manifest = new Manifest(packagesJSONObject);
+				Manifest manifest = new Manifest(packagesJSONObject);
 
-		JSONObject packageJSONObject = _removeByURL(jsonObjects, url);
+				JSONObject packageJSONObject = _removeByURL(jsonObjects, url);
 
-		Map<URL, Collection<String>> moduleDependenciesMap =
-			_loadModuleDependenciesMap(bundle);
+				Map<URL, Collection<String>> moduleDependenciesMap =
+					_loadModuleDependenciesMap(bundle);
 
-		_processPackage(
-			flatJSBundle, manifest, packageJSONObject, jsonObjects,
-			moduleDependenciesMap, "/META-INF/resources", true);
+				_processPackage(
+					flatJSBundle, manifest, packageJSONObject, jsonObjects,
+					moduleDependenciesMap, "/META-INF/resources", true);
 
-		_processNodePackages(
-			flatJSBundle, manifest, jsonObjects, moduleDependenciesMap);
-
-		return flatJSBundle;
+				_processNodePackages(
+					flatJSBundle, manifest, jsonObjects, moduleDependenciesMap);
+			});
 	}
 
 	@Activate
@@ -239,7 +234,7 @@ public class FlatNPMBundleProcessor implements JSBundleProcessor {
 					for (int i = 0; i < size; i++) {
 						jsonObjects.put(
 							new URL(deserializer.readString()),
-							JSONFactoryUtil.createJSONObject(
+							_jsonFactory.createJSONObject(
 								deserializer.readString()));
 					}
 

@@ -18,9 +18,12 @@ import java.io.File;
 import java.io.IOException;
 
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
@@ -135,7 +138,8 @@ public class BuildDatabaseUtil {
 				try {
 					Files.copy(
 						buildDatabaseFile.toPath(),
-						defaultBuildDatabaseFile.toPath());
+						defaultBuildDatabaseFile.toPath(),
+						StandardCopyOption.REPLACE_EXISTING);
 				}
 				catch (IOException ioException) {
 					throw new RuntimeException(ioException);
@@ -151,15 +155,15 @@ public class BuildDatabaseUtil {
 			return;
 		}
 
-		int maxRetries = 5;
-		int retries = 0;
+		List<String> distNodesList = new ArrayList<>(
+			Arrays.asList(distNodes.split(",")));
 
-		while (retries < maxRetries) {
+		while (!distNodesList.isEmpty()) {
 			try {
-				retries++;
-
 				String distNode = JenkinsResultsParserUtil.getRandomString(
-					Arrays.asList(distNodes.split(",")));
+					distNodesList);
+
+				distNodesList.remove(distNode);
 
 				String[] commands = new String[2];
 
@@ -208,22 +212,33 @@ public class BuildDatabaseUtil {
 				}
 				else {
 					commands[1] = JenkinsResultsParserUtil.combine(
-						"timeout 1200 rsync -Iq \"", distNode, ":",
+						"if ! ", "timeout 1200 rsync -Iq \"", distNode, ":",
 						JenkinsResultsParserUtil.escapeForBash(distPath), "/",
 						BuildDatabase.FILE_NAME_BUILD_DATABASE, "\" ",
 						JenkinsResultsParserUtil.escapeForBash(
 							JenkinsResultsParserUtil.getCanonicalPath(
-								buildDatabaseFile)));
+								buildDatabaseFile)),
+						"; then ", "timeout 1200 rsync -Iq ", distNode, ":",
+						JenkinsResultsParserUtil.escapeForBash(distPath), "/",
+						BuildDatabase.FILE_NAME_BUILD_DATABASE, " ",
+						JenkinsResultsParserUtil.escapeForBash(
+							JenkinsResultsParserUtil.getCanonicalPath(
+								buildDatabaseFile)),
+						"; fi");
 				}
 
 				Process process = JenkinsResultsParserUtil.executeBashCommands(
 					true, new File("."), 10 * 60 * 1000, commands);
 
 				if (process.exitValue() != 0) {
+					String errorText = JenkinsResultsParserUtil.readInputStream(
+						process.getErrorStream());
+
 					throw new RuntimeException(
 						JenkinsResultsParserUtil.combine(
 							"Unable to download ",
-							BuildDatabase.FILE_NAME_BUILD_DATABASE));
+							BuildDatabase.FILE_NAME_BUILD_DATABASE, "\n\n",
+							errorText));
 				}
 
 				break;
@@ -231,7 +246,7 @@ public class BuildDatabaseUtil {
 			catch (IOException | RuntimeException | TimeoutException
 						exception) {
 
-				if (retries == maxRetries) {
+				if (distNodesList.isEmpty()) {
 					throw new RuntimeException(
 						JenkinsResultsParserUtil.combine(
 							"Unable to get ",

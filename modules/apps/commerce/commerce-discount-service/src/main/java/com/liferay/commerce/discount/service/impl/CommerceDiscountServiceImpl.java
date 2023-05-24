@@ -20,6 +20,7 @@ import com.liferay.commerce.discount.model.CommerceDiscount;
 import com.liferay.commerce.discount.service.base.CommerceDiscountServiceBaseImpl;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.math.BigDecimal;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -47,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = {
 		"json.web.service.context.name=commerce",
 		"json.web.service.context.path=CommerceDiscount"
@@ -249,8 +248,8 @@ public class CommerceDiscountServiceImpl
 
 		if (!Validator.isBlank(externalReferenceCode)) {
 			CommerceDiscount commerceDiscount =
-				commerceDiscountPersistence.fetchByC_ERC(
-					serviceContext.getCompanyId(), externalReferenceCode);
+				commerceDiscountPersistence.fetchByERC_C(
+					externalReferenceCode, serviceContext.getCompanyId());
 
 			if (commerceDiscount != null) {
 				return updateCommerceDiscount(
@@ -411,18 +410,12 @@ public class CommerceDiscountServiceImpl
 			Sort sort)
 		throws PortalException {
 
-		List<CommerceChannel> commerceChannels = _commerceChannelService.search(
-			companyId);
-
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
-
 		return commerceDiscountLocalService.searchCommerceDiscounts(
-			companyId, commerceChannelGroupIds, keywords, status, start, end,
-			sort);
+			companyId,
+			TransformUtil.transformToLongArray(
+				_commerceChannelService.search(companyId),
+				CommerceChannel::getGroupId),
+			keywords, status, start, end, sort);
 	}
 
 	@Override

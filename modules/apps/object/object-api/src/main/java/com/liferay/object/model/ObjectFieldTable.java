@@ -36,6 +36,10 @@ public class ObjectFieldTable extends BaseTable<ObjectFieldTable> {
 		"mvccVersion", Long.class, Types.BIGINT, Column.FLAG_NULLITY);
 	public final Column<ObjectFieldTable, String> uuid = createColumn(
 		"uuid_", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<ObjectFieldTable, String> externalReferenceCode =
+		createColumn(
+			"externalReferenceCode", String.class, Types.VARCHAR,
+			Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, Long> objectFieldId = createColumn(
 		"objectFieldId", Long.class, Types.BIGINT, Column.FLAG_PRIMARY);
 	public final Column<ObjectFieldTable, Long> companyId = createColumn(
@@ -48,10 +52,6 @@ public class ObjectFieldTable extends BaseTable<ObjectFieldTable> {
 		"createDate", Date.class, Types.TIMESTAMP, Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, Date> modifiedDate = createColumn(
 		"modifiedDate", Date.class, Types.TIMESTAMP, Column.FLAG_DEFAULT);
-	public final Column<ObjectFieldTable, String> externalReferenceCode =
-		createColumn(
-			"externalReferenceCode", String.class, Types.VARCHAR,
-			Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, Long> listTypeDefinitionId =
 		createColumn(
 			"listTypeDefinitionId", Long.class, Types.BIGINT,
@@ -68,8 +68,6 @@ public class ObjectFieldTable extends BaseTable<ObjectFieldTable> {
 		"dbTableName", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, String> dbType = createColumn(
 		"dbType", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
-	public final Column<ObjectFieldTable, String> defaultValue = createColumn(
-		"defaultValue", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, Boolean> indexed = createColumn(
 		"indexed", Boolean.class, Types.BOOLEAN, Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, Boolean> indexedAsKeyword =
@@ -82,6 +80,8 @@ public class ObjectFieldTable extends BaseTable<ObjectFieldTable> {
 			Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, String> label = createColumn(
 		"label", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+	public final Column<ObjectFieldTable, Boolean> localized = createColumn(
+		"localized", Boolean.class, Types.BOOLEAN, Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, String> name = createColumn(
 		"name", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
 	public final Column<ObjectFieldTable, String> relationshipType =

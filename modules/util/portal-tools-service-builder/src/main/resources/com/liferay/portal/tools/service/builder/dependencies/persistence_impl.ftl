@@ -54,8 +54,12 @@ package ${packagePath}.service.persistence.impl;
 
 import ${serviceBuilder.getCompatJavaClassName("StringBundler")};
 
-<#assign noSuchEntity = serviceBuilder.getNoSuchEntityException(entity) />
+<#assign
+	duplicateEntityExternalReferenceCode = serviceBuilder.getDuplicateEntityExternalReferenceCodeException(entity)
+	noSuchEntity = serviceBuilder.getNoSuchEntityException(entity)
+/>
 
+import ${apiPackagePath}.exception.${duplicateEntityExternalReferenceCode}Exception;
 import ${apiPackagePath}.exception.${noSuchEntity}Exception;
 import ${apiPackagePath}.model.${entity.name};
 
@@ -226,11 +230,7 @@ import org.osgi.service.component.annotations.Reference;
 />
 
 <#if dependencyInjectorDS>
-	<#if serviceBuilder.isVersionGTE_7_4_0()>
-		@Component(service = {${entity.name}Persistence.class, BasePersistence.class})
-	<#else>
-		@Component(service = ${entity.name}Persistence.class)
-	</#if>
+	@Component(service = ${entity.name}Persistence.class)
 
 	<#assign
 		columnBitmaskCacheEnabled = "_columnBitmaskEnabled"
@@ -818,6 +818,28 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 					${entity.variableName}.setExternalReferenceCode(String.valueOf(${entity.variableName}.getPrimaryKey()));
 				</#if>
 			}
+
+			<#if serviceBuilder.isVersionGTE_7_3_0() && entity.hasExternalReferenceCode()>
+				else {
+					<#if serviceBuilder.isVersionGTE_7_4_0()>
+						${entity.name} erc${entity.name} = fetchByERC_${entity.externalReferenceCode?cap_first[0..0]}(${entity.variableName}.getExternalReferenceCode(), ${entity.variableName}.get${entity.externalReferenceCode?cap_first}Id());
+					<#else>
+						${entity.name} erc${entity.name} = fetchBy${entity.externalReferenceCode?cap_first[0..0]}_ERC(${entity.variableName}.get${entity.externalReferenceCode?cap_first}Id(), ${entity.variableName}.getExternalReferenceCode());
+					</#if>
+
+					if (isNew) {
+						if (erc${entity.name} != null) {
+								throw new ${duplicateEntityExternalReferenceCode}Exception("Duplicate ${entity.humanName} with external reference code " + ${entity.variableName}.getExternalReferenceCode() + " and ${entity.externalReferenceCode} " + ${entity.variableName}.get${entity.externalReferenceCode?cap_first}Id());
+						}
+					}
+					else {
+						if ((erc${entity.name} != null) &&
+							(${entity.variableName}.get${entity.PKMethodName}() != erc${entity.name}.get${entity.PKMethodName}())) {
+								throw new ${duplicateEntityExternalReferenceCode}Exception("Duplicate ${entity.humanName} with external reference code " + ${entity.variableName}.getExternalReferenceCode() + " and ${entity.externalReferenceCode} " + ${entity.variableName}.get${entity.externalReferenceCode?cap_first}Id());
+						}
+					}
+				}
+			</#if>
 		</#if>
 
 		<#if entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date")>
@@ -1586,11 +1608,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		List<${entity.name}> list = null;
 
 		if (${useCache}) {
-			list = (List<${entity.name}>)${finderCache}.getResult(finderPath, finderArgs
-				<#if serviceBuilder.isVersionLTE_7_3_0()>
-					, this
-				</#if>
-				);
+			list = (List<${entity.name}>)${finderCache}.getResult(finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1668,18 +1686,10 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			Long count = null;
 
 			if (productionMode) {
-				count = (Long)${finderCache}.getResult(_finderPathCountAll, FINDER_ARGS_EMPTY
-					<#if serviceBuilder.isVersionLTE_7_3_0()>
-						, this
-					</#if>
-					);
+				count = (Long)${finderCache}.getResult(_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 			}
 		<#else>
-			Long count = (Long)${finderCache}.getResult(_finderPathCountAll, FINDER_ARGS_EMPTY
-					<#if serviceBuilder.isVersionLTE_7_3_0()>
-						, this
-					</#if>
-					);
+			Long count = (Long)${finderCache}.getResult(_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		</#if>
 
 		if (count == null) {
@@ -1874,8 +1884,6 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			}
 
 			<#if entityColumn.isMappingManyToMany()>
-				<#assign noSuchTempEntity = serviceBuilder.getNoSuchEntityException(referenceEntity) />
-
 				/**
 				 * Adds an association between the ${entity.humanName} and the ${referenceEntity.humanName}. Also notifies the appropriate model listeners and clears the mapping table finder cache.
 				 *
@@ -2182,11 +2190,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		public long countAncestors(${entity.name} ${entity.variableName}) {
 			Object[] finderArgs = new Object[] {${entity.variableName}.get${scopeEntityColumn.methodName}(), ${entity.variableName}.getLeft${pkEntityColumn.methodName}(), ${entity.variableName}.getRight${pkEntityColumn.methodName}()};
 
-			Long count = (Long)${finderCache}.getResult(_finderPathWithPaginationCountAncestors, finderArgs
-				<#if serviceBuilder.isVersionLTE_7_3_0()>
-					, this
-				</#if>
-				);
+			Long count = (Long)${finderCache}.getResult(_finderPathWithPaginationCountAncestors, finderArgs, this);
 
 			if (count == null) {
 				try {
@@ -2210,11 +2214,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		public long countDescendants(${entity.name} ${entity.variableName}) {
 			Object[] finderArgs = new Object[] {${entity.variableName}.get${scopeEntityColumn.methodName}(), ${entity.variableName}.getLeft${pkEntityColumn.methodName}(), ${entity.variableName}.getRight${pkEntityColumn.methodName}()};
 
-			Long count = (Long)${finderCache}.getResult(_finderPathWithPaginationCountDescendants, finderArgs
-				<#if serviceBuilder.isVersionLTE_7_3_0()>
-					, this
-				</#if>
-				);
+			Long count = (Long)${finderCache}.getResult(_finderPathWithPaginationCountDescendants, finderArgs, this);
 
 			if (count == null) {
 				try {
@@ -2238,11 +2238,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		public List<${entity.name}> getAncestors(${entity.name} ${entity.variableName}) {
 			Object[] finderArgs = new Object[] {${entity.variableName}.get${scopeEntityColumn.methodName}(), ${entity.variableName}.getLeft${pkEntityColumn.methodName}(), ${entity.variableName}.getRight${pkEntityColumn.methodName}()};
 
-			List<${entity.name}> list = (List<${entity.name}>)${finderCache}.getResult(_finderPathWithPaginationGetAncestors, finderArgs
-				<#if serviceBuilder.isVersionLTE_7_3_0()>
-					, this
-				</#if>
-				);
+			List<${entity.name}> list = (List<${entity.name}>)${finderCache}.getResult(_finderPathWithPaginationGetAncestors, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (${entity.name} temp${entity.name} : list) {
@@ -2278,11 +2274,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		public List<${entity.name}> getDescendants(${entity.name} ${entity.variableName}) {
 			Object[] finderArgs = new Object[] {${entity.variableName}.get${scopeEntityColumn.methodName}(), ${entity.variableName}.getLeft${pkEntityColumn.methodName}(), ${entity.variableName}.getRight${pkEntityColumn.methodName}()};
 
-			List<${entity.name}> list = (List<${entity.name}>)${finderCache}.getResult(_finderPathWithPaginationGetDescendants, finderArgs
-				<#if serviceBuilder.isVersionLTE_7_3_0()>
-					, this
-				</#if>
-				);
+			List<${entity.name}> list = (List<${entity.name}>)${finderCache}.getResult(_finderPathWithPaginationGetDescendants, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (${entity.name} temp${entity.name} : list) {
@@ -2847,7 +2839,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			</#if>
 		</#list>
 
-		_set${entity.name}UtilPersistence(this);
+		${entity.name}Util.setPersistence(this);
 	}
 
 	<#if dependencyInjectorDS>
@@ -2857,7 +2849,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		public void destroy() {
 	</#if>
 
-		_set${entity.name}UtilPersistence(null);
+		${entity.name}Util.setPersistence(null);
 
 		${entityCache}.removeCache(${entity.name}Impl.class.getName());
 
@@ -2884,19 +2876,6 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				</#if>
 			</#if>
 		</#list>
-	}
-
-	private void _set${entity.name}UtilPersistence(${entity.name}Persistence ${entity.variableName}Persistence) {
-		try {
-			Field field = ${entity.name}Util.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ${entity.variableName}Persistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	<#if dependencyInjectorDS>
@@ -3140,11 +3119,6 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			@ServiceReference(type = PortalUUID.class)
 		</#if>
 		private PortalUUID ${portalUUID};
-	</#if>
-
-	<#if serviceBuilder.isVersionGTE_7_4_0() && dependencyInjectorDS>
-		@Reference
-		private ${entity.name}ModelArgumentsResolver _${entity.variableName}ModelArgumentsResolver;
 	</#if>
 }
 

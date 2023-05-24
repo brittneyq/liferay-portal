@@ -16,7 +16,6 @@ package com.liferay.layout.admin.web.internal.display.context;
 
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.layout.admin.web.internal.servlet.taglib.util.LayoutActionDropdownItemsProvider;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -32,19 +31,20 @@ import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetBranchLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
-import com.liferay.translation.exporter.TranslationInfoItemFieldValuesExporterTracker;
 
 import java.util.Collections;
 import java.util.List;
@@ -61,15 +61,11 @@ public class MillerColumnsDisplayContext {
 		LayoutActionDropdownItemsProvider layoutActionDropdownItemsProvider,
 		LayoutsAdminDisplayContext layoutsAdminDisplayContext,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		TranslationInfoItemFieldValuesExporterTracker
-			translationInfoItemFieldValuesExporterTracker) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		_layoutActionDropdownItemsProvider = layoutActionDropdownItemsProvider;
 		_layoutsAdminDisplayContext = layoutsAdminDisplayContext;
 		_liferayPortletResponse = liferayPortletResponse;
-		_translationInfoItemFieldValuesExporterTracker =
-			translationInfoItemFieldValuesExporterTracker;
 
 		_httpServletRequest = PortalUtil.getHttpServletRequest(
 			liferayPortletRequest);
@@ -233,6 +229,9 @@ public class MillerColumnsDisplayContext {
 				"selectable", true
 			).put(
 				"states", _getLayoutStatesJSONArray(layout)
+			).put(
+				"target",
+				HtmlUtil.escape(layout.getTypeSettingsProperty("target"))
 			).put(
 				"title", layout.getName(_themeDisplay.getLocale())
 			).put(
@@ -580,7 +579,5 @@ public class MillerColumnsDisplayContext {
 	private final LayoutsAdminDisplayContext _layoutsAdminDisplayContext;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final ThemeDisplay _themeDisplay;
-	private final TranslationInfoItemFieldValuesExporterTracker
-		_translationInfoItemFieldValuesExporterTracker;
 
 }

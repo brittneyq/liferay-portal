@@ -57,6 +57,12 @@ public class DispatchTriggerServiceUtil {
 		getService().deleteDispatchTrigger(dispatchTriggerId);
 	}
 
+	public static DispatchTrigger getDispatchTrigger(long dispatchTriggerId)
+		throws PortalException {
+
+		return getService().getDispatchTrigger(dispatchTriggerId);
+	}
+
 	public static List<DispatchTrigger> getDispatchTriggers(int start, int end)
 		throws PortalException {
 
@@ -106,6 +112,10 @@ public class DispatchTriggerServiceUtil {
 
 	public static DispatchTriggerService getService() {
 		return _service;
+	}
+
+	public static void setService(DispatchTriggerService service) {
+		_service = service;
 	}
 
 	private static volatile DispatchTriggerService _service;

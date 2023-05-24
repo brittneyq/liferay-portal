@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		BatchPlannerPolicyModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.batch.planner.model.impl.BatchPlannerPolicyImpl",
+		"table.name=BatchPlannerPolicy"
+	},
+	service = ArgumentsResolver.class
 )
 public class BatchPlannerPolicyModelArgumentsResolver
 	implements ArgumentsResolver {

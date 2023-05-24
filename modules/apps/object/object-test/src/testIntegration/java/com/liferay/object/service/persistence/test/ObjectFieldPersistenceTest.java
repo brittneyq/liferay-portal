@@ -128,6 +128,8 @@ public class ObjectFieldPersistenceTest {
 
 		newObjectField.setUuid(RandomTestUtil.randomString());
 
+		newObjectField.setExternalReferenceCode(RandomTestUtil.randomString());
+
 		newObjectField.setCompanyId(RandomTestUtil.nextLong());
 
 		newObjectField.setUserId(RandomTestUtil.nextLong());
@@ -137,8 +139,6 @@ public class ObjectFieldPersistenceTest {
 		newObjectField.setCreateDate(RandomTestUtil.nextDate());
 
 		newObjectField.setModifiedDate(RandomTestUtil.nextDate());
-
-		newObjectField.setExternalReferenceCode(RandomTestUtil.randomString());
 
 		newObjectField.setListTypeDefinitionId(RandomTestUtil.nextLong());
 
@@ -152,8 +152,6 @@ public class ObjectFieldPersistenceTest {
 
 		newObjectField.setDBType(RandomTestUtil.randomString());
 
-		newObjectField.setDefaultValue(RandomTestUtil.randomString());
-
 		newObjectField.setIndexed(RandomTestUtil.randomBoolean());
 
 		newObjectField.setIndexedAsKeyword(RandomTestUtil.randomBoolean());
@@ -161,6 +159,8 @@ public class ObjectFieldPersistenceTest {
 		newObjectField.setIndexedLanguageId(RandomTestUtil.randomString());
 
 		newObjectField.setLabel(RandomTestUtil.randomString());
+
+		newObjectField.setLocalized(RandomTestUtil.randomBoolean());
 
 		newObjectField.setName(RandomTestUtil.randomString());
 
@@ -183,6 +183,9 @@ public class ObjectFieldPersistenceTest {
 		Assert.assertEquals(
 			existingObjectField.getUuid(), newObjectField.getUuid());
 		Assert.assertEquals(
+			existingObjectField.getExternalReferenceCode(),
+			newObjectField.getExternalReferenceCode());
+		Assert.assertEquals(
 			existingObjectField.getObjectFieldId(),
 			newObjectField.getObjectFieldId());
 		Assert.assertEquals(
@@ -197,9 +200,6 @@ public class ObjectFieldPersistenceTest {
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingObjectField.getModifiedDate()),
 			Time.getShortTimestamp(newObjectField.getModifiedDate()));
-		Assert.assertEquals(
-			existingObjectField.getExternalReferenceCode(),
-			newObjectField.getExternalReferenceCode());
 		Assert.assertEquals(
 			existingObjectField.getListTypeDefinitionId(),
 			newObjectField.getListTypeDefinitionId());
@@ -218,9 +218,6 @@ public class ObjectFieldPersistenceTest {
 		Assert.assertEquals(
 			existingObjectField.getDBType(), newObjectField.getDBType());
 		Assert.assertEquals(
-			existingObjectField.getDefaultValue(),
-			newObjectField.getDefaultValue());
-		Assert.assertEquals(
 			existingObjectField.isIndexed(), newObjectField.isIndexed());
 		Assert.assertEquals(
 			existingObjectField.isIndexedAsKeyword(),
@@ -230,6 +227,8 @@ public class ObjectFieldPersistenceTest {
 			newObjectField.getIndexedLanguageId());
 		Assert.assertEquals(
 			existingObjectField.getLabel(), newObjectField.getLabel());
+		Assert.assertEquals(
+			existingObjectField.isLocalized(), newObjectField.isLocalized());
 		Assert.assertEquals(
 			existingObjectField.getName(), newObjectField.getName());
 		Assert.assertEquals(
@@ -293,6 +292,22 @@ public class ObjectFieldPersistenceTest {
 	}
 
 	@Test
+	public void testCountByODI_I() throws Exception {
+		_persistence.countByODI_I(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByODI_I(0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
+	public void testCountByODI_L() throws Exception {
+		_persistence.countByODI_L(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByODI_L(0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByODI_N() throws Exception {
 		_persistence.countByODI_N(RandomTestUtil.nextLong(), "");
 
@@ -310,13 +325,13 @@ public class ObjectFieldPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_ERC_ODI() throws Exception {
-		_persistence.countByC_ERC_ODI(
-			RandomTestUtil.nextLong(), "", RandomTestUtil.nextLong());
+	public void testCountByERC_C_ODI() throws Exception {
+		_persistence.countByERC_C_ODI(
+			"", RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
-		_persistence.countByC_ERC_ODI(0L, "null", 0L);
+		_persistence.countByERC_C_ODI("null", 0L, 0L);
 
-		_persistence.countByC_ERC_ODI(0L, (String)null, 0L);
+		_persistence.countByERC_C_ODI((String)null, 0L, 0L);
 	}
 
 	@Test
@@ -356,15 +371,15 @@ public class ObjectFieldPersistenceTest {
 
 	protected OrderByComparator<ObjectField> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"ObjectField", "mvccVersion", true, "uuid", true, "objectFieldId",
-			true, "companyId", true, "userId", true, "userName", true,
-			"createDate", true, "modifiedDate", true, "externalReferenceCode",
-			true, "listTypeDefinitionId", true, "objectDefinitionId", true,
-			"businessType", true, "dbColumnName", true, "dbTableName", true,
-			"dbType", true, "defaultValue", true, "indexed", true,
+			"ObjectField", "mvccVersion", true, "uuid", true,
+			"externalReferenceCode", true, "objectFieldId", true, "companyId",
+			true, "userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "listTypeDefinitionId", true,
+			"objectDefinitionId", true, "businessType", true, "dbColumnName",
+			true, "dbTableName", true, "dbType", true, "indexed", true,
 			"indexedAsKeyword", true, "indexedLanguageId", true, "label", true,
-			"name", true, "relationshipType", true, "required", true, "state",
-			true, "system", true);
+			"localized", true, "name", true, "relationshipType", true,
+			"required", true, "state", true, "system", true);
 	}
 
 	@Test
@@ -639,15 +654,15 @@ public class ObjectFieldPersistenceTest {
 				new Class<?>[] {String.class}, "name"));
 
 		Assert.assertEquals(
-			Long.valueOf(objectField.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				objectField, "getColumnOriginalValue",
-				new Class<?>[] {String.class}, "companyId"));
-		Assert.assertEquals(
 			objectField.getExternalReferenceCode(),
 			ReflectionTestUtil.invoke(
 				objectField, "getColumnOriginalValue",
 				new Class<?>[] {String.class}, "externalReferenceCode"));
+		Assert.assertEquals(
+			Long.valueOf(objectField.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				objectField, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 		Assert.assertEquals(
 			Long.valueOf(objectField.getObjectDefinitionId()),
 			ReflectionTestUtil.<Long>invoke(
@@ -664,6 +679,8 @@ public class ObjectFieldPersistenceTest {
 
 		objectField.setUuid(RandomTestUtil.randomString());
 
+		objectField.setExternalReferenceCode(RandomTestUtil.randomString());
+
 		objectField.setCompanyId(RandomTestUtil.nextLong());
 
 		objectField.setUserId(RandomTestUtil.nextLong());
@@ -673,8 +690,6 @@ public class ObjectFieldPersistenceTest {
 		objectField.setCreateDate(RandomTestUtil.nextDate());
 
 		objectField.setModifiedDate(RandomTestUtil.nextDate());
-
-		objectField.setExternalReferenceCode(RandomTestUtil.randomString());
 
 		objectField.setListTypeDefinitionId(RandomTestUtil.nextLong());
 
@@ -688,8 +703,6 @@ public class ObjectFieldPersistenceTest {
 
 		objectField.setDBType(RandomTestUtil.randomString());
 
-		objectField.setDefaultValue(RandomTestUtil.randomString());
-
 		objectField.setIndexed(RandomTestUtil.randomBoolean());
 
 		objectField.setIndexedAsKeyword(RandomTestUtil.randomBoolean());
@@ -697,6 +710,8 @@ public class ObjectFieldPersistenceTest {
 		objectField.setIndexedLanguageId(RandomTestUtil.randomString());
 
 		objectField.setLabel(RandomTestUtil.randomString());
+
+		objectField.setLocalized(RandomTestUtil.randomBoolean());
 
 		objectField.setName(RandomTestUtil.randomString());
 

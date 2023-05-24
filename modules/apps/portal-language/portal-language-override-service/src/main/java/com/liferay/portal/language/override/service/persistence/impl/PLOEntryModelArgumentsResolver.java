@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {PLOEntryModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.portal.language.override.model.impl.PLOEntryImpl",
+		"table.name=PLOEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class PLOEntryModelArgumentsResolver implements ArgumentsResolver {
 

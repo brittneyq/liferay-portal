@@ -278,6 +278,18 @@ public class LayoutServiceUtil {
 			groupId, folderName, fileName, inputStream, mimeType);
 	}
 
+	public static Layout copyLayout(
+			long groupId, boolean privateLayout,
+			Map<java.util.Locale, String> localeNamesMap, boolean hidden,
+			boolean system, boolean copyPermissions, long sourcePlid,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().copyLayout(
+			groupId, privateLayout, localeNamesMap, hidden, system,
+			copyPermissions, sourcePlid, serviceContext);
+	}
+
 	/**
 	 * Deletes the layout with the primary key, also deleting the layout's child
 	 * layouts, and associated resources.
@@ -481,6 +493,15 @@ public class LayoutServiceUtil {
 	}
 
 	public static List<Layout> getLayouts(
+			long groupId, boolean privateLayout, long parentLayoutId, int start,
+			int end)
+		throws PortalException {
+
+		return getService().getLayouts(
+			groupId, privateLayout, parentLayoutId, start, end);
+	}
+
+	public static List<Layout> getLayouts(
 			long groupId, boolean privateLayout, String type)
 		throws PortalException {
 
@@ -633,7 +654,7 @@ public class LayoutServiceUtil {
 	 DestinationNames#LAYOUTS_LOCAL_PUBLISHER}). See {@link
 	 DestinationNames}.
 	 * @param cronText the cron text. See {@link
-	 com.liferay.portal.kernel.cal.RecurrenceSerializer #toCronText}
+	 com.liferay.portal.kernel.scheduler.CronTextUtil#getCronText}
 	 * @param schedulerStartDate the scheduler start date
 	 * @param schedulerEndDate the scheduler end date
 	 * @param description the scheduler description
@@ -675,7 +696,7 @@ public class LayoutServiceUtil {
 	 DestinationNames#LAYOUTS_LOCAL_PUBLISHER}). See {@link
 	 DestinationNames}.
 	 * @param cronText the cron text. See {@link
-	 com.liferay.portal.kernel.cal.RecurrenceSerializer #toCronText}
+	 com.liferay.portal.kernel.scheduler.CronTextUtil#getCronText}
 	 * @param schedulerStartDate the scheduler start date
 	 * @param schedulerEndDate the scheduler end date
 	 * @param description the scheduler description
@@ -1008,6 +1029,10 @@ public class LayoutServiceUtil {
 
 	public static LayoutService getService() {
 		return _service;
+	}
+
+	public static void setService(LayoutService service) {
+		_service = service;
 	}
 
 	private static volatile LayoutService _service;

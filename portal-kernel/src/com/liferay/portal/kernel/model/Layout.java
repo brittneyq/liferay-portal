@@ -224,6 +224,8 @@ public interface Layout extends LayoutModel, PersistedModel {
 	 */
 	public String getHTMLTitle(String localeLanguageId);
 
+	public String getIcon();
+
 	/**
 	 * Returns <code>true</code> if the current layout has a configured icon.
 	 *
@@ -345,6 +347,8 @@ public interface Layout extends LayoutModel, PersistedModel {
 
 	public boolean isDraftLayout();
 
+	public boolean isEmbeddedPersonalApplication();
+
 	/**
 	 * Returns <code>true</code> if the current layout is the first layout in
 	 * its parent's hierarchical list of children layouts.
@@ -424,6 +428,8 @@ public interface Layout extends LayoutModel, PersistedModel {
 	public boolean isSupportsEmbeddedPortlets();
 
 	public boolean isTypeAssetDisplay();
+
+	public boolean isTypeCollection();
 
 	public boolean isTypeContent();
 

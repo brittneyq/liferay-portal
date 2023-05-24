@@ -14,9 +14,6 @@
 
 package com.liferay.portal.tools.rest.builder.internal.yaml.config;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author Peter Shin
  */
@@ -46,8 +43,8 @@ public class ConfigYAML {
 		return _clientMavenGroupId;
 	}
 
-	public List<String> getDisabledBatchSchemaNames() {
-		return _disabledBatchSchemaNames;
+	public int getCompatibilityVersion() {
+		return _compatibilityVersion;
 	}
 
 	public String getGraphQLNamespace() {
@@ -138,10 +135,8 @@ public class ConfigYAML {
 		_clientMavenGroupId = clientMavenGroupId;
 	}
 
-	public void setDisabledBatchSchemaNames(
-		List<String> disabledBatchSchemaNames) {
-
-		_disabledBatchSchemaNames = disabledBatchSchemaNames;
+	public void setCompatibilityVersion(int compatibilityVersion) {
+		_compatibilityVersion = compatibilityVersion;
 	}
 
 	public void setForceClientVersionDescription(
@@ -224,7 +219,7 @@ public class ConfigYAML {
 	private String _author;
 	private String _clientDir;
 	private String _clientMavenGroupId;
-	private List<String> _disabledBatchSchemaNames = Collections.emptyList();
+	private int _compatibilityVersion = 1;
 	private boolean _forceClientVersionDescription = true;
 	private boolean _forcePredictableContentApplicationXML = true;
 	private boolean _forcePredictableOperationId;

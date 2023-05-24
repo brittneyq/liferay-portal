@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,7 +51,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -84,7 +82,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  * @generated
  */
-@Component(service = {CSDiagramSettingPersistence.class, BasePersistence.class})
+@Component(service = CSDiagramSettingPersistence.class)
 public class CSDiagramSettingPersistenceImpl
 	extends BasePersistenceImpl<CSDiagramSetting>
 	implements CSDiagramSettingPersistence {
@@ -204,7 +202,7 @@ public class CSDiagramSettingPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CSDiagramSetting>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CSDiagramSetting csDiagramSetting : list) {
@@ -598,7 +596,7 @@ public class CSDiagramSettingPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -763,7 +761,7 @@ public class CSDiagramSettingPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CSDiagramSetting>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CSDiagramSetting csDiagramSetting : list) {
@@ -1189,7 +1187,7 @@ public class CSDiagramSettingPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1325,7 +1323,7 @@ public class CSDiagramSettingPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByCPDefinitionId, finderArgs);
+				_finderPathFetchByCPDefinitionId, finderArgs, this);
 		}
 
 		if (result instanceof CSDiagramSetting) {
@@ -1425,7 +1423,7 @@ public class CSDiagramSettingPersistenceImpl
 
 			finderArgs = new Object[] {CPDefinitionId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2076,7 +2074,7 @@ public class CSDiagramSettingPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CSDiagramSetting>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2152,7 +2150,7 @@ public class CSDiagramSettingPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -2336,30 +2334,14 @@ public class CSDiagramSettingPersistenceImpl
 			new String[] {Long.class.getName()},
 			new String[] {"CPDefinitionId"}, false);
 
-		_setCSDiagramSettingUtilPersistence(this);
+		CSDiagramSettingUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCSDiagramSettingUtilPersistence(null);
+		CSDiagramSettingUtil.setPersistence(null);
 
 		entityCache.removeCache(CSDiagramSettingImpl.class.getName());
-	}
-
-	private void _setCSDiagramSettingUtilPersistence(
-		CSDiagramSettingPersistence csDiagramSettingPersistence) {
-
-		try {
-			Field field = CSDiagramSettingUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, csDiagramSettingPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2430,9 +2412,5 @@ public class CSDiagramSettingPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private CSDiagramSettingModelArgumentsResolver
-		_csDiagramSettingModelArgumentsResolver;
 
 }

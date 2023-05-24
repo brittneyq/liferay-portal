@@ -17,6 +17,9 @@ package com.liferay.commerce.catalog.web.internal.display.context;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.service.CommerceCurrencyLocalService;
 import com.liferay.commerce.frontend.model.HeaderActionModel;
+import com.liferay.commerce.inventory.configuration.CommerceInventoryGroupConfiguration;
+import com.liferay.commerce.inventory.method.CommerceInventoryMethod;
+import com.liferay.commerce.inventory.method.CommerceInventoryMethodRegistry;
 import com.liferay.commerce.media.CommerceCatalogDefaultImage;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.service.CommercePriceListService;
@@ -34,17 +37,18 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.image.criterion.ImageItemSelectorCriterion;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -82,6 +86,7 @@ public class CommerceCatalogDisplayContext {
 		ModelResourcePermission<CommerceCatalog>
 			commerceCatalogModelResourcePermission,
 		CommerceCurrencyLocalService commerceCurrencyLocalService,
+		CommerceInventoryMethodRegistry commerceInventoryMethodRegistry,
 		CommercePriceListService commercePriceListService,
 		ConfigurationProvider configurationProvider, DLAppService dlAppService,
 		ItemSelector itemSelector, Portal portal) {
@@ -92,6 +97,7 @@ public class CommerceCatalogDisplayContext {
 		_commerceCatalogModelResourcePermission =
 			commerceCatalogModelResourcePermission;
 		_commerceCurrencyLocalService = commerceCurrencyLocalService;
+		_commerceInventoryMethodRegistry = commerceInventoryMethodRegistry;
 		_commercePriceListService = commercePriceListService;
 		_configurationProvider = configurationProvider;
 		_dlAppService = dlAppService;
@@ -159,6 +165,10 @@ public class CommerceCatalogDisplayContext {
 		return _commerceCurrencyLocalService.getCommerceCurrencies(
 			cpRequestHelper.getCompanyId(), true, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS, null);
+	}
+
+	public List<CommerceInventoryMethod> getCommerceInventoryMethods() {
+		return _commerceInventoryMethodRegistry.getCommerceInventoryMethods();
 	}
 
 	public CreationMenu getCreationMenu() throws Exception {
@@ -341,6 +351,20 @@ public class CommerceCatalogDisplayContext {
 			actionId);
 	}
 
+	public boolean isCommerceInventoryMethodSelected(
+			long commerceCatalogGroupId, String key)
+		throws ConfigurationException {
+
+		CommerceInventoryGroupConfiguration
+			commerceInventoryGroupConfiguration =
+				_configurationProvider.getGroupConfiguration(
+					CommerceInventoryGroupConfiguration.class,
+					commerceCatalogGroupId);
+
+		return key.equals(
+			commerceInventoryGroupConfiguration.inventoryMethodKey());
+	}
+
 	public boolean showBasePriceListInputs() throws PortalException {
 		CommercePricingConfiguration commercePricingConfiguration =
 			_configurationProvider.getConfiguration(
@@ -361,6 +385,8 @@ public class CommerceCatalogDisplayContext {
 		_commerceCatalogModelResourcePermission;
 	private final CommerceCatalogService _commerceCatalogService;
 	private final CommerceCurrencyLocalService _commerceCurrencyLocalService;
+	private final CommerceInventoryMethodRegistry
+		_commerceInventoryMethodRegistry;
 	private final CommercePriceListService _commercePriceListService;
 	private final ConfigurationProvider _configurationProvider;
 	private final DLAppService _dlAppService;

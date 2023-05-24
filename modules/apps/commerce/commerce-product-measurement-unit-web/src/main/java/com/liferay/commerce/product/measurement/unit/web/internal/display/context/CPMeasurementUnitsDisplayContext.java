@@ -22,13 +22,13 @@ import com.liferay.commerce.product.model.CPMeasurementUnit;
 import com.liferay.commerce.product.service.CPMeasurementUnitService;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemBuilder;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -101,7 +101,7 @@ public class CPMeasurementUnitsDisplayContext {
 			_getNavigationItem(
 				toolbarItem.equals("view-all-unit-product-measurement-units"),
 				_getNavigationItemURL(
-					"view-all-piece-product-measurement-units",
+					"view-all-unit-product-measurement-units",
 					CPMeasurementUnitConstants.TYPE_UNIT),
 				LanguageUtil.get(resourceBundle, "unit")));
 		navigationItems.add(

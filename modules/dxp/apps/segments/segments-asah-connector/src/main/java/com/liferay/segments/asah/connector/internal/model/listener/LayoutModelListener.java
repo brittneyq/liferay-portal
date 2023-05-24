@@ -14,6 +14,7 @@
 
 package com.liferay.segments.asah.connector.internal.model.listener;
 
+import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -24,9 +25,9 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.segments.asah.connector.internal.client.AsahFaroBackendClientImpl;
-import com.liferay.segments.asah.connector.internal.client.JSONWebServiceClient;
 import com.liferay.segments.asah.connector.internal.processor.AsahSegmentsExperimentProcessor;
 import com.liferay.segments.asah.connector.internal.util.AsahUtil;
 import com.liferay.segments.model.SegmentsExperiment;
@@ -50,14 +51,14 @@ import org.osgi.service.component.annotations.Reference;
 public class LayoutModelListener extends BaseModelListener<Layout> {
 
 	@Override
-	public void onBeforeUpdate(Layout originalLayout, Layout layout)
+	public void onAfterUpdate(Layout originalLayout, Layout layout)
 		throws ModelListenerException {
 
-		if (_isSkipEvent(layout)) {
-			return;
-		}
-
 		try {
+			if (_isSkipEvent(originalLayout, layout)) {
+				return;
+			}
+
 			List<SegmentsExperiment> segmentsExperiments =
 				_segmentsExperimentLocalService.getSegmentsExperiments(
 					layout.getGroupId(),
@@ -83,7 +84,8 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 	@Activate
 	protected void activate() {
 		_asahSegmentsExperimentProcessor = new AsahSegmentsExperimentProcessor(
-			new AsahFaroBackendClientImpl(_jsonWebServiceClient),
+			_analyticsSettingsManager,
+			new AsahFaroBackendClientImpl(_analyticsSettingsManager, _http),
 			_companyLocalService, _groupLocalService, _layoutLocalService,
 			_portal, _segmentsEntryLocalService,
 			_segmentsExperienceLocalService);
@@ -94,18 +96,19 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 		_asahSegmentsExperimentProcessor = null;
 	}
 
-	private boolean _isSkipEvent(Layout layout) {
+	private boolean _isSkipEvent(Layout originalLayout, Layout layout)
+		throws Exception {
+
 		if (AsahUtil.isSkipAsahEvent(
-				layout.getCompanyId(), layout.getGroupId())) {
+				_analyticsSettingsManager, layout.getCompanyId(),
+				layout.getGroupId())) {
 
 			return true;
 		}
 
-		Layout oldLayout = _layoutLocalService.fetchLayout(layout.getPlid());
-
 		if (!Objects.equals(
-				oldLayout.getFriendlyURL(), layout.getFriendlyURL()) ||
-			!Objects.equals(oldLayout.getTitle(), layout.getTitle())) {
+				originalLayout.getFriendlyURL(), layout.getFriendlyURL()) ||
+			!Objects.equals(originalLayout.getTitle(), layout.getTitle())) {
 
 			return false;
 		}
@@ -115,6 +118,9 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutModelListener.class);
+
+	@Reference
+	private AnalyticsSettingsManager _analyticsSettingsManager;
 
 	private AsahSegmentsExperimentProcessor _asahSegmentsExperimentProcessor;
 
@@ -128,7 +134,7 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 	private GroupLocalService _groupLocalService;
 
 	@Reference
-	private JSONWebServiceClient _jsonWebServiceClient;
+	private Http _http;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

@@ -128,6 +128,12 @@ public class LayoutBranchLocalServiceUtil {
 		return getService().deleteLayoutBranch(layoutBranchId);
 	}
 
+	public static void deleteLayoutBranchesByPlid(long plid)
+		throws PortalException {
+
+		getService().deleteLayoutBranchesByPlid(plid);
+	}
+
 	public static void deleteLayoutSetBranchLayoutBranches(
 			long layoutSetBranchId)
 		throws PortalException {
@@ -356,6 +362,10 @@ public class LayoutBranchLocalServiceUtil {
 
 	public static LayoutBranchLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(LayoutBranchLocalService service) {
+		_service = service;
 	}
 
 	private static volatile LayoutBranchLocalService _service;

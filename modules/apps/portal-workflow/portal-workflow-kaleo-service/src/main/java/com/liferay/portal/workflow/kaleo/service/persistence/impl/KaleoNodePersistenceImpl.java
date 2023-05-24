@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -50,7 +49,6 @@ import com.liferay.portal.workflow.kaleo.service.persistence.impl.constants.Kale
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -81,7 +79,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {KaleoNodePersistence.class, BasePersistence.class})
+@Component(service = KaleoNodePersistence.class)
 public class KaleoNodePersistenceImpl
 	extends BasePersistenceImpl<KaleoNode> implements KaleoNodePersistence {
 
@@ -201,7 +199,7 @@ public class KaleoNodePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoNode>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoNode kaleoNode : list) {
@@ -568,7 +566,7 @@ public class KaleoNodePersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -720,7 +718,7 @@ public class KaleoNodePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoNode>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoNode kaleoNode : list) {
@@ -1100,7 +1098,7 @@ public class KaleoNodePersistenceImpl
 
 			finderArgs = new Object[] {kaleoDefinitionVersionId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1257,7 +1255,7 @@ public class KaleoNodePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoNode>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoNode kaleoNode : list) {
@@ -1657,7 +1655,7 @@ public class KaleoNodePersistenceImpl
 
 			finderArgs = new Object[] {companyId, kaleoDefinitionVersionId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2266,7 +2264,7 @@ public class KaleoNodePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoNode>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2342,7 +2340,7 @@ public class KaleoNodePersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -2540,29 +2538,14 @@ public class KaleoNodePersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"companyId", "kaleoDefinitionVersionId"}, false);
 
-		_setKaleoNodeUtilPersistence(this);
+		KaleoNodeUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setKaleoNodeUtilPersistence(null);
+		KaleoNodeUtil.setPersistence(null);
 
 		entityCache.removeCache(KaleoNodeImpl.class.getName());
-	}
-
-	private void _setKaleoNodeUtilPersistence(
-		KaleoNodePersistence kaleoNodePersistence) {
-
-		try {
-			Field field = KaleoNodeUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, kaleoNodePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2630,8 +2613,5 @@ public class KaleoNodePersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private KaleoNodeModelArgumentsResolver _kaleoNodeModelArgumentsResolver;
 
 }

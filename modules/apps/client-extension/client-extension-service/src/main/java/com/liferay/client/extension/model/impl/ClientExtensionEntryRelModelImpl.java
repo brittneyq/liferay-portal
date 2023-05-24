@@ -75,12 +75,13 @@ public class ClientExtensionEntryRelModelImpl
 	public static final Object[][] TABLE_COLUMNS = {
 		{"mvccVersion", Types.BIGINT}, {"ctCollectionId", Types.BIGINT},
 		{"uuid_", Types.VARCHAR}, {"externalReferenceCode", Types.VARCHAR},
-		{"clientExtensionEntryRelId", Types.BIGINT},
+		{"clientExtensionEntryRelId", Types.BIGINT}, {"groupId", Types.BIGINT},
 		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
 		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
 		{"modifiedDate", Types.TIMESTAMP}, {"classNameId", Types.BIGINT},
 		{"classPK", Types.BIGINT}, {"cetExternalReferenceCode", Types.VARCHAR},
-		{"type_", Types.VARCHAR}, {"typeSettings", Types.CLOB}
+		{"type_", Types.VARCHAR}, {"typeSettings", Types.CLOB},
+		{"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
@@ -92,6 +93,7 @@ public class ClientExtensionEntryRelModelImpl
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("externalReferenceCode", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("clientExtensionEntryRelId", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("userId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("userName", Types.VARCHAR);
@@ -102,10 +104,11 @@ public class ClientExtensionEntryRelModelImpl
 		TABLE_COLUMNS_MAP.put("cetExternalReferenceCode", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("type_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("typeSettings", Types.CLOB);
+		TABLE_COLUMNS_MAP.put("lastPublishDate", Types.TIMESTAMP);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table ClientExtensionEntryRel (mvccVersion LONG default 0 not null,ctCollectionId LONG default 0 not null,uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,clientExtensionEntryRelId LONG not null,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,cetExternalReferenceCode VARCHAR(75) null,type_ VARCHAR(75) null,typeSettings TEXT null,primary key (clientExtensionEntryRelId, ctCollectionId))";
+		"create table ClientExtensionEntryRel (mvccVersion LONG default 0 not null,ctCollectionId LONG default 0 not null,uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(75) null,clientExtensionEntryRelId LONG not null,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,cetExternalReferenceCode VARCHAR(75) null,type_ VARCHAR(75) null,typeSettings TEXT null,lastPublishDate DATE null,primary key (clientExtensionEntryRelId, ctCollectionId))";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table ClientExtensionEntryRel";
@@ -156,20 +159,26 @@ public class ClientExtensionEntryRelModelImpl
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long TYPE_COLUMN_BITMASK = 32L;
+	public static final long GROUPID_COLUMN_BITMASK = 32L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long UUID_COLUMN_BITMASK = 64L;
+	public static final long TYPE_COLUMN_BITMASK = 64L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long UUID_COLUMN_BITMASK = 128L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *		#getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long CLIENTEXTENSIONENTRYRELID_COLUMN_BITMASK = 128L;
+	public static final long CLIENTEXTENSIONENTRYRELID_COLUMN_BITMASK = 256L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
@@ -262,127 +271,156 @@ public class ClientExtensionEntryRelModelImpl
 	public Map<String, Function<ClientExtensionEntryRel, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<ClientExtensionEntryRel, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<ClientExtensionEntryRel, Object>>
-		_attributeGetterFunctions;
-	private static final Map
-		<String, BiConsumer<ClientExtensionEntryRel, Object>>
-			_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<ClientExtensionEntryRel, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<ClientExtensionEntryRel, Object>>();
-		Map<String, BiConsumer<ClientExtensionEntryRel, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String, BiConsumer<ClientExtensionEntryRel, ?>>();
+		private static final Map
+			<String, Function<ClientExtensionEntryRel, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", ClientExtensionEntryRel::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setMvccVersion);
-		attributeGetterFunctions.put(
-			"ctCollectionId", ClientExtensionEntryRel::getCtCollectionId);
-		attributeSetterBiConsumers.put(
-			"ctCollectionId",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setCtCollectionId);
-		attributeGetterFunctions.put("uuid", ClientExtensionEntryRel::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid",
-			(BiConsumer<ClientExtensionEntryRel, String>)
-				ClientExtensionEntryRel::setUuid);
-		attributeGetterFunctions.put(
-			"externalReferenceCode",
-			ClientExtensionEntryRel::getExternalReferenceCode);
-		attributeSetterBiConsumers.put(
-			"externalReferenceCode",
-			(BiConsumer<ClientExtensionEntryRel, String>)
-				ClientExtensionEntryRel::setExternalReferenceCode);
-		attributeGetterFunctions.put(
-			"clientExtensionEntryRelId",
-			ClientExtensionEntryRel::getClientExtensionEntryRelId);
-		attributeSetterBiConsumers.put(
-			"clientExtensionEntryRelId",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setClientExtensionEntryRelId);
-		attributeGetterFunctions.put(
-			"companyId", ClientExtensionEntryRel::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setCompanyId);
-		attributeGetterFunctions.put(
-			"userId", ClientExtensionEntryRel::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setUserId);
-		attributeGetterFunctions.put(
-			"userName", ClientExtensionEntryRel::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<ClientExtensionEntryRel, String>)
-				ClientExtensionEntryRel::setUserName);
-		attributeGetterFunctions.put(
-			"createDate", ClientExtensionEntryRel::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<ClientExtensionEntryRel, Date>)
-				ClientExtensionEntryRel::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate", ClientExtensionEntryRel::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<ClientExtensionEntryRel, Date>)
-				ClientExtensionEntryRel::setModifiedDate);
-		attributeGetterFunctions.put(
-			"classNameId", ClientExtensionEntryRel::getClassNameId);
-		attributeSetterBiConsumers.put(
-			"classNameId",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setClassNameId);
-		attributeGetterFunctions.put(
-			"classPK", ClientExtensionEntryRel::getClassPK);
-		attributeSetterBiConsumers.put(
-			"classPK",
-			(BiConsumer<ClientExtensionEntryRel, Long>)
-				ClientExtensionEntryRel::setClassPK);
-		attributeGetterFunctions.put(
-			"cetExternalReferenceCode",
-			ClientExtensionEntryRel::getCETExternalReferenceCode);
-		attributeSetterBiConsumers.put(
-			"cetExternalReferenceCode",
-			(BiConsumer<ClientExtensionEntryRel, String>)
-				ClientExtensionEntryRel::setCETExternalReferenceCode);
-		attributeGetterFunctions.put("type", ClientExtensionEntryRel::getType);
-		attributeSetterBiConsumers.put(
-			"type",
-			(BiConsumer<ClientExtensionEntryRel, String>)
-				ClientExtensionEntryRel::setType);
-		attributeGetterFunctions.put(
-			"typeSettings", ClientExtensionEntryRel::getTypeSettings);
-		attributeSetterBiConsumers.put(
-			"typeSettings",
-			(BiConsumer<ClientExtensionEntryRel, String>)
-				ClientExtensionEntryRel::setTypeSettings);
+		static {
+			Map<String, Function<ClientExtensionEntryRel, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<ClientExtensionEntryRel, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", ClientExtensionEntryRel::getMvccVersion);
+			attributeGetterFunctions.put(
+				"ctCollectionId", ClientExtensionEntryRel::getCtCollectionId);
+			attributeGetterFunctions.put(
+				"uuid", ClientExtensionEntryRel::getUuid);
+			attributeGetterFunctions.put(
+				"externalReferenceCode",
+				ClientExtensionEntryRel::getExternalReferenceCode);
+			attributeGetterFunctions.put(
+				"clientExtensionEntryRelId",
+				ClientExtensionEntryRel::getClientExtensionEntryRelId);
+			attributeGetterFunctions.put(
+				"groupId", ClientExtensionEntryRel::getGroupId);
+			attributeGetterFunctions.put(
+				"companyId", ClientExtensionEntryRel::getCompanyId);
+			attributeGetterFunctions.put(
+				"userId", ClientExtensionEntryRel::getUserId);
+			attributeGetterFunctions.put(
+				"userName", ClientExtensionEntryRel::getUserName);
+			attributeGetterFunctions.put(
+				"createDate", ClientExtensionEntryRel::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", ClientExtensionEntryRel::getModifiedDate);
+			attributeGetterFunctions.put(
+				"classNameId", ClientExtensionEntryRel::getClassNameId);
+			attributeGetterFunctions.put(
+				"classPK", ClientExtensionEntryRel::getClassPK);
+			attributeGetterFunctions.put(
+				"cetExternalReferenceCode",
+				ClientExtensionEntryRel::getCETExternalReferenceCode);
+			attributeGetterFunctions.put(
+				"type", ClientExtensionEntryRel::getType);
+			attributeGetterFunctions.put(
+				"typeSettings", ClientExtensionEntryRel::getTypeSettings);
+			attributeGetterFunctions.put(
+				"lastPublishDate", ClientExtensionEntryRel::getLastPublishDate);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<ClientExtensionEntryRel, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<ClientExtensionEntryRel, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<ClientExtensionEntryRel, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"ctCollectionId",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setCtCollectionId);
+			attributeSetterBiConsumers.put(
+				"uuid",
+				(BiConsumer<ClientExtensionEntryRel, String>)
+					ClientExtensionEntryRel::setUuid);
+			attributeSetterBiConsumers.put(
+				"externalReferenceCode",
+				(BiConsumer<ClientExtensionEntryRel, String>)
+					ClientExtensionEntryRel::setExternalReferenceCode);
+			attributeSetterBiConsumers.put(
+				"clientExtensionEntryRelId",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setClientExtensionEntryRelId);
+			attributeSetterBiConsumers.put(
+				"groupId",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setGroupId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<ClientExtensionEntryRel, String>)
+					ClientExtensionEntryRel::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<ClientExtensionEntryRel, Date>)
+					ClientExtensionEntryRel::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<ClientExtensionEntryRel, Date>)
+					ClientExtensionEntryRel::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"classNameId",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setClassNameId);
+			attributeSetterBiConsumers.put(
+				"classPK",
+				(BiConsumer<ClientExtensionEntryRel, Long>)
+					ClientExtensionEntryRel::setClassPK);
+			attributeSetterBiConsumers.put(
+				"cetExternalReferenceCode",
+				(BiConsumer<ClientExtensionEntryRel, String>)
+					ClientExtensionEntryRel::setCETExternalReferenceCode);
+			attributeSetterBiConsumers.put(
+				"type",
+				(BiConsumer<ClientExtensionEntryRel, String>)
+					ClientExtensionEntryRel::setType);
+			attributeSetterBiConsumers.put(
+				"typeSettings",
+				(BiConsumer<ClientExtensionEntryRel, String>)
+					ClientExtensionEntryRel::setTypeSettings);
+			attributeSetterBiConsumers.put(
+				"lastPublishDate",
+				(BiConsumer<ClientExtensionEntryRel, Date>)
+					ClientExtensionEntryRel::setLastPublishDate);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -481,6 +519,29 @@ public class ClientExtensionEntryRelModelImpl
 		}
 
 		_clientExtensionEntryRelId = clientExtensionEntryRelId;
+	}
+
+	@Override
+	public long getGroupId() {
+		return _groupId;
+	}
+
+	@Override
+	public void setGroupId(long groupId) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_groupId = groupId;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public long getOriginalGroupId() {
+		return GetterUtil.getLong(this.<Long>getColumnOriginalValue("groupId"));
 	}
 
 	@Override
@@ -733,6 +794,20 @@ public class ClientExtensionEntryRelModelImpl
 	}
 
 	@Override
+	public Date getLastPublishDate() {
+		return _lastPublishDate;
+	}
+
+	@Override
+	public void setLastPublishDate(Date lastPublishDate) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_lastPublishDate = lastPublishDate;
+	}
+
+	@Override
 	public long getContainerModelId() {
 		return getClientExtensionEntryRelId();
 	}
@@ -828,6 +903,7 @@ public class ClientExtensionEntryRelModelImpl
 			getExternalReferenceCode());
 		clientExtensionEntryRelImpl.setClientExtensionEntryRelId(
 			getClientExtensionEntryRelId());
+		clientExtensionEntryRelImpl.setGroupId(getGroupId());
 		clientExtensionEntryRelImpl.setCompanyId(getCompanyId());
 		clientExtensionEntryRelImpl.setUserId(getUserId());
 		clientExtensionEntryRelImpl.setUserName(getUserName());
@@ -839,6 +915,7 @@ public class ClientExtensionEntryRelModelImpl
 			getCETExternalReferenceCode());
 		clientExtensionEntryRelImpl.setType(getType());
 		clientExtensionEntryRelImpl.setTypeSettings(getTypeSettings());
+		clientExtensionEntryRelImpl.setLastPublishDate(getLastPublishDate());
 
 		clientExtensionEntryRelImpl.resetOriginalValues();
 
@@ -860,6 +937,8 @@ public class ClientExtensionEntryRelModelImpl
 			this.<String>getColumnOriginalValue("externalReferenceCode"));
 		clientExtensionEntryRelImpl.setClientExtensionEntryRelId(
 			this.<Long>getColumnOriginalValue("clientExtensionEntryRelId"));
+		clientExtensionEntryRelImpl.setGroupId(
+			this.<Long>getColumnOriginalValue("groupId"));
 		clientExtensionEntryRelImpl.setCompanyId(
 			this.<Long>getColumnOriginalValue("companyId"));
 		clientExtensionEntryRelImpl.setUserId(
@@ -880,6 +959,8 @@ public class ClientExtensionEntryRelModelImpl
 			this.<String>getColumnOriginalValue("type_"));
 		clientExtensionEntryRelImpl.setTypeSettings(
 			this.<String>getColumnOriginalValue("typeSettings"));
+		clientExtensionEntryRelImpl.setLastPublishDate(
+			this.<Date>getColumnOriginalValue("lastPublishDate"));
 
 		return clientExtensionEntryRelImpl;
 	}
@@ -986,6 +1067,8 @@ public class ClientExtensionEntryRelModelImpl
 		clientExtensionEntryRelCacheModel.clientExtensionEntryRelId =
 			getClientExtensionEntryRelId();
 
+		clientExtensionEntryRelCacheModel.groupId = getGroupId();
+
 		clientExtensionEntryRelCacheModel.companyId = getCompanyId();
 
 		clientExtensionEntryRelCacheModel.userId = getUserId();
@@ -1049,6 +1132,16 @@ public class ClientExtensionEntryRelModelImpl
 			clientExtensionEntryRelCacheModel.typeSettings = null;
 		}
 
+		Date lastPublishDate = getLastPublishDate();
+
+		if (lastPublishDate != null) {
+			clientExtensionEntryRelCacheModel.lastPublishDate =
+				lastPublishDate.getTime();
+		}
+		else {
+			clientExtensionEntryRelCacheModel.lastPublishDate = Long.MIN_VALUE;
+		}
+
 		return clientExtensionEntryRelCacheModel;
 	}
 
@@ -1102,38 +1195,6 @@ public class ClientExtensionEntryRelModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<ClientExtensionEntryRel, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<ClientExtensionEntryRel, Object>>
-				entry : attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<ClientExtensionEntryRel, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply((ClientExtensionEntryRel)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function
@@ -1149,6 +1210,7 @@ public class ClientExtensionEntryRelModelImpl
 	private String _uuid;
 	private String _externalReferenceCode;
 	private long _clientExtensionEntryRelId;
+	private long _groupId;
 	private long _companyId;
 	private long _userId;
 	private String _userName;
@@ -1160,12 +1222,14 @@ public class ClientExtensionEntryRelModelImpl
 	private String _cetExternalReferenceCode;
 	private String _type;
 	private String _typeSettings;
+	private Date _lastPublishDate;
 
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<ClientExtensionEntryRel, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(
@@ -1197,6 +1261,7 @@ public class ClientExtensionEntryRelModelImpl
 			"externalReferenceCode", _externalReferenceCode);
 		_columnOriginalValues.put(
 			"clientExtensionEntryRelId", _clientExtensionEntryRelId);
+		_columnOriginalValues.put("groupId", _groupId);
 		_columnOriginalValues.put("companyId", _companyId);
 		_columnOriginalValues.put("userId", _userId);
 		_columnOriginalValues.put("userName", _userName);
@@ -1208,6 +1273,7 @@ public class ClientExtensionEntryRelModelImpl
 			"cetExternalReferenceCode", _cetExternalReferenceCode);
 		_columnOriginalValues.put("type_", _type);
 		_columnOriginalValues.put("typeSettings", _typeSettings);
+		_columnOriginalValues.put("lastPublishDate", _lastPublishDate);
 	}
 
 	private static final Map<String, String> _attributeNames;
@@ -1242,25 +1308,29 @@ public class ClientExtensionEntryRelModelImpl
 
 		columnBitmasks.put("clientExtensionEntryRelId", 16L);
 
-		columnBitmasks.put("companyId", 32L);
+		columnBitmasks.put("groupId", 32L);
 
-		columnBitmasks.put("userId", 64L);
+		columnBitmasks.put("companyId", 64L);
 
-		columnBitmasks.put("userName", 128L);
+		columnBitmasks.put("userId", 128L);
 
-		columnBitmasks.put("createDate", 256L);
+		columnBitmasks.put("userName", 256L);
 
-		columnBitmasks.put("modifiedDate", 512L);
+		columnBitmasks.put("createDate", 512L);
 
-		columnBitmasks.put("classNameId", 1024L);
+		columnBitmasks.put("modifiedDate", 1024L);
 
-		columnBitmasks.put("classPK", 2048L);
+		columnBitmasks.put("classNameId", 2048L);
 
-		columnBitmasks.put("cetExternalReferenceCode", 4096L);
+		columnBitmasks.put("classPK", 4096L);
 
-		columnBitmasks.put("type_", 8192L);
+		columnBitmasks.put("cetExternalReferenceCode", 8192L);
 
-		columnBitmasks.put("typeSettings", 16384L);
+		columnBitmasks.put("type_", 16384L);
+
+		columnBitmasks.put("typeSettings", 32768L);
+
+		columnBitmasks.put("lastPublishDate", 65536L);
 
 		_columnBitmasks = Collections.unmodifiableMap(columnBitmasks);
 	}

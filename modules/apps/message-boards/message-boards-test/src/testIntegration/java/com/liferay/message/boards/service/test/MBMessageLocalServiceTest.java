@@ -17,7 +17,6 @@ package com.liferay.message.boards.service.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBMessageConstants;
-import com.liferay.message.boards.exception.DuplicateMessageExternalReferenceCodeException;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
@@ -40,6 +39,8 @@ import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 
@@ -163,39 +164,6 @@ public class MBMessageLocalServiceTest {
 		Assert.assertEquals(subject, mbMessage.getBody());
 	}
 
-	@Test(expected = DuplicateMessageExternalReferenceCodeException.class)
-	public void testAddMessageWithExistingExternalReferenceCode()
-		throws Exception {
-
-		User user = TestPropsValues.getUser();
-
-		MBMessage message = addMessage();
-
-		MBMessageLocalServiceUtil.addMessage(
-			message.getExternalReferenceCode(), user.getUserId(),
-			user.getFullName(), _group.getGroupId(),
-			MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, 0, 0,
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			MBMessageConstants.DEFAULT_FORMAT, Collections.emptyList(), false,
-			0.0, false, ServiceContextTestUtil.getServiceContext());
-	}
-
-	@Test
-	public void testAddMessageWithExternalReferenceCode() throws Exception {
-		String externalReferenceCode = RandomTestUtil.randomString();
-		User user = TestPropsValues.getUser();
-
-		MBMessage mbMessage = MBMessageLocalServiceUtil.addMessage(
-			externalReferenceCode, user.getUserId(), user.getFullName(),
-			_group.getGroupId(), MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
-			0, 0, RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			MBMessageConstants.DEFAULT_FORMAT, Collections.emptyList(), false,
-			0.0, false, ServiceContextTestUtil.getServiceContext());
-
-		Assert.assertEquals(
-			externalReferenceCode, mbMessage.getExternalReferenceCode());
-	}
-
 	@Test
 	public void testAddMessageWithNullBody() throws Exception {
 		User user = TestPropsValues.getUser();
@@ -239,47 +207,61 @@ public class MBMessageLocalServiceTest {
 
 		MBMessage mbMessage2 =
 			MBMessageLocalServiceUtil.getMBMessageByExternalReferenceCode(
-				_group.getGroupId(), externalReferenceCode);
+				externalReferenceCode, _group.getGroupId());
 
 		Assert.assertEquals(mbMessage1, mbMessage2);
 	}
 
 	@Test
 	public void testAddXSSMessageWithInvalidFormat() throws Exception {
-		String subject = "<script>alert(1)</script>";
-		String body = "<script>alert(2)</script>";
-		String format = "text/plain";
-		List<ObjectValuePair<String, InputStream>> inputStreamOVPs =
-			Collections.emptyList();
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.portal.security.antisamy.internal." +
+					"AntiSamySanitizerImpl",
+				LoggerTestUtil.WARN)) {
 
-		MBMessage message = MBMessageLocalServiceUtil.addMessage(
-			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
-			_group.getGroupId(), MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
-			subject, body, format, inputStreamOVPs, false, 0.0, false,
-			ServiceContextTestUtil.getServiceContext(
-				_group.getGroupId(), TestPropsValues.getUserId()));
+			String subject = "<script>alert(1)</script>";
+			String body = "<script>alert(2)</script>";
+			String format = "text/plain";
+			List<ObjectValuePair<String, InputStream>> inputStreamOVPs =
+				Collections.emptyList();
 
-		Assert.assertEquals(subject, message.getSubject());
-		Assert.assertEquals(StringPool.BLANK, message.getBody());
-		Assert.assertEquals("html", message.getFormat());
+			MBMessage message = MBMessageLocalServiceUtil.addMessage(
+				TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+				_group.getGroupId(),
+				MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, subject, body,
+				format, inputStreamOVPs, false, 0.0, false,
+				ServiceContextTestUtil.getServiceContext(
+					_group.getGroupId(), TestPropsValues.getUserId()));
+
+			Assert.assertEquals(subject, message.getSubject());
+			Assert.assertEquals(StringPool.BLANK, message.getBody());
+			Assert.assertEquals("html", message.getFormat());
+		}
 	}
 
 	@Test
 	public void testAddXSSSubjectWithEmptyBodyMessage() throws Exception {
-		String subject = "<script>alert(1)</script>";
-		String body = StringPool.BLANK;
-		List<ObjectValuePair<String, InputStream>> inputStreamOVPs =
-			Collections.emptyList();
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.portal.security.antisamy.internal." +
+					"AntiSamySanitizerImpl",
+				LoggerTestUtil.WARN)) {
 
-		MBMessage message = MBMessageLocalServiceUtil.addMessage(
-			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
-			_group.getGroupId(), MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
-			subject, body, "html", inputStreamOVPs, false, 0.0, false,
-			ServiceContextTestUtil.getServiceContext(
-				_group.getGroupId(), TestPropsValues.getUserId()));
+			String subject = "<script>alert(1)</script>";
+			String body = StringPool.BLANK;
+			List<ObjectValuePair<String, InputStream>> inputStreamOVPs =
+				Collections.emptyList();
 
-		Assert.assertEquals(subject, message.getSubject());
-		Assert.assertEquals(HtmlUtil.escape(subject), message.getBody());
+			MBMessage message = MBMessageLocalServiceUtil.addMessage(
+				TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+				_group.getGroupId(),
+				MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, subject, body,
+				"html", inputStreamOVPs, false, 0.0, false,
+				ServiceContextTestUtil.getServiceContext(
+					_group.getGroupId(), TestPropsValues.getUserId()));
+
+			Assert.assertEquals(subject, message.getSubject());
+			Assert.assertEquals(HtmlUtil.escape(subject), message.getBody());
+		}
 	}
 
 	@Test(expected = PortalException.class)

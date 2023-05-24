@@ -19,12 +19,13 @@ import JSONSXPElement from '../../shared/JSONSXPElement';
 import SXPElement from '../../shared/sxp_element/index';
 import {SXP_ELEMENT_PREFIX} from '../../utils/constants';
 import {setStorageAddSXPElementSidebar} from '../../utils/sessionStorage';
-import {isCustomJSONSXPElement} from '../../utils/utils';
+import isCustomJSONSXPElement from '../../utils/sxp_element/is_custom_json_sxp_element';
 
 function QuerySXPElements({
 	elementInstances,
 	entityJSON,
 	errors = [],
+	isIndexCompany,
 	isSubmitting,
 	indexFields,
 	onBlur,
@@ -119,6 +120,7 @@ function QuerySXPElements({
 								id={id}
 								index={index}
 								indexFields={indexFields}
+								isIndexCompany={isIndexCompany}
 								isSubmitting={isSubmitting}
 								key={id}
 								onBlur={onBlur}

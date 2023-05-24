@@ -228,6 +228,7 @@ public class CounterLocalServiceTest {
 			System.setProperty(
 				PropsKeys.COUNTER_INCREMENT + "." + _counterName, "1");
 			System.setProperty("catalina.base", _catalinaBase);
+			System.setProperty("portal:hibernate.hbm.jaxb.cache", "false");
 
 			// HikariCP
 
@@ -243,7 +244,7 @@ public class CounterLocalServiceTest {
 			InitUtil.initWithSpring(
 				Arrays.asList(
 					"META-INF/base-spring.xml", "META-INF/counter-spring.xml"),
-				false, true);
+				false, false, null);
 
 			List<Long> ids = new ArrayList<>();
 

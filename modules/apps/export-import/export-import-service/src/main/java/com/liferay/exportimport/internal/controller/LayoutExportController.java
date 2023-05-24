@@ -92,7 +92,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Máté Thurzó
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.portal.kernel.model.Layout",
 	service = {ExportImportController.class, LayoutExportController.class}
 )
@@ -166,7 +165,7 @@ public class LayoutExportController implements ExportController {
 
 		long companyId = portletDataContext.getCompanyId();
 
-		long defaultUserId = _userLocalService.getDefaultUserId(companyId);
+		long guestUserId = _userLocalService.getGuestUserId(companyId);
 
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.popServiceContext();
@@ -186,7 +185,7 @@ public class LayoutExportController implements ExportController {
 			serviceContext.setUserId(backgroundTask.getUserId());
 		}
 		else {
-			serviceContext.setUserId(defaultUserId);
+			serviceContext.setUserId(guestUserId);
 		}
 
 		serviceContext.setAttribute("exporting", Boolean.TRUE);
@@ -297,7 +296,7 @@ public class LayoutExportController implements ExportController {
 			portletDataContext.getParameterMap(),
 			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS);
 
-		if (!group.isStaged() && Validator.isNotNull(layoutSetPrototypeUuid) &&
+		if (Validator.isNotNull(layoutSetPrototypeUuid) &&
 			layoutSetPrototypeSettings) {
 
 			LayoutSetPrototype layoutSetPrototype =

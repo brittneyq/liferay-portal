@@ -15,7 +15,9 @@ import ClayIcon from '@clayui/icon';
 import ClayList from '@clayui/list';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClaySticker from '@clayui/sticker';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
+import getCN from 'classnames';
 import PropTypes from 'prop-types';
 import React, {
 	useCallback,
@@ -33,16 +35,27 @@ import {
 	CUSTOM_JSON_SXP_ELEMENT,
 	DEFAULT_SXP_ELEMENT_ICON,
 } from '../../utils/data';
-import {addParams, fetchData} from '../../utils/fetch';
-import {getLocalizedText} from '../../utils/language';
-import {setStorageAddSXPElementSidebar} from '../../utils/sessionStorage';
+import addParams from '../../utils/fetch/add_params';
+import fetchData from '../../utils/fetch/fetch_data';
+import {
+	SIDEBAR_STATE,
+	setStorageAddSXPElementSidebar,
+} from '../../utils/sessionStorage';
+import getSXPElementTitleAndDescription from '../../utils/sxp_element/get_sxp_element_title_and_description';
+import isElementInactiveFromNonCompanyIndex from '../../utils/sxp_element/is_element_inactive_from_noncompany_index';
 
 const DEFAULT_CATEGORY = 'other';
 const DEFAULT_EXPANDED_LIST = ['match'];
 
 const LAST_CATEGORIES = [DEFAULT_CATEGORY, 'custom'];
 
-const SXPElementList = ({category, expand, onAddSXPElement, sxpElements}) => {
+const SXPElementList = ({
+	category,
+	expand,
+	isIndexCompany,
+	onAddSXPElement,
+	sxpElements,
+}) => {
 	const {locale} = useContext(ThemeContext);
 
 	const [showList, setShowList] = useState(expand);
@@ -59,6 +72,11 @@ const SXPElementList = ({category, expand, onAddSXPElement, sxpElements}) => {
 		<>
 			{!!category && (
 				<ClayButton
+					aria-label={
+						showList
+							? Liferay.Language.get('collapse')
+							: Liferay.Language.get('expand')
+					}
 					className="panel-header sidebar-dt"
 					displayType="unstyled"
 					onClick={() => setShowList(!showList)}
@@ -76,18 +94,22 @@ const SXPElementList = ({category, expand, onAddSXPElement, sxpElements}) => {
 			{showList && (
 				<ClayList>
 					{sxpElements.map((sxpElement, index) => {
-						const description = getLocalizedText(
-							sxpElement.description_i18n,
-							locale
-						);
-						const title = getLocalizedText(
-							sxpElement.title_i18n,
+						const [
+							title,
+							description,
+						] = getSXPElementTitleAndDescription(
+							sxpElement,
 							locale
 						);
 
 						return (
 							<ClayList.Item
-								className="sxp-element-item"
+								className={getCN('sxp-element-item', {
+									inactive: isElementInactiveFromNonCompanyIndex(
+										isIndexCompany,
+										sxpElement
+									),
+								})}
 								flex
 								key={index}
 							>
@@ -120,17 +142,39 @@ const SXPElementList = ({category, expand, onAddSXPElement, sxpElements}) => {
 								<ClayList.ItemField>
 									<div className="add-sxp-element-button-background" />
 
-									<ClayButton
-										aria-label={Liferay.Language.get('add')}
-										className="add-sxp-element-button"
-										displayType="secondary"
-										onClick={_handleAddSXPElement(
-											sxpElement
-										)}
-										small
-									>
-										{Liferay.Language.get('add')}
-									</ClayButton>
+									{isElementInactiveFromNonCompanyIndex(
+										isIndexCompany,
+										sxpElement
+									) ? (
+										<ClayTooltipProvider>
+											<ClayButton
+												aria-disabled="true"
+												className="add-sxp-element-button disabled"
+												data-tooltip-align="left"
+												displayType="secondary"
+												small
+												title={Liferay.Language.get(
+													'query-element-inactive-from-index-help'
+												)}
+											>
+												{Liferay.Language.get('add')}
+											</ClayButton>
+										</ClayTooltipProvider>
+									) : (
+										<ClayButton
+											aria-label={Liferay.Language.get(
+												'add'
+											)}
+											className="add-sxp-element-button"
+											displayType="secondary"
+											onClick={_handleAddSXPElement(
+												sxpElement
+											)}
+											small
+										>
+											{Liferay.Language.get('add')}
+										</ClayButton>
+									)}
 								</ClayList.ItemField>
 							</ClayList.Item>
 						);
@@ -142,6 +186,7 @@ const SXPElementList = ({category, expand, onAddSXPElement, sxpElements}) => {
 };
 
 function AddSXPElement({
+	isIndexCompany,
 	emptyMessage = Liferay.Language.get('no-query-elements-found'),
 	onAddSXPElement,
 	querySXPElements,
@@ -207,8 +252,8 @@ function AddSXPElement({
 		(value) => {
 			const newSXPElements = sxpElements.filter((sxpElement) => {
 				if (value) {
-					const sxpElementTitle = getLocalizedText(
-						sxpElement.title_i18n,
+					const [sxpElementTitle] = getSXPElementTitleAndDescription(
+						sxpElement,
 						locale
 					);
 
@@ -248,6 +293,7 @@ function AddSXPElement({
 									expandAll ||
 									DEFAULT_EXPANDED_LIST.includes(category)
 								}
+								isIndexCompany={isIndexCompany}
 								key={category}
 								onAddSXPElement={onAddSXPElement}
 								sxpElements={categorizedSXPElements[category]}
@@ -268,11 +314,11 @@ function AddSXPElement({
 
 function AddSXPElementSidebar({
 	emptyMessage,
+	isIndexCompany,
 	onAddSXPElement,
 	onClose,
 	visible,
 }) {
-	const {defaultLocale} = useContext(ThemeContext);
 	const isMounted = useIsMounted();
 
 	const [querySXPElements, setQuerySXPElements] = useState(null);
@@ -285,25 +331,7 @@ function AddSXPElementSidebar({
 		)
 			.then((responseContent) => {
 				if (isMounted()) {
-					setQuerySXPElements(
-						responseContent.items.map(
-							({
-								description,
-								description_i18n,
-								title,
-								title_i18n,
-								...props
-							}) => ({
-								...props,
-								description_i18n: description_i18n || {
-									[defaultLocale]: description,
-								},
-								title_i18n: title_i18n || {
-									[defaultLocale]: title,
-								},
-							})
-						)
-					);
+					setQuerySXPElements(responseContent.items);
 				}
 			})
 			.catch(() => {
@@ -318,7 +346,7 @@ function AddSXPElementSidebar({
 	}
 
 	const _handleClose = () => {
-		setStorageAddSXPElementSidebar('closed');
+		setStorageAddSXPElementSidebar(SIDEBAR_STATE.CLOSED);
 
 		onClose();
 	};
@@ -332,6 +360,7 @@ function AddSXPElementSidebar({
 		>
 			<AddSXPElement
 				emptyMessage={emptyMessage}
+				isIndexCompany={isIndexCompany}
 				onAddSXPElement={onAddSXPElement}
 				querySXPElements={querySXPElements}
 			/>
@@ -341,6 +370,7 @@ function AddSXPElementSidebar({
 
 AddSXPElementSidebar.propTypes = {
 	emptyMessage: PropTypes.string,
+	isIndexCompany: PropTypes.bool,
 	onAddSXPElement: PropTypes.func,
 	onClose: PropTypes.func,
 	visible: PropTypes.bool,

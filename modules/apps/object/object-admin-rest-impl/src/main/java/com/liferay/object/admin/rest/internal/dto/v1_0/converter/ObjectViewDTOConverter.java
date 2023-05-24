@@ -18,25 +18,19 @@ import com.liferay.object.admin.rest.dto.v1_0.ObjectView;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectViewColumn;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectViewFilterColumn;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectViewSortColumn;
-import com.liferay.object.field.filter.parser.ObjectFieldFilterParser;
-import com.liferay.object.field.filter.parser.ObjectFieldFilterParserTracker;
-import com.liferay.object.model.ObjectField;
+import com.liferay.object.field.filter.parser.ObjectFieldFilterContext;
+import com.liferay.object.field.filter.parser.ObjectFieldFilterContributor;
+import com.liferay.object.field.filter.parser.ObjectFieldFilterContributorRegistry;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
-import com.liferay.object.util.LocalizedMapUtil;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.util.TransformUtil;
+import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -46,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "dto.class.name=com.liferay.object.model.ObjectView",
-	service = {DTOConverter.class, ObjectViewDTOConverter.class}
+	service = DTOConverter.class
 )
 public class ObjectViewDTOConverter
 	implements DTOConverter<com.liferay.object.model.ObjectView, ObjectView> {
@@ -66,6 +60,10 @@ public class ObjectViewDTOConverter
 			return null;
 		}
 
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.getObjectDefinition(
+				objectView.getObjectDefinitionId());
+
 		return new ObjectView() {
 			{
 				actions = dtoConverterContext.getActions();
@@ -75,6 +73,8 @@ public class ObjectViewDTOConverter
 				id = objectView.getObjectViewId();
 				name = LocalizedMapUtil.getLanguageIdMap(
 					objectView.getNameMap());
+				objectDefinitionExternalReferenceCode =
+					objectDefinition.getExternalReferenceCode();
 				objectDefinitionId = objectView.getObjectDefinitionId();
 				objectViewColumns = TransformUtil.transformToArray(
 					objectView.getObjectViewColumns(),
@@ -148,48 +148,14 @@ public class ObjectViewDTOConverter
 			serviceBuilderObjectViewFilterColumn.getJSON());
 		objectViewFilterColumn.setValueSummary(
 			() -> {
-				ObjectFieldFilterParser objectFieldFilterParser =
-					_objectFieldFilterParserTracker.getObjectFieldFilterParser(
-						serviceBuilderObjectViewFilterColumn.getFilterType());
+				ObjectFieldFilterContributor objectFieldFilterContributor =
+					_objectFieldFilterContributorRegistry.
+						getObjectFieldFilterContributor(
+							new ObjectFieldFilterContext(
+								locale, objectDefinitionId,
+								serviceBuilderObjectViewFilterColumn));
 
-				if (Objects.equals(
-						serviceBuilderObjectViewFilterColumn.
-							getObjectFieldName(),
-						"status")) {
-
-					Map<String, Object> preloadedData =
-						objectFieldFilterParser.parse(
-							0L, locale, serviceBuilderObjectViewFilterColumn);
-
-					return StringUtil.merge(
-						ListUtil.toList(
-							(List<Integer>)preloadedData.get("itemsValues"),
-							itemValue -> _language.get(
-								locale,
-								WorkflowConstants.getStatusLabel(itemValue))),
-						StringPool.COMMA_AND_SPACE);
-				}
-
-				ObjectField objectField =
-					_objectFieldLocalService.fetchObjectField(
-						objectDefinitionId,
-						objectViewFilterColumn.getObjectFieldName());
-
-				if (objectField.getListTypeDefinitionId() == 0) {
-					return StringPool.BLANK;
-				}
-
-				Map<String, Object> preloadedData =
-					objectFieldFilterParser.parse(
-						objectField.getListTypeDefinitionId(), locale,
-						serviceBuilderObjectViewFilterColumn);
-
-				return StringUtil.merge(
-					ListUtil.toList(
-						(List<Map<String, String>>)preloadedData.get(
-							"itemsValues"),
-						itemValue -> itemValue.get("label")),
-					StringPool.COMMA_AND_SPACE);
+				return objectFieldFilterContributor.toValueSummary();
 			});
 
 		return objectViewFilterColumn;
@@ -214,10 +180,11 @@ public class ObjectViewDTOConverter
 	}
 
 	@Reference
-	private Language _language;
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
-	private ObjectFieldFilterParserTracker _objectFieldFilterParserTracker;
+	private ObjectFieldFilterContributorRegistry
+		_objectFieldFilterContributorRegistry;
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;

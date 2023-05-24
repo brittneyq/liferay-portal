@@ -29,7 +29,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
@@ -39,6 +38,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchContextFactory;
@@ -85,7 +85,7 @@ public class KaleoFormsViewRecordsDisplayContext {
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 
-		_kaleoProcess = (KaleoProcess)_renderRequest.getAttribute(
+		_kaleoProcess = (KaleoProcess)renderRequest.getAttribute(
 			KaleoFormsWebKeys.KALEO_PROCESS);
 
 		_ddlRecordSet = _kaleoProcess.getDDLRecordSet();
@@ -395,7 +395,7 @@ public class KaleoFormsViewRecordsDisplayContext {
 
 		User user = _kaleoFormsAdminRequestHelper.getUser();
 
-		if (!user.isDefaultUser()) {
+		if (!user.isGuestUser()) {
 			_searchContainer.setRowChecker(
 				new EmptyOnClickRowChecker(_renderResponse));
 		}
@@ -530,13 +530,13 @@ public class KaleoFormsViewRecordsDisplayContext {
 	private Sort _getSort() {
 		boolean ascending = false;
 
-		if (Objects.equals("asc", getOrderByType())) {
+		if (Objects.equals(getOrderByType(), "asc")) {
 			ascending = true;
 		}
 
 		String fieldName = Field.MODIFIED_DATE;
 
-		if (Objects.equals("create-date", getOrderByCol())) {
+		if (Objects.equals(getOrderByCol(), "create-date")) {
 			fieldName = Field.CREATE_DATE;
 		}
 

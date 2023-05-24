@@ -9,6 +9,10 @@
  * distribution rights of the Software.
  */
 
+export const DEFAULT_ERROR = Liferay.Language.get(
+	'an-unexpected-error-occurred'
+);
+
 export const ERROR_MESSAGES = {
 	GREATER_THAN_X: Liferay.Language.get(
 		'please-enter-a-value-greater-than-or-equal-to-x'
@@ -23,4 +27,7 @@ export const ERROR_MESSAGES = {
 		'boost-must-be-greater-than-or-equal-to-0'
 	),
 	REQUIRED: Liferay.Language.get('this-field-is-required'),
+	REQUIRED_CATEGORY_SELECTOR: Liferay.Language.get(
+		'this-field-is-required-please-select-from-the-dropdown-list-or-type-in-an-ID-number'
+	),
 };

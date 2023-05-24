@@ -19,8 +19,10 @@ import {ClayTooltipProvider} from '@clayui/tooltip';
 import fuzzy from 'fuzzy';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 
-import {alphabeticalSort, stringLengthSort} from '../../utils/sort';
-import {isDefined, isEmpty} from '../../utils/utils';
+import isDefined from '../../utils/functions/is_defined';
+import isEmpty from '../../utils/functions/is_empty';
+import sortAlphabetically from '../../utils/functions/sort_alphabetically';
+import sortByStringLength from '../../utils/functions/sort_by_string_length';
 import ThemeContext from '../ThemeContext';
 
 const USER_LANGUAGE_VARIABLE = '${context.language_id}';
@@ -39,16 +41,24 @@ function filterAndSortIndexFields(indexFields, field) {
 			indexField.name.toLowerCase().includes(field.toLowerCase())
 		)
 		.sort((a, b) => {
-			const sort = stringLengthSort(a.name, b.name);
+			const sort = sortByStringLength(a.name, b.name);
 
 			if (sort === 0 || field === '') {
-				return alphabeticalSort(a.name, b.name);
+				return sortAlphabetically(a.name, b.name);
 			}
 
 			return sort;
 		});
 }
 
+/**
+ * Displays a single item in the autocomplete dropdown.
+ * @param {object} indexField A field mapping object containing
+ * 	{languageIdPosition, name, type}.
+ * 	@see FieldMappingInfoResourceImpl#_addFieldMappingInfo
+ * @param {String} match The current input value.
+ * @param {Function} onClick
+ */
 function AutocompleteItem({indexField, match = '', onClick}) {
 	const fuzzyMatch = fuzzy.match(match, indexField.name, {
 		post: '</strong>',
@@ -69,7 +79,14 @@ function AutocompleteItem({indexField, match = '', onClick}) {
 
 			{indexField.languageIdPosition > -1 && <ClayIcon symbol="globe" />}
 
-			<span className="type">{indexField.type}</span>
+			<span
+				className="type"
+				{...(indexField.type?.length > 7
+					? {title: indexField.type}
+					: {})}
+			>
+				{indexField.type}
+			</span>
 		</ClayDropDown.Item>
 	);
 }
@@ -83,6 +100,7 @@ function AutocompleteItem({indexField, match = '', onClick}) {
  * 	name: 'ddmTemplateKey',
  * 	type: 'keyword'
  * }
+ * @see FieldMappingInfoResourceImpl#_addFieldMappingInfo
  */
 function FieldRow({
 	boost = 1,
@@ -213,7 +231,7 @@ function FieldRow({
 								}
 								onSetActive={setShowDropDown}
 							>
-								<ClayDropDown.ItemList className="sxp-blueprint-field-row-dropdown">
+								<ClayDropDown.ItemList className="sxp-field-row-dropdown-root">
 									{filteredIndexFields.map(
 										(indexField, index) => (
 											<AutocompleteItem

@@ -25,6 +25,7 @@ import com.liferay.commerce.order.rule.model.COREntryTable;
 import com.liferay.commerce.order.rule.service.COREntryRelLocalService;
 import com.liferay.commerce.order.rule.service.base.COREntryLocalServiceBaseImpl;
 import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
@@ -40,7 +41,10 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.Constants;
@@ -51,12 +55,10 @@ import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 
 import java.io.Serializable;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.LongStream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -66,7 +68,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.order.rule.model.COREntry",
 	service = AopService.class
 )
@@ -90,7 +91,7 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 
 		corEntry.setExternalReferenceCode(externalReferenceCode);
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		corEntry.setCompanyId(user.getCompanyId());
 		corEntry.setUserId(user.getUserId());
@@ -136,7 +137,7 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 
 		corEntry = corEntryPersistence.update(corEntry);
 
-		resourceLocalService.addModelResources(corEntry, serviceContext);
+		_resourceLocalService.addModelResources(corEntry, serviceContext);
 
 		return _startWorkflowInstance(
 			user.getUserId(), corEntry, serviceContext);
@@ -154,7 +155,7 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 	public COREntry deleteCOREntry(COREntry corEntry) throws PortalException {
 		corEntryPersistence.remove(corEntry);
 
-		resourceLocalService.deleteResource(
+		_resourceLocalService.deleteResource(
 			corEntry.getCompanyId(), COREntry.class.getName(),
 			ResourceConstants.SCOPE_INDIVIDUAL, corEntry.getCOREntryId());
 
@@ -386,7 +387,7 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 		corEntry.setActive(active);
 		corEntry.setDescription(description);
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		corEntry.setDisplayDate(
 			_portal.getDate(
@@ -476,7 +477,7 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 
 		corEntry.setStatus(status);
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		corEntry.setStatusByUserId(user.getUserId());
 		corEntry.setStatusByUserName(user.getFullName());
@@ -590,14 +591,12 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 				accountGroupIds = new long[] {0};
 			}
 
-			LongStream longStream = Arrays.stream(accountGroupIds);
+			List<Long> accountGroupIdsList = TransformUtil.transformToList(
+				accountGroupIds, Long::valueOf);
 
 			predicate = predicate.and(
 				accountGroupCOREntryRel.classPK.in(
-					longStream.boxed(
-					).toArray(
-						Long[]::new
-					)));
+					accountGroupIdsList.toArray(new Long[0])));
 		}
 		else {
 			predicate = predicate.and(
@@ -631,7 +630,7 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 		Column<COREntryRelTable, Long> corEntryIdColumn) {
 
 		return classNameIdColumn.eq(
-			classNameLocalService.getClassNameId(className)
+			_classNameLocalService.getClassNameId(className)
 		).and(
 			corEntryIdColumn.eq(COREntryTable.INSTANCE.COREntryId)
 		);
@@ -653,10 +652,19 @@ public class COREntryLocalServiceImpl extends COREntryLocalServiceBaseImpl {
 		COREntryLocalServiceImpl.class);
 
 	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
 	private COREntryRelLocalService _corEntryRelLocalService;
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private ResourceLocalService _resourceLocalService;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 	@Reference
 	private WorkflowInstanceLinkLocalService _workflowInstanceLinkLocalService;

@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		SiteNavigationMenuItemModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.site.navigation.model.impl.SiteNavigationMenuItemImpl",
+		"table.name=SiteNavigationMenuItem"
+	},
+	service = ArgumentsResolver.class
 )
 public class SiteNavigationMenuItemModelArgumentsResolver
 	implements ArgumentsResolver {

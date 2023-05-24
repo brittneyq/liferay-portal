@@ -262,6 +262,14 @@ public class CommerceVirtualOrderItemLocalServiceUtil {
 			commerceOrderItemId);
 	}
 
+	public static CommerceVirtualOrderItem
+		fetchCommerceVirtualOrderItemByCommerceOrderItemId(
+			long commerceOrderItemId, boolean useFinderCache) {
+
+		return getService().fetchCommerceVirtualOrderItemByCommerceOrderItemId(
+			commerceOrderItemId, useFinderCache);
+	}
+
 	/**
 	 * Returns the commerce virtual order item matching the UUID and group.
 	 *
@@ -483,6 +491,12 @@ public class CommerceVirtualOrderItemLocalServiceUtil {
 
 	public static CommerceVirtualOrderItemLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		CommerceVirtualOrderItemLocalService service) {
+
+		_service = service;
 	}
 
 	private static volatile CommerceVirtualOrderItemLocalService _service;

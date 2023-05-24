@@ -24,7 +24,6 @@ import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.file.criterion.FileItemSelectorCriterion;
 import com.liferay.object.configuration.ObjectConfiguration;
 import com.liferay.object.dynamic.data.mapping.form.field.type.constants.ObjectDDMFormFieldTypeConstants;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -33,12 +32,14 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelper;
+import com.liferay.portal.kernel.upload.configuration.UploadServletRequestConfigurationProvider;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -58,7 +59,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.object.configuration.ObjectConfiguration",
-	immediate = true,
 	property = "ddm.form.field.type.name=" + ObjectDDMFormFieldTypeConstants.ATTACHMENT,
 	service = DDMFormFieldTemplateContextContributor.class
 )
@@ -82,7 +82,7 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 			"maximumFileSize", maximumFileSize
 		).put(
 			"overallMaximumUploadRequestSize",
-			_uploadServletRequestConfigurationHelper.getMaxSize()
+			_uploadServletRequestConfigurationProvider.getMaxSize()
 		).put(
 			"tip",
 			_language.format(
@@ -96,6 +96,7 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 			"url", _getURL(ddmFormField, ddmFormFieldRenderingContext)
 		).putAll(
 			_getFileEntryProperties(
+				ddmFormField,
 				ddmFormFieldRenderingContext.getHttpServletRequest(),
 				GetterUtil.getLong(ddmFormFieldRenderingContext.getValue()))
 		).build();
@@ -109,7 +110,8 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 	}
 
 	private Map<String, String> _getFileEntryProperties(
-		HttpServletRequest httpServletRequest, long value) {
+		DDMFormField ddmFormField, HttpServletRequest httpServletRequest,
+		long value) {
 
 		try {
 			FileEntry fileEntry = _dlAppLocalService.getFileEntry(value);
@@ -120,9 +122,31 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 
 			return HashMapBuilder.put(
 				"contentURL",
-				_dlURLHelper.getPreviewURL(
-					fileEntry, fileEntry.getFileVersion(), themeDisplay,
-					StringPool.BLANK)
+				() -> {
+					String url = GetterUtil.getString(
+						ddmFormField.getProperty("contentURL"));
+
+					if (Validator.isNotNull(url)) {
+						return url;
+					}
+
+					url = _dlURLHelper.getDownloadURL(
+						fileEntry, fileEntry.getFileVersion(), themeDisplay,
+						StringPool.BLANK);
+
+					url = HttpComponentsUtil.addParameter(
+						url, "objectDefinitionExternalReferenceCode",
+						GetterUtil.getString(
+							ddmFormField.getProperty(
+								"objectDefinitionExternalReferenceCode")));
+					url = HttpComponentsUtil.addParameter(
+						url, "objectEntryExternalReferenceCode",
+						GetterUtil.getString(
+							ddmFormField.getProperty(
+								"objectEntryExternalReferenceCode")));
+
+					return url;
+				}
 			).put(
 				"title", fileEntry.getFileName()
 			).build();
@@ -253,7 +277,7 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 	private volatile ObjectConfiguration _objectConfiguration;
 
 	@Reference
-	private UploadServletRequestConfigurationHelper
-		_uploadServletRequestConfigurationHelper;
+	private UploadServletRequestConfigurationProvider
+		_uploadServletRequestConfigurationProvider;
 
 }

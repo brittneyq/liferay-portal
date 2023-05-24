@@ -62,6 +62,7 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.RemotePreference;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -70,7 +71,6 @@ import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.security.auth.EmailAddressGeneratorFactory;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.users.admin.kernel.util.UserInitialsGeneratorUtil;
 
@@ -186,8 +186,8 @@ public class UserImpl extends UserBaseImpl {
 	/**
 	 * Returns the user's digest.
 	 *
+	 * @return     the user's digest
 	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 * @return the user's digest
 	 */
 	@Deprecated
 	@Override
@@ -204,18 +204,26 @@ public class UserImpl extends UserBaseImpl {
 	/**
 	 * Returns a digest for the user, incorporating the password.
 	 *
+	 * @param      password a password to incorporate with the digest
+	 * @return     a digest for the user, incorporating the password
 	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 * @param  password a password to incorporate with the digest
-	 * @return a digest for the user, incorporating the password
 	 */
 	@Deprecated
 	@Override
 	public String getDigest(String password) {
 		if (Validator.isNull(getScreenName())) {
-			throw new IllegalStateException("Screen name is null");
+			if (_log.isDebugEnabled()) {
+				_log.debug("Screen name is required to compute the digest");
+			}
+
+			return null;
 		}
 		else if (Validator.isNull(getEmailAddress())) {
-			throw new IllegalStateException("Email address is null");
+			if (_log.isDebugEnabled()) {
+				_log.debug("Email address is required to compute the digest");
+			}
+
+			return null;
 		}
 
 		StringBundler sb = new StringBundler(5);
@@ -331,7 +339,7 @@ public class UserImpl extends UserBaseImpl {
 			ThemeDisplay themeDisplay, boolean privateLayout)
 		throws PortalException {
 
-		if (isDefaultUser() || (themeDisplay == null)) {
+		if (isGuestUser() || (themeDisplay == null)) {
 			return StringPool.BLANK;
 		}
 
@@ -394,29 +402,29 @@ public class UserImpl extends UserBaseImpl {
 		FullNameGenerator fullNameGenerator =
 			FullNameGeneratorFactory.getInstance();
 
-		long prefixId = 0;
+		long prefixListTypeId = 0;
 
 		if (usePrefix) {
 			Contact contact = fetchContact();
 
 			if (contact != null) {
-				prefixId = contact.getPrefixId();
+				prefixListTypeId = contact.getPrefixListTypeId();
 			}
 		}
 
-		long suffixId = 0;
+		long suffixListTypeId = 0;
 
 		if (useSuffix) {
 			Contact contact = fetchContact();
 
 			if (contact != null) {
-				suffixId = contact.getSuffixId();
+				suffixListTypeId = contact.getSuffixListTypeId();
 			}
 		}
 
 		return fullNameGenerator.getLocalizedFullName(
 			getFirstName(), getMiddleName(), getLastName(), getLocale(),
-			prefixId, suffixId);
+			prefixListTypeId, suffixListTypeId);
 	}
 
 	@Override
@@ -729,12 +737,16 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public boolean hasMySites() throws PortalException {
-		if (isDefaultUser()) {
+		if (isGuestUser()) {
 			return false;
 		}
 
-		if ((PropsValues.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED ||
-			 PropsValues.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED) &&
+		if ((PrefsPropsUtil.getBoolean(
+				getCompanyId(),
+				PropsKeys.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED) ||
+			 PrefsPropsUtil.getBoolean(
+				 getCompanyId(),
+				 PropsKeys.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED)) &&
 			(getUserId() == PrincipalThreadLocal.getUserId())) {
 
 			return true;
@@ -780,9 +792,18 @@ public class UserImpl extends UserBaseImpl {
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #isGuestUser}
+	 */
+	@Deprecated
+	@Override
+	public boolean isDefaultUser() {
+		return isGuestUser();
+	}
+
 	@Override
 	public boolean isEmailAddressComplete() {
-		if (isDefaultUser()) {
+		if (isGuestUser()) {
 			return true;
 		}
 
@@ -798,7 +819,7 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public boolean isEmailAddressVerificationComplete() {
-		if (isDefaultUser() || isEmailAddressVerified()) {
+		if (isGuestUser() || isEmailAddressVerified()) {
 			return true;
 		}
 
@@ -827,6 +848,15 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
+	public boolean isGuestUser() {
+		if (getType() == UserConstants.TYPE_GUEST) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isMale() throws PortalException {
 		return getMale();
 	}
@@ -838,7 +868,7 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public boolean isReminderQueryComplete() {
-		if (isDefaultUser()) {
+		if (isGuestUser()) {
 			return true;
 		}
 
@@ -855,8 +885,19 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	@Override
+	public boolean isServiceAccountUser() {
+		if ((getType() == UserConstants.TYPE_DEFAULT_SERVICE_ACCOUNT) ||
+			(getType() == UserConstants.TYPE_SERVICE_ACCOUNT)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isSetupComplete() {
-		if (isDefaultUser()) {
+		if (isGuestUser()) {
 			return true;
 		}
 
@@ -872,7 +913,7 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public boolean isTermsOfUseComplete() {
-		if (isDefaultUser() || isAgreedToTermsOfUse()) {
+		if (isGuestUser() || isAgreedToTermsOfUse()) {
 			return true;
 		}
 
@@ -905,7 +946,7 @@ public class UserImpl extends UserBaseImpl {
 
 	@Override
 	public void setLanguageId(String languageId) {
-		if (isDefaultUser()) {
+		if (isGuestUser()) {
 			_locale = LocaleUtil.fromLanguageId(languageId, false);
 		}
 		else {

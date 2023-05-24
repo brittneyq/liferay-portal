@@ -19,7 +19,7 @@ import ClayLayout from '@clayui/layout';
 import ClayLink from '@clayui/link';
 import ClayList from '@clayui/list';
 import classNames from 'classnames';
-import {navigate, openConfirmModal} from 'frontend-js-web';
+import {navigate, openConfirmModal, setSessionValue} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -83,7 +83,7 @@ const ExperienceItem = ({
 	const handleExperimentNavigation = (event) => {
 		event.preventDefault();
 
-		Liferay.Util.Session.set(
+		setSessionValue(
 			'com.liferay.segments.experiment.web_panelState',
 			'open'
 		).then(() => {
@@ -96,11 +96,7 @@ const ExperienceItem = ({
 	});
 
 	return (
-		<ClayList.Item
-			aria-checked={active}
-			className={itemClassName}
-			role="listitem"
-		>
+		<ClayList.Item aria-current={active} className={itemClassName}>
 			<ClayList.ItemField expand>
 				<ClayButton displayType="unstyled" onClick={handleSelect}>
 					<div className="c-inner" tabIndex="-1">
@@ -122,12 +118,21 @@ const ExperienceItem = ({
 											<ExperienceLockIcon />
 										)}
 
-										{experience.active && (
+										{experience.active ? (
 											<ClayLabel
-												className="inline-item-after"
+												className="flex-shrink-0 inline-item-after"
 												displayType="success"
 											>
 												{Liferay.Language.get('active')}
+											</ClayLabel>
+										) : (
+											<ClayLabel
+												className="flex-shrink-0 inline-item-after"
+												displayType="secondary"
+											>
+												{Liferay.Language.get(
+													'inactive'
+												)}
 											</ClayLabel>
 										)}
 									</span>

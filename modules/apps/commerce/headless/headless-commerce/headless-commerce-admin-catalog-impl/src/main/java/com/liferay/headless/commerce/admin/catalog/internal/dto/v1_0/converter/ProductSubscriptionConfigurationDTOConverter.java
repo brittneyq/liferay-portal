@@ -27,11 +27,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=ProductSubscriptionConfiguration",
-	service = {
-		DTOConverter.class, ProductSubscriptionConfigurationDTOConverter.class
-	}
+	service = DTOConverter.class
 )
 public class ProductSubscriptionConfigurationDTOConverter
 	implements DTOConverter<CPDefinition, ProductSubscriptionConfiguration> {
@@ -51,6 +48,18 @@ public class ProductSubscriptionConfigurationDTOConverter
 
 		return new ProductSubscriptionConfiguration() {
 			{
+				deliverySubscriptionEnable =
+					cpDefinition.isDeliverySubscriptionEnabled();
+				deliverySubscriptionLength =
+					cpDefinition.getDeliverySubscriptionLength();
+				deliverySubscriptionNumberOfLength =
+					cpDefinition.getDeliveryMaxSubscriptionCycles();
+				deliverySubscriptionType =
+					ProductSubscriptionConfiguration.DeliverySubscriptionType.
+						create(cpDefinition.getDeliverySubscriptionType());
+				deliverySubscriptionTypeSettings =
+					cpDefinition.
+						getDeliverySubscriptionTypeSettingsUnicodeProperties();
 				enable = cpDefinition.isSubscriptionEnabled();
 				length = cpDefinition.getSubscriptionLength();
 				numberOfLength = cpDefinition.getMaxSubscriptionCycles();
@@ -58,7 +67,7 @@ public class ProductSubscriptionConfigurationDTOConverter
 					ProductSubscriptionConfiguration.SubscriptionType.create(
 						cpDefinition.getSubscriptionType());
 				subscriptionTypeSettings =
-					cpDefinition.getSubscriptionTypeSettingsProperties();
+					cpDefinition.getSubscriptionTypeSettingsUnicodeProperties();
 			}
 		};
 	}

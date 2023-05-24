@@ -29,8 +29,6 @@ function TableHead({
 	selectedItemsKey,
 	selectedItemsValue,
 	selectionType,
-	sorting,
-	updateSorting,
 }) {
 	const expandableColumns = fields.some((field) => field.expand);
 
@@ -60,6 +58,13 @@ function TableHead({
 								}
 								name="table-head-selector"
 								onChange={handleCheckboxClick}
+								title={
+									items.length !== selectedItemsValue.length
+										? Liferay.Language.get('select-items')
+										: Liferay.Language.get(
+												'clear-selection'
+										  )
+								}
 							/>
 						) : null}
 					</DndTable.Cell>
@@ -70,8 +75,6 @@ function TableHead({
 						{...field}
 						expandableColumns={expandableColumns}
 						key={field.label}
-						sorting={sorting}
-						updateSorting={updateSorting}
 					/>
 				))}
 
@@ -104,8 +107,6 @@ TableHead.propTypes = {
 		PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 	),
 	selectionType: PropTypes.oneOf(['single', 'multiple']),
-	sorting: PropTypes.any,
-	updateSorting: PropTypes.func.isRequired,
 };
 
 export default TableHead;

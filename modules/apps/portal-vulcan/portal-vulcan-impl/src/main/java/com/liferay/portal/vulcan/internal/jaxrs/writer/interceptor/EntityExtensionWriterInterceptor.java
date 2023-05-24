@@ -17,12 +17,11 @@ package com.liferay.portal.vulcan.internal.jaxrs.writer.interceptor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.vulcan.internal.extension.EntityExtensionHandler;
-import com.liferay.portal.vulcan.internal.jaxrs.extension.ExtendedEntity;
+import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
+import com.liferay.portal.vulcan.jaxrs.extension.ExtendedEntity;
 
 import java.io.IOException;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.ContextResolver;
@@ -54,8 +53,9 @@ public class EntityExtensionWriterInterceptor implements WriterInterceptor {
 	}
 
 	private void _extendEntity(
-		EntityExtensionHandler entityExtensionHandler,
-		WriterInterceptorContext writerInterceptorContext) {
+			EntityExtensionHandler entityExtensionHandler,
+			WriterInterceptorContext writerInterceptorContext)
+		throws IOException {
 
 		try {
 			writerInterceptorContext.setEntity(
@@ -73,7 +73,7 @@ public class EntityExtensionWriterInterceptor implements WriterInterceptor {
 		catch (Exception exception) {
 			_log.error(exception);
 
-			throw new WebApplicationException(exception);
+			throw new IOException(exception);
 		}
 	}
 

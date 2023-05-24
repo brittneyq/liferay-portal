@@ -16,7 +16,7 @@ import {VIEWPORT_SIZES} from '../../../../src/main/resources/META-INF/resources/
 import {getResetLabelByViewport} from '../../../../src/main/resources/META-INF/resources/page_editor/app/utils/getResetLabelByViewport';
 
 jest.mock(
-	'../../../../src/main/resources/META-INF/resources/page_editor/app/config',
+	'../../../../src/main/resources/META-INF/resources/page_editor/app/config/index',
 	() => ({
 		config: {
 			availableViewportSizes: {
@@ -28,6 +28,11 @@ jest.mock(
 		},
 	})
 );
+
+jest.mock('frontend-js-web', () => ({
+	...jest.requireActual('frontend-js-web'),
+	sub: jest.fn((langKey, arg) => langKey.replace('x', arg)),
+}));
 
 const getLabel = (viewport) => `reset-to-${viewport}-value`;
 

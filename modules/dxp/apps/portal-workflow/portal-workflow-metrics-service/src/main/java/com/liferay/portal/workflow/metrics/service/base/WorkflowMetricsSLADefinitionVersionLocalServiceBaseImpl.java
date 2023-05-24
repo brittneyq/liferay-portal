@@ -57,13 +57,10 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.workflow.metrics.model.WorkflowMetricsSLADefinitionVersion;
 import com.liferay.portal.workflow.metrics.service.WorkflowMetricsSLADefinitionVersionLocalService;
 import com.liferay.portal.workflow.metrics.service.WorkflowMetricsSLADefinitionVersionLocalServiceUtil;
-import com.liferay.portal.workflow.metrics.service.persistence.WorkflowMetricsSLADefinitionPersistence;
 import com.liferay.portal.workflow.metrics.service.persistence.WorkflowMetricsSLADefinitionVersionFinder;
 import com.liferay.portal.workflow.metrics.service.persistence.WorkflowMetricsSLADefinitionVersionPersistence;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -629,7 +626,7 @@ public abstract class WorkflowMetricsSLADefinitionVersionLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		WorkflowMetricsSLADefinitionVersionLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -645,7 +642,7 @@ public abstract class WorkflowMetricsSLADefinitionVersionLocalServiceBaseImpl
 		workflowMetricsSLADefinitionVersionLocalService =
 			(WorkflowMetricsSLADefinitionVersionLocalService)aopProxy;
 
-		_setLocalServiceUtilService(
+		WorkflowMetricsSLADefinitionVersionLocalServiceUtil.setService(
 			workflowMetricsSLADefinitionVersionLocalService);
 	}
 
@@ -692,28 +689,6 @@ public abstract class WorkflowMetricsSLADefinitionVersionLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		WorkflowMetricsSLADefinitionVersionLocalService
-			workflowMetricsSLADefinitionVersionLocalService) {
-
-		try {
-			Field field =
-				WorkflowMetricsSLADefinitionVersionLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, workflowMetricsSLADefinitionVersionLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected WorkflowMetricsSLADefinitionPersistence
-		workflowMetricsSLADefinitionPersistence;
-
 	protected WorkflowMetricsSLADefinitionVersionLocalService
 		workflowMetricsSLADefinitionVersionLocalService;
 
@@ -728,18 +703,6 @@ public abstract class WorkflowMetricsSLADefinitionVersionLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		WorkflowMetricsSLADefinitionVersionLocalServiceBaseImpl.class);

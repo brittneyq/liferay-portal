@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -49,7 +48,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -74,7 +72,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {CTEntryPersistence.class, BasePersistence.class})
+@Component(service = CTEntryPersistence.class)
 public class CTEntryPersistenceImpl
 	extends BasePersistenceImpl<CTEntry> implements CTEntryPersistence {
 
@@ -192,7 +190,8 @@ public class CTEntryPersistenceImpl
 		List<CTEntry> list = null;
 
 		if (useFinderCache) {
-			list = (List<CTEntry>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<CTEntry>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CTEntry ctEntry : list) {
@@ -551,7 +550,7 @@ public class CTEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {ctCollectionId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -696,7 +695,8 @@ public class CTEntryPersistenceImpl
 		List<CTEntry> list = null;
 
 		if (useFinderCache) {
-			list = (List<CTEntry>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<CTEntry>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CTEntry ctEntry : list) {
@@ -1086,7 +1086,7 @@ public class CTEntryPersistenceImpl
 
 		Object[] finderArgs = new Object[] {ctCollectionId, modelClassNameId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1221,7 +1221,7 @@ public class CTEntryPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByC_MCNI_MCPK, finderArgs);
+				_finderPathFetchByC_MCNI_MCPK, finderArgs, this);
 		}
 
 		if (result instanceof CTEntry) {
@@ -1332,7 +1332,7 @@ public class CTEntryPersistenceImpl
 			ctCollectionId, modelClassNameId, modelClassPK
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -1488,7 +1488,8 @@ public class CTEntryPersistenceImpl
 		List<CTEntry> list = null;
 
 		if (useFinderCache) {
-			list = (List<CTEntry>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<CTEntry>)finderCache.getResult(
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CTEntry ctEntry : list) {
@@ -1997,7 +1998,8 @@ public class CTEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CTEntry>)finderCache.getResult(
-				_finderPathWithPaginationFindByNotC_MCNI_MCPK, finderArgs);
+				_finderPathWithPaginationFindByNotC_MCNI_MCPK, finderArgs,
+				this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CTEntry ctEntry : list) {
@@ -2121,7 +2123,7 @@ public class CTEntryPersistenceImpl
 			ctCollectionId, modelClassNameId, modelClassPK
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -2190,7 +2192,7 @@ public class CTEntryPersistenceImpl
 		};
 
 		Long count = (Long)finderCache.getResult(
-			_finderPathWithPaginationCountByNotC_MCNI_MCPK, finderArgs);
+			_finderPathWithPaginationCountByNotC_MCNI_MCPK, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler();
@@ -2677,7 +2679,8 @@ public class CTEntryPersistenceImpl
 		List<CTEntry> list = null;
 
 		if (useFinderCache) {
-			list = (List<CTEntry>)finderCache.getResult(finderPath, finderArgs);
+			list = (List<CTEntry>)finderCache.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2747,7 +2750,7 @@ public class CTEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2884,29 +2887,14 @@ public class CTEntryPersistenceImpl
 			new String[] {"ctCollectionId", "modelClassNameId", "modelClassPK"},
 			false);
 
-		_setCTEntryUtilPersistence(this);
+		CTEntryUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCTEntryUtilPersistence(null);
+		CTEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(CTEntryImpl.class.getName());
-	}
-
-	private void _setCTEntryUtilPersistence(
-		CTEntryPersistence ctEntryPersistence) {
-
-		try {
-			Field field = CTEntryUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ctEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2968,8 +2956,5 @@ public class CTEntryPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private CTEntryModelArgumentsResolver _ctEntryModelArgumentsResolver;
 
 }

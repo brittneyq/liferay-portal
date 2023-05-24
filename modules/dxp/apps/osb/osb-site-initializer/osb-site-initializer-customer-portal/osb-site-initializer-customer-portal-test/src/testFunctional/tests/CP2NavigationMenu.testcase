@@ -9,6 +9,7 @@ definition {
 
 	var testSiteName = "Customer Portal Site";
 	var testSiteURL = "customer-portal-site";
+	var testAccounts = "Test Account Analytics Cloud,Test Account Commerce,Test Account LXC - SM,Test Account Enterprise Search";
 
 	setUp {
 		task ("Set up instance and sign in") {
@@ -18,7 +19,13 @@ definition {
 		}
 
 		task ("Create a new Customer Portal Site") {
-			CustomerPortal.addCustomerPortalSite(siteName = "${testSiteName}");
+			CustomerPortal.addCustomerPortalSite(siteName = ${testSiteName});
+		}
+
+		task ("Add test user access to all Accounts") {
+			CustomerPortal.assignUserToOrganization();
+
+			CustomerPortal.addUserToOneOrMoreAccounts(accountsList = ${testAccounts});
 		}
 	}
 
@@ -27,23 +34,21 @@ definition {
 
 		CustomerPortal.customerPortalApisTearDown();
 
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
-			JSONGroup.deleteGroupByName(groupName = "${testSiteName}");
+			JSONGroup.deleteGroupByName(groupName = ${testSiteName});
 		}
 	}
 
 	@description = "Automation ID: LPS-143811 | Test Summary: Verify if Analytics Cloud option is showing under Product Activation"
-	@priority = "3"
+	@priority = 3
 	test IsAnalyticsCloudOptionAvailable {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
-			CustomerPortal.enterOnProject(
-				status = "Expired",
-				title = "Test Account Analytics Cloud");
+			CustomerPortal.enterOnProject(title = "Test Account Analytics Cloud");
 		}
 
 		task ("Go to the product activation page") {
@@ -58,10 +63,10 @@ definition {
 	}
 
 	@description = "Automation ID: LPS-143813 | Test Summary: Verify if Commerce option is showing under Product Activation"
-	@priority = "3"
+	@priority = 3
 	test IsCommerceOptionAvailable {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
 			CustomerPortal.enterOnProject(title = "Test Account Commerce");
 		}
@@ -78,12 +83,12 @@ definition {
 	}
 
 	@description = "Automation ID: LPS-143815 | Test Summary: Verify if DXP Cloud option is showing under Product Activation"
-	@priority = "3"
+	@priority = 3
 	test IsDXPCloudOptionAvailable {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
-			CustomerPortal.enterOnProject(title = "Test Account LXC-SM");
+			CustomerPortal.enterOnProject(title = "Test Account LXC - SM");
 		}
 
 		task ("Go to the product activation page") {
@@ -92,16 +97,16 @@ definition {
 
 		task ("Assert the DXP Cloud product") {
 			AssertElementPresent(
-				key_text = "LXC-SM",
+				key_text = "LXC - SM",
 				locator1 = "Button#ANY");
 		}
 	}
 
 	@description = "Automation ID: LPS-143814 | Test Summary: Verify if DXP option is showing under Product Activation"
-	@priority = "3"
+	@priority = 3
 	test IsDXPOptionAvailable {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
 			CustomerPortal.enterOnProject(title = "Test Account DXP");
 		}
@@ -118,10 +123,10 @@ definition {
 	}
 
 	@description = "Automation ID: LPS-143816 | Test Summary: Verify if Enterprise Search option is showing under Product Activation"
-	@priority = "3"
+	@priority = 3
 	test IsEnterpriseSearchOptionAvailable {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
 			CustomerPortal.enterOnProject(title = "Test Account Enterprise Search");
 		}
@@ -138,12 +143,12 @@ definition {
 	}
 
 	@description = "Automation ID: LPS-143801 | Test Summary: Verify if Overview is displayed on Navigation Menu"
-	@priority = "4"
+	@priority = 4
 	test IsOverviewMenuDisplayed {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
-			CustomerPortal.enterOnProject(title = "Test Account LXC-SM");
+			CustomerPortal.enterOnProject(title = "Test Account LXC - SM");
 		}
 
 		task ("Assert the Overview option in the on side menu") {
@@ -152,14 +157,12 @@ definition {
 	}
 
 	@description = "Automation ID: LPS-143817 | Automation ID: Verify if Portal option is showing under Product Activation"
-	@priority = "3"
+	@priority = 3
 	test IsPortalOptionAvailable {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
-			CustomerPortal.enterOnProject(
-				status = "Future",
-				title = "Test Account Portal");
+			CustomerPortal.enterOnProject(title = "Test Account Portal");
 		}
 
 		task ("Go to the product activation page") {
@@ -175,12 +178,12 @@ definition {
 
 	@description = "Automation ID: LPS-143809 | Test Summary: Verify if Team Members is displayed on Navigation Menu"
 	@ignore = "true"
-	@priority = "4"
+	@priority = 4
 	test IsTeamMembersMenuDisplayed {
 		task ("Go to CP2.0 and join a project") {
-			ApplicationsMenu.gotoSite(key_site = "Customer Portal Site");
+			ApplicationsMenu.gotoSite(key_site = ${testSiteName});
 
-			CustomerPortal.enterOnProject(title = "Test Account LXC-SM");
+			CustomerPortal.enterOnProject(title = "Test Account LXC - SM");
 		}
 
 		task ("Assert the Team Members option in the on side menu") {

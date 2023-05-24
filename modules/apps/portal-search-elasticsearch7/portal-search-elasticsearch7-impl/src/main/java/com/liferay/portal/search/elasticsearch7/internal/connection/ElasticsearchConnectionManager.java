@@ -50,7 +50,6 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
 	service = {
 		ElasticsearchClientResolver.class, ElasticsearchConnectionManager.class
 	}
@@ -357,11 +356,6 @@ public class ElasticsearchConnectionManager
 		return getElasticsearchConnection(remoteClusterConnectionId);
 	}
 
-	@Reference(unbind = "-")
-	protected void setClusterExecutor(ClusterExecutor clusterExecutor) {
-		_clusterExecutor = clusterExecutor;
-	}
-
 	@Reference(
 		cardinality = ReferenceCardinality.OPTIONAL,
 		policy = ReferencePolicy.DYNAMIC,
@@ -392,6 +386,10 @@ public class ElasticsearchConnectionManager
 			ConnectionConstants.REMOTE_CONNECTION_ID
 		).httpSSLEnabled(
 			elasticsearchConfigurationWrapper.httpSSLEnabled()
+		).maxConnections(
+			elasticsearchConfigurationWrapper.maxConnections()
+		).maxConnectionsPerRoute(
+			elasticsearchConfigurationWrapper.maxConnectionsPerRoute()
 		).networkHostAddresses(
 			elasticsearchConfigurationWrapper.networkHostAddresses()
 		).password(
@@ -426,7 +424,9 @@ public class ElasticsearchConnectionManager
 	private static final Log _log = LogFactoryUtil.getLog(
 		ElasticsearchConnectionManager.class);
 
+	@Reference
 	private ClusterExecutor _clusterExecutor;
+
 	private final Map<String, ElasticsearchConnection>
 		_elasticsearchConnections = new ConcurrentHashMap<>();
 

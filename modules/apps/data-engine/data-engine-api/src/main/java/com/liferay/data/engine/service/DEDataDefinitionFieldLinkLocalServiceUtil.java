@@ -390,6 +390,15 @@ public class DEDataDefinitionFieldLinkLocalServiceUtil {
 			ddmStructureId, fieldNames);
 	}
 
+	public static List<DEDataDefinitionFieldLink>
+		getDEDataDefinitionFieldLinksByClassNameIdAndClassPK(
+			long classNameId, long classPK) {
+
+		return getService().
+			getDEDataDefinitionFieldLinksByClassNameIdAndClassPK(
+				classNameId, classPK);
+	}
+
 	/**
 	 * Returns all the de data definition field links matching the UUID and company.
 	 *
@@ -485,6 +494,12 @@ public class DEDataDefinitionFieldLinkLocalServiceUtil {
 
 	public static DEDataDefinitionFieldLinkLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		DEDataDefinitionFieldLinkLocalService service) {
+
+		_service = service;
 	}
 
 	private static volatile DEDataDefinitionFieldLinkLocalService _service;

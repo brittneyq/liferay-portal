@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		StyleBookEntryVersionModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.style.book.model.impl.StyleBookEntryVersionImpl",
+		"table.name=StyleBookEntryVersion"
+	},
+	service = ArgumentsResolver.class
 )
 public class StyleBookEntryVersionModelArgumentsResolver
 	implements ArgumentsResolver {

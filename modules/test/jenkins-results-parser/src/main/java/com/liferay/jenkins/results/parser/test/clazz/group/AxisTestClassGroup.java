@@ -14,6 +14,7 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
+import com.liferay.jenkins.results.parser.BatchHistory;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
@@ -32,16 +33,60 @@ import org.json.JSONObject;
 public class AxisTestClassGroup extends BaseTestClassGroup {
 
 	public long getAverageDuration() {
-		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
-
-		long averageDuration = batchTestClassGroup.getAverageOverheadDuration();
-
-		for (TestClass testClass : getTestClasses()) {
-			averageDuration += testClass.getAverageDuration();
-			averageDuration += testClass.getAverageOverheadDuration();
+		if (_averageDuration != null) {
+			return _averageDuration;
 		}
 
-		return averageDuration;
+		_averageDuration =
+			getAverageOverheadDuration() + getAverageTotalTestDuration();
+
+		if (_averageDuration <= 0L) {
+			BatchHistory batchHistory = getBatchHistory();
+
+			if (batchHistory != null) {
+				_averageDuration = batchHistory.getAverageDuration();
+			}
+		}
+
+		return _averageDuration;
+	}
+
+	public long getAverageOverheadDuration() {
+		if (_averageOverheadDuration != null) {
+			return _averageOverheadDuration;
+		}
+
+		List<TestClass> testClasses = getTestClasses();
+
+		if (testClasses.isEmpty()) {
+			return 0L;
+		}
+
+		long totalAverageOverheadDuration = 0L;
+
+		for (TestClass testClass : testClasses) {
+			totalAverageOverheadDuration +=
+				testClass.getAverageOverheadDuration();
+		}
+
+		_averageOverheadDuration =
+			totalAverageOverheadDuration / testClasses.size();
+
+		return _averageOverheadDuration;
+	}
+
+	public long getAverageTotalTestDuration() {
+		if (_averageTotalTestDuration != null) {
+			return _averageTotalTestDuration;
+		}
+
+		_averageTotalTestDuration = 0L;
+
+		for (TestClass testClass : getTestClasses()) {
+			_averageTotalTestDuration += testClass.getAverageDuration();
+		}
+
+		return _averageTotalTestDuration;
 	}
 
 	public String getAxisName() {
@@ -60,6 +105,10 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 		return JenkinsResultsParserUtil.combine(
 			_batchTestClassGroup.getBatchName(), "/",
 			String.valueOf(axisTestClassGroups.indexOf(this)));
+	}
+
+	public BatchHistory getBatchHistory() {
+		return _batchTestClassGroup.getBatchHistory();
 	}
 
 	public String getBatchJobName() {
@@ -86,8 +135,11 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 	public JSONObject getJSONObject() {
 		JSONObject jsonObject = new JSONObject();
 
-		jsonObject.put("average_duration", getAverageDuration());
-		jsonObject.put("axis_name", getAxisName());
+		jsonObject.put(
+			"average_duration", getAverageDuration()
+		).put(
+			"axis_name", getAxisName()
+		);
 
 		JSONArray testClassesJSONArray = new JSONArray();
 
@@ -184,6 +236,9 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 		_segmentTestClassGroup = segmentTestClassGroup;
 	}
 
+	private Long _averageDuration;
+	private Long _averageOverheadDuration;
+	private Long _averageTotalTestDuration;
 	private BatchTestClassGroup _batchTestClassGroup;
 	private SegmentTestClassGroup _segmentTestClassGroup;
 

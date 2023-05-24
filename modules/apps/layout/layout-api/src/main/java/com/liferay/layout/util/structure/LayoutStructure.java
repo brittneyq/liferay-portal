@@ -14,10 +14,12 @@
 
 package com.liferay.layout.util.structure;
 
+import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.layout.responsive.ViewportSize;
 import com.liferay.layout.util.constants.LayoutStructureConstants;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -36,7 +38,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -62,6 +63,8 @@ public class LayoutStructure {
 			JSONObject itemsJSONObject =
 				layoutStructureJSONObject.getJSONObject("items");
 
+			List<CollectionStyledLayoutStructureItem>
+				collectionStyledLayoutStructureItems = new ArrayList<>();
 			List<FormStyledLayoutStructureItem> formStyledLayoutStructureItems =
 				new ArrayList<>();
 			Map<Long, LayoutStructureItem> fragmentLayoutStructureItems =
@@ -76,15 +79,18 @@ public class LayoutStructure {
 				layoutStructureItems.put(key, layoutStructureItem);
 
 				_updateLayoutStructureItemMaps(
-					layoutStructureItem, formStyledLayoutStructureItems,
+					layoutStructureItem, collectionStyledLayoutStructureItems,
+					formStyledLayoutStructureItems,
 					fragmentLayoutStructureItems);
 			}
 
-			JSONArray deletedLayoutStructureItemJSONArray = Optional.ofNullable(
-				layoutStructureJSONObject.getJSONArray("deletedItems")
-			).orElse(
-				JSONFactoryUtil.createJSONArray()
-			);
+			JSONArray deletedLayoutStructureItemJSONArray =
+				layoutStructureJSONObject.getJSONArray("deletedItems");
+
+			if (deletedLayoutStructureItemJSONArray == null) {
+				deletedLayoutStructureItemJSONArray =
+					JSONFactoryUtil.createJSONArray();
+			}
 
 			Map<String, DeletedLayoutStructureItem>
 				deletedLayoutStructureItems = new HashMap<>(
@@ -109,7 +115,8 @@ public class LayoutStructure {
 				});
 
 			return new LayoutStructure(
-				deletedItemIds, deletedLayoutStructureItems, deletedPortletIds,
+				collectionStyledLayoutStructureItems, deletedItemIds,
+				deletedLayoutStructureItems, deletedPortletIds,
 				formStyledLayoutStructureItems, fragmentLayoutStructureItems,
 				layoutStructureItems, rootItemsJSONObject.getString("main"));
 		}
@@ -123,6 +130,7 @@ public class LayoutStructure {
 	}
 
 	public LayoutStructure() {
+		_collectionStyledLayoutStructureItems = new ArrayList<>();
 		_deletedItemIds = new HashSet<>();
 		_deletedLayoutStructureItems = new HashMap<>();
 		_deletedPortletIds = new HashSet<>();
@@ -237,8 +245,8 @@ public class LayoutStructure {
 			layoutStructureItem.getItemId(), layoutStructureItem);
 
 		_updateLayoutStructureItemMaps(
-			layoutStructureItem, _formStyledLayoutStructureItems,
-			_fragmentLayoutStructureItems);
+			layoutStructureItem, _collectionStyledLayoutStructureItems,
+			_formStyledLayoutStructureItems, _fragmentLayoutStructureItems);
 
 		return layoutStructureItem;
 	}
@@ -358,6 +366,12 @@ public class LayoutStructure {
 		return false;
 	}
 
+	public List<CollectionStyledLayoutStructureItem>
+		getCollectionStyledLayoutStructureItems() {
+
+		return _collectionStyledLayoutStructureItems;
+	}
+
 	public List<DeletedLayoutStructureItem> getDeletedLayoutStructureItems() {
 		return ListUtil.fromCollection(_deletedLayoutStructureItems.values());
 	}
@@ -451,6 +465,8 @@ public class LayoutStructure {
 			deletedLayoutStructureItem = new DeletedLayoutStructureItem(
 				itemId, portletIds, 0, _getChildrenItemIds(itemId));
 		}
+
+		_updateFragmentEntryLinks(itemId, true);
 
 		_deletedLayoutStructureItems.put(itemId, deletedLayoutStructureItem);
 
@@ -559,6 +575,8 @@ public class LayoutStructure {
 			deletedLayoutStructureItem.getPosition(),
 			deletedLayoutStructureItem.getItemId());
 
+		_updateFragmentEntryLinks(itemId, false);
+
 		_deletedItemIds.remove(itemId);
 		_deletedItemIds.removeAll(
 			deletedLayoutStructureItem.getChildrenItemIds());
@@ -618,11 +636,11 @@ public class LayoutStructure {
 		return layoutStructureItem;
 	}
 
-	public List<LayoutStructureItem> updateRowColumnsLayoutStructureItem(
+	public void updateRowColumnsLayoutStructureItem(
 		String itemId, int numberOfColumns) {
 
 		if (numberOfColumns > _MAX_COLUMNS) {
-			return Collections.emptyList();
+			return;
 		}
 
 		RowStyledLayoutStructureItem rowStyledLayoutStructureItem =
@@ -632,7 +650,7 @@ public class LayoutStructure {
 			rowStyledLayoutStructureItem.getNumberOfColumns();
 
 		if (oldNumberOfColumns == numberOfColumns) {
-			return Collections.emptyList();
+			return;
 		}
 
 		rowStyledLayoutStructureItem.setModulesPerRow(numberOfColumns);
@@ -671,7 +689,7 @@ public class LayoutStructure {
 						[i]);
 			}
 
-			return Collections.emptyList();
+			return;
 		}
 
 		for (int i = 0; i < numberOfColumns; i++) {
@@ -685,25 +703,32 @@ public class LayoutStructure {
 				LayoutStructureConstants.COLUMN_SIZES[numberOfColumns - 1][i]);
 		}
 
-		List<LayoutStructureItem> deletedLayoutStructureItems =
-			new ArrayList<>();
-
 		for (int i = numberOfColumns; i < oldNumberOfColumns; i++) {
 			String childrenItemId = childrenItemIds.get(i);
 
-			deletedLayoutStructureItems.addAll(
-				deleteLayoutStructureItem(childrenItemId));
+			markLayoutStructureItemForDeletion(
+				childrenItemId, Collections.emptyList());
 		}
-
-		return deletedLayoutStructureItems;
 	}
 
 	private static void _updateLayoutStructureItemMaps(
 		LayoutStructureItem layoutStructureItem,
+		List<CollectionStyledLayoutStructureItem>
+			collectionStyledLayoutStructureItems,
 		List<FormStyledLayoutStructureItem> formStyledLayoutStructureItems,
 		Map<Long, LayoutStructureItem> fragmentLayoutStructureItems) {
 
-		if (layoutStructureItem instanceof FormStyledLayoutStructureItem) {
+		if (layoutStructureItem instanceof
+				CollectionStyledLayoutStructureItem) {
+
+			CollectionStyledLayoutStructureItem
+				collectionStyledLayoutStructureItem =
+					(CollectionStyledLayoutStructureItem)layoutStructureItem;
+
+			collectionStyledLayoutStructureItems.add(
+				collectionStyledLayoutStructureItem);
+		}
+		else if (layoutStructureItem instanceof FormStyledLayoutStructureItem) {
 			FormStyledLayoutStructureItem formStyledLayoutStructureItem =
 				(FormStyledLayoutStructureItem)layoutStructureItem;
 
@@ -723,6 +748,8 @@ public class LayoutStructure {
 	}
 
 	private LayoutStructure(
+		List<CollectionStyledLayoutStructureItem>
+			collectionStyledLayoutStructureItems,
 		Set<String> deletedItemIds,
 		Map<String, DeletedLayoutStructureItem> deletedLayoutStructureItems,
 		Set<String> deletedPortletIds,
@@ -731,6 +758,8 @@ public class LayoutStructure {
 		Map<String, LayoutStructureItem> layoutStructureItems,
 		String mainItemId) {
 
+		_collectionStyledLayoutStructureItems =
+			collectionStyledLayoutStructureItems;
 		_deletedItemIds = deletedItemIds;
 		_deletedLayoutStructureItems = deletedLayoutStructureItems;
 		_deletedPortletIds = deletedPortletIds;
@@ -888,6 +917,36 @@ public class LayoutStructure {
 		}
 	}
 
+	private void _updateFragmentEntryLinks(
+		String itemId, boolean markForDeletion) {
+
+		LayoutStructureItem layoutStructureItem = _layoutStructureItems.get(
+			itemId);
+
+		if (layoutStructureItem instanceof FragmentStyledLayoutStructureItem) {
+			FragmentStyledLayoutStructureItem
+				fragmentStyledLayoutStructureItem =
+					(FragmentStyledLayoutStructureItem)layoutStructureItem;
+
+			try {
+				FragmentEntryLinkLocalServiceUtil.updateDeleted(
+					fragmentStyledLayoutStructureItem.getFragmentEntryLinkId(),
+					markForDeletion);
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(portalException);
+				}
+			}
+
+			return;
+		}
+
+		for (String childrenItemId : layoutStructureItem.getChildrenItemIds()) {
+			_updateFragmentEntryLinks(childrenItemId, markForDeletion);
+		}
+	}
+
 	private void _updateLayoutStructure(
 		LayoutStructureItem layoutStructureItem, int position) {
 
@@ -960,6 +1019,8 @@ public class LayoutStructure {
 
 	private static final ViewportSize[] _viewportSizes = ViewportSize.values();
 
+	private final List<CollectionStyledLayoutStructureItem>
+		_collectionStyledLayoutStructureItems;
 	private final Set<String> _deletedItemIds;
 	private final Map<String, DeletedLayoutStructureItem>
 		_deletedLayoutStructureItems;

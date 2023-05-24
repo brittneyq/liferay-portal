@@ -22,7 +22,9 @@ AddGroupDisplayContext addGroupDisplayContext = (AddGroupDisplayContext)request.
 
 <div class="add-group-alert-container"></div>
 
-<clay:container-fluid>
+<clay:container-fluid
+	cssClass="add-group-container"
+>
 	<liferay-frontend:edit-form
 		action="<%= addGroupDisplayContext.getAddGroupURL() %>"
 		cssClass="add-group-form pt-0"
@@ -71,17 +73,8 @@ AddGroupDisplayContext addGroupDisplayContext = (AddGroupDisplayContext)request.
 		</div>
 
 		<liferay-frontend:edit-form-footer>
-			<clay:button
-				cssClass="d-flex"
-				id='<%= liferayPortletResponse.getNamespace() + "addButton" %>'
-				label="add"
-				type="submit"
-			/>
-
-			<clay:button
-				cssClass="btn-cancel"
-				displayType="secondary"
-				label="cancel"
+			<liferay-frontend:edit-form-buttons
+				submitLabel="add"
 			/>
 		</liferay-frontend:edit-form-footer>
 	</liferay-frontend:edit-form>

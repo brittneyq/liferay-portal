@@ -14,6 +14,7 @@
 
 package com.liferay.message.boards.internal.trash;
 
+import com.liferay.asset.util.AssetHelper;
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.internal.util.MBTrashUtil;
 import com.liferay.message.boards.model.MBCategory;
@@ -21,7 +22,6 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBCategoryLocalService;
 import com.liferay.message.boards.service.MBThreadLocalService;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -37,10 +38,10 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
-import com.liferay.portal.kernel.trash.TrashRendererFactory;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.trash.BaseTrashHandler;
+import com.liferay.trash.TrashHelper;
 import com.liferay.trash.constants.TrashActionKeys;
 
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ import java.util.List;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+
+import javax.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -169,7 +172,12 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 
 	@Override
 	public TrashRenderer getTrashRenderer(long classPK) throws PortalException {
-		return _trashRendererFactory.getTrashRenderer(classPK);
+		MBThreadTrashRenderer mbThreadTrashRenderer = new MBThreadTrashRenderer(
+			_mbThreadLocalService.getThread(classPK), _assetHelper);
+
+		mbThreadTrashRenderer.setServletContext(_servletContext);
+
+		return mbThreadTrashRenderer;
 	}
 
 	@Override
@@ -218,7 +226,7 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 			return false;
 		}
 
-		return !thread.isInTrashContainer();
+		return !_trashHelper.isInTrashContainer(thread);
 	}
 
 	@Override
@@ -303,29 +311,8 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 			permissionChecker, thread.getRootMessageId(), actionId);
 	}
 
-	@Reference(unbind = "-")
-	protected void setMBCategoryLocalService(
-		MBCategoryLocalService mbCategoryLocalService) {
-
-		_mbCategoryLocalService = mbCategoryLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setMBThreadLocalService(
-		MBThreadLocalService mbThreadLocalService) {
-
-		_mbThreadLocalService = mbThreadLocalService;
-	}
-
-	@Reference(
-		target = "(model.class.name=com.liferay.message.boards.model.MBThread)",
-		unbind = "-"
-	)
-	protected void setTrashRendererFactory(
-		TrashRendererFactory trashRendererFactory) {
-
-		_trashRendererFactory = trashRendererFactory;
-	}
+	@Reference
+	private AssetHelper _assetHelper;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.message.boards.model.MBCategory)"
@@ -333,7 +320,10 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 	private ModelResourcePermission<MBCategory>
 		_categoryModelResourcePermission;
 
+	@Reference
 	private MBCategoryLocalService _mbCategoryLocalService;
+
+	@Reference
 	private MBThreadLocalService _mbThreadLocalService;
 
 	@Reference(
@@ -344,6 +334,12 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 	@Reference
 	private Portal _portal;
 
-	private TrashRendererFactory _trashRendererFactory;
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.message.boards.web)"
+	)
+	private ServletContext _servletContext;
+
+	@Reference
+	private TrashHelper _trashHelper;
 
 }

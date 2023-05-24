@@ -59,7 +59,6 @@ exports[`Translate renders with auto-translate disabled 1`] = `
                     aria-expanded="false"
                     aria-haspopup="true"
                     class="dropdown-toggle btn btn-monospaced btn-sm btn-secondary"
-                    style=""
                     type="button"
                   >
                     <span
@@ -98,7 +97,6 @@ exports[`Translate renders with auto-translate disabled 1`] = `
                     aria-expanded="false"
                     aria-haspopup="true"
                     class="dropdown-toggle btn btn-monospaced btn-sm btn-secondary"
-                    style=""
                     type="button"
                   >
                     <span
@@ -633,7 +631,6 @@ exports[`Translate renders with auto-translate enabled 1`] = `
                     aria-expanded="false"
                     aria-haspopup="true"
                     class="dropdown-toggle btn btn-monospaced btn-sm btn-secondary"
-                    style=""
                     type="button"
                   >
                     <span
@@ -672,7 +669,6 @@ exports[`Translate renders with auto-translate enabled 1`] = `
                     aria-expanded="false"
                     aria-haspopup="true"
                     class="dropdown-toggle btn btn-monospaced btn-sm btn-secondary"
-                    style=""
                     type="button"
                   >
                     <span
@@ -898,7 +894,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Title"
+              title="auto-translate-Title-field"
               type="button"
             >
               <svg
@@ -912,7 +908,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Title
+                auto-translate-Title-field
               </span>
             </button>
           </div>
@@ -980,7 +976,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Description"
+              title="auto-translate-Description-field"
               type="button"
             >
               <svg
@@ -994,7 +990,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Description
+                auto-translate-Description-field
               </span>
             </button>
           </div>
@@ -1084,7 +1080,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -1098,7 +1094,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -1166,7 +1162,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -1180,7 +1176,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -1248,7 +1244,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -1262,7 +1258,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -1330,7 +1326,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -1344,7 +1340,7 @@ exports[`Translate renders with auto-translate enabled 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -1451,7 +1447,6 @@ exports[`Translate renders with experiences selector 1`] = `
                     aria-expanded="false"
                     aria-haspopup="true"
                     class="dropdown-toggle btn btn-monospaced btn-sm btn-secondary"
-                    style=""
                     type="button"
                   >
                     <span
@@ -1490,7 +1485,6 @@ exports[`Translate renders with experiences selector 1`] = `
                     aria-expanded="false"
                     aria-haspopup="true"
                     class="dropdown-toggle btn btn-monospaced btn-sm btn-secondary"
-                    style=""
                     type="button"
                   >
                     <span
@@ -1716,7 +1710,7 @@ exports[`Translate renders with experiences selector 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Title"
+              title="auto-translate-Title-field"
               type="button"
             >
               <svg
@@ -1730,7 +1724,7 @@ exports[`Translate renders with experiences selector 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Title
+                auto-translate-Title-field
               </span>
             </button>
           </div>
@@ -1798,7 +1792,7 @@ exports[`Translate renders with experiences selector 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Description"
+              title="auto-translate-Description-field"
               type="button"
             >
               <svg
@@ -1812,7 +1806,7 @@ exports[`Translate renders with experiences selector 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Description
+                auto-translate-Description-field
               </span>
             </button>
           </div>
@@ -1902,7 +1896,7 @@ exports[`Translate renders with experiences selector 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -1916,7 +1910,7 @@ exports[`Translate renders with experiences selector 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -1984,7 +1978,7 @@ exports[`Translate renders with experiences selector 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -1998,7 +1992,7 @@ exports[`Translate renders with experiences selector 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -2066,7 +2060,7 @@ exports[`Translate renders with experiences selector 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -2080,7 +2074,7 @@ exports[`Translate renders with experiences selector 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>
@@ -2148,7 +2142,7 @@ exports[`Translate renders with experiences selector 1`] = `
           >
             <button
               class="btn btn-monospaced btn-secondary"
-              title="auto-translate-x-field-Content"
+              title="auto-translate-Content-field"
               type="button"
             >
               <svg
@@ -2162,7 +2156,7 @@ exports[`Translate renders with experiences selector 1`] = `
               <span
                 class="sr-only"
               >
-                auto-translate-x-field-Content
+                auto-translate-Content-field
               </span>
             </button>
           </div>

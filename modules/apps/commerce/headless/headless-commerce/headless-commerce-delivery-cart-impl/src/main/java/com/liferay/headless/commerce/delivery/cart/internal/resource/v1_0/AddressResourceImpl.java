@@ -20,8 +20,8 @@ import com.liferay.commerce.service.CommerceAddressService;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.headless.commerce.delivery.cart.dto.v1_0.Address;
 import com.liferay.headless.commerce.delivery.cart.dto.v1_0.Cart;
-import com.liferay.headless.commerce.delivery.cart.internal.dto.v1_0.AddressDTOConverter;
 import com.liferay.headless.commerce.delivery.cart.resource.v1_0.AddressResource;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
@@ -35,7 +35,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Andrea Sbarra
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/address.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = {AddressResource.class, NestedFieldSupport.class}
@@ -79,8 +78,10 @@ public class AddressResourceImpl
 				contextAcceptLanguage.getPreferredLocale()));
 	}
 
-	@Reference
-	private AddressDTOConverter _addressDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.delivery.cart.internal.dto.v1_0.converter.AddressDTOConverter)"
+	)
+	private DTOConverter<CommerceAddress, Address> _addressDTOConverter;
 
 	@Reference
 	private CommerceAddressService _commerceAddressService;

@@ -22,7 +22,7 @@ GroupDisplayContextHelper groupDisplayContextHelper = new GroupDisplayContextHel
 liveGroup = groupDisplayContextHelper.getLiveGroup();
 liveGroupId = groupDisplayContextHelper.getLiveGroupId();
 
-UnicodeProperties liveGroupTypeSettings = liveGroup.getTypeSettingsProperties();
+UnicodeProperties liveGroupTypeSettingsUnicodeProperties = liveGroup.getTypeSettingsProperties();
 
 LayoutSet privateLayoutSet = LayoutSetLocalServiceUtil.getLayoutSet(liveGroup.getGroupId(), true);
 LayoutSet publicLayoutSet = LayoutSetLocalServiceUtil.getLayoutSet(liveGroup.getGroupId(), false);
@@ -49,8 +49,8 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 		<clay:container-fluid
 			cssClass="main-content-body mt-4"
 		>
-			<liferay-ui:breadcrumb
-				showLayout="<%= false %>"
+			<liferay-site-navigation:breadcrumb
+				breadcrumbEntries="<%= BreadcrumbEntriesUtil.getBreadcrumbEntries(request, true, false, false, true, true) %>"
 			/>
 
 			<clay:sheet
@@ -95,14 +95,16 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 								<div class="btn-group-item">
 									<button class="btn btn-primary">
 										<span class="lfr-btn-label">
-											<%= LanguageUtil.get(request, "save") %>
+											<liferay-ui:message key="save" />
 										</span>
 									</button>
 								</div>
 							</div>
 						</clay:sheet-footer>
 
-						<aui:script require="frontend-js-web/liferay/delegate/delegate.es as delegateModule">
+						<aui:script require="frontend-js-web/index as frontendJsWeb">
+							var {delegate} = frontendJsWeb;
+
 							var pwcWarning = document.getElementById('<portlet:namespace />pwcWarning');
 							var remoteStagingOptions = document.getElementById(
 								'<portlet:namespace />remoteStagingOptions'
@@ -120,8 +122,6 @@ BackgroundTask lastCompletedInitialPublicationBackgroundTask = BackgroundTaskMan
 								remoteStagingOptions &&
 								trashWarning
 							) {
-								var delegate = delegateModule.default;
-
 								delegate(stagingTypes, 'click', 'input', (event) => {
 									var value = event.target.closest('input').value;
 

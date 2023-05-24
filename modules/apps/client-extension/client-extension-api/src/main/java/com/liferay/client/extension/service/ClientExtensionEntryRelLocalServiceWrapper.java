@@ -62,13 +62,14 @@ public class ClientExtensionEntryRelLocalServiceWrapper
 
 	@Override
 	public ClientExtensionEntryRel addClientExtensionEntryRel(
-			long userId, long classNameId, long classPK,
-			String cetExternalReferenceCode, String type, String typeSettings)
+			long userId, long groupId, long classNameId, long classPK,
+			String cetExternalReferenceCode, String type, String typeSettings,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
-			userId, classNameId, classPK, cetExternalReferenceCode, type,
-			typeSettings);
+			userId, groupId, classNameId, classPK, cetExternalReferenceCode,
+			type, typeSettings, serviceContext);
 	}
 
 	/**
@@ -289,50 +290,29 @@ public class ClientExtensionEntryRelLocalServiceWrapper
 			fetchClientExtensionEntryRel(classNameId, classPK, type);
 	}
 
-	/**
-	 * Returns the client extension entry rel with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the client extension entry rel's external reference code
-	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
-	 */
 	@Override
 	public ClientExtensionEntryRel
 		fetchClientExtensionEntryRelByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long groupId) {
 
 		return _clientExtensionEntryRelLocalService.
 			fetchClientExtensionEntryRelByExternalReferenceCode(
-				companyId, externalReferenceCode);
+				externalReferenceCode, groupId);
 	}
 
 	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchClientExtensionEntryRelByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public ClientExtensionEntryRel fetchClientExtensionEntryRelByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return _clientExtensionEntryRelLocalService.
-			fetchClientExtensionEntryRelByReferenceCode(
-				companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the client extension entry rel with the matching UUID and company.
+	 * Returns the client extension entry rel matching the UUID and group.
 	 *
 	 * @param uuid the client extension entry rel's UUID
-	 * @param companyId the primary key of the company
+	 * @param groupId the primary key of the group
 	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
 	 */
 	@Override
-	public ClientExtensionEntryRel
-		fetchClientExtensionEntryRelByUuidAndCompanyId(
-			String uuid, long companyId) {
+	public ClientExtensionEntryRel fetchClientExtensionEntryRelByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _clientExtensionEntryRelLocalService.
-			fetchClientExtensionEntryRelByUuidAndCompanyId(uuid, companyId);
+			fetchClientExtensionEntryRelByUuidAndGroupId(uuid, groupId);
 	}
 
 	@Override
@@ -358,40 +338,32 @@ public class ClientExtensionEntryRelLocalServiceWrapper
 			clientExtensionEntryRelId);
 	}
 
-	/**
-	 * Returns the client extension entry rel with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the client extension entry rel's external reference code
-	 * @return the matching client extension entry rel
-	 * @throws PortalException if a matching client extension entry rel could not be found
-	 */
 	@Override
 	public ClientExtensionEntryRel
 			getClientExtensionEntryRelByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _clientExtensionEntryRelLocalService.
 			getClientExtensionEntryRelByExternalReferenceCode(
-				companyId, externalReferenceCode);
+				externalReferenceCode, groupId);
 	}
 
 	/**
-	 * Returns the client extension entry rel with the matching UUID and company.
+	 * Returns the client extension entry rel matching the UUID and group.
 	 *
 	 * @param uuid the client extension entry rel's UUID
-	 * @param companyId the primary key of the company
+	 * @param groupId the primary key of the group
 	 * @return the matching client extension entry rel
 	 * @throws PortalException if a matching client extension entry rel could not be found
 	 */
 	@Override
-	public ClientExtensionEntryRel getClientExtensionEntryRelByUuidAndCompanyId(
-			String uuid, long companyId)
+	public ClientExtensionEntryRel getClientExtensionEntryRelByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _clientExtensionEntryRelLocalService.
-			getClientExtensionEntryRelByUuidAndCompanyId(uuid, companyId);
+			getClientExtensionEntryRelByUuidAndGroupId(uuid, groupId);
 	}
 
 	/**
@@ -435,6 +407,44 @@ public class ClientExtensionEntryRelLocalServiceWrapper
 
 		return _clientExtensionEntryRelLocalService.getClientExtensionEntryRels(
 			classNameId, classPK, type, start, end);
+	}
+
+	/**
+	 * Returns all the client extension entry rels matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the client extension entry rels
+	 * @param companyId the primary key of the company
+	 * @return the matching client extension entry rels, or an empty list if no matches were found
+	 */
+	@Override
+	public java.util.List<ClientExtensionEntryRel>
+		getClientExtensionEntryRelsByUuidAndCompanyId(
+			String uuid, long companyId) {
+
+		return _clientExtensionEntryRelLocalService.
+			getClientExtensionEntryRelsByUuidAndCompanyId(uuid, companyId);
+	}
+
+	/**
+	 * Returns a range of client extension entry rels matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the client extension entry rels
+	 * @param companyId the primary key of the company
+	 * @param start the lower bound of the range of client extension entry rels
+	 * @param end the upper bound of the range of client extension entry rels (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the range of matching client extension entry rels, or an empty list if no matches were found
+	 */
+	@Override
+	public java.util.List<ClientExtensionEntryRel>
+		getClientExtensionEntryRelsByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<ClientExtensionEntryRel> orderByComparator) {
+
+		return _clientExtensionEntryRelLocalService.
+			getClientExtensionEntryRelsByUuidAndCompanyId(
+				uuid, companyId, start, end, orderByComparator);
 	}
 
 	/**
@@ -512,6 +522,18 @@ public class ClientExtensionEntryRelLocalServiceWrapper
 
 		return _clientExtensionEntryRelLocalService.
 			updateClientExtensionEntryRel(clientExtensionEntryRel);
+	}
+
+	@Override
+	public ClientExtensionEntryRel updateClientExtensionEntryRel(
+			long clientExtensionEntryRelId, long classNameId, long classPK,
+			String cetExternalReferenceCode, String type, String typeSettings)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _clientExtensionEntryRelLocalService.
+			updateClientExtensionEntryRel(
+				clientExtensionEntryRelId, classNameId, classPK,
+				cetExternalReferenceCode, type, typeSettings);
 	}
 
 	@Override

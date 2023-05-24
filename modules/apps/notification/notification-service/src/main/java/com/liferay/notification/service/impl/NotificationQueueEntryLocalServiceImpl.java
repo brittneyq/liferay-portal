@@ -14,38 +14,31 @@
 
 package com.liferay.notification.service.impl;
 
-import com.liferay.mail.kernel.model.MailMessage;
-import com.liferay.mail.kernel.service.MailService;
 import com.liferay.notification.constants.NotificationQueueEntryConstants;
+import com.liferay.notification.context.NotificationContext;
+import com.liferay.notification.exception.NotificationQueueEntryStatusException;
 import com.liferay.notification.model.NotificationQueueEntry;
-import com.liferay.notification.model.NotificationQueueEntryAttachment;
+import com.liferay.notification.model.NotificationRecipient;
+import com.liferay.notification.model.NotificationRecipientSetting;
 import com.liferay.notification.service.NotificationQueueEntryAttachmentLocalService;
+import com.liferay.notification.service.NotificationRecipientLocalService;
+import com.liferay.notification.service.NotificationRecipientSettingLocalService;
 import com.liferay.notification.service.base.NotificationQueueEntryLocalServiceBaseImpl;
-import com.liferay.notification.service.persistence.NotificationQueueEntryAttachmentPersistence;
+import com.liferay.notification.type.NotificationType;
+import com.liferay.notification.type.NotificationTypeServiceTracker;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
-import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Portal;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.mail.internet.InternetAddress;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -63,37 +56,14 @@ public class NotificationQueueEntryLocalServiceImpl
 
 	@Override
 	public NotificationQueueEntry addNotificationQueueEntry(
-			long userId, long notificationTemplateId, String bcc, String body,
-			String cc, String className, long classPK, String from,
-			String fromName, double priority, String subject, String to,
-			String toName, List<Long> fileEntryIds)
+			NotificationContext notificationContext)
 		throws PortalException {
 
 		NotificationQueueEntry notificationQueueEntry =
-			notificationQueueEntryPersistence.create(
-				counterLocalService.increment());
+			notificationContext.getNotificationQueueEntry();
 
-		User user = _userLocalService.getUser(userId);
-
-		notificationQueueEntry.setCompanyId(user.getCompanyId());
-		notificationQueueEntry.setUserId(user.getUserId());
-		notificationQueueEntry.setUserName(user.getFullName());
-
-		notificationQueueEntry.setNotificationTemplateId(
-			notificationTemplateId);
-		notificationQueueEntry.setBcc(bcc);
-		notificationQueueEntry.setBody(body);
-		notificationQueueEntry.setCc(cc);
-		notificationQueueEntry.setClassName(className);
-		notificationQueueEntry.setClassPK(classPK);
-		notificationQueueEntry.setFrom(from);
-		notificationQueueEntry.setFromName(fromName);
-		notificationQueueEntry.setPriority(priority);
-		notificationQueueEntry.setSubject(subject);
-		notificationQueueEntry.setTo(to);
-		notificationQueueEntry.setToName(toName);
-		notificationQueueEntry.setStatus(
-			NotificationQueueEntryConstants.STATUS_UNSENT);
+		notificationQueueEntry.setNotificationQueueEntryId(
+			counterLocalService.increment());
 
 		notificationQueueEntry = notificationQueueEntryPersistence.update(
 			notificationQueueEntry);
@@ -105,11 +75,37 @@ public class NotificationQueueEntryLocalServiceImpl
 			notificationQueueEntry.getNotificationQueueEntryId(), false, true,
 			true);
 
-		for (long fileEntryId : fileEntryIds) {
+		for (long fileEntryId : notificationContext.getFileEntryIds()) {
 			_notificationQueueEntryAttachmentLocalService.
 				addNotificationQueueEntryAttachment(
 					notificationQueueEntry.getCompanyId(), fileEntryId,
 					notificationQueueEntry.getNotificationQueueEntryId());
+		}
+
+		NotificationRecipient notificationRecipient =
+			notificationContext.getNotificationRecipient();
+
+		notificationRecipient.setNotificationRecipientId(
+			counterLocalService.increment());
+		notificationRecipient.setClassNameId(
+			_portal.getClassNameId(NotificationQueueEntry.class));
+		notificationRecipient.setClassPK(
+			notificationQueueEntry.getNotificationQueueEntryId());
+
+		_notificationRecipientLocalService.updateNotificationRecipient(
+			notificationRecipient);
+
+		for (NotificationRecipientSetting notificationRecipientSetting :
+				notificationContext.getNotificationRecipientSettings()) {
+
+			notificationRecipientSetting.setNotificationRecipientSettingId(
+				counterLocalService.increment());
+			notificationRecipientSetting.setNotificationRecipientId(
+				notificationRecipient.getNotificationRecipientId());
+
+			_notificationRecipientSettingLocalService.
+				updateNotificationRecipientSetting(
+					notificationRecipientSetting);
 		}
 
 		return notificationQueueEntry;
@@ -122,11 +118,8 @@ public class NotificationQueueEntryLocalServiceImpl
 		for (NotificationQueueEntry notificationQueueEntry :
 				notificationQueueEntryPersistence.findByLtSentDate(sentDate)) {
 
-			notificationQueueEntryPersistence.remove(notificationQueueEntry);
-
-			_notificationQueueEntryAttachmentLocalService.
-				deleteNotificationQueueEntryAttachments(
-					notificationQueueEntry.getNotificationQueueEntryId());
+			notificationQueueEntryLocalService.deleteNotificationQueueEntry(
+				notificationQueueEntry);
 		}
 	}
 
@@ -143,6 +136,7 @@ public class NotificationQueueEntryLocalServiceImpl
 			notificationQueueEntry);
 	}
 
+	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public NotificationQueueEntry deleteNotificationQueueEntry(
@@ -159,7 +153,28 @@ public class NotificationQueueEntryLocalServiceImpl
 			deleteNotificationQueueEntryAttachments(
 				notificationQueueEntry.getNotificationQueueEntryId());
 
+		NotificationRecipient notificationRecipient =
+			notificationQueueEntry.getNotificationRecipient();
+
+		_notificationRecipientLocalService.deleteNotificationRecipient(
+			notificationRecipient);
+
+		for (NotificationRecipientSetting notificationRecipientSetting :
+				notificationRecipient.getNotificationRecipientSettings()) {
+
+			_notificationRecipientSettingLocalService.
+				deleteNotificationRecipientSetting(
+					notificationRecipientSetting);
+		}
+
 		return notificationQueueEntry;
+	}
+
+	@Override
+	public List<NotificationQueueEntry> getNotificationEntries(
+		String type, int status) {
+
+		return notificationQueueEntryPersistence.findByT_S(type, status);
 	}
 
 	@Override
@@ -167,144 +182,74 @@ public class NotificationQueueEntryLocalServiceImpl
 			long notificationQueueEntryId)
 		throws PortalException {
 
-		return notificationQueueEntryLocalService.updateSent(
-			notificationQueueEntryId, false);
-	}
+		NotificationQueueEntry notificationQueueEntry =
+			getNotificationQueueEntry(notificationQueueEntryId);
 
-	@Override
-	public void sendNotificationQueueEntries() {
-		List<NotificationQueueEntry> notificationQueueEntries = null;
+		if (notificationQueueEntry.getStatus() ==
+				NotificationQueueEntryConstants.STATUS_SENT) {
 
-		if (GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-159052"))) {
-			notificationQueueEntries =
-				notificationQueueEntryPersistence.findByStatus(
-					NotificationQueueEntryConstants.STATUS_UNSENT);
-		}
-		else {
-			notificationQueueEntries =
-				notificationQueueEntryPersistence.findBySent(false);
+			throw new NotificationQueueEntryStatusException(
+				"Notification queue entry " +
+					notificationQueueEntry.getNotificationQueueEntryId() +
+						" has already been sent");
 		}
 
-		for (NotificationQueueEntry notificationQueueEntry :
-				notificationQueueEntries) {
+		NotificationType notificationType =
+			_notificationTypeServiceTracker.getNotificationType(
+				notificationQueueEntry.getType());
 
-			try {
-				MailMessage mailMessage = new MailMessage(
-					new InternetAddress(
-						notificationQueueEntry.getFrom(),
-						notificationQueueEntry.getFromName()),
-					new InternetAddress(
-						notificationQueueEntry.getTo(),
-						notificationQueueEntry.getToName()),
-					notificationQueueEntry.getSubject(),
-					notificationQueueEntry.getBody(), true);
+		notificationType.resendNotification(notificationQueueEntry);
 
-				_addFileAttachments(
-					mailMessage,
-					notificationQueueEntry.getNotificationQueueEntryId());
-
-				mailMessage.setBCC(
-					_toInternetAddresses(notificationQueueEntry.getBcc()));
-				mailMessage.setCC(
-					_toInternetAddresses(notificationQueueEntry.getCc()));
-
-				_mailService.sendEmail(mailMessage);
-
-				notificationQueueEntryLocalService.updateSent(
-					notificationQueueEntry.getNotificationQueueEntryId(), true);
-			}
-			catch (Exception exception) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(exception);
-				}
-
-				notificationQueueEntry.setStatus(
-					NotificationQueueEntryConstants.STATUS_FAILED);
-
-				notificationQueueEntryPersistence.update(
-					notificationQueueEntry);
-			}
-		}
+		return getNotificationQueueEntry(notificationQueueEntryId);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
-	public NotificationQueueEntry updateSent(
-			long notificationQueueEntryId, boolean sent)
+	public NotificationQueueEntry updateNotificationQueueEntry(
+		NotificationQueueEntry notificationQueueEntry) {
+
+		return notificationQueueEntryPersistence.update(notificationQueueEntry);
+	}
+
+	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public NotificationQueueEntry updateStatus(
+			long notificationQueueEntryId, int status)
 		throws PortalException {
 
 		NotificationQueueEntry notificationQueueEntry =
 			notificationQueueEntryPersistence.findByPrimaryKey(
 				notificationQueueEntryId);
 
-		notificationQueueEntry.setSent(sent);
-
-		if (sent) {
+		if (status == NotificationQueueEntryConstants.STATUS_SENT) {
 			notificationQueueEntry.setSentDate(new Date());
-			notificationQueueEntry.setStatus(
-				NotificationQueueEntryConstants.STATUS_SENT);
 		}
 		else {
 			notificationQueueEntry.setSentDate(null);
-			notificationQueueEntry.setStatus(
-				NotificationQueueEntryConstants.STATUS_UNSENT);
 		}
+
+		notificationQueueEntry.setStatus(status);
 
 		return notificationQueueEntryPersistence.update(notificationQueueEntry);
 	}
-
-	private void _addFileAttachments(
-		MailMessage mailMessage, long notificationQueueEntryId) {
-
-		for (NotificationQueueEntryAttachment notificationQueueEntryAttachment :
-				_notificationQueueEntryAttachmentPersistence.
-					findByNotificationQueueEntryId(notificationQueueEntryId)) {
-
-			try {
-				FileEntry fileEntry =
-					_portletFileRepository.getPortletFileEntry(
-						notificationQueueEntryAttachment.getFileEntryId());
-
-				mailMessage.addFileAttachment(
-					FileUtil.createTempFile(fileEntry.getContentStream()),
-					fileEntry.getFileName());
-			}
-			catch (Exception exception) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(exception);
-				}
-			}
-		}
-	}
-
-	private InternetAddress[] _toInternetAddresses(String string)
-		throws Exception {
-
-		List<InternetAddress> internetAddresses = new ArrayList<>();
-
-		for (String internetAddressString : StringUtil.split(string)) {
-			internetAddresses.add(new InternetAddress(internetAddressString));
-		}
-
-		return internetAddresses.toArray(new InternetAddress[0]);
-	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		NotificationQueueEntryLocalServiceImpl.class);
-
-	@Reference
-	private MailService _mailService;
 
 	@Reference
 	private NotificationQueueEntryAttachmentLocalService
 		_notificationQueueEntryAttachmentLocalService;
 
 	@Reference
-	private NotificationQueueEntryAttachmentPersistence
-		_notificationQueueEntryAttachmentPersistence;
+	private NotificationRecipientLocalService
+		_notificationRecipientLocalService;
 
 	@Reference
-	private PortletFileRepository _portletFileRepository;
+	private NotificationRecipientSettingLocalService
+		_notificationRecipientSettingLocalService;
+
+	@Reference
+	private NotificationTypeServiceTracker _notificationTypeServiceTracker;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private ResourceLocalService _resourceLocalService;

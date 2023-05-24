@@ -2,9 +2,9 @@
 definition {
 
 	property osgi.modules.includes = "frontend-data-set-sample-web";
-	property portal.acceptance = "false";
-	property portal.release = "false";
-	property portal.upstream = "quarantine";
+	property portal.acceptance = "true";
+	property portal.release = "true";
+	property portal.upstream = "true";
 	property testray.component.names = "Frontend Dataset";
 	property testray.main.component.name = "Frontend Dataset";
 
@@ -35,7 +35,7 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
@@ -46,33 +46,33 @@ definition {
 	}
 
 	@description = "LPS-155309. Assert all filters can be removed."
-	@priority = "4"
+	@priority = 4
 	test AllFiltersCanBeRemoved {
 		task ("When there is a filter already established") {
 			AssertElementPresent(
-				key_filter = "Status: Approved, Draft",
+				key_filter = "Color: Blue, Green, Yellow",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 
 		task ("Then all of them can be removed at once") {
-			ClickNoError(locator1 = "FrontendDataSet#RESET_FILTERS");
+			FDSFilters.resetFilter();
 		}
 
 		task ("Then the results will be displayed updated accordingly to it") {
 			AssertTextEquals(
 				locator1 = "FrontendDataSet#PAGINATION_RESULTS",
-				value1 = "Showing 1 to 10 of 100");
+				value1 = "Showing 1 to 10 of 100 entries.");
 		}
 
 		task ("And the Filters Summary boxes will be updated accordingly to it") {
 			AssertElementNotPresent(
-				key_filter = "Status: Approved, Draft",
+				key_filter = "Color: Blue, Green, Yellow",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 	}
 
 	@description = "LPS-155305. Assert results can be correctly filtered when selecting available filters."
-	@priority = "5"
+	@priority = 5
 	test AvailableFiltersCanBeApplied {
 		task ("When click on the filter button") {
 			FDSFilters.openFilters();
@@ -83,7 +83,7 @@ definition {
 
 			FDSFilters.enableStatusFilters(key_status = "Pending");
 
-			Click(locator1 = "FrontendDataSet#EDIT_FILTER_BUTTON");
+			Click(locator1 = "FrontendDataSet#ADD_FILTER_BUTTON");
 		}
 
 		task ("Then the results will be displayed accordingly to the filter selected") {
@@ -98,7 +98,7 @@ definition {
 	}
 
 	@description = "LPS-155313. Assert results can be correctly filtered when exclude is enabled."
-	@priority = "5"
+	@priority = 5
 	test ExcludeCanBeEnabled {
 		task ("When click on the filter button") {
 			FDSFilters.openFilters();
@@ -111,7 +111,7 @@ definition {
 		task ("And When the exclude option is active") {
 			Check.checkToggleSwitch(locator1 = "FrontendDataSet#EXCLUDE_TOGGLE");
 
-			Click(locator1 = "FrontendDataSet#EDIT_FILTER_BUTTON");
+			Click(locator1 = "FrontendDataSet#ADD_FILTER_BUTTON");
 		}
 
 		task ("Then the filter will be added to the Filters Summary") {
@@ -126,41 +126,55 @@ definition {
 	}
 
 	@description = "LPS-155306. Assert results can be correctly filtered by editing the filter summary boxes."
-	@priority = "5"
+	@priority = 5
 	test FilterCanBeEdited {
 		task ("When there is a filter already established") {
 			AssertElementPresent(
-				key_filter = "Status: Approved, Draft",
+				key_filter = "Color: Blue, Green, Yellow",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 
 		task ("And clicking on the Filters Summary") {
 			ClickNoError(
-				key_filter = "Status: Approved, Draft",
+				key_filter = "Color: Blue, Green, Yellow",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 
 		task ("And the filter is edited") {
-			FDSFilters.disableStatusFilters(key_status = "Approved,Draft");
+			FDSFilters.disableStatusFilters(key_status = "Blue,Green");
 
-			FDSFilters.enableStatusFilters(key_status = "Pending");
+			FDSFilters.enableStatusFilters(key_status = "Red");
 
 			Click(locator1 = "FrontendDataSet#EDIT_FILTER_BUTTON");
 		}
 
 		task ("Then the results will be displayed updated accordingly to it") {
-			AssertElementPresent(locator1 = "FrontendDataSet#EMPTY_FDS_TABLE_MESSAGE");
+			AssertElementNotPresent(
+				key_itemName = "Green",
+				locator1 = "FrontendDataSet#TABLE_ITEM_ROW");
+
+			AssertElementNotPresent(
+				key_itemName = "Blue",
+				locator1 = "FrontendDataSet#TABLE_ITEM_ROW");
+
+			AssertElementPresent(
+				key_itemName = "Red",
+				locator1 = "FrontendDataSet#TABLE_ITEM_ROW");
+
+			AssertElementPresent(
+				key_itemName = "Yellow",
+				locator1 = "FrontendDataSet#TABLE_ITEM_ROW");
 		}
 
 		task ("And the Filters Summary boxes will be updated accordingly to it") {
 			AssertElementPresent(
-				key_filter = "Status: Pending",
+				key_filter = "Color: Yellow, Red",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 	}
 
 	@description = "LPS-155310. Assert results can be correctly filtered when searching for a filter."
-	@priority = "5"
+	@priority = 5
 	test FilterCanBeSearched {
 		task ("When click on the filter button") {
 			FDSFilters.openFilters();
@@ -179,18 +193,18 @@ definition {
 		task ("Then the results will be displayed updated accordingly to it") {
 			FDSFilters.enableStatusFilters(key_status = "Pending");
 
-			Click(locator1 = "FrontendDataSet#EDIT_FILTER_BUTTON");
+			Click(locator1 = "FrontendDataSet#ADD_FILTER_BUTTON");
 		}
 
 		task ("And Then the Filters Summary boxes will be updated accordingly to it") {
 			AssertElementPresent(
-				key_filter = "Status: Approved, Draft, Pending",
+				key_filter = "Status: Pending",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 	}
 
 	@description = "LPS-155311. Assert the filter cannot be filtered by searching."
-	@priority = "3"
+	@priority = 3
 	test FilterNotFound {
 		task ("When clicking on the filter button") {
 			FDSFilters.openFilters();
@@ -212,7 +226,7 @@ definition {
 	}
 
 	@description = "LPS-155303. Assert management bar will render."
-	@priority = "3"
+	@priority = 3
 	test ManagementBarWillRender {
 		task ("Then the Management Bar will be displayed correctly") {
 			AssertElementPresent(locator1 = "FrontendDataSet#MANAGEMENT_BAR");
@@ -222,7 +236,7 @@ definition {
 	}
 
 	@description = "LPS-155308. Assert one filter can be removed."
-	@priority = "4"
+	@priority = 4
 	test OneFilterCanBeRemoved {
 		task ("When there are several filters already established") {
 			FDSFilters.openFilters();
@@ -232,7 +246,7 @@ definition {
 				key_toDate = "02/02/2021");
 
 			VerifyElementPresent(
-				key_filter = "Status: Approved, Draft",
+				key_filter = "Color: Blue, Green, Yellow",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 
 			VerifyElementPresent(
@@ -243,7 +257,7 @@ definition {
 		task ("Then it can be removed one by one") {
 			FDSFilters.closeFilters();
 
-			FDSFilters.removeFilter(key_filter = "Status");
+			FDSFilters.removeFilter(key_filter = "Color");
 
 			FDSFilters.removeFilter(key_filter = "Date Range");
 		}
@@ -251,12 +265,12 @@ definition {
 		task ("Then the results will be displayed updated accordingly to it") {
 			AssertTextEquals(
 				locator1 = "FrontendDataSet#PAGINATION_RESULTS",
-				value1 = "Showing 1 to 10 of 100");
+				value1 = "Showing 1 to 10 of 100 entries.");
 		}
 
 		task ("And the Filters Summary boxes will be updated accordingly to it") {
 			AssertElementNotPresent(
-				key_filter = "Status",
+				key_filter = "Color",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 
 			AssertElementNotPresent(
@@ -266,8 +280,12 @@ definition {
 	}
 
 	@description = "LPS-155312. Assert results can be correctly filtered when using the status filter."
-	@priority = "5"
+	@priority = 5
 	test StatusFilterCanBeAdded {
+		task ("Given no filters applied") {
+			FDSFilters.removeAllFilters();
+		}
+
 		task ("When click on the filter button") {
 			FDSFilters.openFilters();
 		}
@@ -275,14 +293,12 @@ definition {
 		task ("And When adding an option from the status list filter") {
 			FDSFilters.enableStatusFilters(key_status = "Pending");
 
-			FDSFilters.disableStatusFilters(key_status = "Approved");
-
-			Click(locator1 = "FrontendDataSet#EDIT_FILTER_BUTTON");
+			Click(locator1 = "FrontendDataSet#ADD_FILTER_BUTTON");
 		}
 
 		task ("Then the filter will be added to the Filters Summary") {
 			AssertElementPresent(
-				key_filter = "Status: Draft, Pending",
+				key_filter = "Status: Pending",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 
@@ -292,7 +308,7 @@ definition {
 	}
 
 	@description = "LPS-155304. Assert filter is preloaded when entering on a FDS page for first time."
-	@priority = "5"
+	@priority = 5
 	test WillRenderAsInitialState {
 		task ("And When viewing FDS Sample portlet dataset") {
 			Click(
@@ -317,12 +333,12 @@ definition {
 
 			AssertTextEquals(
 				locator1 = "FrontendDataSet#PAGINATION_RESULTS",
-				value1 = "Showing 1 to 10 of 100");
+				value1 = "Showing 1 to 10 of 75 entries.");
 		}
 
 		task ("And Then the Filters Summary boxes will be displayed accordingly to it") {
 			AssertElementPresent(
-				key_filter = "Status: Approved, Draft",
+				key_filter = "Color: Blue, Green, Yellow",
 				locator1 = "FrontendDataSet#FILTER_SUMMARY_LABEL");
 		}
 	}

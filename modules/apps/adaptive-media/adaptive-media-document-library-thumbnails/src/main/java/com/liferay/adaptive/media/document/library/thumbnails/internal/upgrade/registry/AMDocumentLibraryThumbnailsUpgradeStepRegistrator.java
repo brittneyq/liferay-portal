@@ -16,7 +16,6 @@ package com.liferay.adaptive.media.document.library.thumbnails.internal.upgrade.
 
 import com.liferay.adaptive.media.document.library.thumbnails.internal.upgrade.v1_0_0.DocumentLibraryThumbnailsConfigurationUpgradeProcess;
 import com.liferay.adaptive.media.document.library.thumbnails.internal.util.AMCompanyThumbnailConfigurationInitializer;
-import com.liferay.adaptive.media.image.configuration.AMImageConfigurationHelper;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
@@ -26,7 +25,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Roberto Díaz
  */
-@Component(immediate = true, service = UpgradeStepRegistrator.class)
+@Component(service = UpgradeStepRegistrator.class)
 public class AMDocumentLibraryThumbnailsUpgradeStepRegistrator
 	implements UpgradeStepRegistrator {
 
@@ -50,9 +49,6 @@ public class AMDocumentLibraryThumbnailsUpgradeStepRegistrator
 	@Reference
 	private AMCompanyThumbnailConfigurationInitializer
 		_amCompanyThumbnailConfigurationInitializer;
-
-	@Reference
-	private AMImageConfigurationHelper _amImageConfigurationHelper;
 
 	@Reference
 	private CompanyLocalService _companyLocalService;

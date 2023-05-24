@@ -80,11 +80,9 @@ function DisplayPageItemContextualSidebar({
 
 	const openChooseItemModal = () =>
 		openSelectionModal({
-			onSelect: (selectedItem) => {
-				if (selectedItem) {
-					let infoItem = {
-						...selectedItem,
-					};
+			onSelect: (selectedItems) => {
+				if (selectedItems) {
+					let infoItem = Object.values(selectedItems)[0];
 
 					let value;
 
@@ -178,10 +176,7 @@ function DisplayPageItemContextualSidebar({
 						/>
 					</ClayInput.GroupItem>
 
-					<ClayInput.GroupItem
-						className="site-navigation-language-selector"
-						shrink
-					>
+					<ClayInput.GroupItem shrink>
 						<TranslationAdminSelector
 							activeLanguageIds={locales.map(
 								(locale) => locale.id
@@ -209,7 +204,7 @@ function DisplayPageItemContextualSidebar({
 					{Liferay.Language.get('item')}
 				</label>
 
-				<ClayInput.Group className="site-navigation-item-selector">
+				<ClayInput.Group>
 					<ClayInput.GroupItem>
 						<ClayInput
 							className="text-secondary"
@@ -237,14 +232,18 @@ function DisplayPageItemContextualSidebar({
 						<ClayAlert
 							className="mt-1"
 							displayType="warning"
+							role={null}
 							title={Liferay.Language.get('no-display-page')}
 							variant="feedback"
 						/>
 
 						<p className="small text-secondary">
-							{Liferay.Language.get(
-								'items-without-display-page-do-not-have-links-and-are-hidden-from-menus'
-							)}
+							{`${Liferay.Language.get(
+								'this-item-does-not-have-a-display-page'
+							)} 
+								${Liferay.Language.get(
+									'items-without-display-page-do-not-have-links-and-are-hidden-from-menus'
+								)}`}
 						</p>
 					</>
 				)}

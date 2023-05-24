@@ -19,7 +19,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -29,6 +28,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -77,6 +77,8 @@ public class WorkflowInstanceViewDisplayContext
 		throws PortalException {
 
 		super(liferayPortletRequest, liferayPortletResponse);
+
+		_liferayPortletRequest = liferayPortletRequest;
 	}
 
 	public String getAssetIconCssClass(WorkflowInstance workflowInstance) {
@@ -409,6 +411,24 @@ public class WorkflowInstanceViewDisplayContext
 		return false;
 	}
 
+	public boolean isShowExtraInfo() {
+		if (_showExtraInfo != null) {
+			return _showExtraInfo;
+		}
+
+		if (Objects.equals(
+				ParamUtil.getString(_liferayPortletRequest, "type"),
+				"document")) {
+
+			_showExtraInfo = true;
+		}
+		else {
+			_showExtraInfo = false;
+		}
+
+		return _showExtraInfo;
+	}
+
 	protected String getAssetType(String keywords) {
 		for (WorkflowHandler<?> workflowHandler :
 				getSearchableAssetsWorkflowHandlers()) {
@@ -536,9 +556,11 @@ public class WorkflowInstanceViewDisplayContext
 
 	private String _displayStyle;
 	private String _keywords;
+	private final LiferayPortletRequest _liferayPortletRequest;
 	private String _navigation;
 	private String _orderByCol;
 	private String _orderByType;
 	private WorkflowInstanceSearch _searchContainer;
+	private Boolean _showExtraInfo;
 
 }

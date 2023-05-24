@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -49,7 +48,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -81,9 +79,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(
-	service = {DDMTemplateVersionPersistence.class, BasePersistence.class}
-)
+@Component(service = DDMTemplateVersionPersistence.class)
 public class DDMTemplateVersionPersistenceImpl
 	extends BasePersistenceImpl<DDMTemplateVersion>
 	implements DDMTemplateVersionPersistence {
@@ -207,7 +203,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMTemplateVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DDMTemplateVersion ddmTemplateVersion : list) {
@@ -583,7 +579,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 			finderArgs = new Object[] {templateId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -704,7 +700,8 @@ public class DDMTemplateVersionPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByT_V, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByT_V, finderArgs, this);
 		}
 
 		if (result instanceof DDMTemplateVersion) {
@@ -824,7 +821,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 			finderArgs = new Object[] {templateId, version};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -994,7 +991,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMTemplateVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DDMTemplateVersion ddmTemplateVersion : list) {
@@ -1394,7 +1391,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 			finderArgs = new Object[] {templateId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2037,7 +2034,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMTemplateVersion>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2113,7 +2110,7 @@ public class DDMTemplateVersionPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -2296,30 +2293,14 @@ public class DDMTemplateVersionPersistenceImpl
 			new String[] {Long.class.getName(), Integer.class.getName()},
 			new String[] {"templateId", "status"}, false);
 
-		_setDDMTemplateVersionUtilPersistence(this);
+		DDMTemplateVersionUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setDDMTemplateVersionUtilPersistence(null);
+		DDMTemplateVersionUtil.setPersistence(null);
 
 		entityCache.removeCache(DDMTemplateVersionImpl.class.getName());
-	}
-
-	private void _setDDMTemplateVersionUtilPersistence(
-		DDMTemplateVersionPersistence ddmTemplateVersionPersistence) {
-
-		try {
-			Field field = DDMTemplateVersionUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ddmTemplateVersionPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2384,9 +2365,5 @@ public class DDMTemplateVersionPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private DDMTemplateVersionModelArgumentsResolver
-		_ddmTemplateVersionModelArgumentsResolver;
 
 }

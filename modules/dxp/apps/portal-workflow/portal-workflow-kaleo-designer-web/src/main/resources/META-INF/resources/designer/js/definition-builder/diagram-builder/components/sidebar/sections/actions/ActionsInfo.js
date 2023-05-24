@@ -26,10 +26,17 @@ const ActionsInfo = ({
 	sectionsLength,
 	setSections,
 }) => {
-	const {selectedItem, setSelectedItem} = useContext(DiagramBuilderContext);
+	const {
+		functionActionExecutors,
+		selectedItem,
+		setSelectedItem,
+		statuses,
+	} = useContext(DiagramBuilderContext);
 	const {actions} = selectedItem.data;
 
 	const [script, setScript] = useState(actions?.script?.[index] || '');
+
+	const [status, setStatus] = useState(actions?.status?.[index] || '');
 
 	const [description, setDescription] = useState(
 		actions?.description?.[index] || ''
@@ -45,6 +52,55 @@ const ActionsInfo = ({
 			value: 'onExit',
 		},
 	]);
+
+	const actionTypeOptions = [
+		{
+			label: Liferay.Language.get('groovy'),
+			type: 'script',
+			value: 'groovy',
+		},
+		{
+			label: Liferay.Language.get('java'),
+			type: 'script',
+			value: 'java',
+		},
+		{
+			label: Liferay.Language.get('update-status'),
+			type: 'status',
+			value: 'update-status',
+		},
+	];
+
+	if (functionActionExecutors?.length) {
+		actionTypeOptions.push(
+			...functionActionExecutors.map((item) => ({
+				label: item,
+				type: 'functionActionExecutor',
+				value: item,
+			}))
+		);
+	}
+
+	const [scriptLanguage, setScriptLanguage] = useState(
+		actions?.scriptLanguage?.[index] || 'select-a-script-type'
+	);
+
+	let defaultActionType;
+
+	if (status) {
+		defaultActionType = actionTypeOptions.find(
+			(item) => item.value === 'update-status'
+		);
+	}
+	else {
+		defaultActionType = actionTypeOptions.find(
+			(item) => item.value === scriptLanguage
+		);
+	}
+
+	const [selectedActionType, setSelectedActionType] = useState(
+		defaultActionType
+	);
 
 	if (
 		selectedItem.type === 'task' &&
@@ -69,23 +125,34 @@ const ActionsInfo = ({
 				(prevSection) => prevSection.identifier !== identifier
 			);
 
-			updateSelectedItem(newSections);
+			if (name && executionType) {
+				updateSelectedItem(newSections);
+			}
 
 			return newSections;
 		});
 	};
 
 	const updateActionInfo = (item) => {
-		if (item.name && item.script && item.executionType) {
+		if (
+			item.name &&
+			(item.script ||
+				(selectedActionType?.type === 'functionActionExecutor' &&
+					item.script === '') ||
+				item.status) &&
+			item.executionType
+		) {
 			setSections((prev) => {
-				prev[index] = {
-					...prev[index],
+				const updatedSection = [...prev];
+
+				updatedSection[index] = {
+					...updatedSection[index],
 					...item,
 				};
 
-				updateSelectedItem(prev);
+				updateSelectedItem(updatedSection);
 
-				return prev;
+				return updatedSection;
 			});
 		}
 	};
@@ -103,7 +170,11 @@ const ActionsInfo = ({
 					name: values.map(({name}) => name),
 					priority: values.map(({priority}) => priority),
 					script: values.map(({script}) => script),
+					scriptLanguage: values.map(
+						({scriptLanguage}) => scriptLanguage
+					),
 					sectionsData: values.map((values) => values),
+					status: values.map((status) => status.status),
 				},
 			},
 		}));
@@ -112,6 +183,7 @@ const ActionsInfo = ({
 	return (
 		<SidebarPanel panelTitle={Liferay.Language.get('information')}>
 			<BaseActionsInfo
+				actionTypes={actionTypeOptions}
 				description={description}
 				executionType={executionType}
 				executionTypeInput={executionTypeInput}
@@ -122,8 +194,8 @@ const ActionsInfo = ({
 				placeholderScript="${userName} sent you a ${entryType} for review in the workflow."
 				priority={priority}
 				script={script}
-				scriptLabel={Liferay.Language.get('script')}
-				scriptLabelSecondary={Liferay.Language.get('groovy')}
+				scriptLanguage={scriptLanguage}
+				selectedActionType={selectedActionType}
 				selectedItem={selectedItem}
 				setDescription={setDescription}
 				setExecutionType={setExecutionType}
@@ -131,13 +203,22 @@ const ActionsInfo = ({
 				setName={setName}
 				setPriority={setPriority}
 				setScript={setScript}
+				setScriptLanguage={setScriptLanguage}
+				setSelectedActionType={setSelectedActionType}
+				setStatus={setStatus}
+				status={status}
+				statuses={statuses}
 				updateActionInfo={updateActionInfo}
 			/>
 
 			<div className="section-buttons-area">
 				<ClayButton
 					className="mr-3"
-					disabled={actions?.name === '' || script === ''}
+					disabled={
+						actions?.name === '' ||
+						(!selectedActionType === 'functionActionExecutor' &&
+							script === '')
+					}
 					displayType="secondary"
 					onClick={() =>
 						setSections((prev) => {
@@ -165,7 +246,7 @@ const ActionsInfo = ({
 };
 
 ActionsInfo.propTypes = {
-	executionTypeInput: PropTypes.func.isRequired,
+	executionTypeInput: PropTypes.func,
 	identifier: PropTypes.string.isRequired,
 	index: PropTypes.number.isRequired,
 	sectionsLength: PropTypes.number.isRequired,

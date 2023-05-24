@@ -48,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceShipmentFDSNames.INVENTORY_WAREHOUSE_ITEM,
 	service = FDSDataProvider.class
 )
@@ -137,7 +136,8 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 							shipmentItemWarehouseItemQuantity),
 						commerceInventoryWarehouseItem.getQuantity(),
 						StringPool.BLANK,
-						commerceInventoryWarehouse.getName()));
+						commerceInventoryWarehouse.getName(
+							_portal.getLocale(httpServletRequest))));
 			}
 			else {
 				warehouses.add(
@@ -147,7 +147,8 @@ public class CommerceInventoryWarehouseItemFDSDataProvider
 							inputName, shipmentItemWarehouseItemQuantity, 0,
 							shipmentItemWarehouseItemQuantity),
 						0, StringPool.BLANK,
-						commerceInventoryWarehouse.getName()));
+						commerceInventoryWarehouse.getName(
+							_portal.getLocale(httpServletRequest))));
 			}
 		}
 

@@ -134,6 +134,35 @@ public class StructuredContentResourceTest
 
 	@Override
 	@Test
+	public void testDeleteStructuredContentMyRating() throws Exception {
+		super.testDeleteStructuredContentMyRating();
+
+		StructuredContent structuredContent =
+			testDeleteStructuredContentMyRating_addStructuredContent();
+
+		assertHttpResponseStatusCode(
+			204,
+			structuredContentResource.
+				deleteStructuredContentMyRatingHttpResponse(
+					structuredContent.getId()));
+		assertHttpResponseStatusCode(
+			404,
+			structuredContentResource.
+				deleteStructuredContentMyRatingHttpResponse(
+					structuredContent.getId()));
+
+		StructuredContent irrelevantStructuredContent =
+			randomIrrelevantStructuredContent();
+
+		assertHttpResponseStatusCode(
+			404,
+			structuredContentResource.
+				deleteStructuredContentMyRatingHttpResponse(
+					irrelevantStructuredContent.getId()));
+	}
+
+	@Override
+	@Test
 	public void testGetStructuredContent() throws Exception {
 
 		// Get structured content
@@ -379,6 +408,32 @@ public class StructuredContentResourceTest
 
 	@Override
 	@Test
+	public void testPatchStructuredContent() throws Exception {
+		super.testPatchStructuredContent();
+
+		StructuredContent structuredContent = randomStructuredContent();
+
+		structuredContent.setPriority(1.0);
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.postSiteStructuredContent(
+				testGroup.getGroupId(), structuredContent);
+
+		StructuredContent patchStructuredContent =
+			structuredContentResource.patchStructuredContent(
+				postStructuredContent.getId(),
+				new StructuredContent() {
+					{
+						title = RandomTestUtil.randomString();
+					}
+				});
+
+		Assert.assertEquals(
+			Double.valueOf(1.0), patchStructuredContent.getPriority());
+	}
+
+	@Override
+	@Test
 	public void testPostSiteStructuredContent() throws Exception {
 		super.testPostSiteStructuredContent();
 
@@ -486,11 +541,39 @@ public class StructuredContentResourceTest
 	}
 
 	@Override
+	protected StructuredContent
+			testDeleteAssetLibraryStructuredContentByExternalReferenceCode_addStructuredContent()
+		throws Exception {
+
+		StructuredContent structuredContent = randomStructuredContent();
+
+		structuredContent.setContentStructureId(
+			_depotDDMStructure.getStructureId());
+
+		return structuredContentResource.postAssetLibraryStructuredContent(
+			testDepotEntry.getDepotEntryId(), structuredContent);
+	}
+
+	@Override
 	protected Long
 			testDeleteAssetLibraryStructuredContentByExternalReferenceCode_getAssetLibraryId()
 		throws Exception {
 
 		return testDepotEntry.getDepotEntryId();
+	}
+
+	@Override
+	protected StructuredContent
+			testDeleteStructuredContentMyRating_addStructuredContent()
+		throws Exception {
+
+		StructuredContent structuredContent =
+			super.testDeleteStructuredContentMyRating_addStructuredContent();
+
+		structuredContentResource.putStructuredContentMyRatingHttpResponse(
+			structuredContent.getId(), randomRating());
+
+		return structuredContent;
 	}
 
 	@Override

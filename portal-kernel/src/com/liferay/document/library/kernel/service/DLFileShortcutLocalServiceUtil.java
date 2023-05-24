@@ -428,6 +428,12 @@ public class DLFileShortcutLocalServiceUtil {
 	}
 
 	public static List<DLFileShortcut> getFileShortcuts(
+		long groupId, long folderId) {
+
+		return getService().getFileShortcuts(groupId, folderId);
+	}
+
+	public static List<DLFileShortcut> getFileShortcuts(
 		long groupId, long folderId, boolean active, int status, int start,
 		int end) {
 
@@ -536,6 +542,10 @@ public class DLFileShortcutLocalServiceUtil {
 
 	public static DLFileShortcutLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(DLFileShortcutLocalService service) {
+		_service = service;
 	}
 
 	private static volatile DLFileShortcutLocalService _service;

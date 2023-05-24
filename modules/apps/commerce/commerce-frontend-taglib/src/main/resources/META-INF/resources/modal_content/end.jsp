@@ -21,7 +21,7 @@
 	<c:if test="<%= Validator.isNotNull(submitButtonLabel) || showCancelButton || showSubmitButton %>">
 		<div class="modal-iframe-footer">
 			<c:if test="<%= showCancelButton %>">
-				<div class="btn btn-secondary ml-3 modal-closer"><%= LanguageUtil.get(request, "cancel") %></div>
+				<div class="btn btn-secondary ml-3 modal-closer"><liferay-ui:message key="cancel" /></div>
 			</c:if>
 
 			<c:if test="<%= showSubmitButton || Validator.isNotNull(submitButtonLabel) %>">
@@ -33,7 +33,9 @@
 	</c:if>
 </div>
 
-<aui:script require="commerce-frontend-js/utilities/eventsDefinitions as events, frontend-js-web/liferay/debounce/debounce.es as debounce">
+<aui:script require="commerce-frontend-js/utilities/eventsDefinitions as events, frontend-js-web/index as frontendJsWeb">
+	var {debounce} = frontendJsWeb;
+
 	function closeModal(isSuccessful) {
 		var eventDetail = {};
 
@@ -113,7 +115,7 @@
 			iframeContent.style.marginBottom = iframeFooter.offsetHeight + 'px';
 		}
 
-		var debouncedAdjustBottomSpace = debounce.default(adjustBottomSpace, 300);
+		var debouncedAdjustBottomSpace = debounce(adjustBottomSpace, 300);
 
 		adjustBottomSpace();
 

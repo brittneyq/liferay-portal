@@ -73,7 +73,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"commerce.checkout.step.name=" + ShippingMethodCommerceCheckoutStep.NAME,
 		"commerce.checkout.step.order:Integer=20"
@@ -225,16 +224,6 @@ public class ShippingMethodCommerceCheckoutStep
 				"\" for shipping method ", commerceShippingMethodId));
 	}
 
-	@Reference(
-		target = "(model.class.name=com.liferay.commerce.model.CommerceOrder)",
-		unbind = "-"
-	)
-	protected void setModelResourcePermission(
-		ModelResourcePermission<CommerceOrder> modelResourcePermission) {
-
-		_commerceOrderModelResourcePermission = modelResourcePermission;
-	}
-
 	private void _updateCommerceOrderShippingMethod(ActionRequest actionRequest)
 		throws Exception {
 
@@ -314,6 +303,9 @@ public class ShippingMethodCommerceCheckoutStep
 	@Reference
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
+	@Reference(
+		target = "(model.class.name=com.liferay.commerce.model.CommerceOrder)"
+	)
 	private ModelResourcePermission<CommerceOrder>
 		_commerceOrderModelResourcePermission;
 

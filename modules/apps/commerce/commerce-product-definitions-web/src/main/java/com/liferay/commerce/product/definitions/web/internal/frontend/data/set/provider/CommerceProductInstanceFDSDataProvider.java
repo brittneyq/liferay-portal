@@ -59,7 +59,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"fds.data.provider.key=" + CommerceProductFDSNames.ALL_PRODUCT_INSTANCES,
 		"fds.data.provider.key=" + CommerceProductFDSNames.PRODUCT_INSTANCES
@@ -100,11 +99,12 @@ public class CommerceProductInstanceFDSDataProvider
 
 			String cpDefinitionName = cpDefinition.getName(languageId);
 
-			JSONArray keyValuesJSONArray = _jsonHelper.toJSONArray(
+			JSONArray jsonArray = _jsonHelper.toJSONArray(
 				cpDefinitionOptionRelKeysCPDefinitionOptionValueRelKeys);
 
 			int stockQuantity = _commerceInventoryEngine.getStockQuantity(
-				cpInstance.getCompanyId(), cpInstance.getSku());
+				cpInstance.getCompanyId(), cpDefinition.getGroupId(),
+				cpInstance.getSku());
 
 			String statusDisplayStyle = StringPool.BLANK;
 
@@ -124,7 +124,7 @@ public class CommerceProductInstanceFDSDataProvider
 					HtmlUtil.escape(
 						_getOptions(
 							cpInstance.getCPDefinitionId(),
-							keyValuesJSONArray.toString(), locale)),
+							jsonArray.toString(), locale)),
 					HtmlUtil.escape(_formatPrice(cpInstance, locale)),
 					cpDefinitionName, stockQuantity,
 					new LabelField(

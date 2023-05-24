@@ -26,10 +26,9 @@ import com.liferay.user.associated.data.web.internal.display.UADHierarchyDisplay
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -41,7 +40,7 @@ import org.osgi.service.component.annotations.Deactivate;
 /**
  * @author William Newbury
  */
-@Component(immediate = true, service = UADRegistry.class)
+@Component(service = UADRegistry.class)
 public class UADRegistry {
 
 	public List<UADAnonymizer<?>> getApplicationUADAnonymizers(
@@ -54,45 +53,20 @@ public class UADRegistry {
 		return _bundleUADAnonymizerServiceTrackerMap.keySet();
 	}
 
-	public Stream<UADAnonymizer<?>> getApplicationUADAnonymizerStream(
-		String applicationKey) {
-
-		List<UADAnonymizer<?>> uadAnonymizerList = getApplicationUADAnonymizers(
-			applicationKey);
-
-		return uadAnonymizerList.stream();
-	}
-
 	public List<UADDisplay<?>> getApplicationUADDisplays(
 		String applicationKey) {
 
-		return _bundleUADDisplayServiceTrackerMap.getService(applicationKey);
+		List<UADDisplay<?>> uadDisplayList =
+			_bundleUADDisplayServiceTrackerMap.getService(applicationKey);
+
+		if (uadDisplayList == null) {
+			return Collections.emptyList();
+		}
+
+		return uadDisplayList;
 	}
 
 	public Set<String> getApplicationUADDisplaysKeySet() {
-		return _bundleUADDisplayServiceTrackerMap.keySet();
-	}
-
-	public Stream<UADDisplay<?>> getApplicationUADDisplayStream(
-		String applicationKey) {
-
-		List<UADDisplay<?>> uadDisplayList = getApplicationUADDisplays(
-			applicationKey);
-
-		if (uadDisplayList == null) {
-			return Stream.empty();
-		}
-
-		return uadDisplayList.stream();
-	}
-
-	public List<UADExporter<?>> getApplicationUADExporters(
-		String applicationKey) {
-
-		return _bundleUADExporterServiceTrackerMap.getService(applicationKey);
-	}
-
-	public Set<String> getApplicationUADExportersKeySet() {
 		return _bundleUADDisplayServiceTrackerMap.keySet();
 	}
 
@@ -102,16 +76,12 @@ public class UADRegistry {
 		return new ArrayList<>(
 			_getNonreviewableUADAnonymizers(
 				getApplicationUADAnonymizers(applicationKey),
-				getApplicationUADDisplayStream(applicationKey)));
+				getApplicationUADDisplays(applicationKey)));
 	}
 
 	public Collection<UADAnonymizer<?>> getNonreviewableUADAnonymizers() {
 		return _getNonreviewableUADAnonymizers(
-			getUADAnonymizers(), getUADDisplayStream());
-	}
-
-	public Stream<UADAnonymizer<?>> getNonreviewableUADAnonymizerStream() {
-		return getNonreviewableUADAnonymizers().stream();
+			getUADAnonymizers(), getUADDisplays());
 	}
 
 	public UADAnonymizer<?> getUADAnonymizer(String key) {
@@ -122,20 +92,22 @@ public class UADRegistry {
 		return _uadAnonymizerServiceTrackerMap.values();
 	}
 
-	public Stream<UADAnonymizer<?>> getUADAnonymizerStream() {
-		return getUADAnonymizers().stream();
-	}
-
 	public UADDisplay<?> getUADDisplay(String key) {
 		return _uadDisplayServiceTrackerMap.getService(key);
 	}
 
-	public Collection<UADDisplay<?>> getUADDisplays() {
-		return _uadDisplayServiceTrackerMap.values();
+	public UADDisplay<?> getUADDisplayByObject(Object object) {
+		for (UADDisplay<?> uadDisplay : getUADDisplays()) {
+			if (uadDisplay.isTypeEntity(object)) {
+				return uadDisplay;
+			}
+		}
+
+		return null;
 	}
 
-	public Stream<UADDisplay<?>> getUADDisplayStream() {
-		return getUADDisplays().stream();
+	public Collection<UADDisplay<?>> getUADDisplays() {
+		return _uadDisplayServiceTrackerMap.values();
 	}
 
 	public UADExporter<?> getUADExporter(String key) {
@@ -150,7 +122,7 @@ public class UADRegistry {
 			return null;
 		}
 
-		return new UADHierarchyDisplay(uadHierarchyDeclaration);
+		return new UADHierarchyDisplay(uadHierarchyDeclaration, this);
 	}
 
 	@Activate
@@ -160,8 +132,6 @@ public class UADRegistry {
 			(Class<UADAnonymizer<?>>)(Class<?>)UADAnonymizer.class);
 		_bundleUADDisplayServiceTrackerMap = _getMultiValueServiceTrackerMap(
 			bundleContext, (Class<UADDisplay<?>>)(Class<?>)UADDisplay.class);
-		_bundleUADExporterServiceTrackerMap = _getMultiValueServiceTrackerMap(
-			bundleContext, (Class<UADExporter<?>>)(Class<?>)UADExporter.class);
 		_bundleUADHierarchyDeclarationServiceTrackerMap =
 			_getUADHierachyDeclarationServiceTrackerMap(
 				bundleContext, UADHierarchyDeclaration.class);
@@ -178,7 +148,6 @@ public class UADRegistry {
 	protected void deactivate() {
 		_bundleUADAnonymizerServiceTrackerMap.close();
 		_bundleUADDisplayServiceTrackerMap.close();
-		_bundleUADExporterServiceTrackerMap.close();
 		_bundleUADHierarchyDeclarationServiceTrackerMap.close();
 		_uadAnonymizerServiceTrackerMap.close();
 		_uadDisplayServiceTrackerMap.close();
@@ -203,19 +172,19 @@ public class UADRegistry {
 
 	private Collection<UADAnonymizer<?>> _getNonreviewableUADAnonymizers(
 		Collection<UADAnonymizer<?>> uadAnonymizers,
-		Stream<UADDisplay<?>> uadDisplayStream) {
+		Collection<UADDisplay<?>> uadDisplayList) {
 
-		Stream<Class<?>> typeClassStream = uadDisplayStream.map(
-			UADDisplay::getTypeClass);
+		List<String> uadDisplayTypeKeys = new ArrayList<>();
 
-		List<Class<?>> uadDisplayTypeClasses = typeClassStream.collect(
-			Collectors.toList());
+		for (UADDisplay<?> uadDisplay : uadDisplayList) {
+			uadDisplayTypeKeys.add(uadDisplay.getTypeKey());
+		}
 
 		List<UADAnonymizer<?>> nonreviewableUADAnonymizers = new ArrayList<>(
 			uadAnonymizers);
 
 		for (UADAnonymizer<?> uadAnonymizer : uadAnonymizers) {
-			if (uadDisplayTypeClasses.contains(uadAnonymizer.getTypeClass())) {
+			if (uadDisplayTypeKeys.contains(uadAnonymizer.getTypeKey())) {
 				nonreviewableUADAnonymizers.remove(uadAnonymizer);
 			}
 		}
@@ -231,11 +200,8 @@ public class UADRegistry {
 			bundleContext, clazz, null,
 			ServiceReferenceMapperFactory.create(
 				bundleContext,
-				(uadComponent, emitter) -> {
-					Class<?> uadClass = uadComponent.getTypeClass();
-
-					emitter.emit(uadClass.getName());
-				}));
+				(uadComponent, emitter) -> emitter.emit(
+					uadComponent.getTypeKey())));
 	}
 
 	private <T> ServiceTrackerMap<String, T>
@@ -265,8 +231,6 @@ public class UADRegistry {
 		_bundleUADAnonymizerServiceTrackerMap;
 	private ServiceTrackerMap<String, List<UADDisplay<?>>>
 		_bundleUADDisplayServiceTrackerMap;
-	private ServiceTrackerMap<String, List<UADExporter<?>>>
-		_bundleUADExporterServiceTrackerMap;
 	private ServiceTrackerMap<String, UADHierarchyDeclaration>
 		_bundleUADHierarchyDeclarationServiceTrackerMap;
 	private ServiceTrackerMap<String, UADAnonymizer<?>>

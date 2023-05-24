@@ -16,9 +16,15 @@ import ClayButton from '@clayui/button';
 import ClayForm from '@clayui/form';
 import ClayModal from '@clayui/modal';
 import {Observer} from '@clayui/modal/lib/types';
-import {FormError, Input, useForm} from '@liferay/object-js-components-web';
+import {
+	FormError,
+	Input,
+	REQUIRED_MSG,
+	useForm,
+} from '@liferay/object-js-components-web';
 import React from 'react';
 
+import {defaultLanguageId} from '../../../utils/constants';
 import {TYPES, useLayoutContext} from '../objectLayoutContext';
 
 type TInitialValues = {
@@ -31,11 +37,11 @@ interface IModalAddObjectLayoutBoxProps
 	onClose: () => void;
 }
 
-const ModalAddObjectLayoutBox: React.FC<IModalAddObjectLayoutBoxProps> = ({
+export function ModalAddObjectLayoutBox({
 	observer,
 	onClose,
 	tabIndex,
-}) => {
+}: IModalAddObjectLayoutBoxProps) {
 	const [, dispatch] = useLayoutContext();
 
 	const initialValues: TInitialValues = {
@@ -46,7 +52,7 @@ const ModalAddObjectLayoutBox: React.FC<IModalAddObjectLayoutBoxProps> = ({
 		dispatch({
 			payload: {
 				name: {
-					[Liferay.ThemeDisplay.getDefaultLanguageId()]: values.name,
+					[defaultLanguageId]: values.name,
 				},
 				tabIndex,
 				type: 'regular',
@@ -61,7 +67,7 @@ const ModalAddObjectLayoutBox: React.FC<IModalAddObjectLayoutBoxProps> = ({
 		const errors: FormError<TInitialValues> = {};
 
 		if (!values.name) {
-			errors.name = Liferay.Language.get('required');
+			errors.name = REQUIRED_MSG;
 		}
 
 		return errors;
@@ -111,6 +117,4 @@ const ModalAddObjectLayoutBox: React.FC<IModalAddObjectLayoutBoxProps> = ({
 			</ClayForm>
 		</ClayModal>
 	);
-};
-
-export default ModalAddObjectLayoutBox;
+}

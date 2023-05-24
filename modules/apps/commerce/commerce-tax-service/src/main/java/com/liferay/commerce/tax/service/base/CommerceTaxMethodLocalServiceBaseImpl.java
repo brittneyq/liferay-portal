@@ -47,8 +47,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -399,7 +397,7 @@ public abstract class CommerceTaxMethodLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommerceTaxMethodLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -414,7 +412,8 @@ public abstract class CommerceTaxMethodLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		commerceTaxMethodLocalService = (CommerceTaxMethodLocalService)aopProxy;
 
-		_setLocalServiceUtilService(commerceTaxMethodLocalService);
+		CommerceTaxMethodLocalServiceUtil.setService(
+			commerceTaxMethodLocalService);
 	}
 
 	/**
@@ -460,23 +459,6 @@ public abstract class CommerceTaxMethodLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CommerceTaxMethodLocalService commerceTaxMethodLocalService) {
-
-		try {
-			Field field =
-				CommerceTaxMethodLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceTaxMethodLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected CommerceTaxMethodLocalService commerceTaxMethodLocalService;
 
 	@Reference
@@ -485,18 +467,6 @@ public abstract class CommerceTaxMethodLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceTaxMethodLocalServiceBaseImpl.class);

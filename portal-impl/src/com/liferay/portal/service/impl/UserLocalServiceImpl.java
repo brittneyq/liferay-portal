@@ -72,6 +72,7 @@ import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.ContactConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.GroupModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.PasswordPolicy;
@@ -82,6 +83,7 @@ import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.model.Ticket;
 import com.liferay.portal.kernel.model.TicketConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.role.RoleConstants;
@@ -112,6 +114,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.ScreenNameGenerator;
 import com.liferay.portal.kernel.security.auth.ScreenNameValidator;
 import com.liferay.portal.kernel.security.ldap.LDAPSettingsUtil;
+import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
@@ -154,9 +157,9 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
+import com.liferay.portal.kernel.util.EscapableObject;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -167,6 +170,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -189,7 +193,6 @@ import com.liferay.portal.security.pwd.PwdAuthenticator;
 import com.liferay.portal.security.pwd.PwdToolkitUtil;
 import com.liferay.portal.security.pwd.RegExpToolkit;
 import com.liferay.portal.service.base.UserLocalServiceBaseImpl;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
 import com.liferay.social.kernel.model.SocialRelation;
@@ -206,14 +209,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.mail.internet.InternetAddress;
@@ -259,6 +265,13 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		String password2 = password1;
 
+		boolean passwordReset = _isPasswordReset(companyId);
+
+		if (Validator.isNull(password1)) {
+			autoPassword = true;
+			passwordReset = true;
+		}
+
 		boolean autoScreenName = false;
 
 		screenName = getLogin(screenName);
@@ -274,8 +287,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			screenName = screenName + i;
 		}
 
-		long prefixId = 0;
-		long suffixId = 0;
+		long prefixListTypeId = 0;
+		long suffixListTypeId = 0;
 		boolean male = true;
 		int birthdayMonth = Calendar.JANUARY;
 		int birthdayDay = 1;
@@ -309,17 +322,24 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		User defaultAdminUser = addUser(
 			creatorUserId, companyId, autoPassword, password1, password2,
 			autoScreenName, screenName, emailAddress, locale, firstName,
-			middleName, lastName, prefixId, suffixId, male, birthdayMonth,
-			birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds,
-			roleIds, userGroupIds, sendEmail, serviceContext);
+			middleName, lastName, prefixListTypeId, suffixListTypeId, male,
+			birthdayMonth, birthdayDay, birthdayYear, jobTitle,
+			UserConstants.TYPE_REGULAR, groupIds, organizationIds, roleIds,
+			userGroupIds, sendEmail, serviceContext);
+
+		if (autoPassword) {
+			defaultAdminUser.setReminderQueryAnswer(
+				WorkflowConstants.LABEL_PENDING);
+
+			defaultAdminUser = userPersistence.update(defaultAdminUser);
+		}
 
 		updateEmailAddressVerified(defaultAdminUser.getUserId(), true);
 
 		updateLastLogin(
 			defaultAdminUser.getUserId(), defaultAdminUser.getLoginIP());
 
-		updatePasswordReset(
-			defaultAdminUser.getUserId(), _isPasswordReset(companyId));
+		updatePasswordReset(defaultAdminUser.getUserId(), passwordReset);
 
 		return defaultAdminUser;
 	}
@@ -330,17 +350,16 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * <code>portal.properties</code> with the key
 	 * <code>admin.default.group.names</code>.
 	 *
-	 * @param userId the primary key of the user
+	 * @param  userId the primary key of the user
 	 * @return <code>true</code> if user was added to default groups;
 	 *         <code>false</code> if user was already a member
 	 */
 	@Override
 	public boolean addDefaultGroups(long userId) throws PortalException {
+		Set<Group> defaultGroups = new TreeSet<>(
+			Comparator.comparing(GroupModel::getTreePath));
+
 		User user = userPersistence.findByPrimaryKey(userId);
-
-		long[] userGroupIds = user.getGroupIds();
-
-		Set<Long> groupIdsSet = new HashSet<>();
 
 		String[] defaultGroupNames = PrefsPropsUtil.getStringArray(
 			user.getCompanyId(), PropsKeys.ADMIN_DEFAULT_GROUP_NAMES,
@@ -360,13 +379,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				user.getCompanyId(), defaultGroupName);
 
 			if (group != null) {
-				if (!ArrayUtil.contains(userGroupIds, group.getGroupId())) {
-					groupIdsSet.add(group.getGroupId());
-				}
-				else {
-					addDefaultRolesAndTeams(
-						group.getGroupId(), new long[] {user.getUserId()});
-				}
+				defaultGroups.add(group);
 			}
 		}
 
@@ -386,26 +399,36 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				user.getCompanyId(), defaultOrganizationGroupName);
 
 			if (group != null) {
-				if (!ArrayUtil.contains(userGroupIds, group.getGroupId())) {
-					groupIdsSet.add(group.getGroupId());
-				}
-				else {
-					addDefaultRolesAndTeams(
-						group.getGroupId(), new long[] {user.getUserId()});
-				}
+				defaultGroups.add(group);
 			}
 		}
 
-		if (groupIdsSet.isEmpty()) {
+		long[] userGroupIds = user.getGroupIds();
+
+		Iterator<Group> iterator = defaultGroups.iterator();
+
+		while (iterator.hasNext()) {
+			Group group = iterator.next();
+
+			long groupId = group.getGroupId();
+
+			if (SiteMembershipPolicyUtil.isMembershipAllowed(userId, groupId)) {
+				if (!ArrayUtil.contains(userGroupIds, groupId)) {
+					userPersistence.addGroup(userId, groupId);
+				}
+			}
+			else {
+				iterator.remove();
+			}
+		}
+
+		if (defaultGroups.isEmpty()) {
 			return false;
 		}
 
-		long[] groupIds = ArrayUtil.toArray(groupIdsSet.toArray(new Long[0]));
-
-		userPersistence.addGroups(userId, groupIds);
-
-		for (long groupId : groupIds) {
-			addDefaultRolesAndTeams(groupId, new long[] {userId});
+		for (Group group : defaultGroups) {
+			addDefaultRolesAndTeams(
+				group.getGroupId(), new long[] {user.getUserId()});
 		}
 
 		return true;
@@ -417,9 +440,9 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * <code>portal.properties</code> with the key
 	 * <code>admin.default.role.names</code>.
 	 *
-	 * @param userId the primary key of the user
+	 * @param  userId the primary key of the user
 	 * @return <code>true</code> if user was given default roles;
-	 * 	       <code>false</code> if user already has default roles
+	 *         <code>false</code> if user already has default roles
 	 */
 	@Override
 	public boolean addDefaultRoles(long userId) throws PortalException {
@@ -464,9 +487,9 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * <code>portal.properties</code> with the property
 	 * <code>admin.default.user.group.names</code>.
 	 *
-	 * @param userId the primary key of the user
+	 * @param  userId the primary key of the user
 	 * @return <code>true</code> if user was added to default user groups;
-	 * 	       <code>false</code> if user is already a user group member
+	 *         <code>false</code> if user is already a user group member
 	 */
 	@Override
 	public boolean addDefaultUserGroups(long userId) throws PortalException {
@@ -644,20 +667,21 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			boolean autoPassword, String password1, String password2,
 			boolean autoScreenName, String screenName, String emailAddress,
 			Locale locale, String firstName, String middleName, String lastName,
-			long prefixId, long suffixId, boolean male, int birthdayMonth,
-			int birthdayDay, int birthdayYear, String jobTitle,
-			boolean sendEmail, ServiceContext serviceContext)
+			long prefixListTypeId, long suffixListTypeId, boolean male,
+			int birthdayMonth, int birthdayDay, int birthdayYear,
+			String jobTitle, boolean sendEmail, ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = userPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		User user = userPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 
 		if (user == null) {
 			user = addUserWithWorkflow(
 				creatorUserId, companyId, autoPassword, password1, password2,
 				autoScreenName, screenName, emailAddress, locale, firstName,
-				middleName, lastName, prefixId, suffixId, male, birthdayMonth,
-				birthdayDay, birthdayYear, jobTitle, new long[0], new long[0],
+				middleName, lastName, prefixListTypeId, suffixListTypeId, male,
+				birthdayMonth, birthdayDay, birthdayYear, jobTitle,
+				UserConstants.TYPE_REGULAR, new long[0], new long[0],
 				new long[0], new long[0], sendEmail, serviceContext);
 
 			user.setExternalReferenceCode(externalReferenceCode);
@@ -678,12 +702,13 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				user.getReminderQueryQuestion(), user.getReminderQueryAnswer(),
 				screenName, emailAddress, hasPortrait, null,
 				user.getLanguageId(), user.getTimeZoneId(), user.getGreeting(),
-				user.getComments(), firstName, middleName, lastName, prefixId,
-				suffixId, male, birthdayMonth, birthdayDay, birthdayYear,
-				contact.getSmsSn(), contact.getFacebookSn(),
-				contact.getJabberSn(), contact.getSkypeSn(),
-				contact.getTwitterSn(), jobTitle, user.getGroupIds(),
-				user.getOrganizationIds(), user.getRoleIds(),
+				user.getComments(), firstName, middleName, lastName,
+				prefixListTypeId, suffixListTypeId, male, birthdayMonth,
+				birthdayDay, birthdayYear, contact.getSmsSn(),
+				contact.getFacebookSn(), contact.getJabberSn(),
+				contact.getSkypeSn(), contact.getTwitterSn(), jobTitle,
+				user.getGroupIds(), user.getOrganizationIds(),
+				user.getRoleIds(),
 				_userGroupRoleLocalService.getUserGroupRoles(user.getUserId()),
 				user.getUserGroupIds(), serviceContext);
 		}
@@ -866,14 +891,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  firstName the user's first name
 	 * @param  middleName the user's middle name
 	 * @param  lastName the user's last name
-	 * @param  prefixId the user's name prefix ID
-	 * @param  suffixId the user's name suffix ID
+	 * @param  prefixListTypeId the user's name prefix ID
+	 * @param  suffixListTypeId the user's name suffix ID
 	 * @param  male whether the user is male
 	 * @param  birthdayMonth the user's birthday month (0-based, meaning 0 for
 	 *         January)
 	 * @param  birthdayDay the user's birthday day
 	 * @param  birthdayYear the user's birthday year
 	 * @param  jobTitle the user's job title
+	 * @param  type the user's type
 	 * @param  groupIds the primary keys of the user's groups
 	 * @param  organizationIds the primary keys of the user's organizations
 	 * @param  roleIds the primary keys of the roles this user possesses
@@ -891,11 +917,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			long creatorUserId, long companyId, boolean autoPassword,
 			String password1, String password2, boolean autoScreenName,
 			String screenName, String emailAddress, Locale locale,
-			String firstName, String middleName, String lastName, long prefixId,
-			long suffixId, boolean male, int birthdayMonth, int birthdayDay,
-			int birthdayYear, String jobTitle, long[] groupIds,
-			long[] organizationIds, long[] roleIds, long[] userGroupIds,
-			boolean sendEmail, ServiceContext serviceContext)
+			String firstName, String middleName, String lastName,
+			long prefixListTypeId, long suffixListTypeId, boolean male,
+			int birthdayMonth, int birthdayDay, int birthdayYear,
+			String jobTitle, int type, long[] groupIds, long[] organizationIds,
+			long[] roleIds, long[] userGroupIds, boolean sendEmail,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		boolean workflowEnabled = WorkflowThreadLocal.isEnabled();
@@ -917,9 +944,10 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			return addUserWithWorkflow(
 				creatorUserId, companyId, autoPassword, password1, password2,
 				autoScreenName, screenName, emailAddress, locale, firstName,
-				middleName, lastName, prefixId, suffixId, male, birthdayMonth,
-				birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds,
-				roleIds, userGroupIds, sendEmail, serviceContext);
+				middleName, lastName, prefixListTypeId, suffixListTypeId, male,
+				birthdayMonth, birthdayDay, birthdayYear, jobTitle, type,
+				groupIds, organizationIds, roleIds, userGroupIds, sendEmail,
+				serviceContext);
 		}
 		finally {
 			WorkflowThreadLocal.setEnabled(workflowEnabled);
@@ -1018,14 +1046,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  firstName the user's first name
 	 * @param  middleName the user's middle name
 	 * @param  lastName the user's last name
-	 * @param  prefixId the user's name prefix ID
-	 * @param  suffixId the user's name suffix ID
+	 * @param  prefixListTypeId the user's name prefix ID
+	 * @param  suffixListTypeId the user's name suffix ID
 	 * @param  male whether the user is male
 	 * @param  birthdayMonth the user's birthday month (0-based, meaning 0 for
 	 *         January)
 	 * @param  birthdayDay the user's birthday day
 	 * @param  birthdayYear the user's birthday year
 	 * @param  jobTitle the user's job title
+	 * @param  type the user's type
 	 * @param  groupIds the primary keys of the user's groups
 	 * @param  organizationIds the primary keys of the user's organizations
 	 * @param  roleIds the primary keys of the roles this user possesses
@@ -1043,11 +1072,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			long creatorUserId, long companyId, boolean autoPassword,
 			String password1, String password2, boolean autoScreenName,
 			String screenName, String emailAddress, Locale locale,
-			String firstName, String middleName, String lastName, long prefixId,
-			long suffixId, boolean male, int birthdayMonth, int birthdayDay,
-			int birthdayYear, String jobTitle, long[] groupIds,
-			long[] organizationIds, long[] roleIds, long[] userGroupIds,
-			boolean sendEmail, ServiceContext serviceContext)
+			String firstName, String middleName, String lastName,
+			long prefixListTypeId, long suffixListTypeId, boolean male,
+			int birthdayMonth, int birthdayDay, int birthdayYear,
+			String jobTitle, int type, long[] groupIds, long[] organizationIds,
+			long[] roleIds, long[] userGroupIds, boolean sendEmail,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		// User
@@ -1107,7 +1137,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			}
 		}
 
-		User defaultUser = getDefaultUser(companyId);
+		User guestUser = getGuestUser(companyId);
 
 		FullNameGenerator fullNameGenerator =
 			FullNameGeneratorFactory.getInstance();
@@ -1128,7 +1158,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		}
 
 		user.setCompanyId(companyId);
-		user.setDefaultUser(false);
 		user.setContactId(counterLocalService.increment());
 
 		if (Validator.isNotNull(password1)) {
@@ -1160,12 +1189,13 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		}
 
 		user.setLanguageId(LocaleUtil.toLanguageId(locale));
-		user.setTimeZoneId(defaultUser.getTimeZoneId());
+		user.setTimeZoneId(guestUser.getTimeZoneId());
 		user.setGreeting(greeting);
 		user.setFirstName(firstName);
 		user.setMiddleName(middleName);
 		user.setLastName(lastName);
 		user.setJobTitle(jobTitle);
+		user.setType(type);
 		user.setStatus(WorkflowConstants.STATUS_DRAFT);
 		user.setExpandoBridgeAttributes(serviceContext);
 
@@ -1201,8 +1231,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		contact.setFirstName(firstName);
 		contact.setMiddleName(middleName);
 		contact.setLastName(lastName);
-		contact.setPrefixId(prefixId);
-		contact.setSuffixId(suffixId);
+		contact.setPrefixListTypeId(prefixListTypeId);
+		contact.setSuffixListTypeId(suffixListTypeId);
 		contact.setMale(male);
 		contact.setBirthday(
 			getBirthday(birthdayMonth, birthdayDay, birthdayYear));
@@ -1289,7 +1319,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		long workflowUserId = creatorUserId;
 
 		if (workflowUserId == userId) {
-			workflowUserId = defaultUser.getUserId();
+			workflowUserId = guestUser.getUserId();
 		}
 
 		ServiceContext workflowServiceContext = new ServiceContext();
@@ -1346,7 +1376,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 						PortalCacheManagerNames.MULTI_VM,
 						portalCache.getPortalCacheName(), portalCache.isMVCC(),
 						portalCache.isSharded()),
-					_defaultUsers, _synchronizer);
+					_guestUsers, _synchronizer);
 			});
 
 		serviceLatch.openOn(
@@ -1542,15 +1572,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * authentication, without using the AuthPipeline. Primarily used for
 	 * authenticating users of <code>tunnel-web</code>.
 	 *
+	 * @param      companyId the primary key of the user's company
+	 * @param      realm unused
+	 * @param      nonce the number used once
+	 * @param      method the request method
+	 * @param      uri the request URI
+	 * @param      response the authentication response hash
+	 * @return     the user's primary key if authentication is successful;
+	 *             <code>0</code> otherwise
 	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 * @param  companyId the primary key of the user's company
-	 * @param  realm unused
-	 * @param  nonce the number used once
-	 * @param  method the request method
-	 * @param  uri the request URI
-	 * @param  response the authentication response hash
-	 * @return the user's primary key if authentication is successful;
-	 *         <code>0</code> otherwise
 	 */
 	@Deprecated
 	@Override
@@ -1730,9 +1760,9 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		boolean autoPassword = ParamUtil.getBoolean(
 			serviceContext, "autoPassword");
 
-		String password = StringPool.BLANK;
-
 		if (autoPassword) {
+			String password = StringPool.BLANK;
+
 			if (LDAPSettingsUtil.isPasswordPolicyEnabled(user.getCompanyId())) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
@@ -1767,13 +1797,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user = userPersistence.update(user);
 
 			user.setPasswordModified(false);
-		}
-
-		if (user.hasCompanyMx()) {
-			mailService.addUser(
-				user.getCompanyId(), user.getUserId(), password,
-				user.getFirstName(), user.getMiddleName(), user.getLastName(),
-				user.getEmailAddress());
 		}
 
 		boolean adminEmailUserAddedEnabled = PrefsPropsUtil.getBoolean(
@@ -1911,7 +1934,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		Group group = null;
 
-		if (!user.isDefaultUser()) {
+		if (!user.isGuestUser()) {
 			group = user.getGroup();
 		}
 
@@ -1995,10 +2018,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		_ticketLocalService.deleteTickets(
 			user.getCompanyId(), User.class.getName(), user.getUserId());
 
-		// Mail
-
-		mailService.deleteUser(user.getCompanyId(), user.getUserId());
-
 		// Contact
 
 		Contact contact = _contactLocalService.fetchContact(
@@ -2081,21 +2100,22 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns the default user for the company.
+	 * Returns the guest user for the company.
 	 *
 	 * @param  companyId the primary key of the company
-	 * @return the default user for the company, or <code>null</code> if a user
-	 * 			with the company key could not be found
+	 * @return the guest user for the company, or <code>null</code> if a user
+	 *         with the company key could not be found
 	 */
 	@Override
-	public User fetchDefaultUser(long companyId) {
-		User user = _defaultUsers.get(companyId);
+	public User fetchGuestUser(long companyId) {
+		User user = _guestUsers.get(companyId);
 
 		if (user == null) {
-			user = userPersistence.fetchByC_DU(companyId, true);
+			user = userPersistence.fetchByC_T_First(
+				companyId, UserConstants.TYPE_GUEST, null);
 
 			if (user != null) {
-				_defaultUsers.put(companyId, user);
+				_guestUsers.put(companyId, user);
 			}
 		}
 
@@ -2245,37 +2265,23 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns the default user for the company.
-	 *
-	 * @param  companyId the primary key of the company
-	 * @return the default user for the company
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #getGuestUser(long)}
 	 */
+	@Deprecated
 	@Override
-	@Transactional(enabled = false)
 	public User getDefaultUser(long companyId) throws PortalException {
-		User userModel = _defaultUsers.get(companyId);
-
-		if (userModel == null) {
-			userModel = userLocalService.loadGetDefaultUser(companyId);
-
-			_defaultUsers.put(companyId, userModel);
-		}
-
-		return userModel;
+		return userLocalService.getGuestUser(companyId);
 	}
 
 	/**
-	 * Returns the primary key of the default user for the company.
-	 *
-	 * @param  companyId the primary key of the company
-	 * @return the primary key of the default user for the company
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #getGuestUserId(long)}
 	 */
+	@Deprecated
 	@Override
-	@Transactional(enabled = false)
 	public long getDefaultUserId(long companyId) throws PortalException {
-		User user = getDefaultUser(companyId);
-
-		return user.getUserId();
+		return userLocalService.getGuestUserId(companyId);
 	}
 
 	/**
@@ -2353,6 +2359,40 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			LinkedHashMapBuilder.<String, Object>put(
 				"usersGroups", Long.valueOf(groupId)
 			).build());
+	}
+
+	/**
+	 * Returns the guest user for the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @return the guest user for the company
+	 */
+	@Override
+	@Transactional(enabled = false)
+	public User getGuestUser(long companyId) throws PortalException {
+		User userModel = _guestUsers.get(companyId);
+
+		if (userModel == null) {
+			userModel = userLocalService.loadGetGuestUser(companyId);
+
+			_guestUsers.put(companyId, userModel);
+		}
+
+		return userModel;
+	}
+
+	/**
+	 * Returns the primary key of the guest user for the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @return the primary key of the guest user for the company
+	 */
+	@Override
+	@Transactional(enabled = false)
+	public long getGuestUserId(long companyId) throws PortalException {
+		User user = getGuestUser(companyId);
+
+		return user.getUserId();
 	}
 
 	@Override
@@ -2496,6 +2536,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		return _rolePersistence.getUserPrimaryKeys(roleId);
 	}
 
+	@Override
+	public long[] getRoleUserIds(long roleId, long type) {
+		List<User> users = _rolePersistence.getUsers(roleId);
+
+		users = ListUtil.filter(users, user -> user.getType() == type);
+
+		return ListUtil.toLongArray(users, User.USER_ID_ACCESSOR);
+	}
+
 	/**
 	 * Returns the number of users with the status belonging to the role.
 	 *
@@ -2548,7 +2597,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				User user = userPersistence.findByPrimaryKey(
 					socialRelation.getUserId2());
 
-				if (user.isDefaultUser() ||
+				if (user.isGuestUser() ||
 					(user.getStatus() != WorkflowConstants.STATUS_APPROVED)) {
 
 					continue;
@@ -2919,16 +2968,16 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 	@Override
 	public List<User> getUsers(
-		long companyId, boolean defaultUser, int status, int start, int end,
+		long companyId, int status, int start, int end,
 		OrderByComparator<User> orderByComparator) {
 
-		return userPersistence.findByC_DU_S(
-			companyId, defaultUser, status, start, end, orderByComparator);
+		return userPersistence.findByC_S(
+			companyId, status, start, end, orderByComparator);
 	}
 
 	@Override
-	public int getUsersCount(long companyId, boolean defaultUser, int status) {
-		return userPersistence.countByC_DU_S(companyId, defaultUser, status);
+	public int getUsersCount(long companyId, int status) {
+		return userPersistence.countByC_S(companyId, status);
 	}
 
 	/**
@@ -3006,14 +3055,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns the default user for the company.
+	 * Returns the guest user for the company.
 	 *
 	 * @param  companyId the primary key of the company
-	 * @return the default user for the company
+	 * @return the guest user for the company
 	 */
 	@Override
-	public User loadGetDefaultUser(long companyId) throws PortalException {
-		return userPersistence.findByC_DU(companyId, true);
+	public User loadGetGuestUser(long companyId) throws PortalException {
+		return userPersistence.findByC_T_First(
+			companyId, UserConstants.TYPE_GUEST, null);
 	}
 
 	/**
@@ -3681,7 +3731,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user.getCompanyId(), PropsKeys.ADMIN_EMAIL_FROM_NAME);
 
 		PortletPreferences companyPortletPreferences =
-			PrefsPropsUtil.getPreferences(user.getCompanyId(), true);
+			PrefsPropsUtil.getPreferences(user.getCompanyId());
 
 		Map<Locale, String> localizedSubjectMap =
 			LocalizationUtil.getLocalizationMap(
@@ -3707,27 +3757,31 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			"[$COMPANY_ID$]", String.valueOf(company.getCompanyId()));
 		mailTemplateContextBuilder.put("[$COMPANY_MX$]", company.getMx());
 		mailTemplateContextBuilder.put(
-			"[$COMPANY_NAME$]", HtmlUtil.escape(company.getName()));
+			"[$COMPANY_NAME$]", new EscapableObject<>(company.getName()));
 		mailTemplateContextBuilder.put(
-			"[$EMAIL_VERIFICATION_CODE$]", HtmlUtil.escape(ticket.getKey()));
+			"[$EMAIL_VERIFICATION_CODE$]",
+			new EscapableObject<>(ticket.getKey()));
 		mailTemplateContextBuilder.put(
 			"[$EMAIL_VERIFICATION_URL$]", verifyEmailAddressURL);
 		mailTemplateContextBuilder.put("[$FROM_ADDRESS$]", fromAddress);
 		mailTemplateContextBuilder.put(
-			"[$FROM_NAME$]", HtmlUtil.escape(fromName));
+			"[$FROM_NAME$]", new EscapableObject<>(fromName));
 		mailTemplateContextBuilder.put(
 			"[$PORTAL_URL$]", serviceContext.getPortalURL());
 		mailTemplateContextBuilder.put(
 			"[$REMOTE_ADDRESS$]", serviceContext.getRemoteAddr());
 		mailTemplateContextBuilder.put(
-			"[$REMOTE_HOST$]", HtmlUtil.escape(serviceContext.getRemoteHost()));
+			"[$REMOTE_HOST$]",
+			new EscapableObject<>(serviceContext.getRemoteHost()));
 		mailTemplateContextBuilder.put("[$TO_ADDRESS$]", emailAddress);
 		mailTemplateContextBuilder.put(
-			"[$TO_NAME$]", HtmlUtil.escape(user.getFullName()));
+			"[$TO_FIRST_NAME$]", new EscapableObject<>(user.getFirstName()));
+		mailTemplateContextBuilder.put(
+			"[$TO_NAME$]", new EscapableObject<>(user.getFullName()));
 		mailTemplateContextBuilder.put(
 			"[$USER_ID$]", String.valueOf(user.getUserId()));
 		mailTemplateContextBuilder.put(
-			"[$USER_SCREENNAME$]", HtmlUtil.escape(user.getScreenName()));
+			"[$USER_SCREENNAME$]", new EscapableObject<>(user.getScreenName()));
 
 		_sendNotificationEmail(
 			fromAddress, fromName, emailAddress, user, subject, body,
@@ -4398,8 +4452,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  firstName the user's first name
 	 * @param  middleName the user's middle name
 	 * @param  lastName the user's last name
-	 * @param  prefixId the user's name prefix ID
-	 * @param  suffixId the user's name suffix ID
+	 * @param  prefixListTypeId the user's name prefix ID
+	 * @param  suffixListTypeId the user's name suffix ID
 	 * @param  male whether the user is male
 	 * @param  birthdayMonth the user's birthday month (0-based, meaning 0 for
 	 *         January)
@@ -4419,10 +4473,11 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			long creatorUserId, long companyId, boolean autoPassword,
 			String password1, String password2, boolean autoScreenName,
 			String screenName, String emailAddress, Locale locale,
-			String firstName, String middleName, String lastName, long prefixId,
-			long suffixId, boolean male, int birthdayMonth, int birthdayDay,
-			int birthdayYear, String jobTitle, boolean updateUserInformation,
-			boolean sendEmail, ServiceContext serviceContext)
+			String firstName, String middleName, String lastName,
+			long prefixListTypeId, long suffixListTypeId, boolean male,
+			int birthdayMonth, int birthdayDay, int birthdayYear,
+			String jobTitle, boolean updateUserInformation, boolean sendEmail,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = getUserByEmailAddress(companyId, emailAddress);
@@ -4431,7 +4486,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			throw new PortalException("Invalid user status");
 		}
 
-		User defaultUser = getDefaultUser(companyId);
+		User guestUser = getGuestUser(companyId);
 
 		if (updateUserInformation) {
 			autoScreenName = false;
@@ -4484,7 +4539,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user.setPasswordReset(_isPasswordReset(companyId));
 			user.setScreenName(screenName);
 			user.setLanguageId(locale.toString());
-			user.setTimeZoneId(defaultUser.getTimeZoneId());
+			user.setTimeZoneId(guestUser.getTimeZoneId());
 			user.setGreeting(greeting);
 			user.setFirstName(firstName);
 			user.setMiddleName(middleName);
@@ -4500,8 +4555,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			contact.setFirstName(firstName);
 			contact.setMiddleName(middleName);
 			contact.setLastName(lastName);
-			contact.setPrefixId(prefixId);
-			contact.setSuffixId(suffixId);
+			contact.setPrefixListTypeId(prefixListTypeId);
+			contact.setSuffixListTypeId(suffixListTypeId);
 			contact.setMale(male);
 			contact.setBirthday(birthday);
 			contact.setJobTitle(jobTitle);
@@ -4525,7 +4580,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		long workflowUserId = creatorUserId;
 
 		if (workflowUserId == user.getUserId()) {
-			workflowUserId = defaultUser.getUserId();
+			workflowUserId = guestUser.getUserId();
 		}
 
 		ServiceContext workflowServiceContext = serviceContext;
@@ -4800,7 +4855,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		if (user.isPasswordEncrypted()) {
 			newEncPwd = PasswordEncryptorUtil.encrypt(
-				password1, user.getPassword());
+				password1, user.getPassword(), true);
 		}
 		else {
 			newEncPwd = PasswordEncryptorUtil.encrypt(password1);
@@ -4816,10 +4871,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			validatePassword(user.getCompanyId(), userId, password1, password2);
 
 			trackPassword(user);
-		}
-
-		if (user.hasCompanyMx()) {
-			mailService.updatePassword(user.getCompanyId(), userId, password1);
 		}
 
 		ServiceContext serviceContext =
@@ -5055,12 +5106,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		User user = userPersistence.findByPrimaryKey(userId);
 
-		if ((status == WorkflowConstants.STATUS_APPROVED) &&
-			(user.getStatus() != WorkflowConstants.STATUS_APPROVED)) {
-
-			validateCompanyMaxUsers(user.getCompanyId());
-		}
-
 		String passwordUnencrypted = (String)serviceContext.getAttribute(
 			"passwordUnencrypted");
 
@@ -5112,8 +5157,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  firstName the user's new first name
 	 * @param  middleName the user's new middle name
 	 * @param  lastName the user's new last name
-	 * @param  prefixId the user's new name prefix ID
-	 * @param  suffixId the user's new name suffix ID
+	 * @param  prefixListTypeId the user's new name prefix ID
+	 * @param  suffixListTypeId the user's new name suffix ID
 	 * @param  male whether user is male
 	 * @param  birthdayMonth the user's new birthday month (0-based, meaning 0
 	 *         for January)
@@ -5144,11 +5189,11 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			String screenName, String emailAddress, boolean hasPortrait,
 			byte[] portraitBytes, String languageId, String timeZoneId,
 			String greeting, String comments, String firstName,
-			String middleName, String lastName, long prefixId, long suffixId,
-			boolean male, int birthdayMonth, int birthdayDay, int birthdayYear,
-			String smsSn, String facebookSn, String jabberSn, String skypeSn,
-			String twitterSn, String jobTitle, long[] groupIds,
-			long[] organizationIds, long[] roleIds,
+			String middleName, String lastName, long prefixListTypeId,
+			long suffixListTypeId, boolean male, int birthdayMonth,
+			int birthdayDay, int birthdayYear, String smsSn, String facebookSn,
+			String jabberSn, String skypeSn, String twitterSn, String jobTitle,
+			long[] groupIds, long[] organizationIds, long[] roleIds,
 			List<UserGroupRole> userGroupRoles, long[] userGroupIds,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -5291,8 +5336,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		contact.setFirstName(firstName);
 		contact.setMiddleName(middleName);
 		contact.setLastName(lastName);
-		contact.setPrefixId(prefixId);
-		contact.setSuffixId(suffixId);
+		contact.setPrefixListTypeId(prefixListTypeId);
+		contact.setSuffixListTypeId(suffixListTypeId);
 		contact.setMale(male);
 		contact.setBirthday(
 			getBirthday(birthdayMonth, birthdayDay, birthdayYear));
@@ -5375,6 +5420,21 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		}
 
 		return user;
+	}
+
+	public void validateMaxUsers(long companyId) throws PortalException {
+		Company company = _companyPersistence.findByPrimaryKey(companyId);
+
+		if (company.getMaxUsers() == 0) {
+			return;
+		}
+
+		int userCount = searchCount(
+			companyId, null, WorkflowConstants.STATUS_APPROVED, null);
+
+		if (userCount >= company.getMaxUsers()) {
+			throw new CompanyMaxUsersException();
+		}
 	}
 
 	/**
@@ -5630,8 +5690,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			return Authenticator.FAILURE;
 		}
 
-		user = _checkPasswordPolicy(user);
-
 		if (!user.isPasswordEncrypted()) {
 			user.setPassword(PasswordEncryptorUtil.encrypt(user.getPassword()));
 			user.setPasswordEncrypted(true);
@@ -5683,6 +5741,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		}
 
 		if (authResult == Authenticator.SUCCESS) {
+			try {
+				user = _checkPasswordPolicy(user);
+			}
+			catch (PortalException portalException) {
+				handleAuthenticationFailure(
+					login, authType, user, headerMap, parameterMap);
+
+				throw portalException;
+			}
 
 			// Update digest
 
@@ -5697,6 +5764,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				String newDigest = user.getDigest(password);
 
 				if (!newDigest.equals(digest)) {
+					user = userPersistence.fetchByPrimaryKey(user.getUserId());
+
 					user.setDigest(newDigest);
 
 					user = userPersistence.update(user);
@@ -6047,7 +6116,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			else if (!key.equals(Field.GROUP_ID) &&
 					 !key.equals("accountEntryIds") &&
 					 !key.equals("emailAddressDomains") &&
-					 !key.equals("usersGroups") && !key.equals("usersOrgs") &&
+					 !key.equals("types") && !key.equals("usersGroups") &&
+					 !key.equals("usersOrgs") &&
 					 !key.equals("usersOrgsCount") &&
 					 !key.equals("usersRoles") && !key.equals("usersTeams") &&
 					 !key.equals("usersUserGroups")) {
@@ -6062,9 +6132,17 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	protected boolean isUserAllowedToAuthenticate(User user)
 		throws PortalException {
 
-		if (user.isDefaultUser()) {
+		if (user.isGuestUser()) {
 			if (_log.isInfoEnabled()) {
 				_log.info("Authentication is disabled for the default user");
+			}
+
+			return false;
+		}
+		else if (user.isServiceAccountUser()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Authentication is disabled for the service account user");
 			}
 
 			return false;
@@ -6100,7 +6178,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		String portalURL = serviceContext.getPortalURL();
 
 		PortletPreferences companyPortletPreferences =
-			PrefsPropsUtil.getPreferences(user.getCompanyId(), true);
+			PrefsPropsUtil.getPreferences(user.getCompanyId());
 
 		Map<Locale, String> localizedSubjectMap =
 			LocalizationUtil.getLocalizationMap(
@@ -6157,18 +6235,20 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		mailTemplateContextBuilder.put("[$FROM_ADDRESS$]", fromAddress);
 		mailTemplateContextBuilder.put(
-			"[$FROM_NAME$]", HtmlUtil.escape(fromName));
+			"[$FROM_NAME$]", new EscapableObject<>(fromName));
 		mailTemplateContextBuilder.put("[$PORTAL_URL$]", portalURL);
 		mailTemplateContextBuilder.put(
 			"[$TO_ADDRESS$]", user.getEmailAddress());
 		mailTemplateContextBuilder.put(
-			"[$TO_NAME$]", HtmlUtil.escape(user.getFullName()));
+			"[$TO_FIRST_NAME$]", new EscapableObject<>(user.getFirstName()));
+		mailTemplateContextBuilder.put(
+			"[$TO_NAME$]", new EscapableObject<>(user.getFullName()));
 		mailTemplateContextBuilder.put(
 			"[$PASSWORD_SETUP_URL$]", passwordResetURL);
 		mailTemplateContextBuilder.put(
 			"[$USER_ID$]", String.valueOf(user.getUserId()));
 		mailTemplateContextBuilder.put(
-			"[$USER_SCREENNAME$]", HtmlUtil.escape(user.getScreenName()));
+			"[$USER_SCREENNAME$]", new EscapableObject<>(user.getScreenName()));
 
 		MailTemplateContext mailTemplateContext =
 			mailTemplateContextBuilder.build();
@@ -6280,7 +6360,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		String toAddress = user.getEmailAddress();
 
 		PortletPreferences companyPortletPreferences =
-			PrefsPropsUtil.getPreferences(companyId, true);
+			PrefsPropsUtil.getPreferences(companyId);
 
 		String bodyProperty = null;
 		String prefix = null;
@@ -6325,7 +6405,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		mailTemplateContextBuilder.put("[$FROM_ADDRESS$]", fromAddress);
 		mailTemplateContextBuilder.put(
-			"[$FROM_NAME$]", HtmlUtil.escape(fromName));
+			"[$FROM_NAME$]", new EscapableObject<>(fromName));
 		mailTemplateContextBuilder.put(
 			"[$PASSWORD_RESET_URL$]", passwordResetURL);
 		mailTemplateContextBuilder.put(
@@ -6333,13 +6413,17 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		mailTemplateContextBuilder.put(
 			"[$REMOTE_ADDRESS$]", serviceContext.getRemoteAddr());
 		mailTemplateContextBuilder.put(
-			"[$REMOTE_HOST$]", HtmlUtil.escape(serviceContext.getRemoteHost()));
+			"[$REMOTE_HOST$]",
+			new EscapableObject<>(serviceContext.getRemoteHost()));
 		mailTemplateContextBuilder.put("[$TO_ADDRESS$]", toAddress);
-		mailTemplateContextBuilder.put("[$TO_NAME$]", HtmlUtil.escape(toName));
+		mailTemplateContextBuilder.put(
+			"[$TO_FIRST_NAME$]", new EscapableObject<>(user.getFirstName()));
+		mailTemplateContextBuilder.put(
+			"[$TO_NAME$]", new EscapableObject<>(toName));
 		mailTemplateContextBuilder.put(
 			"[$USER_ID$]", String.valueOf(user.getUserId()));
 		mailTemplateContextBuilder.put(
-			"[$USER_SCREENNAME$]", HtmlUtil.escape(user.getScreenName()));
+			"[$USER_SCREENNAME$]", new EscapableObject<>(user.getScreenName()));
 
 		MailTemplateContext mailTemplateContext =
 			mailTemplateContextBuilder.build();
@@ -6361,31 +6445,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		if (StringUtil.equalsIgnoreCase(emailAddress, user.getEmailAddress())) {
 			return;
-		}
-
-		long userId = user.getUserId();
-
-		if (!user.hasCompanyMx() && user.hasCompanyMx(emailAddress) &&
-			Validator.isNotNull(password)) {
-
-			// test@test.com -> test@liferay.com
-
-			mailService.addUser(
-				user.getCompanyId(), userId, password, firstName, middleName,
-				lastName, emailAddress);
-		}
-		else if (user.hasCompanyMx() && user.hasCompanyMx(emailAddress)) {
-
-			// test@liferay.com -> bob@liferay.com
-
-			mailService.updateEmailAddress(
-				user.getCompanyId(), userId, emailAddress);
-		}
-		else if (user.hasCompanyMx() && !user.hasCompanyMx(emailAddress)) {
-
-			// test@liferay.com -> test@test.com
-
-			mailService.deleteEmailAddress(user.getCompanyId(), userId);
 		}
 
 		user.setDigest(StringPool.BLANK);
@@ -6620,7 +6679,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			Locale locale)
 		throws PortalException {
 
-		validateCompanyMaxUsers(companyId);
+		validateMaxUsers(companyId);
 
 		if (!autoScreenName) {
 			validateScreenName(companyId, userId, screenName);
@@ -6678,7 +6737,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		validateOpenId(user.getCompanyId(), userId, openId);
 
-		if (!user.isDefaultUser()) {
+		if (!user.isGuestUser()) {
 			if (Validator.isNotNull(emailAddress) &&
 				!StringUtil.equalsIgnoreCase(
 					user.getEmailAddress(), emailAddress)) {
@@ -6698,23 +6757,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		if (Validator.isNotNull(smsSn) && !Validator.isEmailAddress(smsSn)) {
 			throw new UserSmsException.MustBeEmailAddress(smsSn);
-		}
-	}
-
-	protected void validateCompanyMaxUsers(long companyId)
-		throws PortalException {
-
-		Company company = _companyPersistence.findByPrimaryKey(companyId);
-
-		if (company.getMaxUsers() == 0) {
-			return;
-		}
-
-		int userCount = searchCount(
-			companyId, null, WorkflowConstants.STATUS_APPROVED, null);
-
-		if (userCount >= company.getMaxUsers()) {
-			throw new CompanyMaxUsersException();
 		}
 	}
 
@@ -7121,8 +7163,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	@BeanReference(type = ContactPersistence.class)
 	private ContactPersistence _contactPersistence;
 
-	private final Map<Long, User> _defaultUsers = new ConcurrentHashMap<>();
-
 	@BeanReference(type = ExpandoRowLocalService.class)
 	private ExpandoRowLocalService _expandoRowLocalService;
 
@@ -7131,6 +7171,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 	@BeanReference(type = GroupPersistence.class)
 	private GroupPersistence _groupPersistence;
+
+	private final Map<Long, User> _guestUsers = new ConcurrentHashMap<>();
 
 	@BeanReference(type = ImageLocalService.class)
 	private ImageLocalService _imageLocalService;
@@ -7209,8 +7251,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 					UserCacheModel userCacheModel = (UserCacheModel)value;
 
-					if (userCacheModel.defaultUser) {
-						_defaultUsers.remove(userCacheModel.companyId);
+					if (userCacheModel.type == UserConstants.TYPE_GUEST) {
+						_guestUsers.remove(userCacheModel.companyId);
 					}
 				}
 

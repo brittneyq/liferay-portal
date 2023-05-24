@@ -14,9 +14,9 @@
 
 package com.liferay.commerce.order.content.web.internal.importer.type;
 
-import com.liferay.commerce.account.configuration.CommerceAccountGroupServiceConfiguration;
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
+import com.liferay.commerce.configuration.CommerceAccountGroupServiceConfiguration;
 import com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration;
+import com.liferay.commerce.constants.CommerceConstants;
 import com.liferay.commerce.context.CommerceContextFactory;
 import com.liferay.commerce.exception.CommerceOrderImporterTypeException;
 import com.liferay.commerce.model.CommerceOrder;
@@ -26,6 +26,7 @@ import com.liferay.commerce.order.importer.item.CommerceOrderImporterItemImpl;
 import com.liferay.commerce.order.importer.type.CommerceOrderImporterType;
 import com.liferay.commerce.price.CommerceOrderPriceCalculation;
 import com.liferay.commerce.product.availability.CPAvailabilityChecker;
+import com.liferay.commerce.product.constants.CommerceChannelConstants;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceChannel;
@@ -35,7 +36,9 @@ import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.service.CommerceOrderItemService;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.frontend.data.set.provider.search.FDSPagination;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -47,17 +50,17 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
-import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.io.IOException;
 
 import java.nio.charset.Charset;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -81,7 +84,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration",
-	enabled = false, immediate = true,
 	property = "commerce.order.importer.type.key=" + CSVCommerceOrderImporterTypeImpl.KEY,
 	service = CommerceOrderImporterType.class
 )
@@ -112,7 +114,8 @@ public class CSVCommerceOrderImporterTypeImpl
 
 	@Override
 	public List<CommerceOrderImporterItem> getCommerceOrderImporterItems(
-			CommerceOrder commerceOrder, Object object)
+			CommerceOrder commerceOrder, FDSPagination fdsPagination,
+			Object object)
 		throws Exception {
 
 		if ((object == null) || !(object instanceof FileEntry)) {
@@ -123,13 +126,41 @@ public class CSVCommerceOrderImporterTypeImpl
 			_commerceChannelLocalService.getCommerceChannelByOrderGroupId(
 				commerceOrder.getGroupId());
 
+		_commerceOrderImporterItemImpls = _getCommerceOrderImporterItemImpls(
+			commerceOrder.getCompanyId(), commerceChannel.getGroupId(),
+			(FileEntry)object);
+
+		int start = 0;
+		int end = _commerceOrderImporterItemImpls.length;
+
+		if (fdsPagination != null) {
+			start = fdsPagination.getStartPosition();
+
+			if (fdsPagination.getEndPosition() < end) {
+				end = fdsPagination.getEndPosition();
+			}
+		}
+
 		return CommerceOrderImporterTypeUtil.getCommerceOrderImporterItems(
 			_commerceContextFactory, commerceOrder,
-			_getCommerceOrderImporterItemImpls(
-				commerceOrder.getCompanyId(), commerceChannel.getGroupId(),
-				(FileEntry)object),
+			Arrays.copyOfRange(_commerceOrderImporterItemImpls, start, end),
 			_commerceOrderItemService, _commerceOrderPriceCalculation,
 			_commerceOrderService, _userLocalService);
+	}
+
+	@Override
+	public int getCommerceOrderImporterItemsCount(Object object)
+		throws Exception {
+
+		if (_commerceOrderImporterItemImpls == null) {
+			CSVParser csvParser = _getCSVParser((FileEntry)object);
+
+			List<CSVRecord> csvRecords = csvParser.getRecords();
+
+			return csvRecords.size();
+		}
+
+		return _commerceOrderImporterItemImpls.length;
 	}
 
 	@Override
@@ -163,10 +194,10 @@ public class CSVCommerceOrderImporterTypeImpl
 					CommerceAccountGroupServiceConfiguration.class,
 					new GroupServiceSettingsLocator(
 						commerceChannel.getGroupId(),
-						CommerceAccountConstants.SERVICE_NAME));
+						CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
 
 		if (commerceAccountGroupServiceConfiguration.commerceSiteType() ==
-				CommerceAccountConstants.SITE_TYPE_B2C) {
+				CommerceChannelConstants.SITE_TYPE_B2C) {
 
 			return false;
 		}
@@ -223,7 +254,7 @@ public class CSVCommerceOrderImporterTypeImpl
 
 		try {
 			return CSVParser.parse(
-				FileUtil.createTempFile(fileEntry.getContentStream()),
+				_file.createTempFile(fileEntry.getContentStream()),
 				Charset.defaultCharset(), csvFormat);
 		}
 		catch (IOException ioException) {
@@ -256,7 +287,7 @@ public class CSVCommerceOrderImporterTypeImpl
 		if (cpInstance == null) {
 			cpInstance =
 				_cpInstanceLocalService.fetchCPInstanceByExternalReferenceCode(
-					companyId, sku);
+					sku, companyId);
 		}
 
 		CommerceOrderImporterItemImpl commerceOrderImporterItemImpl =
@@ -330,6 +361,7 @@ public class CSVCommerceOrderImporterTypeImpl
 	@Reference
 	private CommerceContextFactory _commerceContextFactory;
 
+	private CommerceOrderImporterItemImpl[] _commerceOrderImporterItemImpls;
 	private volatile CommerceOrderImporterTypeConfiguration
 		_commerceOrderImporterTypeConfiguration;
 
@@ -359,6 +391,9 @@ public class CSVCommerceOrderImporterTypeImpl
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private File _file;
 
 	@Reference
 	private JSPRenderer _jspRenderer;

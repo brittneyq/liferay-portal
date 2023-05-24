@@ -316,3 +316,11 @@ export const APPLICATION_STATUS = {
 		name: 'Quoted',
 	},
 };
+
+export const OBJECT_MESSAGE = {
+	APPLICATION: {
+		DISABLED: 'Application object is disabled',
+	},
+};
+
+export const CONTACT_INFORMATION_STEP = 2;

@@ -54,7 +54,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Jorge Ferrer
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + WikiPortletKeys.WIKI,
 		"javax.portlet.name=" + WikiPortletKeys.WIKI_ADMIN,
@@ -143,6 +142,10 @@ public class EditPageMVCRenderCommand implements MVCRenderCommand {
 			}
 		}
 		catch (NoSuchPageException noSuchPageException1) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchPageException1);
+			}
+
 			try {
 				page = _wikiPageService.getPage(nodeId, title, false);
 			}

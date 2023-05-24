@@ -14,6 +14,7 @@
 
 package com.liferay.commerce.price.list.service.impl;
 
+import com.liferay.commerce.price.list.exception.DuplicateCommercePriceListChannelRelException;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.model.CommercePriceListChannelRel;
 import com.liferay.commerce.price.list.service.base.CommercePriceListChannelRelLocalServiceBaseImpl;
@@ -39,7 +40,6 @@ import org.osgi.service.component.annotations.Reference;
  * @see CommercePriceListChannelRelLocalServiceBaseImpl
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.price.list.model.CommercePriceListChannelRel",
 	service = AopService.class
 )
@@ -52,15 +52,24 @@ public class CommercePriceListChannelRelLocalServiceImpl
 			int order, ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = _userLocalService.getUser(userId);
-
 		CommercePriceListChannelRel commercePriceListChannelRel =
+			commercePriceListChannelRelPersistence.fetchByCCI_CPI(
+				commerceChannelId, commercePriceListId);
+
+		if (commercePriceListChannelRel != null) {
+			throw new DuplicateCommercePriceListChannelRelException();
+		}
+
+		commercePriceListChannelRel =
 			commercePriceListChannelRelPersistence.create(
 				counterLocalService.increment());
+
+		User user = _userLocalService.getUser(userId);
 
 		commercePriceListChannelRel.setCompanyId(user.getCompanyId());
 		commercePriceListChannelRel.setUserId(user.getUserId());
 		commercePriceListChannelRel.setUserName(user.getFullName());
+
 		commercePriceListChannelRel.setCommerceChannelId(commerceChannelId);
 		commercePriceListChannelRel.setCommercePriceListId(commercePriceListId);
 		commercePriceListChannelRel.setOrder(order);
@@ -70,7 +79,7 @@ public class CommercePriceListChannelRelLocalServiceImpl
 			commercePriceListChannelRelPersistence.update(
 				commercePriceListChannelRel);
 
-		reindexCommercePriceList(commercePriceListId);
+		_reindexCommercePriceList(commercePriceListId);
 
 		return commercePriceListChannelRel;
 	}
@@ -87,7 +96,7 @@ public class CommercePriceListChannelRelLocalServiceImpl
 		_expandoRowLocalService.deleteRows(
 			commercePriceListChannelRel.getCommercePriceListChannelRelId());
 
-		reindexCommercePriceList(
+		_reindexCommercePriceList(
 			commercePriceListChannelRel.getCommercePriceListId());
 
 		return commercePriceListChannelRel;
@@ -169,7 +178,7 @@ public class CommercePriceListChannelRelLocalServiceImpl
 			commercePriceListId, name);
 	}
 
-	protected void reindexCommercePriceList(long commercePriceListId)
+	private void _reindexCommercePriceList(long commercePriceListId)
 		throws PortalException {
 
 		Indexer<CommercePriceList> indexer =

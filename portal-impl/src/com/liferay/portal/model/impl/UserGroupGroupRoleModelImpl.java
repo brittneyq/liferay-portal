@@ -228,75 +228,92 @@ public class UserGroupGroupRoleModelImpl
 	public Map<String, Function<UserGroupGroupRole, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<UserGroupGroupRole, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<UserGroupGroupRole, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<UserGroupGroupRole, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<UserGroupGroupRole, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<UserGroupGroupRole, Object>>();
-		Map<String, BiConsumer<UserGroupGroupRole, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap<String, BiConsumer<UserGroupGroupRole, ?>>();
+		private static final Map<String, Function<UserGroupGroupRole, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", UserGroupGroupRole::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setMvccVersion);
-		attributeGetterFunctions.put(
-			"ctCollectionId", UserGroupGroupRole::getCtCollectionId);
-		attributeSetterBiConsumers.put(
-			"ctCollectionId",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setCtCollectionId);
-		attributeGetterFunctions.put(
-			"userGroupGroupRoleId",
-			UserGroupGroupRole::getUserGroupGroupRoleId);
-		attributeSetterBiConsumers.put(
-			"userGroupGroupRoleId",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setUserGroupGroupRoleId);
-		attributeGetterFunctions.put(
-			"companyId", UserGroupGroupRole::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setCompanyId);
-		attributeGetterFunctions.put(
-			"userGroupId", UserGroupGroupRole::getUserGroupId);
-		attributeSetterBiConsumers.put(
-			"userGroupId",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setUserGroupId);
-		attributeGetterFunctions.put("groupId", UserGroupGroupRole::getGroupId);
-		attributeSetterBiConsumers.put(
-			"groupId",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setGroupId);
-		attributeGetterFunctions.put("roleId", UserGroupGroupRole::getRoleId);
-		attributeSetterBiConsumers.put(
-			"roleId",
-			(BiConsumer<UserGroupGroupRole, Long>)
-				UserGroupGroupRole::setRoleId);
+		static {
+			Map<String, Function<UserGroupGroupRole, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<UserGroupGroupRole, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", UserGroupGroupRole::getMvccVersion);
+			attributeGetterFunctions.put(
+				"ctCollectionId", UserGroupGroupRole::getCtCollectionId);
+			attributeGetterFunctions.put(
+				"userGroupGroupRoleId",
+				UserGroupGroupRole::getUserGroupGroupRoleId);
+			attributeGetterFunctions.put(
+				"companyId", UserGroupGroupRole::getCompanyId);
+			attributeGetterFunctions.put(
+				"userGroupId", UserGroupGroupRole::getUserGroupId);
+			attributeGetterFunctions.put(
+				"groupId", UserGroupGroupRole::getGroupId);
+			attributeGetterFunctions.put(
+				"roleId", UserGroupGroupRole::getRoleId);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<UserGroupGroupRole, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<UserGroupGroupRole, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<UserGroupGroupRole, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"ctCollectionId",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setCtCollectionId);
+			attributeSetterBiConsumers.put(
+				"userGroupGroupRoleId",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setUserGroupGroupRoleId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userGroupId",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setUserGroupId);
+			attributeSetterBiConsumers.put(
+				"groupId",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setGroupId);
+			attributeSetterBiConsumers.put(
+				"roleId",
+				(BiConsumer<UserGroupGroupRole, Long>)
+					UserGroupGroupRole::setRoleId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -667,37 +684,6 @@ public class UserGroupGroupRoleModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<UserGroupGroupRole, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<UserGroupGroupRole, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<UserGroupGroupRole, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((UserGroupGroupRole)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, UserGroupGroupRole>
@@ -717,7 +703,8 @@ public class UserGroupGroupRoleModelImpl
 
 	public <T> T getColumnValue(String columnName) {
 		Function<UserGroupGroupRole, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

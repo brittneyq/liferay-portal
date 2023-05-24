@@ -54,8 +54,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -286,51 +284,23 @@ public abstract class CommerceInventoryWarehouseItemLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the commerce inventory warehouse item with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce inventory warehouse item's external reference code
-	 * @return the matching commerce inventory warehouse item, or <code>null</code> if a matching commerce inventory warehouse item could not be found
-	 */
 	@Override
 	public CommerceInventoryWarehouseItem
 		fetchCommerceInventoryWarehouseItemByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long companyId) {
 
-		return commerceInventoryWarehouseItemPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceInventoryWarehouseItemPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommerceInventoryWarehouseItemByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public CommerceInventoryWarehouseItem
-		fetchCommerceInventoryWarehouseItemByReferenceCode(
-			long companyId, String externalReferenceCode) {
-
-		return fetchCommerceInventoryWarehouseItemByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the commerce inventory warehouse item with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce inventory warehouse item's external reference code
-	 * @return the matching commerce inventory warehouse item
-	 * @throws PortalException if a matching commerce inventory warehouse item could not be found
-	 */
 	@Override
 	public CommerceInventoryWarehouseItem
 			getCommerceInventoryWarehouseItemByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return commerceInventoryWarehouseItemPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceInventoryWarehouseItemPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -581,7 +551,7 @@ public abstract class CommerceInventoryWarehouseItemLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommerceInventoryWarehouseItemLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -597,7 +567,8 @@ public abstract class CommerceInventoryWarehouseItemLocalServiceBaseImpl
 		commerceInventoryWarehouseItemLocalService =
 			(CommerceInventoryWarehouseItemLocalService)aopProxy;
 
-		_setLocalServiceUtilService(commerceInventoryWarehouseItemLocalService);
+		CommerceInventoryWarehouseItemLocalServiceUtil.setService(
+			commerceInventoryWarehouseItemLocalService);
 	}
 
 	/**
@@ -640,24 +611,6 @@ public abstract class CommerceInventoryWarehouseItemLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		CommerceInventoryWarehouseItemLocalService
-			commerceInventoryWarehouseItemLocalService) {
-
-		try {
-			Field field =
-				CommerceInventoryWarehouseItemLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceInventoryWarehouseItemLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

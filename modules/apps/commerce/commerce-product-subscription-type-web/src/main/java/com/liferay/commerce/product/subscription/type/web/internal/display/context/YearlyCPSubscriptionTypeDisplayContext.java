@@ -65,8 +65,8 @@ public class YearlyCPSubscriptionTypeDisplayContext {
 
 	public int getMonthDay() {
 		UnicodeProperties subscriptionTypeSettingsUnicodeProperties =
-			CommerceSubscriptionTypeUtil.getSubscriptionTypeSettingsProperties(
-				_object, _payment);
+			CommerceSubscriptionTypeUtil.
+				getSubscriptionTypeSettingsUnicodeProperties(_object, _payment);
 
 		if ((subscriptionTypeSettingsUnicodeProperties == null) ||
 			subscriptionTypeSettingsUnicodeProperties.isEmpty()) {
@@ -76,11 +76,12 @@ public class YearlyCPSubscriptionTypeDisplayContext {
 
 		if (isPayment()) {
 			return GetterUtil.getInteger(
-				subscriptionTypeSettingsUnicodeProperties.get("monthDay"));
+				subscriptionTypeSettingsUnicodeProperties.get("monthDay"), 1);
 		}
 
 		return GetterUtil.getInteger(
-			subscriptionTypeSettingsUnicodeProperties.get("deliveryMonthDay"));
+			subscriptionTypeSettingsUnicodeProperties.get("deliveryMonthDay"),
+			1);
 	}
 
 	public String getMonthDisplayName(int month) {
@@ -100,8 +101,8 @@ public class YearlyCPSubscriptionTypeDisplayContext {
 
 	public int getSelectedMonth() {
 		UnicodeProperties subscriptionTypeSettingsUnicodeProperties =
-			CommerceSubscriptionTypeUtil.getSubscriptionTypeSettingsProperties(
-				_object, _payment);
+			CommerceSubscriptionTypeUtil.
+				getSubscriptionTypeSettingsUnicodeProperties(_object, _payment);
 
 		if (subscriptionTypeSettingsUnicodeProperties == null) {
 			return 0;
@@ -109,17 +110,17 @@ public class YearlyCPSubscriptionTypeDisplayContext {
 
 		if (isPayment()) {
 			return GetterUtil.getInteger(
-				subscriptionTypeSettingsUnicodeProperties.get("deliveryMonth"));
+				subscriptionTypeSettingsUnicodeProperties.get("month"));
 		}
 
 		return GetterUtil.getInteger(
-			subscriptionTypeSettingsUnicodeProperties.get("month"));
+			subscriptionTypeSettingsUnicodeProperties.get("deliveryMonth"));
 	}
 
 	public int getSelectedYearlyMode() {
 		UnicodeProperties subscriptionTypeSettingsUnicodeProperties =
-			CommerceSubscriptionTypeUtil.getSubscriptionTypeSettingsProperties(
-				_object, _payment);
+			CommerceSubscriptionTypeUtil.
+				getSubscriptionTypeSettingsUnicodeProperties(_object, _payment);
 
 		if (subscriptionTypeSettingsUnicodeProperties == null) {
 			return CPSubscriptionTypeConstants.MODE_ORDER_DATE;

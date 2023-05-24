@@ -53,9 +53,25 @@ public class EchoPoshiElement extends PoshiElement {
 	public void parsePoshiScript(String poshiScript)
 		throws PoshiScriptParserException {
 
-		String content = getDoubleQuotedContent(poshiScript);
+		validateSemicolon(poshiScript);
 
-		addAttribute("message", content);
+		String trimmedPoshiScript = poshiScript.trim();
+
+		if (!trimmedPoshiScript.endsWith(";")) {
+			throw new PoshiScriptParserException(
+				"Missing semicolon", poshiScript, (PoshiElement)getParent());
+		}
+
+		String parentheticalContent = getParentheticalContent(poshiScript);
+
+		if (!isQuotedContent(parentheticalContent)) {
+			addAttribute("message", parentheticalContent);
+		}
+		else {
+			String content = getDoubleQuotedContent(poshiScript);
+
+			addAttribute("message", content);
+		}
 	}
 
 	@Override
@@ -112,9 +128,18 @@ public class EchoPoshiElement extends PoshiElement {
 		sb.append("\n\n");
 		sb.append(getPad());
 		sb.append(getBlockName());
-		sb.append("(\"");
-		sb.append(content);
-		sb.append("\");");
+		sb.append("(");
+
+		if (isQuotedContent(content)) {
+			sb.append("\"");
+			sb.append(content);
+			sb.append("\"");
+		}
+		else {
+			sb.append(content);
+		}
+
+		sb.append(");");
 
 		return sb.toString();
 	}
@@ -124,15 +149,23 @@ public class EchoPoshiElement extends PoshiElement {
 		return "echo";
 	}
 
+	@Override
+	protected Pattern getStatementPattern() {
+		return _statementPattern;
+	}
+
 	private boolean _isElementType(String poshiScript) {
-		return isValidPoshiScriptStatement(_statementPattern, poshiScript);
+		return isValidPoshiScriptStatement(
+			_partialStatementPattern, poshiScript);
 	}
 
 	private static final String _ELEMENT_NAME = "echo";
 
 	private static final String _POSHI_SCRIPT_KEYWORD = _ELEMENT_NAME;
 
+	private static final Pattern _partialStatementPattern = Pattern.compile(
+		"^" + _POSHI_SCRIPT_KEYWORD + PARAMETER_REGEX);
 	private static final Pattern _statementPattern = Pattern.compile(
-		"^" + _POSHI_SCRIPT_KEYWORD + PARAMETER_REGEX + STATEMENT_END_REGEX);
+		"^" + _POSHI_SCRIPT_KEYWORD + PARAMETER_REGEX + "(;|)$");
 
 }

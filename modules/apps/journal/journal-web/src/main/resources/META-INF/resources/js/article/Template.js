@@ -17,9 +17,11 @@ import {
 	navigate,
 	openConfirmModal,
 	openSelectionModal,
+	setFormValues,
 } from 'frontend-js-web';
 
 export default function ({
+	availableLocales,
 	currentURL,
 	ddmTemplateId,
 	editDDMTemplateURL,
@@ -32,7 +34,10 @@ export default function ({
 	const namespaceId = (id) => `${namespace}${id}`;
 
 	const changeDDMTemplate = (newDDMTemplate) => {
-		if (newDDMTemplate && newDDMTemplate.ddmtemplateid === ddmTemplateId) {
+		if (
+			newDDMTemplate &&
+			newDDMTemplate.ddmtemplateid === Number(ddmTemplateId)
+		) {
 			return;
 		}
 
@@ -53,7 +58,8 @@ export default function ({
 					const form = document.getElementById(namespaceId('fm1'));
 
 					if (form) {
-						Liferay.Util.setFormValues(form, {
+						setFormValues(form, {
+							availableLocales,
 							ddmTemplateId: newDDMTemplateId,
 							ddmTemplateKey:
 								(newDDMTemplate &&

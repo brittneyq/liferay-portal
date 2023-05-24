@@ -22,17 +22,15 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.segments.asah.connector.internal.configuration.provider.SegmentsAsahConfigurationProvider;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author David Arques
  */
-@Component(
-	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
-	service = AsahSegmentsEntryCache.class
-)
+@Component(service = AsahSegmentsEntryCache.class)
 public class AsahSegmentsEntryCache {
 
 	public long[] getSegmentsEntryIds(String userId) {
@@ -57,10 +55,15 @@ public class AsahSegmentsEntryCache {
 			anonymousTimeToLiveInSeconds);
 	}
 
-	@Reference(unbind = "-")
-	protected void setMultiVMPool(MultiVMPool multiVMPool) {
-		_portalCache = (PortalCache<String, long[]>)multiVMPool.getPortalCache(
+	@Activate
+	protected void activate() {
+		_portalCache = (PortalCache<String, long[]>)_multiVMPool.getPortalCache(
 			AsahSegmentsEntryCache.class.getName());
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_multiVMPool.removePortalCache(AsahSegmentsEntryCache.class.getName());
 	}
 
 	private String _generateCacheKey(String userId) {
@@ -71,6 +74,9 @@ public class AsahSegmentsEntryCache {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AsahSegmentsEntryCache.class);
+
+	@Reference
+	private MultiVMPool _multiVMPool;
 
 	private PortalCache<String, long[]> _portalCache;
 

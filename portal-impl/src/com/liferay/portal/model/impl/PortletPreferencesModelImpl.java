@@ -241,80 +241,97 @@ public class PortletPreferencesModelImpl
 	public Map<String, Function<PortletPreferences, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<PortletPreferences, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<PortletPreferences, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<PortletPreferences, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<PortletPreferences, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<PortletPreferences, Object>>();
-		Map<String, BiConsumer<PortletPreferences, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap<String, BiConsumer<PortletPreferences, ?>>();
+		private static final Map<String, Function<PortletPreferences, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", PortletPreferences::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<PortletPreferences, Long>)
-				PortletPreferences::setMvccVersion);
-		attributeGetterFunctions.put(
-			"ctCollectionId", PortletPreferences::getCtCollectionId);
-		attributeSetterBiConsumers.put(
-			"ctCollectionId",
-			(BiConsumer<PortletPreferences, Long>)
-				PortletPreferences::setCtCollectionId);
-		attributeGetterFunctions.put(
-			"portletPreferencesId",
-			PortletPreferences::getPortletPreferencesId);
-		attributeSetterBiConsumers.put(
-			"portletPreferencesId",
-			(BiConsumer<PortletPreferences, Long>)
-				PortletPreferences::setPortletPreferencesId);
-		attributeGetterFunctions.put(
-			"companyId", PortletPreferences::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<PortletPreferences, Long>)
-				PortletPreferences::setCompanyId);
-		attributeGetterFunctions.put("ownerId", PortletPreferences::getOwnerId);
-		attributeSetterBiConsumers.put(
-			"ownerId",
-			(BiConsumer<PortletPreferences, Long>)
-				PortletPreferences::setOwnerId);
-		attributeGetterFunctions.put(
-			"ownerType", PortletPreferences::getOwnerType);
-		attributeSetterBiConsumers.put(
-			"ownerType",
-			(BiConsumer<PortletPreferences, Integer>)
-				PortletPreferences::setOwnerType);
-		attributeGetterFunctions.put("plid", PortletPreferences::getPlid);
-		attributeSetterBiConsumers.put(
-			"plid",
-			(BiConsumer<PortletPreferences, Long>)PortletPreferences::setPlid);
-		attributeGetterFunctions.put(
-			"portletId", PortletPreferences::getPortletId);
-		attributeSetterBiConsumers.put(
-			"portletId",
-			(BiConsumer<PortletPreferences, String>)
-				PortletPreferences::setPortletId);
+		static {
+			Map<String, Function<PortletPreferences, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<PortletPreferences, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", PortletPreferences::getMvccVersion);
+			attributeGetterFunctions.put(
+				"ctCollectionId", PortletPreferences::getCtCollectionId);
+			attributeGetterFunctions.put(
+				"portletPreferencesId",
+				PortletPreferences::getPortletPreferencesId);
+			attributeGetterFunctions.put(
+				"companyId", PortletPreferences::getCompanyId);
+			attributeGetterFunctions.put(
+				"ownerId", PortletPreferences::getOwnerId);
+			attributeGetterFunctions.put(
+				"ownerType", PortletPreferences::getOwnerType);
+			attributeGetterFunctions.put("plid", PortletPreferences::getPlid);
+			attributeGetterFunctions.put(
+				"portletId", PortletPreferences::getPortletId);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<PortletPreferences, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<PortletPreferences, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<PortletPreferences, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<PortletPreferences, Long>)
+					PortletPreferences::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"ctCollectionId",
+				(BiConsumer<PortletPreferences, Long>)
+					PortletPreferences::setCtCollectionId);
+			attributeSetterBiConsumers.put(
+				"portletPreferencesId",
+				(BiConsumer<PortletPreferences, Long>)
+					PortletPreferences::setPortletPreferencesId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<PortletPreferences, Long>)
+					PortletPreferences::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"ownerId",
+				(BiConsumer<PortletPreferences, Long>)
+					PortletPreferences::setOwnerId);
+			attributeSetterBiConsumers.put(
+				"ownerType",
+				(BiConsumer<PortletPreferences, Integer>)
+					PortletPreferences::setOwnerType);
+			attributeSetterBiConsumers.put(
+				"plid",
+				(BiConsumer<PortletPreferences, Long>)
+					PortletPreferences::setPlid);
+			attributeSetterBiConsumers.put(
+				"portletId",
+				(BiConsumer<PortletPreferences, String>)
+					PortletPreferences::setPortletId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -735,37 +752,6 @@ public class PortletPreferencesModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<PortletPreferences, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<PortletPreferences, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<PortletPreferences, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((PortletPreferences)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, PortletPreferences>
@@ -786,7 +772,8 @@ public class PortletPreferencesModelImpl
 
 	public <T> T getColumnValue(String columnName) {
 		Function<PortletPreferences, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

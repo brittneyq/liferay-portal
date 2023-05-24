@@ -14,17 +14,14 @@
 
 package com.liferay.content.dashboard.web.internal.searcher;
 
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryTracker;
-import com.liferay.info.search.InfoSearchClassMapperTracker;
+import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryRegistry;
+import com.liferay.info.search.InfoSearchClassMapperRegistry;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.search.legacy.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -38,13 +35,21 @@ public class ContentDashboardSearchRequestBuilderFactory {
 	public SearchRequestBuilder builder(SearchContext searchContext) {
 		if (ArrayUtil.isEmpty(searchContext.getEntryClassNames())) {
 			searchContext.setEntryClassNames(
-				_getClassNames(
-					_contentDashboardItemFactoryTracker.getClassNames()));
+				TransformUtil.transformToArray(
+					_contentDashboardItemFactoryRegistry.getClassNames(),
+					className ->
+						_infoSearchClassMapperRegistry.getSearchClassName(
+							className),
+					String.class));
 		}
 		else {
 			searchContext.setEntryClassNames(
-				_getClassNames(
-					Arrays.asList(searchContext.getEntryClassNames())));
+				TransformUtil.transform(
+					searchContext.getEntryClassNames(),
+					className ->
+						_infoSearchClassMapperRegistry.getSearchClassName(
+							className),
+					String.class));
 		}
 
 		return _searchRequestBuilderFactory.builder(
@@ -60,22 +65,12 @@ public class ContentDashboardSearchRequestBuilderFactory {
 		);
 	}
 
-	private String[] _getClassNames(Collection<String> classNames) {
-		Stream<String> stream = classNames.stream();
-
-		return stream.map(
-			_infoSearchClassMapperTracker::getSearchClassName
-		).toArray(
-			size -> new String[size]
-		);
-	}
+	@Reference
+	private ContentDashboardItemFactoryRegistry
+		_contentDashboardItemFactoryRegistry;
 
 	@Reference
-	private ContentDashboardItemFactoryTracker
-		_contentDashboardItemFactoryTracker;
-
-	@Reference
-	private InfoSearchClassMapperTracker _infoSearchClassMapperTracker;
+	private InfoSearchClassMapperRegistry _infoSearchClassMapperRegistry;
 
 	@Reference
 	private SearchRequestBuilderFactory _searchRequestBuilderFactory;

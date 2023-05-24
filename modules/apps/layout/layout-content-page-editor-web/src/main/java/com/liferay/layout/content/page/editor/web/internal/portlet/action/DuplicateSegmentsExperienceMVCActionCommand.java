@@ -25,7 +25,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.portal.kernel.comment.CommentManager;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -54,7 +54,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author David Arques
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/layout_content_page_editor/duplicate_segments_experience"
@@ -86,8 +85,7 @@ public class DuplicateSegmentsExperienceMVCActionCommand
 			_segmentsExperienceService.addSegmentsExperience(
 				serviceContext.getScopeGroupId(),
 				segmentsExperience.getSegmentsEntryId(),
-				segmentsExperience.getClassNameId(),
-				segmentsExperience.getClassPK(),
+				segmentsExperience.getPlid(),
 				Collections.singletonMap(
 					LocaleUtil.getSiteDefault(),
 					_language.format(
@@ -128,7 +126,7 @@ public class DuplicateSegmentsExperienceMVCActionCommand
 		throws Exception {
 
 		JSONObject fragmentEntryLinksJSONObject =
-			JSONFactoryUtil.createJSONObject();
+			_jsonFactory.createJSONObject();
 
 		List<FragmentEntryLink> fragmentEntryLinks =
 			_fragmentEntryLinkLocalService.
@@ -160,7 +158,7 @@ public class DuplicateSegmentsExperienceMVCActionCommand
 			_layoutPageTemplateStructureLocalService.
 				fetchLayoutPageTemplateStructure(groupId, classPK, true);
 
-		return JSONFactoryUtil.createJSONObject(
+		return _jsonFactory.createJSONObject(
 			layoutPageTemplateStructure.getData(segmentsExperienceId));
 	}
 
@@ -172,6 +170,9 @@ public class DuplicateSegmentsExperienceMVCActionCommand
 
 	@Reference
 	private FragmentEntryLinkManager _fragmentEntryLinkManager;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

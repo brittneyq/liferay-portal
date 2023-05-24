@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -43,6 +45,7 @@ public class AddressWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("addressId", getAddressId());
@@ -79,6 +82,12 @@ public class AddressWrapper
 
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
 		}
 
 		String uuid = (String)attributes.get("uuid");
@@ -330,6 +339,16 @@ public class AddressWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this address.
+	 *
+	 * @return the ct collection ID of this address
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the description of this address.
 	 *
 	 * @return the description of this address
@@ -357,6 +376,11 @@ public class AddressWrapper
 	@Override
 	public double getLatitude() {
 		return model.getLatitude();
+	}
+
+	@Override
+	public ListType getListType() {
+		return model.getListType();
 	}
 
 	/**
@@ -487,11 +511,6 @@ public class AddressWrapper
 	@Override
 	public String getStreet3() {
 		return model.getStreet3();
-	}
-
-	@Override
-	public ListType getType() {
-		return model.getType();
 	}
 
 	/**
@@ -662,6 +681,16 @@ public class AddressWrapper
 	@Override
 	public void setCreateDate(Date createDate) {
 		model.setCreateDate(createDate);
+	}
+
+	/**
+	 * Sets the ct collection ID of this address.
+	 *
+	 * @param ctCollectionId the ct collection ID of this address
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -882,6 +911,25 @@ public class AddressWrapper
 	@Override
 	public void setZip(String zip) {
 		model.setZip(zip);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
+	}
+
+	@Override
+	public Map<String, Function<Address, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<Address, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

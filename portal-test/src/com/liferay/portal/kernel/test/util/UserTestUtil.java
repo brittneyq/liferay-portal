@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
@@ -152,8 +153,8 @@ public class UserTestUtil {
 		String firstName = "UserServiceTest";
 		String middleName = StringPool.BLANK;
 		String lastName = "UserServiceTest";
-		long prefixId = 0;
-		long suffixId = 0;
+		long prefixListTypeId = 0;
+		long suffixListTypeId = 0;
 		boolean male = true;
 		int birthdayMonth = Calendar.JANUARY;
 		int birthdayDay = 1;
@@ -174,10 +175,10 @@ public class UserTestUtil {
 			return UserServiceUtil.addUser(
 				TestPropsValues.getCompanyId(), autoPassword, password1,
 				password2, autoScreenName, screenName, emailAddress, locale,
-				firstName, middleName, lastName, prefixId, suffixId, male,
-				birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
-				organizationIds, roleIds, userGroupIds, sendMail,
-				serviceContext);
+				firstName, middleName, lastName, prefixListTypeId,
+				suffixListTypeId, male, birthdayMonth, birthdayDay,
+				birthdayYear, jobTitle, groupIds, organizationIds, roleIds,
+				userGroupIds, sendMail, serviceContext);
 		}
 
 		String emailAddress =
@@ -186,8 +187,9 @@ public class UserTestUtil {
 		return UserLocalServiceUtil.addUser(
 			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
 			autoPassword, password1, password2, autoScreenName, screenName,
-			emailAddress, locale, firstName, middleName, lastName, prefixId,
-			suffixId, male, birthdayMonth, birthdayDay, birthdayYear, jobTitle,
+			emailAddress, locale, firstName, middleName, lastName,
+			prefixListTypeId, suffixListTypeId, male, birthdayMonth,
+			birthdayDay, birthdayYear, jobTitle, UserConstants.TYPE_REGULAR,
 			groupIds, organizationIds, roleIds, userGroupIds, sendMail,
 			serviceContext);
 	}
@@ -267,8 +269,8 @@ public class UserTestUtil {
 		String password1 = password;
 		String password2 = password;
 		String middleName = StringPool.BLANK;
-		long prefixId = 0;
-		long suffixId = 0;
+		long prefixListTypeId = 0;
+		long suffixListTypeId = 0;
 		boolean male = true;
 		int birthdayMonth = Calendar.JANUARY;
 		int birthdayDay = 1;
@@ -282,9 +284,10 @@ public class UserTestUtil {
 		return UserLocalServiceUtil.addUser(
 			userId, companyId, autoPassword, password1, password2,
 			Validator.isNull(screenName), screenName, emailAddress, locale,
-			firstName, middleName, lastName, prefixId, suffixId, male,
-			birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
-			organizationIds, roleIds, userGroupIds, sendMail, serviceContext);
+			firstName, middleName, lastName, prefixListTypeId, suffixListTypeId,
+			male, birthdayMonth, birthdayDay, birthdayYear, jobTitle,
+			UserConstants.TYPE_REGULAR, groupIds, organizationIds, roleIds,
+			userGroupIds, sendMail, serviceContext);
 	}
 
 	public static User addUser(
@@ -369,8 +372,8 @@ public class UserTestUtil {
 		String firstName = "UserServiceTest";
 		String middleName = StringPool.BLANK;
 		String lastName = "UserServiceTest";
-		long prefixId = 0;
-		long suffixId = 0;
+		long prefixListTypeId = 0;
+		long suffixListTypeId = 0;
 		boolean male = true;
 		int birthdayMonth = Calendar.JANUARY;
 		int birthdayDay = 1;
@@ -392,10 +395,10 @@ public class UserTestUtil {
 			passwordReset, reminderQueryQuestion, reminderQueryAnswer,
 			screenName, emailAddress, facebookId, openId, languageId,
 			timeZoneId, greeting, comments, firstName, middleName, lastName,
-			prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear,
-			smsSn, facebookSn, jabberSn, skypeSn, twitterSn, jobTitle, groupIds,
-			organizationIds, roleIds, userGroupRoles, userGroupIds,
-			serviceContext);
+			prefixListTypeId, suffixListTypeId, male, birthdayMonth,
+			birthdayDay, birthdayYear, smsSn, facebookSn, jabberSn, skypeSn,
+			twitterSn, jobTitle, groupIds, organizationIds, roleIds,
+			userGroupRoles, userGroupIds, serviceContext);
 	}
 
 }

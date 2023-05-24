@@ -15,13 +15,21 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.CharArrayWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
 
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -31,10 +39,14 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.Text;
 import org.dom4j.XPath;
+import org.dom4j.io.DOMReader;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultElement;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author Peter Yoo
@@ -66,13 +78,19 @@ public class Dom4JUtil {
 			}
 
 			if (item instanceof Element) {
-				element.add((Element)item);
+				Element itemElement = (Element)item;
+
+				itemElement.detach();
+
+				element.add(itemElement);
 
 				continue;
 			}
 
 			if (item instanceof Element[]) {
 				for (Element itemElement : (Element[])item) {
+					itemElement.detach();
+
 					element.add(itemElement);
 				}
 
@@ -275,9 +293,58 @@ public class Dom4JUtil {
 	}
 
 	public static Document parse(String xml) throws DocumentException {
-		SAXReader saxReader = new SAXReader();
+		if (xml != null) {
+			xml = xml.trim();
+		}
 
-		return saxReader.read(new StringReader(xml));
+		try {
+			SAXReader saxReader = new SAXReader();
+
+			return saxReader.read(new StringReader(xml));
+		}
+		catch (Exception exception1) {
+			try {
+				DOMReader domReader = new DOMReader();
+
+				DocumentBuilderFactory documentBuilderFactory =
+					DocumentBuilderFactory.newInstance();
+
+				DocumentBuilder documentBuilder =
+					documentBuilderFactory.newDocumentBuilder();
+
+				org.w3c.dom.Document orgW3CDomDocument = null;
+
+				try {
+					String processedXML = JenkinsResultsParserUtil.combine(
+						"<!DOCTYPE definition [", _getEntities(), "]>\n",
+						xml.replaceAll("<\\?xml[^\\n]+\\n", ""));
+
+					orgW3CDomDocument = documentBuilder.parse(
+						new InputSource(new StringReader(processedXML)));
+				}
+				catch (Exception exception2) {
+					try {
+						String processedXML = JenkinsResultsParserUtil.combine(
+							"<!DOCTYPE definition [", _getEntities(), "]>\n",
+							xml);
+
+						orgW3CDomDocument = documentBuilder.parse(
+							new InputSource(new StringReader(processedXML)));
+					}
+					catch (Exception exception3) {
+						orgW3CDomDocument = documentBuilder.parse(
+							new InputSource(new StringReader(xml)));
+					}
+				}
+
+				return domReader.read(orgW3CDomDocument);
+			}
+			catch (IOException | ParserConfigurationException | SAXException
+						exception2) {
+
+				throw new RuntimeException(exception2);
+			}
+		}
 	}
 
 	public static void replace(
@@ -354,6 +421,27 @@ public class Dom4JUtil {
 
 			truncateElement(iterator.next(), size);
 		}
+	}
+
+	private static String _getEntities() throws IOException, TimeoutException {
+		URL url = new URL(
+			"http://mirrors.lax.liferay.com/www.w3.org/TR/html5-author" +
+				"/entities.json");
+
+		File entitiesFile = new File("entities.html");
+
+		JenkinsResultsParserUtil.toFile(url, entitiesFile);
+
+		String entities = JenkinsResultsParserUtil.read(entitiesFile);
+
+		entities = entities.replaceAll(
+			"\\\"\\&([\\w]+);?\\\": \\{ \\\"[\\w]+\\\": \\[(\\d+)(, " +
+				"\\d+)?\\], \\\"[\\w]+\\\": \\\"[\\\\\\w\\d]+\\\" },?",
+			"<!ENTITY $1 \"\\&#$2;\">");
+
+		entities = entities.replaceAll("([{|}])", "");
+
+		return entities;
 	}
 
 }

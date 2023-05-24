@@ -19,7 +19,7 @@ import com.liferay.document.library.asset.auto.tagger.microsoft.cognitive.servic
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -65,7 +65,8 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 		try {
 			MSCognitiveServicesAssetAutoTagProviderCompanyConfiguration
 				msCognitiveServicesAssetAutoTagProviderCompanyConfiguration =
-					_getConfiguration(fileEntry);
+					_getMSCognitiveServicesAssetAutoTagProviderCompanyConfiguration(
+						fileEntry);
 
 			if (!msCognitiveServicesAssetAutoTagProviderCompanyConfiguration.
 					enabled() ||
@@ -114,7 +115,8 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 	}
 
 	private MSCognitiveServicesAssetAutoTagProviderCompanyConfiguration
-			_getConfiguration(FileEntry fileEntry)
+			_getMSCognitiveServicesAssetAutoTagProviderCompanyConfiguration(
+				FileEntry fileEntry)
 		throws ConfigurationException {
 
 		return _configurationProvider.getCompanyConfiguration(
@@ -155,8 +157,7 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 		httpURLConnection.getResponseMessage();
 
 		try (InputStream inputStream = httpURLConnection.getInputStream()) {
-			return JSONFactoryUtil.createJSONObject(
-				StringUtil.read(inputStream));
+			return _jsonFactory.createJSONObject(StringUtil.read(inputStream));
 		}
 		catch (Exception exception) {
 			try (InputStream inputStream = httpURLConnection.getErrorStream()) {
@@ -180,5 +181,8 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }

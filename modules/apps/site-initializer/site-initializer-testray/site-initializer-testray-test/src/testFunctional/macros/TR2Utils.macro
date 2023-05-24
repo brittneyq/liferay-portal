@@ -1,0 +1,10 @@
+definition {
+
+	@summary = "This macro clicks on specific text in the breadcrumb."
+	macro clickBreadcrumb {
+		var key_text = ${text};
+
+		Click(locator1 = "Testray#SELECT_BREADCRUMB");
+	}
+
+}

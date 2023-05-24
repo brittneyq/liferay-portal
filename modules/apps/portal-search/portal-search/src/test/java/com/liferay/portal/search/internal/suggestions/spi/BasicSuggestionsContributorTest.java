@@ -76,6 +76,7 @@ public class BasicSuggestionsContributorTest {
 		_setUpBasicSuggestionsContributor();
 		_setUpLayoutLocalService();
 		_setUpLiferayPortletRequest();
+		_setUpSearchContext();
 		_setUpSearchRequestBuilderFactory();
 		_setUpSuggestionsContributorConfiguration();
 	}
@@ -311,12 +312,20 @@ public class BasicSuggestionsContributorTest {
 		);
 	}
 
+	private void _setUpSearchContext() {
+		Mockito.doReturn(
+			"title"
+		).when(
+			_searchContext
+		).getKeywords();
+	}
+
 	private void _setUpSearcher(int totalHits) {
 		SearchResponse searchResponse = Mockito.mock(SearchResponse.class);
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 
-		List<SearchHit> searchHitList = new ArrayList<>();
+		List<SearchHit> searchHitsList = new ArrayList<>();
 
 		for (int i = 0; i < totalHits; i++) {
 			SearchHit searchHit = Mockito.mock(SearchHit.class);
@@ -351,11 +360,11 @@ public class BasicSuggestionsContributorTest {
 				searchHit
 			).getScore();
 
-			searchHitList.add(searchHit);
+			searchHitsList.add(searchHit);
 		}
 
 		Mockito.doReturn(
-			searchHitList
+			searchHitsList
 		).when(
 			searchHits
 		).getSearchHits();

@@ -44,7 +44,6 @@ import com.liferay.portal.model.impl.PortalPreferencesModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -157,7 +156,7 @@ public class PortalPreferencesPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByO_O, finderArgs);
+				_finderPathFetchByO_O, finderArgs, this);
 		}
 
 		if (result instanceof PortalPreferences) {
@@ -270,7 +269,8 @@ public class PortalPreferencesPersistenceImpl
 
 		Object[] finderArgs = new Object[] {ownerId, ownerType};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -731,7 +731,7 @@ public class PortalPreferencesPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<PortalPreferences>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -801,7 +801,7 @@ public class PortalPreferencesPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -876,29 +876,13 @@ public class PortalPreferencesPersistenceImpl
 			new String[] {Long.class.getName(), Integer.class.getName()},
 			new String[] {"ownerId", "ownerType"}, false);
 
-		_setPortalPreferencesUtilPersistence(this);
+		PortalPreferencesUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setPortalPreferencesUtilPersistence(null);
+		PortalPreferencesUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(PortalPreferencesImpl.class.getName());
-	}
-
-	private void _setPortalPreferencesUtilPersistence(
-		PortalPreferencesPersistence portalPreferencesPersistence) {
-
-		try {
-			Field field = PortalPreferencesUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, portalPreferencesPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_PORTALPREFERENCES =

@@ -12,9 +12,11 @@
  * details.
  */
 
-import ClayButton from '@clayui/button';
+import {ClayButtonWithIcon} from '@clayui/button';
+import ClayForm, {ClayInput} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
 import ClayLink from '@clayui/link';
-import {createRenderURL, openSelectionModal} from 'frontend-js-web';
+import {openSelectionModal} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
 const DEFAULT_MASTER_LAYOUT_PLID = '0';
@@ -32,25 +34,21 @@ export default function MasterLayoutConfiguration({
 	});
 
 	const handleChangeMasterButtonClick = () => {
-		const renderURL = createRenderURL(changeMasterLayoutURL, {
-			masterLayoutPlid: masterLayout.plid,
-		});
-
 		openSelectionModal({
-			buttonAddLabel: Liferay.Language.get('done'),
 			iframeBodyCssClass: '',
-			multiple: true,
 			onSelect(selectedItem) {
 				if (selectedItem) {
+					const itemValue = JSON.parse(selectedItem.value);
+
 					setMasterLayout({
-						name: selectedItem.name,
-						plid: selectedItem.plid,
+						name: itemValue.name,
+						plid: itemValue.plid,
 					});
 				}
 			},
 			selectEventName: `${portletNamespace}selectMasterLayout`,
 			title: Liferay.Language.get('select-master'),
-			url: renderURL.toString(),
+			url: changeMasterLayoutURL,
 		});
 	};
 
@@ -63,13 +61,17 @@ export default function MasterLayoutConfiguration({
 			return;
 		}
 
+		const sheet = themeContainer.closest('.sheet');
+
 		if (masterLayout.plid === DEFAULT_MASTER_LAYOUT_PLID) {
-			themeContainer.classList.remove('hide');
-			themeContainer.removeAttribute('aria-hidden');
+			sheet.classList.remove('hide');
+
+			sheet.removeAttribute('aria-hidden');
 		}
 		else {
-			themeContainer.classList.add('hide');
-			themeContainer.setAttribute('aria-hidden', 'true');
+			sheet.classList.add('hide');
+
+			sheet.setAttribute('aria-hidden', 'true');
 		}
 	}, [masterLayout.plid, portletNamespace]);
 
@@ -81,41 +83,60 @@ export default function MasterLayoutConfiguration({
 				value={masterLayout.plid}
 			/>
 
-			<h3 className="sheet-subtitle">{Liferay.Language.get('master')}</h3>
-
-			<p>
-				<strong>{`${Liferay.Language.get('master-name')}: `}</strong>
-
-				{masterLayout.name}
-			</p>
+			<label htmlFor={`${portletNamespace}masterLayout`}>
+				{Liferay.Language.get('master')}
+			</label>
 
 			{editMasterLayoutURL &&
 			masterLayout.plid &&
 			masterLayout.plid !== DEFAULT_MASTER_LAYOUT_PLID ? (
-				<ClayButton.Group spaced>
+				<div className="d-flex">
+					<ClayForm.Group className="flex-grow-1 mb-0">
+						<ClayInput
+							id={`${portletNamespace}masterLayout`}
+							onClick={handleChangeMasterButtonClick}
+							readOnly
+							value={masterLayout.name}
+						/>
+					</ClayForm.Group>
+
 					<ClayLink
-						className="btn btn-secondary btn-sm"
+						aria-label={Liferay.Language.get('edit-master')}
+						button={{monospaced: true}}
+						className="ml-2"
+						displayType="secondary"
 						href={editMasterLayoutURL}
 					>
-						{Liferay.Language.get('edit-master')}
+						<ClayIcon symbol="pencil" />
 					</ClayLink>
 
-					<ClayButton
+					<ClayButtonWithIcon
+						aria-label={Liferay.Language.get('change-master')}
+						className="ml-2"
 						displayType="secondary"
 						onClick={handleChangeMasterButtonClick}
-						small
-					>
-						{Liferay.Language.get('change-master')}
-					</ClayButton>
-				</ClayButton.Group>
+						symbol="change"
+					/>
+				</div>
 			) : (
-				<ClayButton
-					displayType="secondary"
-					onClick={handleChangeMasterButtonClick}
-					small
-				>
-					{Liferay.Language.get('change-master')}
-				</ClayButton>
+				<div className="d-flex">
+					<ClayForm.Group className="flex-grow-1 mb-0">
+						<ClayInput
+							id={`${portletNamespace}masterLayout`}
+							onClick={handleChangeMasterButtonClick}
+							readOnly
+							value={masterLayout.name}
+						/>
+					</ClayForm.Group>
+
+					<ClayButtonWithIcon
+						aria-label={Liferay.Language.get('change-master')}
+						className="ml-2"
+						displayType="secondary"
+						onClick={handleChangeMasterButtonClick}
+						symbol="plus"
+					/>
+				</div>
 			)}
 		</>
 	);

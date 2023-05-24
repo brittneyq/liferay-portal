@@ -26,11 +26,10 @@ import com.liferay.layout.page.template.util.comparator.LayoutPageTemplateCollec
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -56,7 +55,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Jürgen Kappler
  */
-@Component(immediate = true, service = ItemSelectorView.class)
+@Component(service = ItemSelectorView.class)
 public class LayoutPageTemplateCollectionsItemSelectorView
 	implements ItemSelectorView
 		<LayoutPageTemplateCollectionItemSelectorCriterion> {
@@ -75,10 +74,7 @@ public class LayoutPageTemplateCollectionsItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		return ResourceBundleUtil.getString(
-			ResourceBundleUtil.getBundle(
-				locale, LayoutPageTemplateCollectionsItemSelectorView.class),
-			"page-template-collections");
+		return _language.get(locale, "page-template-collections");
 	}
 
 	@Override
@@ -107,11 +103,11 @@ public class LayoutPageTemplateCollectionsItemSelectorView
 			_itemSelectorViewDescriptorRenderer;
 
 	@Reference
-	private LayoutPageTemplateCollectionLocalService
-		_layoutPageTemplateCollectionLocalService;
+	private Language _language;
 
 	@Reference
-	private Portal _portal;
+	private LayoutPageTemplateCollectionLocalService
+		_layoutPageTemplateCollectionLocalService;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.layout.page.template.item.selector.web)"
@@ -128,7 +124,7 @@ public class LayoutPageTemplateCollectionsItemSelectorView
 			_httpServletRequest = httpServletRequest;
 			_layoutPageTemplateCollection = layoutPageTemplateCollection;
 
-			_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+			_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 		}
 
@@ -197,10 +193,9 @@ public class LayoutPageTemplateCollectionsItemSelectorView
 			_httpServletRequest = httpServletRequest;
 			_portletURL = portletURL;
 
-			_portletRequest = (PortletRequest)_httpServletRequest.getAttribute(
+			_portletRequest = (PortletRequest)httpServletRequest.getAttribute(
 				JavaConstants.JAVAX_PORTLET_REQUEST);
-
-			_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+			_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 		}
 

@@ -18,6 +18,7 @@ import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
+import com.liferay.commerce.currency.exception.NoSuchCurrencyException;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.service.CommerceCurrencyLocalServiceUtil;
 import com.liferay.commerce.model.CPDefinitionInventory;
@@ -73,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -95,9 +97,21 @@ public class CPTestUtil {
 				fetchCatalogBaseCommercePriceListByType(groupId, type);
 
 		if (commerceCatalogBasePriceList == null) {
-			CommerceCurrency commerceCurrency =
-				CommerceCurrencyLocalServiceUtil.getCommerceCurrency(
-					serviceContext.getCompanyId(), currencyCode);
+			CommerceCurrency commerceCurrency = null;
+
+			try {
+				commerceCurrency =
+					CommerceCurrencyLocalServiceUtil.getCommerceCurrency(
+						serviceContext.getCompanyId(), currencyCode);
+			}
+			catch (NoSuchCurrencyException noSuchCurrencyException) {
+				commerceCurrency =
+					CommerceCurrencyLocalServiceUtil.addCommerceCurrency(
+						serviceContext.getUserId(), currencyCode,
+						RandomTestUtil.randomLocaleStringMap(),
+						RandomTestUtil.randomString(), BigDecimal.ONE,
+						new HashMap<>(), 2, 2, "HALF_EVEN", false, 0, true);
+			}
 
 			CommercePriceListLocalServiceUtil.addCatalogBaseCommercePriceList(
 				groupId, serviceContext.getUserId(),
@@ -500,9 +514,9 @@ public class CPTestUtil {
 
 		CPInstance cpInstance = addCPInstanceFromCatalog(groupId);
 
+		cpInstance.setExternalReferenceCode(externalReferenceCode);
 		cpInstance.setSku(sku);
 		cpInstance.setPrice(price);
-		cpInstance.setExternalReferenceCode(externalReferenceCode);
 
 		cpInstance = CPInstanceLocalServiceUtil.updateCPInstance(cpInstance);
 
@@ -910,7 +924,7 @@ public class CPTestUtil {
 				displayDateMonth, displayDateDay, displayDateYear,
 				displayDateHour, displayDateMinute, expirationDateMonth,
 				expirationDateDay, expirationDateYear, expirationDateHour,
-				expirationDateMinute, false, sku, false, 0, null, null, 0L,
+				expirationDateMinute, false, sku, false, 1, null, null, 0L,
 				WorkflowConstants.STATUS_DRAFT, serviceContext);
 
 		CPDefinitionInventory cpDefinitionInventory =
@@ -1006,7 +1020,7 @@ public class CPTestUtil {
 				ddmStructureKey, published, displayDateMonth, displayDateDay,
 				displayDateYear, displayDateHour, displayDateMinute,
 				expirationDateMonth, expirationDateDay, expirationDateYear,
-				expirationDateHour, expirationDateMinute, false, sku, false, 0,
+				expirationDateHour, expirationDateMinute, false, sku, false, 1,
 				null, null, 0L, WorkflowConstants.STATUS_DRAFT, serviceContext);
 
 		CPDefinitionInventory cpDefinitionInventory =
@@ -1119,7 +1133,7 @@ public class CPTestUtil {
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, expirationDateMonth, expirationDateDay,
 			expirationDateYear, expirationDateHour, expirationDateMinute, false,
-			sku, false, 0, null, null, 0L, WorkflowConstants.STATUS_DRAFT,
+			sku, false, 1, null, null, 0L, WorkflowConstants.STATUS_DRAFT,
 			serviceContext);
 	}
 

@@ -36,7 +36,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Stian Sigvartsen
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + PortletKeys.FAST_LOGIN,
 		"javax.portlet.name=" + PortletKeys.LOGIN,
@@ -76,16 +75,6 @@ public class AssociateFacebookUserMVCRenderCommand implements MVCRenderCommand {
 		return "/login.jsp";
 	}
 
-	@Reference(unbind = "-")
-	protected void setFacebookConnect(FacebookConnect facebookConnect) {
-		_facebookConnect = facebookConnect;
-	}
-
-	@Reference(unbind = "-")
-	protected void setUserLocalService(UserLocalService userLocalService) {
-		_userLocalService = userLocalService;
-	}
-
 	private String _renderUpdateAccount(
 			PortletRequest portletRequest, User user)
 		throws PortletException {
@@ -95,7 +84,10 @@ public class AssociateFacebookUserMVCRenderCommand implements MVCRenderCommand {
 		return "/update_account.jsp";
 	}
 
+	@Reference
 	private FacebookConnect _facebookConnect;
+
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

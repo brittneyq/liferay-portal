@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.price.list.internal.discovery;
 
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.commerce.price.list.discovery.CommercePriceListDiscovery;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.service.CommercePriceListLocalService;
@@ -27,11 +27,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Riccardo Alberti
  */
-@Component(
-	enabled = false,
-	property = "commerce.price.list.discovery.key=" + CommercePricingConstants.ORDER_BY_LOWEST_ENTRY,
-	service = CommercePriceListDiscovery.class
-)
+@Component(service = CommercePriceListDiscovery.class)
 public class CommercePriceListLowestDiscoveryImpl
 	implements CommercePriceListDiscovery {
 
@@ -43,13 +39,17 @@ public class CommercePriceListLowestDiscoveryImpl
 
 		return _commercePriceListLocalService.getCommercePriceListByLowestPrice(
 			groupId, commerceAccountId,
-			_commerceAccountHelper.getCommerceAccountGroupIds(
-				commerceAccountId),
+			_accountGroupLocalService.getAccountGroupIds(commerceAccountId),
 			commerceChannelId, commerceOrderTypeId, cpInstanceUuid, type);
 	}
 
+	@Override
+	public String getCommercePriceListDiscoveryKey() {
+		return CommercePricingConstants.ORDER_BY_LOWEST_ENTRY;
+	}
+
 	@Reference
-	private CommerceAccountHelper _commerceAccountHelper;
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommercePriceListLocalService _commercePriceListLocalService;

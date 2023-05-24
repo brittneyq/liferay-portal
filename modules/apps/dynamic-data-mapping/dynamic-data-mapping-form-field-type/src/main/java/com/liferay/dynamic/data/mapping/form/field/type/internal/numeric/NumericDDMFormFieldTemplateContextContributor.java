@@ -40,12 +40,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Leonardo Barros
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.NUMERIC,
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		NumericDDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class NumericDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {

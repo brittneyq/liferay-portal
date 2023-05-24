@@ -41,7 +41,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.Localiz
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
@@ -181,7 +180,7 @@ public class LocalizedEntryLocalizationPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LocalizedEntryLocalization>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LocalizedEntryLocalization localizedEntryLocalization :
@@ -555,7 +554,7 @@ public class LocalizedEntryLocalizationPersistenceImpl
 
 		Object[] finderArgs = new Object[] {localizedEntryId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -677,7 +676,8 @@ public class LocalizedEntryLocalizationPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByLocalizedEntryId_LanguageId, finderArgs);
+				_finderPathFetchByLocalizedEntryId_LanguageId, finderArgs,
+				this);
 		}
 
 		if (result instanceof LocalizedEntryLocalization) {
@@ -800,7 +800,7 @@ public class LocalizedEntryLocalizationPersistenceImpl
 
 		Object[] finderArgs = new Object[] {localizedEntryId, languageId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1314,7 +1314,7 @@ public class LocalizedEntryLocalizationPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<LocalizedEntryLocalization>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1387,7 +1387,7 @@ public class LocalizedEntryLocalizationPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1482,30 +1482,13 @@ public class LocalizedEntryLocalizationPersistenceImpl
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"localizedEntryId", "languageId"}, false);
 
-		_setLocalizedEntryLocalizationUtilPersistence(this);
+		LocalizedEntryLocalizationUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setLocalizedEntryLocalizationUtilPersistence(null);
+		LocalizedEntryLocalizationUtil.setPersistence(null);
 
 		entityCache.removeCache(LocalizedEntryLocalizationImpl.class.getName());
-	}
-
-	private void _setLocalizedEntryLocalizationUtilPersistence(
-		LocalizedEntryLocalizationPersistence
-			localizedEntryLocalizationPersistence) {
-
-		try {
-			Field field = LocalizedEntryLocalizationUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, localizedEntryLocalizationPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = EntityCache.class)

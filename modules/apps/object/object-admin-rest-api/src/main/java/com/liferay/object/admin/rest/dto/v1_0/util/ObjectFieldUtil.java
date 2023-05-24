@@ -14,22 +14,35 @@
 
 package com.liferay.object.admin.rest.dto.v1_0.util;
 
+import com.liferay.list.type.model.ListTypeDefinition;
+import com.liferay.list.type.service.ListTypeDefinitionService;
+import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.service.ObjectFieldSettingLocalService;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 /**
  * @author Feliphe Marinho
  */
 public class ObjectFieldUtil {
 
-	public static JSONObject toJSONObject(ObjectField objectField) {
+	public static JSONObject toJSONObject(
+		ListTypeDefinitionService listTypeDefinitionService,
+		ObjectField objectField,
+		ObjectFieldSettingLocalService objectFieldSettingLocalService) {
+
 		return JSONUtil.put(
 			"businessType", objectField.getBusinessType()
 		).put(
 			"DBType", objectField.getDBType()
 		).put(
-			"defaultValue", objectField.getDefaultValue()
+			"defaultValue",
+			com.liferay.object.field.setting.util.ObjectFieldSettingUtil.
+				getDefaultValueAsString(
+					null, objectField.getObjectFieldId(),
+					objectFieldSettingLocalService, null)
 		).put(
 			"externalReferenceCode", objectField.getExternalReferenceCode()
 		).put(
@@ -42,6 +55,22 @@ public class ObjectFieldUtil {
 			"indexedLanguageId", objectField.getIndexedLanguageId()
 		).put(
 			"label", objectField.getLabelMap()
+		).put(
+			"listTypeDefinitionExternalReferenceCode",
+			() -> {
+				if (!StringUtil.equals(
+						objectField.getBusinessType(),
+						ObjectFieldConstants.BUSINESS_TYPE_PICKLIST)) {
+
+					return null;
+				}
+
+				ListTypeDefinition listTypeDefinition =
+					listTypeDefinitionService.getListTypeDefinition(
+						objectField.getListTypeDefinitionId());
+
+				return listTypeDefinition.getExternalReferenceCode();
+			}
 		).put(
 			"listTypeDefinitionId",
 			Long.valueOf(objectField.getListTypeDefinitionId())

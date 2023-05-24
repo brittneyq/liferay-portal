@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
@@ -39,12 +38,15 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.search.experiences.blueprint.parameter.SXPParameter;
 import com.liferay.search.experiences.blueprint.parameter.contributor.SXPParameterContributorDefinition;
 import com.liferay.search.experiences.blueprint.parameter.contributor.SXPParameterContributorDefinitionProvider;
+import com.liferay.search.experiences.configuration.SemanticSearchConfigurationProvider;
 import com.liferay.search.experiences.internal.blueprint.parameter.contributor.ContextSXPParameterContributor;
 import com.liferay.search.experiences.internal.blueprint.parameter.contributor.IpstackSXPParameterContributor;
+import com.liferay.search.experiences.internal.blueprint.parameter.contributor.MLSXPParameterContributor;
 import com.liferay.search.experiences.internal.blueprint.parameter.contributor.OpenWeatherMapSXPParameterContributor;
 import com.liferay.search.experiences.internal.blueprint.parameter.contributor.SXPParameterContributor;
 import com.liferay.search.experiences.internal.blueprint.parameter.contributor.TimeSXPParameterContributor;
 import com.liferay.search.experiences.internal.blueprint.parameter.contributor.UserSXPParameterContributor;
+import com.liferay.search.experiences.ml.embedding.text.TextEmbeddingRetriever;
 import com.liferay.search.experiences.rest.dto.v1_0.Configuration;
 import com.liferay.search.experiences.rest.dto.v1_0.Parameter;
 import com.liferay.search.experiences.rest.dto.v1_0.ParameterConfiguration;
@@ -79,7 +81,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Petteri Karttunen
  */
 @Component(
-	enabled = false, immediate = true,
+	enabled = false,
 	service = {
 		SXPParameterContributorDefinitionProvider.class,
 		SXPParameterDataCreator.class
@@ -138,6 +140,9 @@ public class SXPParameterDataCreator
 		_sxpParameterContributors = new SXPParameterContributor[] {
 			new ContextSXPParameterContributor(_groupLocalService, _language),
 			new IpstackSXPParameterContributor(_configurationProvider),
+			new MLSXPParameterContributor(
+				_language, _semanticSearchConfigurationProvider,
+				_textEmbeddingRetriever),
 			new OpenWeatherMapSXPParameterContributor(_configurationProvider),
 			new TimeSXPParameterContributor(),
 			new UserSXPParameterContributor(
@@ -160,17 +165,14 @@ public class SXPParameterDataCreator
 
 		String keywords = GetterUtil.getString(searchContext.getKeywords());
 
-		_add(
-			new StringSXPParameter("keywords.raw", true, keywords),
-			sxpParameters);
-
 		if ((StringUtil.count(keywords, CharPool.QUOTE) % 2) != 0) {
 			keywords = StringUtil.replace(
 				keywords, CharPool.QUOTE, StringPool.BLANK);
 		}
 
 		keywords = keywords.replaceAll("/", "&#8725;");
-		keywords = keywords.replaceAll("\"", "\\\\\"");
+		keywords = keywords.replaceAll("\"", "&#34;");
+		keywords = keywords.replaceAll("\\$", "&#36;");
 		keywords = keywords.replaceAll("\\[", "&#91;");
 		keywords = keywords.replaceAll("\\\\", "&#92;");
 		keywords = keywords.replaceAll("\\]", "&#93;");
@@ -726,9 +728,6 @@ public class SXPParameterDataCreator
 	private Language _language;
 
 	@Reference
-	private LayoutLocalService _layoutLocalService;
-
-	@Reference
 	private Portal _portal;
 
 	@Reference
@@ -737,7 +736,14 @@ public class SXPParameterDataCreator
 	@Reference
 	private SegmentsEntryRetriever _segmentsEntryRetriever;
 
+	@Reference
+	private SemanticSearchConfigurationProvider
+		_semanticSearchConfigurationProvider;
+
 	private SXPParameterContributor[] _sxpParameterContributors;
+
+	@Reference
+	private TextEmbeddingRetriever _textEmbeddingRetriever;
 
 	@Reference
 	private UserGroupGroupRoleLocalService _userGroupGroupRoleLocalService;

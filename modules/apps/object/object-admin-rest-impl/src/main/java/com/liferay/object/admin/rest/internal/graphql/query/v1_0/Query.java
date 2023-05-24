@@ -17,8 +17,8 @@ package com.liferay.object.admin.rest.internal.graphql.query.v1_0;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectAction;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectDefinition;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectField;
+import com.liferay.object.admin.rest.dto.v1_0.ObjectFieldSetting;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectLayout;
-import com.liferay.object.admin.rest.dto.v1_0.ObjectLayoutColumn;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectLayoutTab;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectRelationship;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectValidationRule;
@@ -124,7 +124,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectAction(objectActionId: ___){actions, active, conditionExpression, dateCreated, dateModified, description, id, name, objectActionExecutorKey, objectActionTriggerKey, parameters, status}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectAction(objectActionId: ___){actions, active, conditionExpression, dateCreated, dateModified, description, errorMessage, externalReferenceCode, id, label, name, objectActionExecutorKey, objectActionTriggerKey, parameters, status}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectAction objectAction(
@@ -136,6 +136,31 @@ public class Query {
 			this::_populateResourceContext,
 			objectActionResource -> objectActionResource.getObjectAction(
 				objectActionId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCodeObjectActions(externalReferenceCode: ___, page: ___, pageSize: ___, search: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectActionPage
+			objectDefinitionByExternalReferenceCodeObjectActions(
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("search") String search,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectActionResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectActionResource -> new ObjectActionPage(
+				objectActionResource.
+					getObjectDefinitionByExternalReferenceCodeObjectActionsPage(
+						externalReferenceCode, search,
+						Pagination.of(page, pageSize))));
 	}
 
 	/**
@@ -193,7 +218,26 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinition(objectDefinitionId: ___){accountEntryRestricted, accountEntryRestrictedObjectFieldId, actions, active, dateCreated, dateModified, enableCategorization, enableComments, externalReferenceCode, id, label, name, objectActions, objectFields, objectLayouts, objectRelationships, objectViews, panelAppOrder, panelCategoryKey, parameterRequired, pluralLabel, portlet, scope, status, storageType, system, titleObjectFieldId}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCode(externalReferenceCode: ___){accountEntryRestricted, accountEntryRestrictedObjectFieldName, actions, active, dateCreated, dateModified, defaultLanguageId, enableCategorization, enableComments, enableLocalization, enableObjectEntryHistory, externalReferenceCode, id, label, modifiable, name, objectActions, objectFields, objectLayouts, objectRelationships, objectValidationRules, objectViews, panelAppOrder, panelCategoryKey, parameterRequired, pluralLabel, portlet, restContextPath, scope, status, storageType, system, titleObjectFieldName}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectDefinition objectDefinitionByExternalReferenceCode(
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectDefinitionResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectDefinitionResource ->
+				objectDefinitionResource.
+					getObjectDefinitionByExternalReferenceCode(
+						externalReferenceCode));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinition(objectDefinitionId: ___){accountEntryRestricted, accountEntryRestrictedObjectFieldName, actions, active, dateCreated, dateModified, defaultLanguageId, enableCategorization, enableComments, enableLocalization, enableObjectEntryHistory, externalReferenceCode, id, label, modifiable, name, objectActions, objectFields, objectLayouts, objectRelationships, objectValidationRules, objectViews, panelAppOrder, panelCategoryKey, parameterRequired, pluralLabel, portlet, restContextPath, scope, status, storageType, system, titleObjectFieldName}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectDefinition objectDefinition(
@@ -206,6 +250,35 @@ public class Query {
 			objectDefinitionResource ->
 				objectDefinitionResource.getObjectDefinition(
 					objectDefinitionId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCodeObjectFields(externalReferenceCode: ___, filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectFieldPage objectDefinitionByExternalReferenceCodeObjectFields(
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("pageSize") int pageSize,
+			@GraphQLName("page") int page,
+			@GraphQLName("sort") String sortsString)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectFieldResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectFieldResource -> new ObjectFieldPage(
+				objectFieldResource.
+					getObjectDefinitionByExternalReferenceCodeObjectFieldsPage(
+						externalReferenceCode, search,
+						_filterBiFunction.apply(
+							objectFieldResource, filterString),
+						Pagination.of(page, pageSize),
+						_sortsBiFunction.apply(
+							objectFieldResource, sortsString))));
 	}
 
 	/**
@@ -237,7 +310,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectField(objectFieldId: ___){DBType, actions, businessType, defaultValue, externalReferenceCode, id, indexed, indexedAsKeyword, indexedLanguageId, label, listTypeDefinitionId, name, objectFieldSettings, relationshipType, required, state, system, type}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectField(objectFieldId: ___){DBType, actions, businessType, defaultValue, externalReferenceCode, id, indexed, indexedAsKeyword, indexedLanguageId, label, listTypeDefinitionExternalReferenceCode, listTypeDefinitionId, localized, name, objectFieldSettings, relationshipType, required, state, system, type}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectField objectField(
@@ -249,6 +322,31 @@ public class Query {
 			this::_populateResourceContext,
 			objectFieldResource -> objectFieldResource.getObjectField(
 				objectFieldId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCodeObjectLayouts(externalReferenceCode: ___, page: ___, pageSize: ___, search: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectLayoutPage
+			objectDefinitionByExternalReferenceCodeObjectLayouts(
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("search") String search,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectLayoutResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectLayoutResource -> new ObjectLayoutPage(
+				objectLayoutResource.
+					getObjectDefinitionByExternalReferenceCodeObjectLayoutsPage(
+						externalReferenceCode, search,
+						Pagination.of(page, pageSize))));
 	}
 
 	/**
@@ -276,7 +374,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectLayout(objectLayoutId: ___){actions, dateCreated, dateModified, defaultObjectLayout, id, name, objectDefinitionId, objectLayoutTabs}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectLayout(objectLayoutId: ___){actions, dateCreated, dateModified, defaultObjectLayout, id, name, objectDefinitionExternalReferenceCode, objectDefinitionId, objectLayoutTabs}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectLayout objectLayout(
@@ -288,6 +386,34 @@ public class Query {
 			this::_populateResourceContext,
 			objectLayoutResource -> objectLayoutResource.getObjectLayout(
 				objectLayoutId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCodeObjectRelationships(externalReferenceCode: ___, filter: ___, page: ___, pageSize: ___, search: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectRelationshipPage
+			objectDefinitionByExternalReferenceCodeObjectRelationships(
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("search") String search,
+				@GraphQLName("filter") String filterString,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectRelationshipResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectRelationshipResource -> new ObjectRelationshipPage(
+				objectRelationshipResource.
+					getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage(
+						externalReferenceCode, search,
+						_filterBiFunction.apply(
+							objectRelationshipResource, filterString),
+						Pagination.of(page, pageSize))));
 	}
 
 	/**
@@ -319,7 +445,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectRelationship(objectRelationshipId: ___){actions, deletionType, id, label, name, objectDefinitionId1, objectDefinitionId2, objectDefinitionName2, parameterObjectFieldId, reverse, type}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectRelationship(objectRelationshipId: ___){actions, deletionType, id, label, name, objectDefinitionExternalReferenceCode1, objectDefinitionExternalReferenceCode2, objectDefinitionId1, objectDefinitionId2, objectDefinitionName2, parameterObjectFieldId, parameterObjectFieldName, reverse, type}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectRelationship objectRelationship(
@@ -332,6 +458,31 @@ public class Query {
 			objectRelationshipResource ->
 				objectRelationshipResource.getObjectRelationship(
 					objectRelationshipId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCodeObjectValidationRules(externalReferenceCode: ___, page: ___, pageSize: ___, search: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectValidationRulePage
+			objectDefinitionByExternalReferenceCodeObjectValidationRules(
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("search") String search,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectValidationRuleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectValidationRuleResource -> new ObjectValidationRulePage(
+				objectValidationRuleResource.
+					getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPage(
+						externalReferenceCode, search,
+						Pagination.of(page, pageSize))));
 	}
 
 	/**
@@ -360,7 +511,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectValidationRule(objectValidationRuleId: ___){actions, active, dateCreated, dateModified, engine, engineLabel, errorLabel, id, name, objectDefinitionId, script}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectValidationRule(objectValidationRuleId: ___){actions, active, dateCreated, dateModified, engine, engineLabel, errorLabel, id, name, objectDefinitionExternalReferenceCode, objectDefinitionId, script}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectValidationRule objectValidationRule(
@@ -373,6 +524,29 @@ public class Query {
 			objectValidationRuleResource ->
 				objectValidationRuleResource.getObjectValidationRule(
 					objectValidationRuleId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectDefinitionByExternalReferenceCodeObjectViews(externalReferenceCode: ___, page: ___, pageSize: ___, search: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public ObjectViewPage objectDefinitionByExternalReferenceCodeObjectViews(
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("search") String search,
+			@GraphQLName("pageSize") int pageSize,
+			@GraphQLName("page") int page)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_objectViewResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			objectViewResource -> new ObjectViewPage(
+				objectViewResource.
+					getObjectDefinitionByExternalReferenceCodeObjectViewsPage(
+						externalReferenceCode, search,
+						Pagination.of(page, pageSize))));
 	}
 
 	/**
@@ -400,7 +574,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectView(objectViewId: ___){actions, dateCreated, dateModified, defaultObjectView, id, name, objectDefinitionId, objectViewColumns, objectViewFilterColumns, objectViewSortColumns}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {objectView(objectViewId: ___){actions, dateCreated, dateModified, defaultObjectView, id, name, objectDefinitionExternalReferenceCode, objectDefinitionId, objectViewColumns, objectViewFilterColumns, objectViewSortColumns}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public ObjectView objectView(@GraphQLName("objectViewId") Long objectViewId)
@@ -457,13 +631,44 @@ public class Query {
 
 	}
 
-	@GraphQLTypeExtension(ObjectLayoutColumn.class)
+	@GraphQLTypeExtension(ObjectDefinition.class)
+	public class
+		GetObjectDefinitionByExternalReferenceCodeObjectViewsPageTypeExtension {
+
+		public GetObjectDefinitionByExternalReferenceCodeObjectViewsPageTypeExtension(
+			ObjectDefinition objectDefinition) {
+
+			_objectDefinition = objectDefinition;
+		}
+
+		@GraphQLField
+		public ObjectViewPage byExternalReferenceCodeObjectViews(
+				@GraphQLName("search") String search,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_objectViewResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				objectViewResource -> new ObjectViewPage(
+					objectViewResource.
+						getObjectDefinitionByExternalReferenceCodeObjectViewsPage(
+							_objectDefinition.getExternalReferenceCode(),
+							search, Pagination.of(page, pageSize))));
+		}
+
+		private ObjectDefinition _objectDefinition;
+
+	}
+
+	@GraphQLTypeExtension(ObjectFieldSetting.class)
 	public class GetObjectFieldTypeExtension {
 
 		public GetObjectFieldTypeExtension(
-			ObjectLayoutColumn objectLayoutColumn) {
+			ObjectFieldSetting objectFieldSetting) {
 
-			_objectLayoutColumn = objectLayoutColumn;
+			_objectFieldSetting = objectFieldSetting;
 		}
 
 		@GraphQLField
@@ -472,27 +677,165 @@ public class Query {
 				_objectFieldResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,
 				objectFieldResource -> objectFieldResource.getObjectField(
-					_objectLayoutColumn.getObjectFieldId()));
+					_objectFieldSetting.getObjectFieldId()));
 		}
 
-		private ObjectLayoutColumn _objectLayoutColumn;
+		private ObjectFieldSetting _objectFieldSetting;
 
 	}
 
 	@GraphQLTypeExtension(ObjectDefinition.class)
-	public class GetObjectDefinitionObjectValidationRulesPageTypeExtension {
+	public class
+		GetObjectDefinitionByExternalReferenceCodeObjectRelationshipsPageTypeExtension {
 
-		public GetObjectDefinitionObjectValidationRulesPageTypeExtension(
+		public GetObjectDefinitionByExternalReferenceCodeObjectRelationshipsPageTypeExtension(
 			ObjectDefinition objectDefinition) {
 
 			_objectDefinition = objectDefinition;
 		}
 
 		@GraphQLField
-		public ObjectValidationRulePage objectValidationRules(
+		public ObjectRelationshipPage
+				byExternalReferenceCodeObjectRelationships(
+					@GraphQLName("search") String search,
+					@GraphQLName("filter") String filterString,
+					@GraphQLName("pageSize") int pageSize,
+					@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_objectRelationshipResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				objectRelationshipResource -> new ObjectRelationshipPage(
+					objectRelationshipResource.
+						getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage(
+							_objectDefinition.getExternalReferenceCode(),
+							search,
+							_filterBiFunction.apply(
+								objectRelationshipResource, filterString),
+							Pagination.of(page, pageSize))));
+		}
+
+		private ObjectDefinition _objectDefinition;
+
+	}
+
+	@GraphQLTypeExtension(ObjectDefinition.class)
+	public class
+		GetObjectDefinitionByExternalReferenceCodeObjectActionsPageTypeExtension {
+
+		public GetObjectDefinitionByExternalReferenceCodeObjectActionsPageTypeExtension(
+			ObjectDefinition objectDefinition) {
+
+			_objectDefinition = objectDefinition;
+		}
+
+		@GraphQLField
+		public ObjectActionPage byExternalReferenceCodeObjectActions(
 				@GraphQLName("search") String search,
 				@GraphQLName("pageSize") int pageSize,
 				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_objectActionResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				objectActionResource -> new ObjectActionPage(
+					objectActionResource.
+						getObjectDefinitionByExternalReferenceCodeObjectActionsPage(
+							_objectDefinition.getExternalReferenceCode(),
+							search, Pagination.of(page, pageSize))));
+		}
+
+		private ObjectDefinition _objectDefinition;
+
+	}
+
+	@GraphQLTypeExtension(ObjectDefinition.class)
+	public class
+		GetObjectDefinitionByExternalReferenceCodeObjectFieldsPageTypeExtension {
+
+		public GetObjectDefinitionByExternalReferenceCodeObjectFieldsPageTypeExtension(
+			ObjectDefinition objectDefinition) {
+
+			_objectDefinition = objectDefinition;
+		}
+
+		@GraphQLField
+		public ObjectFieldPage byExternalReferenceCodeObjectFields(
+				@GraphQLName("search") String search,
+				@GraphQLName("filter") String filterString,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page,
+				@GraphQLName("sort") String sortsString)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_objectFieldResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				objectFieldResource -> new ObjectFieldPage(
+					objectFieldResource.
+						getObjectDefinitionByExternalReferenceCodeObjectFieldsPage(
+							_objectDefinition.getExternalReferenceCode(),
+							search,
+							_filterBiFunction.apply(
+								objectFieldResource, filterString),
+							Pagination.of(page, pageSize),
+							_sortsBiFunction.apply(
+								objectFieldResource, sortsString))));
+		}
+
+		private ObjectDefinition _objectDefinition;
+
+	}
+
+	@GraphQLTypeExtension(ObjectDefinition.class)
+	public class
+		GetObjectDefinitionByExternalReferenceCodeObjectLayoutsPageTypeExtension {
+
+		public GetObjectDefinitionByExternalReferenceCodeObjectLayoutsPageTypeExtension(
+			ObjectDefinition objectDefinition) {
+
+			_objectDefinition = objectDefinition;
+		}
+
+		@GraphQLField
+		public ObjectLayoutPage byExternalReferenceCodeObjectLayouts(
+				@GraphQLName("search") String search,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_objectLayoutResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				objectLayoutResource -> new ObjectLayoutPage(
+					objectLayoutResource.
+						getObjectDefinitionByExternalReferenceCodeObjectLayoutsPage(
+							_objectDefinition.getExternalReferenceCode(),
+							search, Pagination.of(page, pageSize))));
+		}
+
+		private ObjectDefinition _objectDefinition;
+
+	}
+
+	@GraphQLTypeExtension(ObjectDefinition.class)
+	public class
+		GetObjectDefinitionByExternalReferenceCodeObjectValidationRulesPageTypeExtension {
+
+		public GetObjectDefinitionByExternalReferenceCodeObjectValidationRulesPageTypeExtension(
+			ObjectDefinition objectDefinition) {
+
+			_objectDefinition = objectDefinition;
+		}
+
+		@GraphQLField
+		public ObjectValidationRulePage
+				byExternalReferenceCodeObjectValidationRules(
+					@GraphQLName("search") String search,
+					@GraphQLName("pageSize") int pageSize,
+					@GraphQLName("page") int page)
 			throws Exception {
 
 			return _applyComponentServiceObjects(
@@ -500,9 +843,9 @@ public class Query {
 				Query.this::_populateResourceContext,
 				objectValidationRuleResource -> new ObjectValidationRulePage(
 					objectValidationRuleResource.
-						getObjectDefinitionObjectValidationRulesPage(
-							_objectDefinition.getId(), search,
-							Pagination.of(page, pageSize))));
+						getObjectDefinitionByExternalReferenceCodeObjectValidationRulesPage(
+							_objectDefinition.getExternalReferenceCode(),
+							search, Pagination.of(page, pageSize))));
 		}
 
 		private ObjectDefinition _objectDefinition;
@@ -525,7 +868,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;
@@ -563,7 +906,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;
@@ -601,7 +944,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;
@@ -639,7 +982,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;
@@ -677,7 +1020,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;
@@ -715,7 +1058,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;
@@ -753,7 +1096,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		protected Map<String, Map> actions;
+		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
 		protected List<Facet> facets;

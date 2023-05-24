@@ -182,6 +182,7 @@ const MillerColumnsItem = ({
 		quickActions = [],
 		selectable,
 		states = [],
+		target,
 		title,
 		url,
 		viewUrl,
@@ -203,29 +204,37 @@ const MillerColumnsItem = ({
 	const [layoutActionsActive, setLayoutActionsActive] = useState(false);
 
 	const dropdownActions = useMemo(() => {
+		const updateItem = (item) => {
+			const newItem = {
+				...item,
+				onClick(event) {
+					const action = item.data?.action;
+
+					if (action) {
+						event.preventDefault();
+
+						ACTIONS[action]?.(item.data);
+					}
+				},
+				symbolLeft: item.icon,
+			};
+
+			if (Array.isArray(item.items)) {
+				newItem.items = item.items.map(updateItem);
+			}
+
+			return newItem;
+		};
+
 		const dropdownActions = actions.map((action) => {
 			return {
 				...action,
-				items: action.items?.map((child) => {
-					return {
-						...child,
-						onClick(event) {
-							const action = child.data?.action;
-
-							if (action) {
-								event.preventDefault();
-
-								ACTIONS[action](child.data, namespace);
-							}
-						},
-						symbolLeft: child.icon,
-					};
-				}),
+				items: action.items?.map(updateItem),
 			};
 		});
 
 		return addSeparators(filterEmptyGroups(dropdownActions));
-	}, [actions, namespace]);
+	}, [actions]);
 
 	const layoutActions = useMemo(() => {
 		return quickActions.filter(
@@ -380,7 +389,11 @@ const MillerColumnsItem = ({
 			<ClayLayout.ContentCol className="pl-1" expand>
 				<h4 className="list-group-title text-truncate-inline">
 					{viewUrl ? (
-						<ClayLink className="text-truncate" href={viewUrl}>
+						<ClayLink
+							className="text-truncate"
+							href={viewUrl}
+							target={target}
+						>
 							{title}
 						</ClayLink>
 					) : (
@@ -415,7 +428,7 @@ const MillerColumnsItem = ({
 							<ClayButtonWithIcon
 								borderless
 								displayType="secondary"
-								small
+								size="sm"
 								symbol="plus"
 								title={Liferay.Language.get('add-child-page')}
 							/>
@@ -466,7 +479,7 @@ const MillerColumnsItem = ({
 							<ClayButtonWithIcon
 								borderless
 								displayType="secondary"
-								small
+								size="sm"
 								symbol="ellipsis-v"
 								title={Liferay.Language.get(
 									'open-page-options-menu'
@@ -478,7 +491,7 @@ const MillerColumnsItem = ({
 			)}
 
 			{hasChild && (
-				<ClayLayout.ContentCol className="miller-columns-item-child-indicator">
+				<ClayLayout.ContentCol className="miller-columns-item-child-indicator text-secondary">
 					<ClayIcon symbol={rtl ? 'caret-left' : 'caret-right'} />
 				</ClayLayout.ContentCol>
 			)}

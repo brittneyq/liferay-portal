@@ -18,9 +18,6 @@ import com.liferay.info.filter.InfoFilter;
 import com.liferay.info.pagination.Pagination;
 
 import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -30,31 +27,16 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface LayoutListRetrieverContext {
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 */
-	@Deprecated
-	public Optional<long[][]> getAssetCategoryIdsOptional();
+	public Map<String, String[]> getConfiguration();
 
-	public Optional<Map<String, String[]>> getConfigurationOptional();
+	public Object getContextObject();
 
-	public Optional<Object> getContextObjectOptional();
+	public <T> T getInfoFilter(Class<? extends InfoFilter> clazz);
 
-	public Optional<HttpServletRequest> getHttpServletRequestOptional();
+	public Map<String, InfoFilter> getInfoFilters();
 
-	public <T> Optional<T> getInfoFilterOptional(
-		Class<? extends InfoFilter> clazz);
+	public Pagination getPagination();
 
-	public Optional<Map<String, InfoFilter>> getInfoFiltersOptional();
-
-	public Optional<Pagination> getPaginationOptional();
-
-	public Optional<long[]> getSegmentsEntryIdsOptional();
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
-	 */
-	@Deprecated
-	public Optional<long[]> getSegmentsExperienceIdsOptional();
+	public long[] getSegmentsEntryIds();
 
 }

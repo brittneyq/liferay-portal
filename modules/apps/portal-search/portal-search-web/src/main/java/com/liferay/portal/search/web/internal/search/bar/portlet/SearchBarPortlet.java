@@ -14,10 +14,15 @@
 
 package com.liferay.portal.search.web.internal.search.bar.portlet;
 
+import com.liferay.fragment.processor.PortletRegistry;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.capabilities.SearchCapabilities;
 import com.liferay.portal.search.web.constants.SearchBarPortletKeys;
 import com.liferay.portal.search.web.internal.portlet.preferences.PortletPreferencesLookup;
 import com.liferay.portal.search.web.internal.search.bar.portlet.display.context.SearchBarPortletDisplayContext;
@@ -32,16 +37,16 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author André de Oliveira
  */
 @Component(
-	immediate = true,
 	property = {
-		"com.liferay.fragment.entry.processor.portlet.alias=search-bar",
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-search-bar",
 		"com.liferay.portlet.display-category=category.search",
@@ -73,24 +78,44 @@ public class SearchBarPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		SearchBarPortletDisplayContextFactory
+			searchBarPortletDisplayContextFactory = null;
+
+		try {
 			searchBarPortletDisplayContextFactory =
 				new SearchBarPortletDisplayContextFactory(
 					layoutLocalService, portal, renderRequest);
 
-		SearchBarPortletDisplayContext searchBarPortletDisplayContext =
-			searchBarPortletDisplayContextFactory.create(
-				portletPreferencesLookup, portletSharedSearchRequest,
-				searchBarPrecedenceHelper);
+			SearchBarPortletDisplayContext searchBarPortletDisplayContext =
+				searchBarPortletDisplayContextFactory.create(
+					portletPreferencesLookup, portletSharedSearchRequest,
+					searchBarPrecedenceHelper, searchCapabilities);
 
-		renderRequest.setAttribute(
-			WebKeys.PORTLET_DISPLAY_CONTEXT, searchBarPortletDisplayContext);
-
-		if (searchBarPortletDisplayContext.isRenderNothing()) {
 			renderRequest.setAttribute(
-				WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
+				WebKeys.PORTLET_DISPLAY_CONTEXT,
+				searchBarPortletDisplayContext);
+
+			if (searchBarPortletDisplayContext.isRenderNothing()) {
+				renderRequest.setAttribute(
+					WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
+			}
+		}
+		catch (ConfigurationException configurationException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(configurationException);
+			}
 		}
 
 		super.render(renderRequest, renderResponse);
+	}
+
+	@Activate
+	protected void activate() {
+		_portletRegistry.registerAlias(_ALIAS, SearchBarPortletKeys.SEARCH_BAR);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_portletRegistry.unregisterAlias(_ALIAS);
 	}
 
 	@Reference
@@ -107,5 +132,16 @@ public class SearchBarPortlet extends MVCPortlet {
 
 	@Reference
 	protected SearchBarPrecedenceHelper searchBarPrecedenceHelper;
+
+	@Reference
+	protected SearchCapabilities searchCapabilities;
+
+	private static final String _ALIAS = "search-bar";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SearchBarPortlet.class);
+
+	@Reference
+	private PortletRegistry _portletRegistry;
 
 }

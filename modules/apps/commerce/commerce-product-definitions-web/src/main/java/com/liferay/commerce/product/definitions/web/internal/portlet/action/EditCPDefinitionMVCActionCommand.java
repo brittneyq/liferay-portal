@@ -14,10 +14,10 @@
 
 package com.liferay.commerce.product.definitions.web.internal.portlet.action;
 
+import com.liferay.account.model.AccountGroupRel;
+import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.asset.kernel.exception.AssetCategoryException;
 import com.liferay.asset.kernel.exception.AssetTagException;
-import com.liferay.commerce.account.model.CommerceAccountGroupRel;
-import com.liferay.commerce.account.service.CommerceAccountGroupRelService;
 import com.liferay.commerce.exception.NoSuchCPDefinitionInventoryException;
 import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.product.configuration.CProductVersionConfiguration;
@@ -39,7 +39,6 @@ import com.liferay.commerce.product.servlet.taglib.ui.constants.CPDefinitionScre
 import com.liferay.commerce.service.CPDAvailabilityEstimateService;
 import com.liferay.commerce.service.CPDefinitionInventoryService;
 import com.liferay.friendly.url.exception.FriendlyURLLengthException;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -50,6 +49,7 @@ import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -63,7 +63,7 @@ import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -92,7 +92,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CPPortletKeys.CP_DEFINITIONS,
 		"mvc.command.name=/cp_definitions/edit_cp_definition"
@@ -298,22 +297,31 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, "subscriptionEnabled");
 		int subscriptionLength = ParamUtil.getInteger(
 			actionRequest, "subscriptionLength");
+
 		String subscriptionType = ParamUtil.getString(
 			actionRequest, "subscriptionType");
+
 		UnicodeProperties subscriptionTypeSettingsUnicodeProperties =
 			PropertiesParamUtil.getProperties(
-				actionRequest, "subscriptionTypeSettings--");
+				actionRequest,
+				"subscriptionTypeSettings--" + subscriptionType + "--");
+
 		long maxSubscriptionCycles = ParamUtil.getLong(
 			actionRequest, "maxSubscriptionCycles");
 		boolean deliverySubscriptionEnabled = ParamUtil.getBoolean(
 			actionRequest, "deliverySubscriptionEnabled");
 		int deliverySubscriptionLength = ParamUtil.getInteger(
 			actionRequest, "deliverySubscriptionLength");
+
 		String deliverySubscriptionType = ParamUtil.getString(
 			actionRequest, "deliverySubscriptionType");
+
 		UnicodeProperties deliverySubscriptionTypeSettingsUnicodeProperties =
 			PropertiesParamUtil.getProperties(
-				actionRequest, "deliverySubscriptionTypeSettings--");
+				actionRequest,
+				"deliverySubscriptionTypeSettings--" +
+					deliverySubscriptionType + "--");
+
 		long deliveryMaxSubscriptionCycles = ParamUtil.getLong(
 			actionRequest, "deliveryMaxSubscriptionCycles");
 
@@ -331,11 +339,10 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, long cpDefinitionId)
 		throws PortalException {
 
-		long commerceAccountGroupRelId = ParamUtil.getLong(
+		long accountGroupRelId = ParamUtil.getLong(
 			actionRequest, "commerceAccountGroupRelId");
 
-		_commerceAccountGroupRelService.deleteCommerceAccountGroupRel(
-			commerceAccountGroupRelId);
+		_accountGroupRelLocalService.deleteAccountGroupRel(accountGroupRelId);
 
 		_reindexCPDefinition(cpDefinitionId);
 	}
@@ -469,24 +476,22 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, CPDefinition cpDefinition)
 		throws Exception {
 
-		Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> nameMap = _localization.getLocalizationMap(
 			actionRequest, "nameMapAsXML");
 		Map<Locale, String> shortDescriptionMap =
-			LocalizationUtil.getLocalizationMap(
+			_localization.getLocalizationMap(
 				actionRequest, "shortDescriptionMapAsXML");
-		Map<Locale, String> descriptionMap =
-			LocalizationUtil.getLocalizationMap(
-				actionRequest, "descriptionMapAsXML");
-		Map<Locale, String> urlTitleMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> descriptionMap = _localization.getLocalizationMap(
+			actionRequest, "descriptionMapAsXML");
+		Map<Locale, String> urlTitleMap = _localization.getLocalizationMap(
 			actionRequest, "urlTitleMapAsXML");
-		Map<Locale, String> metaTitleMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> metaTitleMap = _localization.getLocalizationMap(
 			actionRequest, "metaTitleMapAsXML");
 		Map<Locale, String> metaDescriptionMap =
-			LocalizationUtil.getLocalizationMap(
+			_localization.getLocalizationMap(
 				actionRequest, "metaDescriptionMapAsXML");
-		Map<Locale, String> metaKeywordsMap =
-			LocalizationUtil.getLocalizationMap(
-				actionRequest, "metaKeywordsMapAsXML");
+		Map<Locale, String> metaKeywordsMap = _localization.getLocalizationMap(
+			actionRequest, "metaKeywordsMapAsXML");
 		boolean published = ParamUtil.getBoolean(actionRequest, "published");
 
 		int displayDateMonth = ParamUtil.getInteger(
@@ -654,20 +659,19 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 
 		// Commerce account group rels
 
-		long[] commerceAccountGroupIds = StringUtil.split(
+		long[] accountGroupIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "commerceAccountGroupIds"), 0L);
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			CommerceAccountGroupRel.class.getName(), actionRequest);
+			AccountGroupRel.class.getName(), actionRequest);
 
-		for (long commerceAccountGroupId : commerceAccountGroupIds) {
-			if (commerceAccountGroupId == 0) {
+		for (long accountGroupId : accountGroupIds) {
+			if (accountGroupId == 0) {
 				continue;
 			}
 
-			_commerceAccountGroupRelService.addCommerceAccountGroupRel(
-				CPDefinition.class.getName(), cpDefinitionId,
-				commerceAccountGroupId, serviceContext);
+			_accountGroupRelLocalService.addAccountGroupRel(
+				accountGroupId, CPDefinition.class.getName(), cpDefinitionId);
 		}
 
 		// Commerce channel rels
@@ -706,7 +710,7 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 			Propagation.REQUIRED, new Class<?>[] {Exception.class});
 
 	@Reference
-	private CommerceAccountGroupRelService _commerceAccountGroupRelService;
+	private AccountGroupRelLocalService _accountGroupRelLocalService;
 
 	@Reference
 	private CommerceCatalogService _commerceCatalogService;
@@ -725,6 +729,9 @@ public class EditCPDefinitionMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private CPDefinitionService _cpDefinitionService;
+
+	@Reference
+	private Localization _localization;
 
 	private class CPDefinitionCallable implements Callable<CPDefinition> {
 

@@ -21,7 +21,6 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
 import com.liferay.journal.internal.util.JournalUtil;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.util.JournalConverter;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -34,7 +33,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
-import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.model.uid.UIDFactory;
@@ -50,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lourdes Fernández Besada
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.journal.model.JournalArticle",
 	service = ModelDocumentContributor.class
 )
@@ -73,21 +70,19 @@ public class JournalArticleModelDocumentContributor
 
 		document.addKeywordSortable(Field.ARTICLE_ID, articleId);
 
-		Localization localization = LocalizationUtil.getLocalization();
-
 		DDMFormValues ddmFormValues = null;
 
 		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
-			_portal.getSiteGroupId(journalArticle.getGroupId()),
-			_portal.getClassNameId(JournalArticle.class),
-			journalArticle.getDDMStructureKey(), true);
+			journalArticle.getDDMStructureId());
 
 		if (ddmStructure != null) {
 			document.addKeyword(
 				Field.CLASS_TYPE_ID, ddmStructure.getStructureId());
 
-			ddmFormValues = _ddmFieldLocalService.getDDMFormValues(
-				ddmStructure.getDDMForm(), journalArticle.getId());
+			document.addKeyword(
+				"ddmStructureKey", ddmStructure.getStructureKey());
+
+			ddmFormValues = journalArticle.getDDMFormValues();
 
 			if (ddmFormValues != null) {
 				for (Locale contentAvailableLocale :
@@ -97,7 +92,7 @@ public class JournalArticleModelDocumentContributor
 						ddmStructure, ddmFormValues, contentAvailableLocale);
 
 					document.addText(
-						localization.getLocalizedName(
+						_localization.getLocalizedName(
 							Field.CONTENT,
 							LocaleUtil.toLanguageId(contentAvailableLocale)),
 						content);
@@ -109,7 +104,7 @@ public class JournalArticleModelDocumentContributor
 		}
 
 		String[] descriptionAvailableLanguageIds =
-			localization.getAvailableLanguageIds(
+			_localization.getAvailableLanguageIds(
 				journalArticle.getDescriptionMapAsXML());
 
 		for (String descriptionAvailableLanguageId :
@@ -119,7 +114,7 @@ public class JournalArticleModelDocumentContributor
 				journalArticle.getDescription(descriptionAvailableLanguageId));
 
 			document.addText(
-				localization.getLocalizedName(
+				_localization.getLocalizedName(
 					Field.DESCRIPTION, descriptionAvailableLanguageId),
 				description);
 		}
@@ -131,14 +126,14 @@ public class JournalArticleModelDocumentContributor
 		document.addKeyword(Field.LAYOUT_UUID, journalArticle.getLayoutUuid());
 
 		String[] titleAvailableLanguageIds =
-			localization.getAvailableLanguageIds(
+			_localization.getAvailableLanguageIds(
 				journalArticle.getTitleMapAsXML());
 
 		for (String titleAvailableLanguageId : titleAvailableLanguageIds) {
 			String title = journalArticle.getTitle(titleAvailableLanguageId);
 
 			document.addText(
-				localization.getLocalizedName(
+				_localization.getLocalizedName(
 					Field.TITLE, titleAvailableLanguageId),
 				title);
 		}
@@ -147,8 +142,6 @@ public class JournalArticleModelDocumentContributor
 			Field.TREE_PATH,
 			StringUtil.split(journalArticle.getTreePath(), CharPool.SLASH));
 		document.addKeyword(Field.VERSION, journalArticle.getVersion());
-		document.addKeyword(
-			"ddmStructureKey", journalArticle.getDDMStructureKey());
 		document.addKeyword(
 			"ddmTemplateKey", journalArticle.getDDMTemplateKey());
 
@@ -172,6 +165,8 @@ public class JournalArticleModelDocumentContributor
 		document.addKeyword(
 			"latest", JournalUtil.isLatestArticle(journalArticle));
 
+		document.addDate("reviewDate", journalArticle.getReviewDate());
+
 		// Scheduled listable articles should be visible in asset browser
 
 		if (journalArticle.isScheduled() && headListable) {
@@ -185,7 +180,7 @@ public class JournalArticleModelDocumentContributor
 		for (String titleAvailableLanguageId : titleAvailableLanguageIds) {
 			try {
 				document.addKeywordSortable(
-					localization.getLocalizedName(
+					_localization.getLocalizedName(
 						"urlTitle", titleAvailableLanguageId),
 					journalArticle.getUrlTitle(
 						LocaleUtil.fromLanguageId(titleAvailableLanguageId)));
@@ -204,6 +199,8 @@ public class JournalArticleModelDocumentContributor
 
 		document.addNumber(
 			"versionCount", GetterUtil.getDouble(journalArticle.getVersion()));
+
+		document.addKeyword(Field.UUID, journalArticle.getUuid());
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Document " + journalArticle + " indexed successfully");
@@ -226,10 +223,10 @@ public class JournalArticleModelDocumentContributor
 	private Html _html;
 
 	@Reference
-	private JournalConverter _journalConverter;
+	private Language _language;
 
 	@Reference
-	private Language _language;
+	private Localization _localization;
 
 	@Reference
 	private Portal _portal;

@@ -311,6 +311,15 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
+	public MBMessage getMBMessageByExternalReferenceCode(
+			String externalReferenceCode, long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbMessageService.getMBMessageByExternalReferenceCode(
+			externalReferenceCode, groupId);
+	}
+
+	@Override
 	public MBMessage getMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -410,10 +419,11 @@ public class MBMessageServiceWrapper
 	}
 
 	@Override
-	public void updateAnswer(long messageId, boolean answer, boolean cascade)
+	public MBMessage updateAnswer(
+			long messageId, boolean answer, boolean cascade)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_mbMessageService.updateAnswer(messageId, answer, cascade);
+		return _mbMessageService.updateAnswer(messageId, answer, cascade);
 	}
 
 	@Override

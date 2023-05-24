@@ -23,9 +23,11 @@ import com.liferay.adaptive.media.image.processor.AMImageAttribute;
 import com.liferay.adaptive.media.image.processor.AMImageProcessor;
 import com.liferay.adaptive.media.image.util.AMImageSerializer;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
@@ -36,9 +38,9 @@ import java.net.URI;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +57,14 @@ public class AMImageSerializerImplTest {
 	public static final LiferayUnitTestRule liferayUnitTestRule =
 		LiferayUnitTestRule.INSTANCE;
 
+	@Before
+	public void setUp() {
+		_amImageSerializer = new AMImageSerializerImpl();
+
+		ReflectionTestUtil.setFieldValue(
+			_amImageSerializer, "_jsonFactory", new JSONFactoryImpl());
+	}
+
 	@Test
 	public void testDeserialize() throws Exception {
 		JSONObject jsonObject = JSONUtil.put(
@@ -68,37 +78,33 @@ public class AMImageSerializerImplTest {
 			"uri", "http://localhost"
 		);
 
-		AMImageSerializer amImageSerializer = new AMImageSerializerImpl();
-
 		InputStream inputStream = Mockito.mock(InputStream.class);
 
 		AdaptiveMedia<AMImageProcessor> adaptiveMedia =
-			amImageSerializer.deserialize(
+			_amImageSerializer.deserialize(
 				jsonObject.toString(), () -> inputStream);
 
 		Assert.assertEquals(
 			new URI("http://localhost"), adaptiveMedia.getURI());
-
-		Optional<Integer> heightValueOptional = adaptiveMedia.getValueOptional(
-			AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT);
-
-		Assert.assertEquals("200", String.valueOf(heightValueOptional.get()));
-
-		Optional<Integer> widthValueOptional = adaptiveMedia.getValueOptional(
-			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH);
-
-		Assert.assertEquals("300", String.valueOf(widthValueOptional.get()));
+		Assert.assertEquals(
+			"200",
+			String.valueOf(
+				adaptiveMedia.getValue(
+					AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT)));
+		Assert.assertEquals(
+			"300",
+			String.valueOf(
+				adaptiveMedia.getValue(
+					AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH)));
 	}
 
 	@Test(expected = AMRuntimeException.class)
 	public void testDeserializeInvalidString() throws Exception {
 		String invalidString = RandomTestUtil.randomString();
 
-		AMImageSerializer amImageSerializer = new AMImageSerializerImpl();
-
 		InputStream inputStream = Mockito.mock(InputStream.class);
 
-		amImageSerializer.deserialize(invalidString, () -> inputStream);
+		_amImageSerializer.deserialize(invalidString, () -> inputStream);
 	}
 
 	@Test
@@ -109,26 +115,18 @@ public class AMImageSerializerImplTest {
 			"uri", "http://localhost"
 		);
 
-		AMImageSerializer amImageSerializer = new AMImageSerializerImpl();
-
 		InputStream inputStream = Mockito.mock(InputStream.class);
 
 		AdaptiveMedia<AMImageProcessor> adaptiveMedia =
-			amImageSerializer.deserialize(
+			_amImageSerializer.deserialize(
 				jsonObject.toString(), () -> inputStream);
 
 		Assert.assertEquals(
 			new URI("http://localhost"), adaptiveMedia.getURI());
-
-		Optional<Integer> heightValueOptional = adaptiveMedia.getValueOptional(
-			AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT);
-
-		Assert.assertFalse(heightValueOptional.isPresent());
-
-		Optional<Integer> widthValueOptional = adaptiveMedia.getValueOptional(
-			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH);
-
-		Assert.assertFalse(widthValueOptional.isPresent());
+		Assert.assertNull(
+			adaptiveMedia.getValue(AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT));
+		Assert.assertNull(
+			adaptiveMedia.getValue(AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH));
 	}
 
 	@Test
@@ -143,9 +141,7 @@ public class AMImageSerializerImplTest {
 				).build()),
 			new URI("http://localhost"));
 
-		AMImageSerializer amImageSerializer = new AMImageSerializerImpl();
-
-		String serialize = amImageSerializer.serialize(adaptiveMedia);
+		String serialize = _amImageSerializer.serialize(adaptiveMedia);
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(serialize);
 
@@ -181,9 +177,7 @@ public class AMImageSerializerImplTest {
 			() -> null, AMImageAttributeMapping.fromProperties(properties),
 			new URI("http://localhost"));
 
-		AMImageSerializer amImageSerializer = new AMImageSerializerImpl();
-
-		String serialize = amImageSerializer.serialize(adaptiveMedia);
+		String serialize = _amImageSerializer.serialize(adaptiveMedia);
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(serialize);
 
@@ -192,5 +186,7 @@ public class AMImageSerializerImplTest {
 
 		Assert.assertEquals(0, attributesJSONObject.length());
 	}
+
+	private AMImageSerializer _amImageSerializer;
 
 }

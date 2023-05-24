@@ -40,7 +40,7 @@ import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -62,7 +62,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_COUNTRY,
 		"mvc.command.name=/commerce_country/edit_commerce_country"
@@ -186,26 +185,28 @@ public class EditCommerceCountryMVCActionCommand extends BaseMVCActionCommand {
 	private void _updateChannels(ActionRequest actionRequest) throws Exception {
 		long countryId = ParamUtil.getLong(actionRequest, "countryId");
 
-		long[] commerceChannelIds = StringUtil.split(
-			ParamUtil.getString(actionRequest, "commerceChannelIds"), 0L);
+		_commerceChannelRelService.deleteCommerceChannelRels(
+			Country.class.getName(), countryId);
 
 		boolean channelFilterEnabled = ParamUtil.getBoolean(
 			actionRequest, "channelFilterEnabled");
 
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			CommerceChannelRel.class.getName(), actionRequest);
+		if (channelFilterEnabled) {
+			long[] commerceChannelIds = StringUtil.split(
+				ParamUtil.getString(actionRequest, "commerceChannelIds"), 0L);
 
-		_commerceChannelRelService.deleteCommerceChannelRels(
-			Country.class.getName(), countryId);
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(
+				CommerceChannelRel.class.getName(), actionRequest);
 
-		for (long commerceChannelId : commerceChannelIds) {
-			if (commerceChannelId == 0) {
-				continue;
+			for (long commerceChannelId : commerceChannelIds) {
+				if (commerceChannelId == 0) {
+					continue;
+				}
+
+				_commerceChannelRelService.addCommerceChannelRel(
+					Country.class.getName(), countryId, commerceChannelId,
+					serviceContext);
 			}
-
-			_commerceChannelRelService.addCommerceChannelRel(
-				Country.class.getName(), countryId, commerceChannelId,
-				serviceContext);
 		}
 
 		_countryService.updateGroupFilterEnabled(
@@ -222,7 +223,7 @@ public class EditCommerceCountryMVCActionCommand extends BaseMVCActionCommand {
 		boolean active = ParamUtil.getBoolean(actionRequest, "active");
 		boolean billingAllowed = ParamUtil.getBoolean(
 			actionRequest, "billingAllowed");
-		Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> nameMap = _localization.getLocalizationMap(
 			actionRequest, "name");
 		String number = ParamUtil.getString(actionRequest, "number");
 		double position = ParamUtil.getDouble(actionRequest, "position");
@@ -275,6 +276,9 @@ public class EditCommerceCountryMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private Localization _localization;
 
 	@Reference
 	private Portal _portal;

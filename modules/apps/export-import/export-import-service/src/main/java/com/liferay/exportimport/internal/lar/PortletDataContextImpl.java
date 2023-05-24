@@ -124,6 +124,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -421,11 +422,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 		String referenceKey = _getReferenceKey(classedModel);
 
 		if (missing) {
+			referenceElement.addAttribute("missing", Boolean.TRUE.toString());
+
 			if (_references.contains(referenceKey)) {
 				return referenceElement;
 			}
-
-			referenceElement.addAttribute("missing", Boolean.TRUE.toString());
 
 			if (!_missingReferences.contains(referenceKey)) {
 				_missingReferences.add(referenceKey);
@@ -456,6 +457,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 		}
 
 		return value;
+	}
+
+	@Override
+	public void addScopedPrimaryKeys(Collection<String> scopedPrimaryKeys) {
+		_scopedPrimaryKeys.addAll(scopedPrimaryKeys);
 	}
 
 	@Override
@@ -590,7 +596,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		Element element, ClassedModel classedModel) {
 
 		return createServiceContext(
-			element, null, classedModel, classedModel.getModelClass());
+			element, classedModel, classedModel.getModelClass());
 	}
 
 	@Override
@@ -603,8 +609,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		StagedModel stagedModel, Class<?> clazz) {
 
 		return createServiceContext(
-			getImportDataStagedModelElement(stagedModel),
-			ExportImportPathUtil.getModelPath(stagedModel), stagedModel, clazz);
+			getImportDataStagedModelElement(stagedModel), stagedModel, clazz);
 	}
 
 	@Override
@@ -612,7 +617,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		String path, ClassedModel classedModel) {
 
 		return createServiceContext(
-			null, path, classedModel, classedModel.getModelClass());
+			null, classedModel, classedModel.getModelClass());
 	}
 
 	@Override
@@ -1136,6 +1141,10 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return _rootPortletId;
 	}
 
+	public Set<String> getScopedPrimaryKeys() {
+		return _scopedPrimaryKeys;
+	}
+
 	@Override
 	public long getScopeGroupId() {
 		return _scopeGroupId;
@@ -1486,6 +1495,10 @@ public class PortletDataContextImpl implements PortletDataContext {
 	@Override
 	public void importPortletPermissions(String resourceName)
 		throws PortalException {
+
+		if (getGroupId() != getScopeGroupId()) {
+			return;
+		}
 
 		importPermissions(resourceName, getSourceGroupId(), getScopeGroupId());
 	}
@@ -1894,8 +1907,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	protected ServiceContext createServiceContext(
-		Element element, String path, ClassedModel classedModel,
-		Class<?> clazz) {
+		Element element, ClassedModel classedModel, Class<?> clazz) {
 
 		ServiceContext serviceContext = new ServiceContext();
 
@@ -1912,6 +1924,12 @@ public class PortletDataContextImpl implements PortletDataContext {
 			serviceContext.setCreateDate(auditedModel.getCreateDate());
 			serviceContext.setModifiedDate(auditedModel.getModifiedDate());
 			serviceContext.setUserId(getUserId(auditedModel));
+		}
+		else if (classedModel instanceof StagedModel) {
+			StagedModel stagedModel = (StagedModel)classedModel;
+
+			serviceContext.setCreateDate(stagedModel.getCreateDate());
+			serviceContext.setModifiedDate(stagedModel.getModifiedDate());
 		}
 
 		// Permissions
@@ -1959,7 +1977,10 @@ public class PortletDataContextImpl implements PortletDataContext {
 			expandoPath = element.attributeValue("expando-path");
 		}
 		else {
-			expandoPath = ExportImportPathUtil.getExpandoPath(path);
+			expandoPath = ExportImportPathUtil.getExpandoPath(
+				ExportImportPathUtil.getModelPath(
+					this, classedModel.getModelClassName(),
+					ExportImportClassedModelUtil.getClassPK(classedModel)));
 		}
 
 		if (Validator.isNotNull(expandoPath)) {
@@ -2627,9 +2648,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 
 		_xStream.omitField(HashMap.class, "cache_bitmask");
 
-		_xStreamConfigurators =
-			XStreamConfiguratorRegistryUtil.getXStreamConfigurators();
-
 		try {
 			Class<?> timestampClass = classLoader.loadClass(
 				"com.sybase.jdbc4.tds.SybTimestamp");
@@ -2649,13 +2667,16 @@ public class PortletDataContextImpl implements PortletDataContext {
 			new ConverterAdapter(new TimestampConverter()),
 			XStream.PRIORITY_VERY_HIGH);
 
-		if (_xStreamConfigurators.isEmpty()) {
+		List<XStreamConfigurator> xStreamConfigurators =
+			XStreamConfiguratorRegistryUtil.getXStreamConfigurators();
+
+		if (xStreamConfigurators.isEmpty()) {
 			return;
 		}
 
 		List<String> allowedTypeNames = new ArrayList<>();
 
-		for (XStreamConfigurator xStreamConfigurator : _xStreamConfigurators) {
+		for (XStreamConfigurator xStreamConfigurator : xStreamConfigurators) {
 			List<XStreamAlias> xStreamAliases =
 				xStreamConfigurator.getXStreamAliases();
 
@@ -2768,7 +2789,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private static ClassLoader _classLoader;
 	private static long _modifiedCount;
 	private static transient XStream _xStream;
-	private static Set<XStreamConfigurator> _xStreamConfigurators;
 
 	private final Map<String, long[]> _assetCategoryIdsMap = new HashMap<>();
 	private final Set<Long> _assetLinkIds = new HashSet<>();

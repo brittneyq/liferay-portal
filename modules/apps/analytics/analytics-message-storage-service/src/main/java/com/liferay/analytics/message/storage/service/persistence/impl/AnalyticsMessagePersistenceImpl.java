@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -47,7 +46,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -72,7 +70,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {AnalyticsMessagePersistence.class, BasePersistence.class})
+@Component(service = AnalyticsMessagePersistence.class)
 public class AnalyticsMessagePersistenceImpl
 	extends BasePersistenceImpl<AnalyticsMessage>
 	implements AnalyticsMessagePersistence {
@@ -192,7 +190,7 @@ public class AnalyticsMessagePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AnalyticsMessage>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AnalyticsMessage analyticsMessage : list) {
@@ -555,7 +553,7 @@ public class AnalyticsMessagePersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1002,7 +1000,7 @@ public class AnalyticsMessagePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<AnalyticsMessage>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1072,7 +1070,7 @@ public class AnalyticsMessagePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1156,30 +1154,14 @@ public class AnalyticsMessagePersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"companyId"},
 			false);
 
-		_setAnalyticsMessageUtilPersistence(this);
+		AnalyticsMessageUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setAnalyticsMessageUtilPersistence(null);
+		AnalyticsMessageUtil.setPersistence(null);
 
 		entityCache.removeCache(AnalyticsMessageImpl.class.getName());
-	}
-
-	private void _setAnalyticsMessageUtilPersistence(
-		AnalyticsMessagePersistence analyticsMessagePersistence) {
-
-		try {
-			Field field = AnalyticsMessageUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, analyticsMessagePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -1241,9 +1223,5 @@ public class AnalyticsMessagePersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private AnalyticsMessageModelArgumentsResolver
-		_analyticsMessageModelArgumentsResolver;
 
 }

@@ -28,6 +28,7 @@ import com.liferay.commerce.service.CommerceOrderItemService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
@@ -48,7 +49,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-commerce-cart-content-total",
@@ -67,7 +67,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.version=3.0"
 	},
-	service = {CommerceCartContentTotalPortlet.class, Portlet.class}
+	service = Portlet.class
 )
 public class CommerceCartContentTotalPortlet extends MVCPortlet {
 
@@ -83,8 +83,8 @@ public class CommerceCartContentTotalPortlet extends MVCPortlet {
 						_commerceChannelLocalService, _commerceOrderHttpHelper,
 						_commerceOrderItemService,
 						_commerceOrderPriceCalculation,
-						_commerceOrderValidatorRegistry, _cpDefinitionHelper,
-						_cpInstanceHelper,
+						_commerceOrderValidatorRegistry, _configurationProvider,
+						_cpDefinitionHelper, _cpInstanceHelper,
 						_commerceOrderModelResourcePermission,
 						_commerceProductPortletResourcePermission,
 						_portal.getHttpServletRequest(renderRequest), _portal);
@@ -128,6 +128,9 @@ public class CommerceCartContentTotalPortlet extends MVCPortlet {
 		target = "(resource.name=" + CPConstants.RESOURCE_NAME_PRODUCT + ")"
 	)
 	private PortletResourcePermission _commerceProductPortletResourcePermission;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private CPDefinitionHelper _cpDefinitionHelper;

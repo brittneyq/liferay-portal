@@ -62,15 +62,17 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 
 						TrashRenderer curTrashRenderer = curTrashHandler.getTrashRenderer(curTrashedModel.getTrashEntryClassPK());
 
-						PortletURL rowURL = PortletURLBuilder.createRenderURL(
+						String rowURL = PortletURLBuilder.createRenderURL(
 							renderResponse
 						).setMVCPath(
 							"/view_content.jsp"
+						).setRedirect(
+							currentURL
 						).setParameter(
 							"classNameId", PortalUtil.getClassNameId(curTrashRenderer.getClassName())
 						).setParameter(
 							"classPK", curTrashRenderer.getClassPK()
-						).buildPortletURL();
+						).buildString();
 						%>
 
 						<c:choose>
@@ -84,7 +86,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 									colspan="<%= 2 %>"
 								>
 									<h5>
-										<aui:a href="<%= rowURL.toString() %>">
+										<aui:a href="<%= rowURL %>">
 											<%= HtmlUtil.escape(curTrashRenderer.getTitle(locale)) %>
 										</aui:a>
 									</h5>
@@ -96,6 +98,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 
 								<liferay-ui:search-container-column-text>
 									<clay:dropdown-actions
+										aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 										dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(modelClassName, curTrashedModel.getTrashEntryClassPK()) %>"
 										propsTransformer="js/EntriesPropsTransformer"
 									/>
@@ -107,7 +110,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 										<liferay-ui:search-container-column-text>
 											<clay:vertical-card
 												propsTransformer="js/EntriesPropsTransformer"
-												verticalCard="<%= new TrashContentVerticalCard(curTrashedModel, curTrashRenderer, liferayPortletResponse, renderRequest, rowURL.toString()) %>"
+												verticalCard="<%= new TrashContentVerticalCard(curTrashedModel, curTrashRenderer, liferayPortletResponse, renderRequest, rowURL) %>"
 											/>
 										</liferay-ui:search-container-column-text>
 									</c:when>
@@ -119,7 +122,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 											%>
 
 											<clay:horizontal-card
-												horizontalCard="<%= new TrashContentHorizontalCard(curTrashedModel, curTrashRenderer, liferayPortletResponse, renderRequest, rowURL.toString()) %>"
+												horizontalCard="<%= new TrashContentHorizontalCard(curTrashedModel, curTrashRenderer, liferayPortletResponse, renderRequest, rowURL) %>"
 												propsTransformer="js/EntriesPropsTransformer"
 											/>
 										</liferay-ui:search-container-column-text>
@@ -131,13 +134,14 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 									name="name"
 									truncate="<%= true %>"
 								>
-									<aui:a href="<%= rowURL.toString() %>">
+									<aui:a href="<%= rowURL %>">
 										<%= HtmlUtil.escape(curTrashRenderer.getTitle(locale)) %>
 									</aui:a>
 								</liferay-ui:search-container-column-text>
 
 								<liferay-ui:search-container-column-text>
 									<clay:dropdown-actions
+										aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
 										dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(modelClassName, curTrashedModel.getTrashEntryClassPK()) %>"
 										propsTransformer="js/EntriesPropsTransformer"
 									/>
@@ -166,14 +170,14 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 		renderResponse.setTitle(trashRenderer.getTitle(locale));
 		%>
 
-		<clay:container-fluid>
-			<aui:fieldset-group markupView="lexicon">
-				<aui:fieldset>
-					<liferay-asset:asset-display
-						renderer="<%= trashRenderer %>"
-					/>
-				</aui:fieldset>
-			</aui:fieldset-group>
+		<clay:container-fluid
+			cssClass="container-view"
+		>
+			<clay:sheet>
+				<liferay-asset:asset-display
+					renderer="<%= trashRenderer %>"
+				/>
+			</clay:sheet>
 		</clay:container-fluid>
 	</c:otherwise>
 </c:choose>

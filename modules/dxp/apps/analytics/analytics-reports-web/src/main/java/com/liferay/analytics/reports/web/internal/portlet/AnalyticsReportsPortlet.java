@@ -19,7 +19,6 @@ import com.liferay.analytics.reports.info.item.ClassNameClassPKInfoItemIdentifie
 import com.liferay.analytics.reports.web.internal.constants.AnalyticsReportsPortletKeys;
 import com.liferay.analytics.reports.web.internal.display.context.AnalyticsReportsDisplayContext;
 import com.liferay.info.item.InfoItemReference;
-import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -31,8 +30,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
-import java.util.Optional;
-
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
@@ -41,7 +38,6 @@ import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -49,7 +45,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sarai Díaz
  */
 @Component(
-	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.display-category=category.hidden",
@@ -128,29 +123,27 @@ public class AnalyticsReportsPortlet extends MVCPortlet {
 	private InfoItemReference _getInfoItemReference(
 		HttpServletRequest httpServletRequest) {
 
-		return Optional.ofNullable(
+		InfoItemReference infoItemReference =
 			(InfoItemReference)httpServletRequest.getAttribute(
-				AnalyticsReportsWebKeys.INFO_ITEM_REFERENCE)
-		).orElseGet(
-			() -> Optional.ofNullable(
-				_getClassTypeName(httpServletRequest)
-			).filter(
-				Validator::isNotNull
-			).map(
-				classTypeName -> new InfoItemReference(
-					_getClassName(httpServletRequest),
-					new ClassNameClassPKInfoItemIdentifier(
-						classTypeName, _getClassPK(httpServletRequest)))
-			).orElseGet(
-				() -> new InfoItemReference(
-					_getClassName(httpServletRequest),
-					_getClassPK(httpServletRequest))
-			)
-		);
-	}
+				AnalyticsReportsWebKeys.ANALYTICS_INFO_ITEM_REFERENCE);
 
-	@Reference
-	private Language _language;
+		if (infoItemReference != null) {
+			return infoItemReference;
+		}
+
+		String classTypeName = _getClassTypeName(httpServletRequest);
+
+		if (Validator.isNull(classTypeName)) {
+			return new InfoItemReference(
+				_getClassName(httpServletRequest),
+				_getClassPK(httpServletRequest));
+		}
+
+		return new InfoItemReference(
+			_getClassName(httpServletRequest),
+			new ClassNameClassPKInfoItemIdentifier(
+				classTypeName, _getClassPK(httpServletRequest)));
+	}
 
 	@Reference
 	private Portal _portal;

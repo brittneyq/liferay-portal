@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		JSONStorageEntryModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.json.storage.model.impl.JSONStorageEntryImpl",
+		"table.name=JSONStorageEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class JSONStorageEntryModelArgumentsResolver
 	implements ArgumentsResolver {

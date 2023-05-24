@@ -44,6 +44,7 @@ export default withRouter(
 		const [tagsLoaded, setTagsLoaded] = useState(true);
 
 		const {data = {}} = useQuery(getThreadContentQuery, {
+			useCache: false,
 			variables: {
 				friendlyUrlPath: questionId,
 				siteKey: context.siteKey,
@@ -161,7 +162,7 @@ export default withRouter(
 											'update-your-question'
 									  )
 									: Liferay.Language.get(
-											'submit-for-publication'
+											'submit-for-workflow'
 									  )}
 							</ClayButton>
 

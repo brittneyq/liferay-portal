@@ -174,8 +174,8 @@ public class UserNotificationEventLocalServiceUtil {
 			userNotificationEventId);
 	}
 
-	public static void deleteUserNotificationEvent(
-		String uuid, long companyId) {
+	public static void deleteUserNotificationEvent(String uuid, long companyId)
+		throws PortalException {
 
 		getService().deleteUserNotificationEvent(uuid, companyId);
 	}
@@ -197,12 +197,15 @@ public class UserNotificationEventLocalServiceUtil {
 	}
 
 	public static void deleteUserNotificationEvents(
-		java.util.Collection<String> uuids, long companyId) {
+			java.util.Collection<String> uuids, long companyId)
+		throws PortalException {
 
 		getService().deleteUserNotificationEvents(uuids, companyId);
 	}
 
-	public static void deleteUserNotificationEvents(long userId) {
+	public static void deleteUserNotificationEvents(long userId)
+		throws PortalException {
+
 		getService().deleteUserNotificationEvents(userId);
 	}
 
@@ -775,6 +778,10 @@ public class UserNotificationEventLocalServiceUtil {
 
 	public static UserNotificationEventLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(UserNotificationEventLocalService service) {
+		_service = service;
 	}
 
 	private static volatile UserNotificationEventLocalService _service;

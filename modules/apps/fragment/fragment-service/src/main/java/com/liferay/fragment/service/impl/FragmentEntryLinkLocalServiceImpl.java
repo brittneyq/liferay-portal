@@ -18,7 +18,7 @@ import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.fragment.constants.FragmentEntryLinkConstants;
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.listener.FragmentEntryLinkListener;
-import com.liferay.fragment.listener.FragmentEntryLinkListenerTracker;
+import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
@@ -32,14 +32,13 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -60,6 +59,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -202,12 +202,51 @@ public class FragmentEntryLinkLocalServiceImpl
 	}
 
 	@Override
+	public void deleteFragmentEntryLinks(
+		long groupId, long plid, boolean deleted) {
+
+		List<FragmentEntryLink> fragmentEntryLinks =
+			fragmentEntryLinkPersistence.findByG_P_D(groupId, plid, deleted);
+
+		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
+			fragmentEntryLinkLocalService.deleteFragmentEntryLink(
+				fragmentEntryLink);
+		}
+	}
+
+	@Override
 	public void deleteFragmentEntryLinks(long[] fragmentEntryLinkIds)
 		throws PortalException {
 
 		for (long fragmentEntryLinkId : fragmentEntryLinkIds) {
 			fragmentEntryLinkLocalService.deleteFragmentEntryLink(
 				fragmentEntryLinkId);
+		}
+	}
+
+	@Override
+	public void deleteFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId) {
+
+		List<FragmentEntryLink> fragmentEntryLinks =
+			fragmentEntryLinkPersistence.findByFragmentEntryId(fragmentEntryId);
+
+		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
+			fragmentEntryLinkLocalService.deleteFragmentEntryLink(
+				fragmentEntryLink);
+		}
+	}
+
+	@Override
+	public void deleteFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId, boolean deleted) {
+
+		List<FragmentEntryLink> fragmentEntryLinks =
+			fragmentEntryLinkPersistence.findByF_D(fragmentEntryId, deleted);
+
+		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
+			fragmentEntryLinkLocalService.deleteFragmentEntryLink(
+				fragmentEntryLink);
 		}
 	}
 
@@ -316,8 +355,17 @@ public class FragmentEntryLinkLocalServiceImpl
 		int type, int start, int end,
 		OrderByComparator<FragmentEntryLink> orderByComparator) {
 
-		return fragmentEntryLinkFinder.findByType(
-			type, start, end, orderByComparator);
+		List<FragmentEntry> fragmentEntries =
+			_fragmentEntryPersistence.findByType(type);
+
+		if (fragmentEntries.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return fragmentEntryLinkPersistence.findByFragmentEntryId(
+			ListUtil.toLongArray(
+				fragmentEntries, FragmentEntry.FRAGMENT_ENTRY_ID_ACCESSOR),
+			start, end, orderByComparator);
 	}
 
 	/**
@@ -334,6 +382,20 @@ public class FragmentEntryLinkLocalServiceImpl
 	}
 
 	@Override
+	public List<FragmentEntryLink> getFragmentEntryLinks(
+		long companyId, String rendererKey) {
+
+		return fragmentEntryLinkPersistence.findByC_R(companyId, rendererKey);
+	}
+
+	@Override
+	public List<FragmentEntryLink> getFragmentEntryLinks(
+		long companyId, String[] rendererKeys) {
+
+		return fragmentEntryLinkPersistence.findByC_R(companyId, rendererKeys);
+	}
+
+	@Override
 	public List<FragmentEntryLink> getFragmentEntryLinks(String rendererKey) {
 		return fragmentEntryLinkPersistence.findByRendererKey(rendererKey);
 	}
@@ -344,6 +406,13 @@ public class FragmentEntryLinkLocalServiceImpl
 
 		return fragmentEntryLinkPersistence.findByFragmentEntryId(
 			fragmentEntryId);
+	}
+
+	@Override
+	public List<FragmentEntryLink> getFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId, boolean deleted) {
+
+		return fragmentEntryLinkPersistence.findByF_D(fragmentEntryId, deleted);
 	}
 
 	@Override
@@ -384,6 +453,14 @@ public class FragmentEntryLinkLocalServiceImpl
 
 		return fragmentEntryLinkPersistence.countByFragmentEntryId(
 			fragmentEntryId);
+	}
+
+	@Override
+	public int getFragmentEntryLinksCountByFragmentEntryId(
+		long fragmentEntryId, boolean deleted) {
+
+		return fragmentEntryLinkPersistence.countByF_D(
+			fragmentEntryId, deleted);
 	}
 
 	@Override
@@ -441,6 +518,19 @@ public class FragmentEntryLinkLocalServiceImpl
 				_log.debug(portalException);
 			}
 		}
+	}
+
+	@Override
+	public FragmentEntryLink updateDeleted(
+			long fragmentEntryLinkId, boolean deleted)
+		throws PortalException {
+
+		FragmentEntryLink fragmentEntryLink =
+			fragmentEntryLinkPersistence.findByPrimaryKey(fragmentEntryLinkId);
+
+		fragmentEntryLink.setDeleted(deleted);
+
+		return fragmentEntryLinkPersistence.update(fragmentEntryLink);
 	}
 
 	@Override
@@ -528,6 +618,100 @@ public class FragmentEntryLinkLocalServiceImpl
 	}
 
 	@Override
+	public void updateLatestChanges(
+			FragmentEntry fragmentEntry, FragmentEntryLink fragmentEntryLink)
+		throws PortalException {
+
+		long fragmentEntryId = fragmentEntryLink.getFragmentEntryId();
+
+		if ((fragmentEntryId != fragmentEntry.getFragmentEntryId()) ||
+			((fragmentEntryId == 0) &&
+			 !Objects.equals(
+				 fragmentEntry.getFragmentEntryKey(),
+				 fragmentEntryLink.getRendererKey()))) {
+
+			throw new UnsupportedOperationException(
+				"Unable to propagate fragment entry " + fragmentEntryId);
+		}
+
+		boolean modified = false;
+
+		// LPS-132154 Set configuration before processing the HTML
+
+		if (!Objects.equals(
+				fragmentEntryLink.getConfiguration(),
+				fragmentEntry.getConfiguration())) {
+
+			fragmentEntryLink.setConfiguration(
+				fragmentEntry.getConfiguration());
+
+			modified = true;
+		}
+
+		if (!Objects.equals(
+				fragmentEntryLink.getHtml(), fragmentEntry.getHtml())) {
+
+			fragmentEntryLink.setHtml(
+				_replaceResources(
+					fragmentEntry.getFragmentEntryId(),
+					fragmentEntry.getHtml()));
+
+			String defaultEditableValues = String.valueOf(
+				_fragmentEntryProcessorRegistry.
+					getDefaultEditableValuesJSONObject(
+						_getProcessedHTML(
+							fragmentEntryLink,
+							ServiceContextThreadLocal.getServiceContext()),
+						fragmentEntryLink.getConfiguration()));
+
+			String newEditableValues = _mergeEditableValues(
+				defaultEditableValues, fragmentEntryLink.getEditableValues());
+
+			fragmentEntryLink.setEditableValues(newEditableValues);
+
+			modified = true;
+		}
+
+		if (!Objects.equals(
+				fragmentEntryLink.getCss(), fragmentEntry.getCss())) {
+
+			fragmentEntryLink.setCss(fragmentEntry.getCss());
+
+			modified = true;
+		}
+
+		if (!Objects.equals(fragmentEntryLink.getJs(), fragmentEntry.getJs())) {
+			fragmentEntryLink.setJs(fragmentEntry.getJs());
+
+			modified = true;
+		}
+
+		if (fragmentEntryLink.getType() != fragmentEntry.getType()) {
+			fragmentEntryLink.setType(fragmentEntry.getType());
+
+			modified = true;
+		}
+
+		fragmentEntryLink.setLastPropagationDate(new Date());
+
+		fragmentEntryLink = fragmentEntryLinkPersistence.update(
+			fragmentEntryLink);
+
+		if (modified) {
+			_updateFragmentEntryLinkLayout(fragmentEntryLink);
+
+			for (FragmentEntryLinkListener fragmentEntryLinkListener :
+					_fragmentEntryLinkListenerRegistry.
+						getFragmentEntryLinkListeners()) {
+
+				fragmentEntryLinkListener.
+					onUpdateFragmentEntryLinkConfigurationValues(
+						fragmentEntryLink);
+			}
+		}
+	}
+
+	@Override
 	public void updateLatestChanges(long fragmentEntryLinkId)
 		throws PortalException {
 
@@ -538,46 +722,7 @@ public class FragmentEntryLinkLocalServiceImpl
 			_fragmentEntryPersistence.findByPrimaryKey(
 				fragmentEntryLink.getFragmentEntryId());
 
-		fragmentEntryLink.setHtml(
-			_replaceResources(
-				fragmentEntry.getFragmentEntryId(), fragmentEntry.getHtml()));
-
-		// LPS-132154 Set configuration before processing the HTML
-
-		fragmentEntryLink.setConfiguration(fragmentEntry.getConfiguration());
-
-		String defaultEditableValues = String.valueOf(
-			_fragmentEntryProcessorRegistry.getDefaultEditableValuesJSONObject(
-				_getProcessedHTML(
-					fragmentEntryLink,
-					ServiceContextThreadLocal.getServiceContext()),
-				fragmentEntryLink.getConfiguration()));
-
-		fragmentEntryLink.setCss(fragmentEntry.getCss());
-		fragmentEntryLink.setJs(fragmentEntry.getJs());
-
-		String newEditableValues = _mergeEditableValues(
-			defaultEditableValues, fragmentEntryLink.getEditableValues());
-
-		fragmentEntryLink.setEditableValues(newEditableValues);
-
-		fragmentEntryLink.setType(fragmentEntry.getType());
-		fragmentEntryLink.setLastPropagationDate(new Date());
-
-		fragmentEntryLink = fragmentEntryLinkPersistence.update(
-			fragmentEntryLink);
-
-		_updateFragmentEntryLinkLayout(fragmentEntryLink);
-
-		List<FragmentEntryLinkListener> fragmentEntryLinkListeners =
-			_fragmentEntryLinkListenerTracker.getFragmentEntryLinkListeners();
-
-		for (FragmentEntryLinkListener fragmentEntryLinkListener :
-				fragmentEntryLinkListeners) {
-
-			fragmentEntryLinkListener.
-				onUpdateFragmentEntryLinkConfigurationValues(fragmentEntryLink);
-		}
+		updateLatestChanges(fragmentEntry, fragmentEntryLink);
 	}
 
 	private String _getProcessedHTML(
@@ -610,10 +755,10 @@ public class FragmentEntryLinkLocalServiceImpl
 
 		try {
 			JSONObject defaultEditableValuesJSONObject =
-				JSONFactoryUtil.createJSONObject(defaultEditableValues);
+				_jsonFactory.createJSONObject(defaultEditableValues);
 
-			JSONObject editableValuesJSONObject =
-				JSONFactoryUtil.createJSONObject(editableValues);
+			JSONObject editableValuesJSONObject = _jsonFactory.createJSONObject(
+				editableValues);
 
 			for (String fragmentEntryProcessorKey :
 					_FRAGMENT_ENTRY_PROCESSOR_KEYS) {
@@ -695,11 +840,8 @@ public class FragmentEntryLinkLocalServiceImpl
 		Matcher matcher = _pattern.matcher(html);
 
 		while (matcher.find()) {
-			FileEntry fileEntry =
-				PortletFileRepositoryUtil.fetchPortletFileEntry(
-					fragmentEntry.getGroupId(),
-					fragmentCollection.getResourcesFolderId(),
-					matcher.group(1));
+			FileEntry fileEntry = fragmentCollection.getResource(
+				matcher.group(1));
 
 			String fileEntryURL = StringPool.BLANK;
 
@@ -747,13 +889,17 @@ public class FragmentEntryLinkLocalServiceImpl
 	private FragmentCollectionPersistence _fragmentCollectionPersistence;
 
 	@Reference
-	private FragmentEntryLinkListenerTracker _fragmentEntryLinkListenerTracker;
+	private FragmentEntryLinkListenerRegistry
+		_fragmentEntryLinkListenerRegistry;
 
 	@Reference
 	private FragmentEntryPersistence _fragmentEntryPersistence;
 
 	@Reference
 	private FragmentEntryProcessorRegistry _fragmentEntryProcessorRegistry;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

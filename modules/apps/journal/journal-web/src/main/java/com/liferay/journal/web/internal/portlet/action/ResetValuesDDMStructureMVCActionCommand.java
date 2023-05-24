@@ -19,7 +19,6 @@ import com.liferay.journal.service.JournalArticleService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -31,7 +30,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + JournalPortletKeys.JOURNAL,
 		"mvc.command.name=/journal/reset_values_ddm_structure"
@@ -48,17 +46,14 @@ public class ResetValuesDDMStructureMVCActionCommand
 
 		long groupId = ParamUtil.getLong(actionRequest, "groupId");
 		String articleId = ParamUtil.getString(actionRequest, "articleId");
-		String ddmStructureKey = ParamUtil.getString(
-			actionRequest, "ddmStructureKey");
+		long ddmStructureId = ParamUtil.getLong(
+			actionRequest, "ddmStructureId");
 
 		_journalArticleService.deleteArticleDefaultValues(
-			groupId, articleId, ddmStructureKey);
+			groupId, articleId, ddmStructureId);
 	}
 
 	@Reference
 	private JournalArticleService _journalArticleService;
-
-	@Reference
-	private Portal _portal;
 
 }

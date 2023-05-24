@@ -11,13 +11,13 @@
 
 <tbody>
 <tr>
-	<td>FILTER_BY_RESULTS_BAR_MESSAGE</td>
-	<td>//div[@class='align-items-center container-fluid d-flex justify-content-between p-0']//p[text()='resultMessage']</td>
+	<td>NODE_CHECKBOX</td>
+	<td>//*[contains(@class,'component-text') or contains(@class,'flex-grow')][normalize-space(text())='${key_nodeName}']/ancestor::div[contains(@class,'treeview')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>NODE_CHECKBOX</td>
-	<td>//div[contains(@class,'component-text')][normalize-space(text())='${key_nodeName}']/parent::div//preceding-sibling::div//input[@type='checkbox']</td>
+	<td>NODE_CHECKBOX_2</td>
+	<td>//*[contains(@class,'component-text') or contains(@class,'flex-grow')][contains(text(),'${key_nodeName}')]/ancestor::div[contains(@class,'treeview')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -37,17 +37,32 @@
 </tr>
 <tr>
 	<td>NODE_ITEM</td>
+	<td>//div[contains(@class,'card-horizontal')]//div[contains(@class,'card-body')][contains(.,'${key_nodeName}')] | //li[contains(@class,'treeview-item')]//*[contains(@class,'component-text') or contains(@class,'flex-grow')][normalize-space(text())='${key_nodeName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NODE_ITEM_2</td>
+	<td>//li[contains(@class,'treeview-item')]//*[contains(@class,'component-text') or contains(@class,'flex-grow')][contains(text(),'${key_nodeName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NODE_ITEM_BY_DATA_QA_ID</td>
+	<td>//div[contains(@data-qa-id,'${data_qa_id}')][@aria-expanded]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NODE_ITEM_SPAN</td>
 	<td>//div[contains(@class,'card-horizontal')]//div[contains(@class,'card-body')][contains(.,'${key_nodeName}')] | //li[contains(@class,'treeview-item')]//div[contains(@class,'component-text')][normalize-space(text())='${key_nodeName}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NODE_SELECTED</td>
-	<td>//div[contains(@class,'card-type-directory') and contains(@class,'selected')]/div[contains(@class,'card-horizontal')]//span[contains(.,'${key_nodeName}')] | //div[contains(@role,'treeitem') and contains(@class,'active')]//div[contains(@class,'component-text')][normalize-space(text())='${key_nodeName}']</td>
+	<td>//div[contains(@class,'card-type-directory') and contains(@class,'selected')]/div[contains(@class,'card-horizontal')]//span[contains(.,'${key_nodeName}')] | //div[contains(@role,'treeitem') and contains(@class,'active')]//*[contains(@class,'component-text') or contains(@class,'flex-grow')][normalize-space(text())='${key_nodeName}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NODE_UNSELECTED</td>
-	<td>//div[contains(@class,'card-type-directory') and not(contains(@class,'selected'))]/div[contains(@class,'card-horizontal')]//span[contains(.,'${key_nodeName}')] | //div[contains(@role,'treeitem') and not(contains(@class,'active'))]//div[contains(@class,'component-text')][normalize-space(text())='${key_nodeName}']</td>
+	<td>//div[contains(@class,'card-type-directory') and not(contains(@class,'selected'))]/div[contains(@class,'card-horizontal')]//span[contains(.,'${key_nodeName}')] | //div[contains(@role,'treeitem') and not(contains(@class,'active'))]//*[contains(@class,'component-text') or contains(@class,'flex-grow')][normalize-space(text())='${key_nodeName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -71,28 +86,33 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PAGE_STRUCTURE_TREE_NODE_BUTTON_WITH_ARIA_LABEL_INDEX</td>
+	<td>xpath=(//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')][@aria-selected])[${key_index}]//button[@aria-label='${ariaLabel}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_ACTIVE</td>
-	<td>//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')][contains(@class,'active')]/div[@role='button']</td>
+	<td>//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')][contains(@aria-selected,'true')]/div[@role='button']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_ACTIVE_INDEX</td>
-	<td>xpath=(//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')][contains(@class,'active')]/div[@role='button'])[${key_index}]</td>
+	<td>xpath=(//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')][contains(@aria-selected,'true')]/div[@role='button'])[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_COLLAPSED</td>
-	<td>//div[contains(@role,'treeitem') and contains(.,'${key_nodeName}')]//button[contains(@class,'treeview-node-list') and @aria-expanded='false']</td>
+	<td>//div[contains(@role,'treeitem') and contains(.,'${key_nodeName}')]//button[contains(@class,'component-expander') and @aria-expanded='false']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_HIDE_INDEX</td>
-	<td>xpath=(//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')]//button[contains(@class,'tree-node')][*[name()='svg'][contains(@class,'lexicon-icon-view') or contains(@class,'lexicon-icon-hidden')]])[${key_index}]</td>
+	<td>xpath=(//div[contains(@class,'page-structure__clay-tree-node') and contains(.,'${key_nodeName}')]//button[contains(@class,'tree-node')][*[name()='svg'][contains(@class,'lexicon-icon-view') or contains(@class,'lexicon-icon-hidden')]])[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_MASTER_INDEX</td>
-	<td>xpath=(//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}') and contains(@class,'page-editor__page-structure__tree-node--master-item')])[${key_index}]</td>
+	<td>xpath=(//div[contains(@class,'page-structure__clay-tree-node') and contains(.,'${key_nodeName}') and contains(@class,'page-editor__page-structure__clay-tree-node--master-item')])[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -107,12 +127,17 @@
 </tr>
 <tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_POSITION</td>
-	<td>xpath=(//div[contains(@role,'treeitem')])[${key_position}]//div[contains(@class,'list-item__node')][contains(.,'${key_nodeName}')]</td>
+	<td>xpath=(//div[contains(@role,'treeitem')])[${key_position}][contains(.,'${key_nodeName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGE_STRUCTURE_TREE_VERTICAL_ELLIPSIS</td>
-	<td>xpath=(//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')]//button[*[name()='svg'][contains(@class,'icon-ellipsis')]])[${key_index}]</td>
+	<td>xpath=(//div[contains(@class,'page-structure__clay-tree-node') and contains(.,'${key_nodeName}')]//button[*[name()='svg'][contains(@class,'icon-ellipsis')]])[${key_index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBNODE_ITEM</td>
+	<td>//div[contains(@class,'collapse show')]//li[contains(@class,'treeview-item')]//*[contains(@class,'component-text')][normalize-space(text())='${key_nodeName}']</td>
 	<td></td>
 </tr>
 </tbody>

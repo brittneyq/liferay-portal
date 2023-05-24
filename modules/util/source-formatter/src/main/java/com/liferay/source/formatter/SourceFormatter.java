@@ -55,6 +55,7 @@ import com.liferay.source.formatter.processor.JSSourceProcessor;
 import com.liferay.source.formatter.processor.JavaSourceProcessor;
 import com.liferay.source.formatter.processor.LDIFSourceProcessor;
 import com.liferay.source.formatter.processor.LFRBuildSourceProcessor;
+import com.liferay.source.formatter.processor.LibrarySourceProcessor;
 import com.liferay.source.formatter.processor.MarkdownSourceProcessor;
 import com.liferay.source.formatter.processor.PackageinfoSourceProcessor;
 import com.liferay.source.formatter.processor.PoshiSourceProcessor;
@@ -101,6 +102,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Hugo Huijser
@@ -134,6 +137,10 @@ public class SourceFormatter {
 					ArgumentsUtil.getString(
 						arguments, "source.check.names", null),
 					StringPool.COMMA));
+			sourceFormatterArgs.setCheckVulnerabilities(
+				ArgumentsUtil.getBoolean(
+					arguments, "check.vulnerabilities",
+					SourceFormatterArgs.CHECK_VULNERABILITIES));
 			sourceFormatterArgs.setFailOnAutoFix(
 				ArgumentsUtil.getBoolean(
 					arguments, "source.fail.on.auto.fix",
@@ -154,6 +161,10 @@ public class SourceFormatter {
 				ArgumentsUtil.getBoolean(
 					arguments, "format.local.changes",
 					SourceFormatterArgs.FORMAT_LOCAL_CHANGES));
+			sourceFormatterArgs.setUseCiGithubAccessToken(
+				ArgumentsUtil.getBoolean(
+					arguments, "use.ci.github.access.token",
+					SourceFormatterArgs.USE_CI_GITHUB_ACCESS_TOKEN));
 			sourceFormatterArgs.setGitWorkingBranchName(
 				ArgumentsUtil.getString(
 					arguments, "git.working.branch.name",
@@ -228,6 +239,10 @@ public class SourceFormatter {
 			sourceFormatterArgs.setIncludeSubrepositories(
 				includeSubrepositories);
 
+			sourceFormatterArgs.setJavaParserEnabled(
+				ArgumentsUtil.getBoolean(
+					arguments, "java.parser.enabled",
+					SourceFormatterArgs.JAVA_PARSER_ENABLED));
 			sourceFormatterArgs.setMaxLineLength(
 				ArgumentsUtil.getInteger(
 					arguments, "max.line.length",
@@ -320,6 +335,14 @@ public class SourceFormatter {
 			_validateCommitMessages();
 		}
 
+		if (!_sourceFormatterArgs.isJavaParserEnabled()) {
+			System.out.println(
+				StringBundler.concat(
+					"WARNING: Setting property 'java.parser.enabled' to ",
+					"'false' may prevent certain Java/JSP checks from working ",
+					"properly."));
+		}
+
 		_sourceProcessors.add(new BNDRunSourceProcessor());
 		_sourceProcessors.add(new BNDSourceProcessor());
 		_sourceProcessors.add(new CodeownersSourceProcessor());
@@ -338,6 +361,7 @@ public class SourceFormatter {
 		_sourceProcessors.add(new JSSourceProcessor());
 		_sourceProcessors.add(new LDIFSourceProcessor());
 		_sourceProcessors.add(new LFRBuildSourceProcessor());
+		_sourceProcessors.add(new LibrarySourceProcessor());
 		_sourceProcessors.add(new MarkdownSourceProcessor());
 		_sourceProcessors.add(new PackageinfoSourceProcessor());
 		_sourceProcessors.add(new PoshiSourceProcessor());
@@ -609,11 +633,11 @@ public class SourceFormatter {
 		}
 
 		if (_sourceFormatterArgs.isFormatCurrentBranch()) {
-			List<String> fileNames = GitUtil.getCurrentBranchFileNames(
-				_sourceFormatterArgs.getBaseDirName(),
-				_sourceFormatterArgs.getGitWorkingBranchName(), true);
-
 			if (!buildPropertiesAdded) {
+				List<String> fileNames = GitUtil.getCurrentBranchFileNames(
+					_sourceFormatterArgs.getBaseDirName(),
+					_sourceFormatterArgs.getGitWorkingBranchName(), true);
+
 				for (String fileName : fileNames) {
 					if (!buildPropertiesAdded &&
 						fileName.endsWith(".lfrbuild-portal")) {
@@ -642,32 +666,13 @@ public class SourceFormatter {
 						_sourceFormatterExcludes, false));
 			}
 
-			String currentBranchDiff = GitUtil.getCurrentBranchDiff(
-				_sourceFormatterArgs.getBaseDirName(),
-				_sourceFormatterArgs.getGitWorkingBranchName());
+			if (_isFeatureFlagChanges()) {
+				File portalDir = SourceFormatterUtil.getPortalDir(
+					_sourceFormatterArgs.getBaseDirName(),
+					_sourceFormatterArgs.getMaxLineLength());
 
-			for (String fileName : fileNames) {
-				if (!fileName.endsWith(".java")) {
-					continue;
-				}
-
-				for (String line : StringUtil.split(currentBranchDiff, "\n")) {
-					if ((line.startsWith(StringPool.MINUS) ||
-						 line.startsWith(StringPool.PLUS)) &&
-						line.contains("\"feature.flag.")) {
-
-						File portalDir = SourceFormatterUtil.getPortalDir(
-							_sourceFormatterArgs.getBaseDirName(),
-							_sourceFormatterArgs.getMaxLineLength());
-
-						dependentFileNames.add(
-							portalDir + "/portal-impl/src/portal.properties");
-
-						break;
-					}
-				}
-
-				break;
+				dependentFileNames.add(
+					portalDir + "/portal-impl/src/portal.properties");
 			}
 		}
 
@@ -769,7 +774,7 @@ public class SourceFormatter {
 		}
 
 		return StringBundler.concat(
-			"Found ", index - 1, " formatting issues:\n", sb.toString());
+			"Found ", index - 1, " formatting issues:\n", sb);
 	}
 
 	private List<ExcludeSyntaxPattern> _getExcludeSyntaxPatterns(
@@ -1003,7 +1008,6 @@ public class SourceFormatter {
 				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/.m2/**"),
 				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/.settings/**"),
 				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/bin/**"),
-				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/build/**"),
 				new ExcludeSyntaxPattern(ExcludeSyntax.GLOB, "**/classes/**"),
 				new ExcludeSyntaxPattern(
 					ExcludeSyntax.GLOB, "**/liferay-theme.json"),
@@ -1032,7 +1036,9 @@ public class SourceFormatter {
 					".*/tests?/.*/dependencies/.+\\.(jar|lar|war|zip)/.+"),
 				new ExcludeSyntaxPattern(
 					ExcludeSyntax.REGEX,
-					"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*")));
+					"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*"),
+				new ExcludeSyntaxPattern(
+					ExcludeSyntax.REGEX, "^((?!/src/).)*/build/.*")));
 
 		_portalSource = _containsDir("portal-impl");
 
@@ -1128,6 +1134,26 @@ public class SourceFormatter {
 		if (_sourceFormatterArgs.isShowDebugInformation()) {
 			DebugUtil.addCheckNames(CheckType.SOURCE_CHECK, _getCheckNames());
 		}
+	}
+
+	private boolean _isFeatureFlagChanges() throws Exception {
+		String currentBranchDiff = GitUtil.getCurrentBranchDiff(
+			_sourceFormatterArgs.getBaseDirName(),
+			_sourceFormatterArgs.getGitWorkingBranchName());
+
+		for (String line : StringUtil.split(currentBranchDiff, "\n")) {
+			if ((line.startsWith(StringPool.MINUS) ||
+				 line.startsWith(StringPool.PLUS)) &&
+				(line.contains("feature.flag") ||
+				 line.contains("FeatureFlagManagerUtil.isEnabled(") ||
+				 line.contains("Liferay-Site-Initializer-Feature-Flag:") ||
+				 line.contains("Liferay.FeatureFlags['"))) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private boolean _isFrontendPackageChanges(String recentChangesFileName) {
@@ -1278,9 +1304,27 @@ public class SourceFormatter {
 			commitMessages, _getPropertyValues("jira.project.keys"));
 		JIRAUtil.validateJIRATicketIds(commitMessages, 20);
 
-		JIRAUtil.validateJIRASecurityKeywords(
-			commitMessages,
-			_getPropertyValues("jira.security.vulnerability.keywords"), 20);
+		for (String commitMessage : commitMessages) {
+			for (String keyword :
+					_getPropertyValues("git.commit.vulnerability.keywords")) {
+
+				Pattern pattern = Pattern.compile(
+					"\\b_*(" + keyword + ")_*\\b", Pattern.CASE_INSENSITIVE);
+
+				Matcher matcher = pattern.matcher(commitMessage);
+
+				if (matcher.find()) {
+					throw new Exception(
+						StringBundler.concat(
+							"Found formatting issues:\n", "The commit '",
+							commitMessage, "' contains the word '", keyword,
+							"', which could reveal potential security ",
+							"vulnerablities. Please see the vulnerability ",
+							"keywords that are specified in source-formatter.",
+							"properties in the liferay-portal repository."));
+				}
+			}
+		}
 	}
 
 	private static final String _PROPERTIES_FILE_NAME =

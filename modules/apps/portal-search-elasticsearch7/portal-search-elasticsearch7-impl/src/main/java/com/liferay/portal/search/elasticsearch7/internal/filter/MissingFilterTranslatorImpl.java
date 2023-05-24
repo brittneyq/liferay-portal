@@ -25,13 +25,15 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = MissingFilterTranslator.class)
+@Component(service = MissingFilterTranslator.class)
 public class MissingFilterTranslatorImpl implements MissingFilterTranslator {
 
 	@Override
 	public QueryBuilder translate(MissingFilter missingFilter) {
-		BoolQueryBuilder missingQueryBuilder = new BoolQueryBuilder().mustNot(
-			new ExistsQueryBuilder(missingFilter.getField()));
+		BoolQueryBuilder missingQueryBuilder = new BoolQueryBuilder(
+		).mustNot(
+			new ExistsQueryBuilder(missingFilter.getField())
+		);
 
 		if (missingFilter.isExists() != null) {
 			missingFilter.setExists(missingFilter.isExists());

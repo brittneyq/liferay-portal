@@ -249,19 +249,29 @@ public class CPDefinitionLocalServiceWrapper
 	}
 
 	@Override
-	public CPDefinition copyCPDefinition(long cpDefinitionId)
+	public CPDefinition cloneCPDefinition(
+			long userId, long cpDefinitionId, long groupId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _cpDefinitionLocalService.copyCPDefinition(cpDefinitionId);
+		return _cpDefinitionLocalService.cloneCPDefinition(
+			userId, cpDefinitionId, groupId, serviceContext);
+	}
+
+	@Override
+	public CPDefinition copyCPDefinition(long sourceCPDefinitionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _cpDefinitionLocalService.copyCPDefinition(sourceCPDefinitionId);
 	}
 
 	@Override
 	public CPDefinition copyCPDefinition(
-			long cpDefinitionId, long groupId, int status)
+			long sourceCPDefinitionId, long groupId, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionLocalService.copyCPDefinition(
-			cpDefinitionId, groupId, status);
+			sourceCPDefinitionId, groupId, status);
 	}
 
 	/**
@@ -732,11 +742,29 @@ public class CPDefinitionLocalServiceWrapper
 	}
 
 	@Override
+	public CPDefinition getCProductCPDefinition(long cProductId, int version)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _cpDefinitionLocalService.getCProductCPDefinition(
+			cProductId, version);
+	}
+
+	@Override
 	public java.util.List<CPDefinition> getCProductCPDefinitions(
 		long cProductId, int status, int start, int end) {
 
 		return _cpDefinitionLocalService.getCProductCPDefinitions(
 			cProductId, status, start, end);
+	}
+
+	@Override
+	public java.util.List<CPDefinition> getCProductCPDefinitions(
+		long cProductId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<CPDefinition>
+			orderByComparator) {
+
+		return _cpDefinitionLocalService.getCProductCPDefinitions(
+			cProductId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -773,6 +801,14 @@ public class CPDefinitionLocalServiceWrapper
 		getIndexableActionableDynamicQuery() {
 
 		return _cpDefinitionLocalService.getIndexableActionableDynamicQuery();
+	}
+
+	@Override
+	public String getLayoutPageTemplateEntryUuid(
+		long groupId, long cpDefinitionId) {
+
+		return _cpDefinitionLocalService.getLayoutPageTemplateEntryUuid(
+			groupId, cpDefinitionId);
 	}
 
 	@Override
@@ -861,11 +897,13 @@ public class CPDefinitionLocalServiceWrapper
 	public com.liferay.portal.kernel.search.BaseModelSearchResult<CPDefinition>
 			searchCPDefinitions(
 				long companyId, long[] groupIds, String keywords, int status,
-				int start, int end, com.liferay.portal.kernel.search.Sort sort)
+				boolean ignoreCommerceAccountGroup, int start, int end,
+				com.liferay.portal.kernel.search.Sort sort)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionLocalService.searchCPDefinitions(
-			companyId, groupIds, keywords, status, start, end, sort);
+			companyId, groupIds, keywords, status, ignoreCommerceAccountGroup,
+			start, end, sort);
 	}
 
 	@Override
@@ -885,13 +923,13 @@ public class CPDefinitionLocalServiceWrapper
 	public com.liferay.portal.kernel.search.BaseModelSearchResult<CPDefinition>
 			searchCPDefinitionsByChannelGroupId(
 				long companyId, long[] groupIds, long commerceChannelGroupId,
-				String keywords, int status, int start, int end,
-				com.liferay.portal.kernel.search.Sort sort)
+				String keywords, int status, boolean ignoreCommerceAccountGroup,
+				int start, int end, com.liferay.portal.kernel.search.Sort sort)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _cpDefinitionLocalService.searchCPDefinitionsByChannelGroupId(
 			companyId, groupIds, commerceChannelGroupId, keywords, status,
-			start, end, sort);
+			ignoreCommerceAccountGroup, start, end, sort);
 	}
 
 	@Override

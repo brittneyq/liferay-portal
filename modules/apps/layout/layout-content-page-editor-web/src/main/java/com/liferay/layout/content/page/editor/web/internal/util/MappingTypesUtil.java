@@ -16,12 +16,15 @@ package com.liferay.layout.content.page.editor.web.internal.util;
 
 import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemFormVariation;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
 import com.liferay.info.localized.InfoLocalizedValue;
+import com.liferay.info.permission.provider.InfoPermissionProvider;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.Collection;
@@ -33,23 +36,69 @@ import java.util.Locale;
 public class MappingTypesUtil {
 
 	public static JSONArray getMappingTypesJSONArray(
-		InfoItemServiceTracker infoItemServiceTracker, String itemCapabilityKey,
-		long groupId, Locale locale) {
+		InfoItemServiceRegistry infoItemServiceRegistry,
+		String itemCapabilityKey, ThemeDisplay themeDisplay) {
 
 		JSONArray mappingTypesJSONArray = JSONFactoryUtil.createJSONArray();
 
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-169923")) {
+			for (InfoItemClassDetails infoItemClassDetails :
+					infoItemServiceRegistry.getInfoItemClassDetails(
+						themeDisplay.getScopeGroupId(), itemCapabilityKey,
+						themeDisplay.getPermissionChecker())) {
+
+				mappingTypesJSONArray.put(
+					JSONUtil.put(
+						"label",
+						infoItemClassDetails.getLabel(themeDisplay.getLocale())
+					).put(
+						"subtypes",
+						_getMappingFormVariationsJSONArray(
+							infoItemClassDetails, infoItemServiceRegistry,
+							themeDisplay.getScopeGroupId(),
+							themeDisplay.getLocale())
+					).put(
+						"value",
+						String.valueOf(
+							PortalUtil.getClassNameId(
+								infoItemClassDetails.getClassName()))
+					));
+			}
+
+			return mappingTypesJSONArray;
+		}
+
 		for (InfoItemClassDetails infoItemClassDetails :
-				infoItemServiceTracker.getInfoItemClassDetails(
+				infoItemServiceRegistry.getInfoItemClassDetails(
 					itemCapabilityKey)) {
 
 			mappingTypesJSONArray.put(
 				JSONUtil.put(
-					"label", infoItemClassDetails.getLabel(locale)
+					"isRestricted",
+					() -> {
+						InfoPermissionProvider infoPermissionProvider =
+							infoItemServiceRegistry.getFirstInfoItemService(
+								InfoPermissionProvider.class,
+								infoItemClassDetails.getClassName());
+
+						if ((infoPermissionProvider == null) ||
+							infoPermissionProvider.hasViewPermission(
+								themeDisplay.getPermissionChecker())) {
+
+							return false;
+						}
+
+						return true;
+					}
+				).put(
+					"label",
+					infoItemClassDetails.getLabel(themeDisplay.getLocale())
 				).put(
 					"subtypes",
 					_getMappingFormVariationsJSONArray(
-						infoItemClassDetails, infoItemServiceTracker, groupId,
-						locale)
+						infoItemClassDetails, infoItemServiceRegistry,
+						themeDisplay.getScopeGroupId(),
+						themeDisplay.getLocale())
 				).put(
 					"value",
 					String.valueOf(
@@ -63,13 +112,13 @@ public class MappingTypesUtil {
 
 	private static JSONArray _getMappingFormVariationsJSONArray(
 		InfoItemClassDetails infoItemClassDetails,
-		InfoItemServiceTracker infoItemServiceTracker, long groupId,
+		InfoItemServiceRegistry infoItemServiceRegistry, long groupId,
 		Locale locale) {
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
 		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
-			infoItemServiceTracker.getFirstInfoItemService(
+			infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemFormVariationsProvider.class,
 				infoItemClassDetails.getClassName());
 

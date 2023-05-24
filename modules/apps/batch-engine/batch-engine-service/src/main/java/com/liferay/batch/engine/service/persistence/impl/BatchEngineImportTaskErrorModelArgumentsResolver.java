@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		BatchEngineImportTaskErrorModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.batch.engine.model.impl.BatchEngineImportTaskErrorImpl",
+		"table.name=BatchEngineImportTaskError"
+	},
+	service = ArgumentsResolver.class
 )
 public class BatchEngineImportTaskErrorModelArgumentsResolver
 	implements ArgumentsResolver {

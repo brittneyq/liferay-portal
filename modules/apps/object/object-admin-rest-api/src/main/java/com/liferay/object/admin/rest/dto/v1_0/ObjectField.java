@@ -166,7 +166,7 @@ public class ObjectField implements Serializable {
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected BusinessType businessType;
 
-	@Schema
+	@Schema(deprecated = true)
 	public String getDefaultValue() {
 		return defaultValue;
 	}
@@ -190,6 +190,7 @@ public class ObjectField implements Serializable {
 		}
 	}
 
+	@Deprecated
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String defaultValue;
@@ -362,6 +363,39 @@ public class ObjectField implements Serializable {
 	protected Map<String, String> label;
 
 	@Schema
+	public String getListTypeDefinitionExternalReferenceCode() {
+		return listTypeDefinitionExternalReferenceCode;
+	}
+
+	public void setListTypeDefinitionExternalReferenceCode(
+		String listTypeDefinitionExternalReferenceCode) {
+
+		this.listTypeDefinitionExternalReferenceCode =
+			listTypeDefinitionExternalReferenceCode;
+	}
+
+	@JsonIgnore
+	public void setListTypeDefinitionExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			listTypeDefinitionExternalReferenceCodeUnsafeSupplier) {
+
+		try {
+			listTypeDefinitionExternalReferenceCode =
+				listTypeDefinitionExternalReferenceCodeUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String listTypeDefinitionExternalReferenceCode;
+
+	@Schema
 	public Long getListTypeDefinitionId() {
 		return listTypeDefinitionId;
 	}
@@ -388,6 +422,34 @@ public class ObjectField implements Serializable {
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Long listTypeDefinitionId;
+
+	@Schema
+	public Boolean getLocalized() {
+		return localized;
+	}
+
+	public void setLocalized(Boolean localized) {
+		this.localized = localized;
+	}
+
+	@JsonIgnore
+	public void setLocalized(
+		UnsafeSupplier<Boolean, Exception> localizedUnsafeSupplier) {
+
+		try {
+			localized = localizedUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean localized;
 
 	@Schema
 	public String getName() {
@@ -754,6 +816,20 @@ public class ObjectField implements Serializable {
 			sb.append(_toJSON(label));
 		}
 
+		if (listTypeDefinitionExternalReferenceCode != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"listTypeDefinitionExternalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(listTypeDefinitionExternalReferenceCode));
+
+			sb.append("\"");
+		}
+
 		if (listTypeDefinitionId != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -762,6 +838,16 @@ public class ObjectField implements Serializable {
 			sb.append("\"listTypeDefinitionId\": ");
 
 			sb.append(listTypeDefinitionId);
+		}
+
+		if (localized != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"localized\": ");
+
+			sb.append(localized);
 		}
 
 		if (name != null) {
@@ -873,9 +959,11 @@ public class ObjectField implements Serializable {
 
 		AGGREGATION("Aggregation"), ATTACHMENT("Attachment"),
 		BOOLEAN("Boolean"), DATE("Date"), DECIMAL("Decimal"),
-		INTEGER("Integer"), LONG_INTEGER("LongInteger"), LONG_TEXT("LongText"),
-		PICKLIST("Picklist"), PRECISION_DECIMAL("PrecisionDecimal"),
-		RELATIONSHIP("Relationship"), RICH_TEXT("RichText"), TEXT("Text");
+		ENCRYPTED("Encrypted"), FORMULA("Formula"), INTEGER("Integer"),
+		LONG_INTEGER("LongInteger"), LONG_TEXT("LongText"),
+		MULTISELECT_PICKLIST("MultiselectPicklist"), PICKLIST("Picklist"),
+		PRECISION_DECIMAL("PrecisionDecimal"), RELATIONSHIP("Relationship"),
+		RICH_TEXT("RichText"), TEXT("Text");
 
 		@JsonCreator
 		public static BusinessType create(String value) {

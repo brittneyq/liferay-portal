@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Localization;
-import com.liferay.portal.kernel.util.LocalizationUtil;
 
 import java.util.Locale;
 
@@ -44,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Bruno Basto
  */
-@Component(immediate = true, service = Indexer.class)
+@Component(service = Indexer.class)
 public class ClientExtensionEntryIndexer
 	extends BaseIndexer<ClientExtensionEntry> {
 
@@ -86,13 +85,11 @@ public class ClientExtensionEntryIndexer
 		Document document = getBaseModelDocument(
 			CLASS_NAME, clientExtensionEntry);
 
-		Localization localization = _getLocalization();
-
 		String[] nameAvailableLanguageIds =
-			localization.getAvailableLanguageIds(
+			_localization.getAvailableLanguageIds(
 				clientExtensionEntry.getName());
 
-		String nameDefaultLanguageId = LocalizationUtil.getDefaultLanguageId(
+		String nameDefaultLanguageId = _localization.getDefaultLanguageId(
 			clientExtensionEntry.getName());
 
 		for (String nameAvailableLanguageId : nameAvailableLanguageIds) {
@@ -103,7 +100,7 @@ public class ClientExtensionEntryIndexer
 			}
 
 			document.addText(
-				localization.getLocalizedName(
+				_localization.getLocalizedName(
 					Field.NAME, nameAvailableLanguageId),
 				name);
 		}
@@ -133,8 +130,8 @@ public class ClientExtensionEntryIndexer
 		throws Exception {
 
 		_indexWriterHelper.updateDocument(
-			getSearchEngineId(), clientExtensionEntry.getCompanyId(),
-			getDocument(clientExtensionEntry), isCommitImmediately());
+			clientExtensionEntry.getCompanyId(),
+			getDocument(clientExtensionEntry));
 	}
 
 	@Override
@@ -148,17 +145,6 @@ public class ClientExtensionEntryIndexer
 		long companyId = GetterUtil.getLong(ids[0]);
 
 		_reindexClientExtensionEntries(companyId);
-	}
-
-	private Localization _getLocalization() {
-
-		// See LPS-72507
-
-		if (_localization != null) {
-			return _localization;
-		}
-
-		return LocalizationUtil.getLocalization();
 	}
 
 	private void _reindexClientExtensionEntries(long companyId)
@@ -187,7 +173,6 @@ public class ClientExtensionEntryIndexer
 					}
 				}
 			});
-		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
 	}
@@ -201,6 +186,7 @@ public class ClientExtensionEntryIndexer
 	@Reference
 	private IndexWriterHelper _indexWriterHelper;
 
+	@Reference
 	private Localization _localization;
 
 }

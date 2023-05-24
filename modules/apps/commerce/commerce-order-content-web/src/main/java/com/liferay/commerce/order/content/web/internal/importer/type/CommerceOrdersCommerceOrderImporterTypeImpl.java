@@ -33,15 +33,17 @@ import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.commerce.service.CommerceOrderItemService;
 import com.liferay.commerce.service.CommerceOrderService;
+import com.liferay.frontend.data.set.provider.search.FDSPagination;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.io.IOException;
 
@@ -63,7 +65,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.commerce.configuration.CommerceOrderImporterTypeConfiguration",
-	enabled = false, immediate = true,
 	property = "commerce.order.importer.type.key=" + CommerceOrdersCommerceOrderImporterTypeImpl.KEY,
 	service = CommerceOrderImporterType.class
 )
@@ -95,7 +96,8 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 
 	@Override
 	public List<CommerceOrderImporterItem> getCommerceOrderImporterItems(
-			CommerceOrder commerceOrder, Object object)
+			CommerceOrder commerceOrder, FDSPagination fdsPagination,
+			Object object)
 		throws Exception {
 
 		if ((object == null) || !(object instanceof CommerceOrder)) {
@@ -110,9 +112,19 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 		return CommerceOrderImporterTypeUtil.getCommerceOrderImporterItems(
 			_commerceContextFactory, commerceOrder,
 			_getCommerceOrderImporterItemImpls(
-				commerceChannel.getGroupId(), selectedCommerceOrder),
+				commerceChannel.getGroupId(), selectedCommerceOrder,
+				fdsPagination),
 			_commerceOrderItemService, _commerceOrderPriceCalculation,
 			_commerceOrderService, _userLocalService);
+	}
+
+	public int getCommerceOrderImporterItemsCount(Object object)
+		throws Exception {
+
+		CommerceOrder commerceOrder = (CommerceOrder)object;
+
+		return _commerceOrderItemService.getCommerceOrderItemsCount(
+			commerceOrder.getCommerceOrderId());
 	}
 
 	@Override
@@ -166,11 +178,21 @@ public class CommerceOrdersCommerceOrderImporterTypeImpl
 	}
 
 	private CommerceOrderImporterItemImpl[] _getCommerceOrderImporterItemImpls(
-			long commerceChannelGroupId, CommerceOrder commerceOrder)
+			long commerceChannelGroupId, CommerceOrder commerceOrder,
+			FDSPagination fdsPagination)
 		throws Exception {
 
+		int start = QueryUtil.ALL_POS;
+		int end = QueryUtil.ALL_POS;
+
+		if (fdsPagination != null) {
+			start = fdsPagination.getStartPosition();
+			end = fdsPagination.getEndPosition();
+		}
+
 		return TransformUtil.transformToArray(
-			commerceOrder.getCommerceOrderItems(),
+			_commerceOrderItemService.getCommerceOrderItems(
+				commerceOrder.getCommerceOrderId(), start, end),
 			commerceOrderItem -> _toCommerceOrderImporterItemImpl(
 				commerceChannelGroupId, commerceOrderItem),
 			CommerceOrderImporterItemImpl.class);

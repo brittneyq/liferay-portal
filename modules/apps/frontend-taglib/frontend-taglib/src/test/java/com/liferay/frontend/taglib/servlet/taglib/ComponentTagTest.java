@@ -15,9 +15,11 @@
 package com.liferay.frontend.taglib.servlet.taglib;
 
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolvedPackageNameUtil;
-import com.liferay.frontend.js.module.launcher.JSModuleLauncher;
+import com.liferay.frontend.js.web.internal.servlet.taglib.aui.PortletDataRendererImpl;
 import com.liferay.frontend.taglib.internal.util.ServicesProvider;
 import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
 import com.liferay.portal.kernel.theme.PortletDisplay;
@@ -32,6 +34,8 @@ import com.liferay.portal.uuid.PortalUUIDImpl;
 
 import java.io.StringWriter;
 
+import java.lang.reflect.Field;
+
 import java.net.URL;
 
 import java.nio.file.Files;
@@ -42,12 +46,17 @@ import java.util.Collections;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockPageContext;
@@ -62,7 +71,7 @@ public class ComponentTagTest {
 		LiferayUnitTestRule.INSTANCE;
 
 	@BeforeClass
-	public static void setUpClass() {
+	public static void setUpClass() throws Exception {
 		ClassLoaderPool.register(
 			"ShieldedContainerClassLoader", PortalImpl.class.getClassLoader());
 
@@ -73,15 +82,29 @@ public class ComponentTagTest {
 		PortalUUIDUtil portalUUIDUtil = new PortalUUIDUtil();
 
 		portalUUIDUtil.setPortalUUID(new PortalUUIDImpl());
+
+		Field portletDataRendererField = ReflectionUtil.getDeclaredField(
+			ScriptData.class, "_portletDataRenderer");
+
+		portletDataRendererField.set(null, new PortletDataRendererImpl());
+
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		Mockito.when(
+			FrameworkUtil.getBundle(Mockito.any())
+		).thenReturn(
+			bundleContext.getBundle()
+		);
+	}
+
+	@After
+	public void tearDown() {
+		_servicesProviderMockedStatic.close();
+		_frameworkUtilMockedStatic.close();
 	}
 
 	@Test
 	public void testDoEndTag() throws Exception {
-		ServicesProvider servicesProvider = new ServicesProvider();
-
-		servicesProvider.setJsModuleLauncher(
-			Mockito.mock(JSModuleLauncher.class));
-
 		ComponentTag componentTag = new ComponentTag();
 
 		HttpServletRequest httpServletRequest = _getHttpServletRequest();
@@ -106,6 +129,8 @@ public class ComponentTagTest {
 			new MockHttpServletRequest();
 
 		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setPathThemeSpritemap("/clay/icons.svg");
 
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
@@ -156,5 +181,11 @@ public class ComponentTagTest {
 
 		return stringBuffer.toString();
 	}
+
+	private static final MockedStatic<FrameworkUtil>
+		_frameworkUtilMockedStatic = Mockito.mockStatic(FrameworkUtil.class);
+
+	private final MockedStatic<ServicesProvider> _servicesProviderMockedStatic =
+		Mockito.mockStatic(ServicesProvider.class);
 
 }

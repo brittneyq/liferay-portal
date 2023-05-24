@@ -37,7 +37,6 @@ import com.liferay.journal.web.internal.security.permission.resource.JournalArti
 import com.liferay.journal.web.internal.security.permission.resource.JournalFolderPermission;
 import com.liferay.journal.web.internal.util.JournalUtil;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -48,6 +47,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
@@ -99,10 +99,10 @@ public class JournalArticleActionDropdownItemsProvider {
 
 		_ffJournalAutoSaveDraftConfiguration =
 			(FFJournalAutoSaveDraftConfiguration)
-				_liferayPortletRequest.getAttribute(
+				liferayPortletRequest.getAttribute(
 					FFJournalAutoSaveDraftConfiguration.class.getName());
 		_journalWebConfiguration =
-			(JournalWebConfiguration)_liferayPortletRequest.getAttribute(
+			(JournalWebConfiguration)liferayPortletRequest.getAttribute(
 				JournalWebConfiguration.class.getName());
 		_httpServletRequest = PortalUtil.getHttpServletRequest(
 			liferayPortletRequest);
@@ -698,8 +698,7 @@ public class JournalArticleActionDropdownItemsProvider {
 			dropdownItem.putData("action", "preview");
 			dropdownItem.putData("previewURL", previewURL);
 			dropdownItem.putData(
-				"title",
-				HtmlUtil.escape(_article.getTitle(_themeDisplay.getLocale())));
+				"title", _article.getTitle(_themeDisplay.getLocale()));
 
 			String status = "preview";
 

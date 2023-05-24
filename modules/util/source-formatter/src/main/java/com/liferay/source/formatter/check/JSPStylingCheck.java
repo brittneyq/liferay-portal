@@ -34,6 +34,8 @@ public class JSPStylingCheck extends BaseStylingCheck {
 
 		content = _combineJavaSourceBlocks(fileName, content);
 
+		content = _formatJspExpressionTag(content);
+
 		content = _formatLineBreak(fileName, content);
 
 		content = _fixEmptyJavaSourceTag(content);
@@ -204,6 +206,20 @@ public class JSPStylingCheck extends BaseStylingCheck {
 		return content;
 	}
 
+	private String _formatJspExpressionTag(String content) {
+		Matcher matcher = _jspExpressionTagPattern.matcher(content);
+
+		while (matcher.find()) {
+			if (!ToolsUtil.isInsideQuotes(content, matcher.start())) {
+				return StringUtil.replaceFirst(
+					content, matcher.group(), "<portlet:namespace />",
+					matcher.start());
+			}
+		}
+
+		return content;
+	}
+
 	private String _formatLineBreak(String fileName, String content) {
 		Matcher matcher = _incorrectLineBreakPattern1.matcher(content);
 
@@ -235,7 +251,26 @@ public class JSPStylingCheck extends BaseStylingCheck {
 
 		matcher = _incorrectLineBreakPattern4.matcher(content);
 
-		return matcher.replaceAll("$1\n\t$2$4\n$2$5");
+		content = matcher.replaceAll("$1\n\t$2$4\n$2$5");
+
+		matcher = _incorrectLineBreakPattern5.matcher(content);
+
+		while (matcher.find()) {
+			String s = matcher.group(2);
+
+			if (!s.contains("%>") && !s.startsWith("HashMapBuilder.")) {
+				return StringUtil.replaceFirst(
+					content, matcher.group(),
+					StringBundler.concat(
+						matcher.group(1), " ",
+						StringUtil.trim(matcher.group(2)), " ",
+						matcher.group(3)));
+			}
+		}
+
+		matcher = _incorrectLineBreakPattern6.matcher(content);
+
+		return matcher.replaceAll("$1\n$2\t$3\n$2$4");
 	}
 
 	private static final Pattern _adjacentJavaBlocksPattern = Pattern.compile(
@@ -254,8 +289,14 @@ public class JSPStylingCheck extends BaseStylingCheck {
 		"<%= *\\S((?!%>).)*\n");
 	private static final Pattern _incorrectLineBreakPattern4 = Pattern.compile(
 		"(\n(\t*)<(\\w+)>)(<\\w+>.*)(</\\3>\n)");
+	private static final Pattern _incorrectLineBreakPattern5 = Pattern.compile(
+		"(<%=)\n\t*(.*)\n\t*(%>)");
+	private static final Pattern _incorrectLineBreakPattern6 = Pattern.compile(
+		"(\n(\t+)\\w+='<%=) (HashMapBuilder\\..*) *(%>')");
 	private static final Pattern _incorrectSingleLineJavaSourcePattern =
 		Pattern.compile("(\t*)(<% (.*) %>)\n");
+	private static final Pattern _jspExpressionTagPattern = Pattern.compile(
+		"<%= liferayPortletResponse\\.getNamespace\\(\\) %>");
 	private static final Pattern _portletNamespacePattern = Pattern.compile(
 		"=([\"'])<portlet:namespace />(\\w+\\(.*?)\\1");
 

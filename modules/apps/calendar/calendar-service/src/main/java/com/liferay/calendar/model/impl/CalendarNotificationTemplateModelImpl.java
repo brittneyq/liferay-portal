@@ -263,145 +263,162 @@ public class CalendarNotificationTemplateModelImpl
 	public Map<String, Function<CalendarNotificationTemplate, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<CalendarNotificationTemplate, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map
-		<String, Function<CalendarNotificationTemplate, Object>>
-			_attributeGetterFunctions;
-	private static final Map
-		<String, BiConsumer<CalendarNotificationTemplate, Object>>
-			_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<CalendarNotificationTemplate, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<CalendarNotificationTemplate, Object>>();
-		Map<String, BiConsumer<CalendarNotificationTemplate, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String, BiConsumer<CalendarNotificationTemplate, ?>>();
+		private static final Map
+			<String, Function<CalendarNotificationTemplate, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", CalendarNotificationTemplate::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
-				CalendarNotificationTemplate::setMvccVersion);
-		attributeGetterFunctions.put(
-			"ctCollectionId", CalendarNotificationTemplate::getCtCollectionId);
-		attributeSetterBiConsumers.put(
-			"ctCollectionId",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
-				CalendarNotificationTemplate::setCtCollectionId);
-		attributeGetterFunctions.put(
-			"uuid", CalendarNotificationTemplate::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setUuid);
-		attributeGetterFunctions.put(
-			"calendarNotificationTemplateId",
-			CalendarNotificationTemplate::getCalendarNotificationTemplateId);
-		attributeSetterBiConsumers.put(
-			"calendarNotificationTemplateId",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
+		static {
+			Map<String, Function<CalendarNotificationTemplate, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String,
+						 Function<CalendarNotificationTemplate, Object>>();
+
+			attributeGetterFunctions.put(
+				"mvccVersion", CalendarNotificationTemplate::getMvccVersion);
+			attributeGetterFunctions.put(
+				"ctCollectionId",
+				CalendarNotificationTemplate::getCtCollectionId);
+			attributeGetterFunctions.put(
+				"uuid", CalendarNotificationTemplate::getUuid);
+			attributeGetterFunctions.put(
+				"calendarNotificationTemplateId",
 				CalendarNotificationTemplate::
-					setCalendarNotificationTemplateId);
-		attributeGetterFunctions.put(
-			"groupId", CalendarNotificationTemplate::getGroupId);
-		attributeSetterBiConsumers.put(
-			"groupId",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
-				CalendarNotificationTemplate::setGroupId);
-		attributeGetterFunctions.put(
-			"companyId", CalendarNotificationTemplate::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
-				CalendarNotificationTemplate::setCompanyId);
-		attributeGetterFunctions.put(
-			"userId", CalendarNotificationTemplate::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
-				CalendarNotificationTemplate::setUserId);
-		attributeGetterFunctions.put(
-			"userName", CalendarNotificationTemplate::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setUserName);
-		attributeGetterFunctions.put(
-			"createDate", CalendarNotificationTemplate::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<CalendarNotificationTemplate, Date>)
-				CalendarNotificationTemplate::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate", CalendarNotificationTemplate::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<CalendarNotificationTemplate, Date>)
-				CalendarNotificationTemplate::setModifiedDate);
-		attributeGetterFunctions.put(
-			"calendarId", CalendarNotificationTemplate::getCalendarId);
-		attributeSetterBiConsumers.put(
-			"calendarId",
-			(BiConsumer<CalendarNotificationTemplate, Long>)
-				CalendarNotificationTemplate::setCalendarId);
-		attributeGetterFunctions.put(
-			"notificationType",
-			CalendarNotificationTemplate::getNotificationType);
-		attributeSetterBiConsumers.put(
-			"notificationType",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setNotificationType);
-		attributeGetterFunctions.put(
-			"notificationTypeSettings",
-			CalendarNotificationTemplate::getNotificationTypeSettings);
-		attributeSetterBiConsumers.put(
-			"notificationTypeSettings",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setNotificationTypeSettings);
-		attributeGetterFunctions.put(
-			"notificationTemplateType",
-			CalendarNotificationTemplate::getNotificationTemplateType);
-		attributeSetterBiConsumers.put(
-			"notificationTemplateType",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setNotificationTemplateType);
-		attributeGetterFunctions.put(
-			"subject", CalendarNotificationTemplate::getSubject);
-		attributeSetterBiConsumers.put(
-			"subject",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setSubject);
-		attributeGetterFunctions.put(
-			"body", CalendarNotificationTemplate::getBody);
-		attributeSetterBiConsumers.put(
-			"body",
-			(BiConsumer<CalendarNotificationTemplate, String>)
-				CalendarNotificationTemplate::setBody);
-		attributeGetterFunctions.put(
-			"lastPublishDate",
-			CalendarNotificationTemplate::getLastPublishDate);
-		attributeSetterBiConsumers.put(
-			"lastPublishDate",
-			(BiConsumer<CalendarNotificationTemplate, Date>)
-				CalendarNotificationTemplate::setLastPublishDate);
+					getCalendarNotificationTemplateId);
+			attributeGetterFunctions.put(
+				"groupId", CalendarNotificationTemplate::getGroupId);
+			attributeGetterFunctions.put(
+				"companyId", CalendarNotificationTemplate::getCompanyId);
+			attributeGetterFunctions.put(
+				"userId", CalendarNotificationTemplate::getUserId);
+			attributeGetterFunctions.put(
+				"userName", CalendarNotificationTemplate::getUserName);
+			attributeGetterFunctions.put(
+				"createDate", CalendarNotificationTemplate::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", CalendarNotificationTemplate::getModifiedDate);
+			attributeGetterFunctions.put(
+				"calendarId", CalendarNotificationTemplate::getCalendarId);
+			attributeGetterFunctions.put(
+				"notificationType",
+				CalendarNotificationTemplate::getNotificationType);
+			attributeGetterFunctions.put(
+				"notificationTypeSettings",
+				CalendarNotificationTemplate::getNotificationTypeSettings);
+			attributeGetterFunctions.put(
+				"notificationTemplateType",
+				CalendarNotificationTemplate::getNotificationTemplateType);
+			attributeGetterFunctions.put(
+				"subject", CalendarNotificationTemplate::getSubject);
+			attributeGetterFunctions.put(
+				"body", CalendarNotificationTemplate::getBody);
+			attributeGetterFunctions.put(
+				"lastPublishDate",
+				CalendarNotificationTemplate::getLastPublishDate);
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<CalendarNotificationTemplate, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<CalendarNotificationTemplate, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<CalendarNotificationTemplate, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"ctCollectionId",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::setCtCollectionId);
+			attributeSetterBiConsumers.put(
+				"uuid",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setUuid);
+			attributeSetterBiConsumers.put(
+				"calendarNotificationTemplateId",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::
+						setCalendarNotificationTemplateId);
+			attributeSetterBiConsumers.put(
+				"groupId",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::setGroupId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<CalendarNotificationTemplate, Date>)
+					CalendarNotificationTemplate::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<CalendarNotificationTemplate, Date>)
+					CalendarNotificationTemplate::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"calendarId",
+				(BiConsumer<CalendarNotificationTemplate, Long>)
+					CalendarNotificationTemplate::setCalendarId);
+			attributeSetterBiConsumers.put(
+				"notificationType",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setNotificationType);
+			attributeSetterBiConsumers.put(
+				"notificationTypeSettings",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setNotificationTypeSettings);
+			attributeSetterBiConsumers.put(
+				"notificationTemplateType",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setNotificationTemplateType);
+			attributeSetterBiConsumers.put(
+				"subject",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setSubject);
+			attributeSetterBiConsumers.put(
+				"body",
+				(BiConsumer<CalendarNotificationTemplate, String>)
+					CalendarNotificationTemplate::setBody);
+			attributeSetterBiConsumers.put(
+				"lastPublishDate",
+				(BiConsumer<CalendarNotificationTemplate, Date>)
+					CalendarNotificationTemplate::setLastPublishDate);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -1158,39 +1175,6 @@ public class CalendarNotificationTemplateModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<CalendarNotificationTemplate, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<CalendarNotificationTemplate, Object>>
-				entry : attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<CalendarNotificationTemplate, Object>
-				attributeGetterFunction = entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply(
-					(CalendarNotificationTemplate)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function
@@ -1224,7 +1208,8 @@ public class CalendarNotificationTemplateModelImpl
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<CalendarNotificationTemplate, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

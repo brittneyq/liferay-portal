@@ -19,19 +19,21 @@ import com.liferay.frontend.data.set.sample.web.internal.constants.FDSSampleWebK
 import com.liferay.frontend.data.set.sample.web.internal.display.context.FDSSampleDisplayContext;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
+import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
-import com.liferay.object.util.LocalizedMapUtil;
-import com.liferay.object.util.ObjectFieldUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -46,7 +48,6 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.ServletContext;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -54,7 +55,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Javier de Arcos
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.display-category=category.sample",
 		"com.liferay.portlet.instanceable=true",
@@ -81,22 +81,22 @@ public class FDSSamplePortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		try {
+			_generate(themeDisplay.getCompanyId());
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
 		renderRequest.setAttribute(
 			FDSSampleWebKeys.FDS_SAMPLE_DISPLAY_CONTEXT,
 			new FDSSampleDisplayContext(
 				_portal.getHttpServletRequest(renderRequest)));
 
 		super.doDispatch(renderRequest, renderResponse);
-	}
-
-	@Activate
-	protected void activate() {
-		try {
-			_generate(_portal.getDefaultCompanyId());
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-		}
 	}
 
 	private synchronized void _generate(long companyId) throws Exception {
@@ -117,7 +117,7 @@ public class FDSSamplePortlet extends MVCPortlet {
 
 		objectDefinition =
 			_objectDefinitionLocalService.addCustomObjectDefinition(
-				user.getUserId(),
+				user.getUserId(), false, false,
 				LocalizedMapUtil.getLocalizedMap("Frontend Data Set Sample"),
 				"FDSSample", "100", null,
 				LocalizedMapUtil.getLocalizedMap("Frontend Data Set Samples"),

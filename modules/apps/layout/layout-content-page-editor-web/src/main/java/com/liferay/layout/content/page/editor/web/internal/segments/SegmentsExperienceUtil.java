@@ -22,7 +22,6 @@ import com.liferay.layout.content.page.editor.web.internal.util.layout.structure
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalServiceUtil;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
-import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
@@ -41,9 +40,9 @@ import com.liferay.portal.kernel.service.PortletPreferenceValueLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.CopyLayoutThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -60,11 +59,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -82,10 +77,22 @@ public class SegmentsExperienceUtil {
 			long userId)
 		throws PortalException {
 
-		_copyLayoutData(
-			plid, commentManager, groupId, portletRegistry,
-			sourceSegmentsExperienceId, targetSegmentsExperienceId,
-			serviceContextFunction, userId);
+		boolean copyLayout = CopyLayoutThreadLocal.isCopyLayout();
+
+		try {
+			CopyLayoutThreadLocal.setCopyLayout(true);
+
+			_copyLayoutData(
+				plid, commentManager, groupId, portletRegistry,
+				sourceSegmentsExperienceId, targetSegmentsExperienceId,
+				serviceContextFunction, userId);
+		}
+		catch (Throwable throwable) {
+			throw new PortalException(throwable);
+		}
+		finally {
+			CopyLayoutThreadLocal.setCopyLayout(copyLayout);
+		}
 	}
 
 	public static Map<String, Object> getAvailableSegmentsExperiences(
@@ -106,9 +113,7 @@ public class SegmentsExperienceUtil {
 
 		List<SegmentsExperience> segmentsExperiences =
 			SegmentsExperienceServiceUtil.getSegmentsExperiences(
-				themeDisplay.getScopeGroupId(),
-				PortalUtil.getClassNameId(Layout.class.getName()),
-				themeDisplay.getPlid(), true);
+				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(), true);
 
 		for (SegmentsExperience segmentsExperience : segmentsExperiences) {
 			availableSegmentsExperiences.put(
@@ -162,15 +167,12 @@ public class SegmentsExperienceUtil {
 			ThemeDisplay themeDisplay, long segmentsExperienceId)
 		throws Exception {
 
-		Optional<SegmentsExperiment> segmentsExperimentOptional =
-			_getSegmentsExperimentOptional(themeDisplay, segmentsExperienceId);
+		SegmentsExperiment segmentsExperiment = _getSegmentsExperiment(
+			themeDisplay, segmentsExperienceId);
 
-		if (!segmentsExperimentOptional.isPresent()) {
+		if (segmentsExperiment == null) {
 			return null;
 		}
-
-		SegmentsExperiment segmentsExperiment =
-			segmentsExperimentOptional.get();
 
 		SegmentsExperimentConstants.Status status =
 			SegmentsExperimentConstants.Status.valueOf(
@@ -216,7 +218,7 @@ public class SegmentsExperienceUtil {
 				portletRegistry.getFragmentEntryLinkPortletIds(
 					fragmentEntryLink)) {
 
-			_getNewPortletPreferencesOptional(
+			_getNewPortletPreferences(
 				fragmentEntryLink.getNamespace(),
 				newFragmentEntryLink.getNamespace(), plid, portletId);
 		}
@@ -237,22 +239,19 @@ public class SegmentsExperienceUtil {
 			return editableValues;
 		}
 
-		return _getNewPortletPreferencesOptional(
+		PortletPreferences portletPreferences = _getNewPortletPreferences(
 			namespace, newNamespace, plid,
-			PortletIdCodec.encode(portletId, instanceId)
-		).map(
-			portletPreferences -> {
-				JSONObject newEditableValuesJSONObject =
-					editableValuesJSONObject.put(
-						"instanceId",
-						PortletIdCodec.decodeInstanceId(
-							portletPreferences.getPortletId()));
+			PortletIdCodec.encode(portletId, instanceId));
 
-				return newEditableValuesJSONObject.toString();
-			}
-		).orElse(
-			editableValues
-		);
+		if (portletPreferences == null) {
+			return editableValues;
+		}
+
+		JSONObject newEditableValuesJSONObject = editableValuesJSONObject.put(
+			"instanceId",
+			PortletIdCodec.decodeInstanceId(portletPreferences.getPortletId()));
+
+		return newEditableValuesJSONObject.toString();
 	}
 
 	private static String _getNewPortletId(
@@ -266,10 +265,8 @@ public class SegmentsExperienceUtil {
 		return StringUtil.replace(portletId, namespace, newNamespace);
 	}
 
-	private static Optional<PortletPreferences>
-		_getNewPortletPreferencesOptional(
-			String namespace, String newNamespace, long plid,
-			String portletId) {
+	private static PortletPreferences _getNewPortletPreferences(
+		String namespace, String newNamespace, long plid, String portletId) {
 
 		PortletPreferences portletPreferences =
 			PortletPreferencesLocalServiceUtil.fetchPortletPreferences(
@@ -277,13 +274,13 @@ public class SegmentsExperienceUtil {
 				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, plid, portletId);
 
 		if (portletPreferences == null) {
-			return Optional.empty();
+			return null;
 		}
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
 
 		if ((portlet == null) || portlet.isUndeployedPortlet()) {
-			return Optional.empty();
+			return null;
 		}
 
 		String newPortletId = _getNewPortletId(
@@ -299,25 +296,21 @@ public class SegmentsExperienceUtil {
 				portletPreferences);
 
 		if (existingPortletPreferences == null) {
-			return Optional.of(
-				PortletPreferencesLocalServiceUtil.addPortletPreferences(
-					portletPreferences.getCompanyId(),
-					portletPreferences.getOwnerId(),
-					portletPreferences.getOwnerType(), plid, newPortletId,
-					portlet,
-					PortletPreferencesFactoryUtil.toXML(jxPortletPreferences)));
+			return PortletPreferencesLocalServiceUtil.addPortletPreferences(
+				portletPreferences.getCompanyId(),
+				portletPreferences.getOwnerId(),
+				portletPreferences.getOwnerType(), plid, newPortletId, portlet,
+				PortletPreferencesFactoryUtil.toXML(jxPortletPreferences));
 		}
 
-		return Optional.of(
-			PortletPreferencesLocalServiceUtil.updatePreferences(
-				existingPortletPreferences.getOwnerId(),
-				existingPortletPreferences.getOwnerType(),
-				existingPortletPreferences.getPlid(),
-				existingPortletPreferences.getPortletId(),
-				jxPortletPreferences));
+		return PortletPreferencesLocalServiceUtil.updatePreferences(
+			existingPortletPreferences.getOwnerId(),
+			existingPortletPreferences.getOwnerType(),
+			existingPortletPreferences.getPlid(),
+			existingPortletPreferences.getPortletId(), jxPortletPreferences);
 	}
 
-	private static Optional<SegmentsExperiment> _getSegmentsExperimentOptional(
+	private static SegmentsExperiment _getSegmentsExperiment(
 			ThemeDisplay themeDisplay, long segmentsExperienceId)
 		throws Exception {
 
@@ -326,11 +319,10 @@ public class SegmentsExperienceUtil {
 		Layout layout = LayoutLocalServiceUtil.getLayout(
 			draftLayout.getClassPK());
 
-		return Optional.ofNullable(
-			SegmentsExperimentLocalServiceUtil.fetchSegmentsExperiment(
-				segmentsExperienceId, PortalUtil.getClassNameId(Layout.class),
-				layout.getPlid(),
-				SegmentsExperimentConstants.Status.getExclusiveStatusValues()));
+		return SegmentsExperimentLocalServiceUtil.fetchSegmentsExperiment(
+			segmentsExperienceId, PortalUtil.getClassNameId(Layout.class),
+			layout.getPlid(),
+			SegmentsExperimentConstants.Status.getExclusiveStatusValues());
 	}
 
 	private static String _getSegmentsExperimentURL(
@@ -357,35 +349,19 @@ public class SegmentsExperienceUtil {
 				getFragmentEntryLinksBySegmentsExperienceId(
 					groupId, sourceSegmentsExperienceId, plid);
 
-		Stream<FragmentEntryLink> stream = fragmentEntryLinks.stream();
-
-		Map<Long, FragmentEntryLink> fragmentEntryLinkMap = stream.collect(
-			Collectors.toMap(
-				FragmentEntryLink::getFragmentEntryLinkId,
-				fragmentEntryLink -> fragmentEntryLink));
-
-		for (LayoutStructureItem layoutStructureItem :
-				layoutStructure.getLayoutStructureItems()) {
-
-			if (!(layoutStructureItem instanceof
-					FragmentStyledLayoutStructureItem) ||
-				ListUtil.exists(
-					layoutStructure.getDeletedLayoutStructureItems(),
-					deletedLayoutStructureItem -> Objects.equals(
-						deletedLayoutStructureItem.getItemId(),
-						layoutStructureItem.getItemId()))) {
-
+		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
+			if (fragmentEntryLink.isDeleted()) {
 				continue;
 			}
 
 			FragmentStyledLayoutStructureItem
 				fragmentStyledLayoutStructureItem =
-					(FragmentStyledLayoutStructureItem)layoutStructureItem;
+					(FragmentStyledLayoutStructureItem)
+						layoutStructure.
+							getLayoutStructureItemByFragmentEntryLinkId(
+								fragmentEntryLink.getFragmentEntryLinkId());
 
-			FragmentEntryLink fragmentEntryLink = fragmentEntryLinkMap.get(
-				fragmentStyledLayoutStructureItem.getFragmentEntryLinkId());
-
-			if (fragmentEntryLink == null) {
+			if (fragmentStyledLayoutStructureItem == null) {
 				continue;
 			}
 

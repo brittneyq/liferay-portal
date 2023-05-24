@@ -22,10 +22,10 @@ import com.liferay.commerce.product.exception.NoSuchCPMeasurementUnitException;
 import com.liferay.commerce.product.model.CPMeasurementUnit;
 import com.liferay.commerce.product.service.CPMeasurementUnitService;
 import com.liferay.headless.commerce.admin.site.setting.dto.v1_0.MeasurementUnit;
-import com.liferay.headless.commerce.admin.site.setting.internal.dto.v1_0.converter.MeasurementUnitDTOConverter;
 import com.liferay.headless.commerce.admin.site.setting.resource.v1_0.MeasurementUnitResource;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
 import com.liferay.headless.commerce.core.util.ServiceContextHelper;
+import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Sort;
@@ -34,16 +34,14 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
@@ -56,7 +54,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Crescenzo Rega
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/measurement-unit.properties",
 	scope = ServiceScope.PROTOTYPE, service = MeasurementUnitResource.class
 )
@@ -120,7 +117,7 @@ public class MeasurementUnitResourceImpl
 			int type = _getType(measurementUnitType);
 
 			return Page.of(
-				TransformUtil.transform(
+				transform(
 					_cpMeasurementUnitService.getCPMeasurementUnitsByType(
 						contextCompany.getCompanyId(), type,
 						pagination.getStartPosition(),
@@ -145,7 +142,7 @@ public class MeasurementUnitResourceImpl
 		throws Exception {
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_cpMeasurementUnitService.getCPMeasurementUnits(
 					contextCompany.getCompanyId(),
 					pagination.getStartPosition(), pagination.getEndPosition(),
@@ -298,29 +295,25 @@ public class MeasurementUnitResourceImpl
 			return GetterUtil.getInteger(measurementUnitType);
 		}
 
-		if (CPMeasurementUnitConstants.typesMap.containsValue(
+		if (!CPMeasurementUnitConstants.typesMap.containsValue(
 				measurementUnitType)) {
 
-			Set<Map.Entry<Integer, String>> entries =
-				CPMeasurementUnitConstants.typesMap.entrySet();
-
-			Stream<Map.Entry<Integer, String>> stream = entries.stream();
-
-			return stream.filter(
-				type -> type.getValue(
-				).equalsIgnoreCase(
-					measurementUnitType
-				)
-			).map(
-				Map.Entry::getKey
-			).findFirst(
-			).orElse(
-				-1
-			);
+			throw new CPMeasurementUnitTypeException(
+				"Unable to find measurement unit with type " +
+					measurementUnitType);
 		}
 
-		throw new CPMeasurementUnitTypeException(
-			"Unable to find measurement unit with type " + measurementUnitType);
+		for (Map.Entry<Integer, String> entry :
+				CPMeasurementUnitConstants.typesMap.entrySet()) {
+
+			if (StringUtil.equalsIgnoreCase(
+					measurementUnitType, entry.getValue())) {
+
+				return entry.getKey();
+			}
+		}
+
+		return -1;
 	}
 
 	private MeasurementUnit _toMeasurementUnit(
@@ -384,8 +377,11 @@ public class MeasurementUnitResourceImpl
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@Reference
-	private MeasurementUnitDTOConverter _measurementUnitDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.site.setting.internal.dto.v1_0.converter.MeasurementUnitDTOConverter)"
+	)
+	private DTOConverter<CPMeasurementUnit, MeasurementUnit>
+		_measurementUnitDTOConverter;
 
 	@Reference
 	private ServiceContextHelper _serviceContextHelper;

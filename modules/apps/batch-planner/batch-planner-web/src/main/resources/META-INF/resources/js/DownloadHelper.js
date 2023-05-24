@@ -16,15 +16,41 @@ import {fetch} from 'frontend-js-web';
 
 import {HEADLESS_BATCH_ENGINE_URL} from './constants';
 
-const getEndpoint = (type, externalReferenceCode) => {
+export function getEndpoint(type, externalReferenceCode) {
+	externalReferenceCode = encodeURIComponent(externalReferenceCode);
 	const endpoints = {
 		batchPlannerTemplate: `/o/batch-planner/v1.0/plans/${externalReferenceCode}/template`,
 		errorReport: `${HEADLESS_BATCH_ENGINE_URL}/import-task/by-external-reference-code/${externalReferenceCode}/failed-items/report`,
+		exportFile: `${HEADLESS_BATCH_ENGINE_URL}/export-task/by-external-reference-code/${externalReferenceCode}/content`,
 		importFile: `${HEADLESS_BATCH_ENGINE_URL}/import-task/by-external-reference-code/${externalReferenceCode}/content`,
 	};
 
 	return endpoints[type];
-};
+}
+
+export function downloadFile({externalReferenceCode, fileName, fileType}) {
+	fetch(getEndpoint(fileType, externalReferenceCode)).then((response) => {
+		response.blob().then((blob) => {
+			const LinkElement = document.createElement('a');
+
+			LinkElement.href = URL.createObjectURL(blob);
+
+			if (fileName === undefined) {
+				fileName = response.headers
+					.get('Content-Disposition')
+					.match(/filename=(.*)/)[1];
+			}
+
+			LinkElement.download = fileName;
+
+			document.body.appendChild(LinkElement);
+
+			LinkElement.click();
+
+			LinkElement.remove();
+		});
+	});
+}
 
 export default function ({
 	HTMLElementId,
@@ -47,24 +73,6 @@ export default function ({
 						.value;
 			}
 
-			fetch(getEndpoint(type, externalReferenceCode)).then((response) => {
-				response.blob().then((blob) => {
-					const LinkElement = document.createElement('a');
-
-					LinkElement.href = URL.createObjectURL(blob);
-
-					const fileName = response.headers
-						.get('Content-Disposition')
-						.match(/filename=(.*)/)[1];
-
-					LinkElement.download = fileName;
-
-					document.body.appendChild(LinkElement);
-
-					LinkElement.click();
-
-					LinkElement.remove();
-				});
-			});
+			downloadFile({externalReferenceCode, fileType: type});
 		});
 }

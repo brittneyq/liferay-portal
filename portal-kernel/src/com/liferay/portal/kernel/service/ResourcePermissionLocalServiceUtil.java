@@ -204,11 +204,11 @@ public class ResourcePermissionLocalServiceUtil {
 	}
 
 	public static void copyModelResourcePermissions(
-			long companyId, String name, long oldPrimKey, long newPrimKey)
+			long companyId, String name, long sourcePrimKey, long targetPrimKey)
 		throws PortalException {
 
 		getService().copyModelResourcePermissions(
-			companyId, name, oldPrimKey, newPrimKey);
+			companyId, name, sourcePrimKey, targetPrimKey);
 	}
 
 	/**
@@ -1086,6 +1086,10 @@ public class ResourcePermissionLocalServiceUtil {
 
 	public static ResourcePermissionLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(ResourcePermissionLocalService service) {
+		_service = service;
 	}
 
 	private static volatile ResourcePermissionLocalService _service;

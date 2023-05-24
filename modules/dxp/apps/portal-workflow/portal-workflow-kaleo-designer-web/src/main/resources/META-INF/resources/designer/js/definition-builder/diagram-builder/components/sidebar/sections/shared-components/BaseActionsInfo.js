@@ -17,6 +17,7 @@ import React, {useEffect} from 'react';
 import {sortElements} from '../utils';
 
 const BaseActionsInfo = ({
+	actionTypes,
 	description,
 	executionType,
 	executionTypeInput,
@@ -26,14 +27,19 @@ const BaseActionsInfo = ({
 	placeholderScript,
 	priority,
 	script,
-	scriptLabel,
-	scriptLabelSecondary,
+	scriptLanguage,
+	selectedActionType,
 	setDescription,
 	setExecutionType,
 	setExecutionTypeOptions,
 	setName,
 	setPriority,
 	setScript,
+	setScriptLanguage,
+	setSelectedActionType,
+	setStatus,
+	status,
+	statuses,
 	updateActionInfo,
 }) => {
 	useEffect(() => {
@@ -69,6 +75,8 @@ const BaseActionsInfo = ({
 							name,
 							priority,
 							script,
+							scriptLanguage,
+							status,
 						})
 					}
 					onChange={({target}) => {
@@ -93,6 +101,8 @@ const BaseActionsInfo = ({
 							name,
 							priority,
 							script,
+							scriptLanguage,
+							status,
 						})
 					}
 					onChange={({target}) => {
@@ -102,33 +112,131 @@ const BaseActionsInfo = ({
 					value={description}
 				/>
 			</ClayForm.Group>
+
 			<ClayForm.Group>
-				<label htmlFor="script">
-					{`${scriptLabel} (${scriptLabelSecondary})`}
+				<label htmlFor="type">
+					{Liferay.Language.get('type')}
 
 					<span className="ml-1 mr-1 text-warning">*</span>
 				</label>
 
-				<ClayInput
-					component="textarea"
-					id="script"
-					onBlur={() =>
+				<ClaySelect
+					aria-label="Select"
+					className={!selectedActionType ? 'select-placeholder' : ''}
+					defaultValue={status ? 'update-status' : scriptLanguage}
+					id="type"
+					onChange={({target}) => {
+						setScriptLanguage(target.value);
+						setSelectedActionType(
+							actionTypes.find(
+								(item) => item.value === target.value
+							)
+						);
+						setScript('');
+					}}
+					onClickCapture={() =>
 						updateActionInfo({
 							description,
 							executionType,
 							name,
 							priority,
 							script,
+							scriptLanguage,
 						})
 					}
-					onChange={({target}) => {
-						setScript(target.value);
-					}}
-					placeholder={placeholderScript}
-					type="text"
-					value={script}
-				/>
+				>
+					<ClaySelect.Option
+						hidden
+						key={0}
+						label={Liferay.Language.get('select-a-script-type')}
+						value="select-a-script-type"
+					/>
+
+					{actionTypes &&
+						actionTypes.map((item, index) => (
+							<ClaySelect.Option
+								className="select-options"
+								key={index + 1}
+								label={item.label}
+								value={item.value}
+							/>
+						))}
+				</ClaySelect>
 			</ClayForm.Group>
+
+			{selectedActionType?.type === 'script' && (
+				<ClayForm.Group>
+					<label htmlFor="script">
+						{Liferay.Language.get('script')}
+
+						<span className="ml-1 mr-1 text-warning">*</span>
+					</label>
+
+					<ClayInput
+						component="textarea"
+						id="script"
+						onBlur={() =>
+							updateActionInfo({
+								description,
+								executionType,
+								name,
+								priority,
+								script,
+								scriptLanguage,
+								status: undefined,
+							})
+						}
+						onChange={({target}) => {
+							setScript(target.value);
+						}}
+						placeholder={placeholderScript}
+						type="text"
+						value={script}
+					/>
+				</ClayForm.Group>
+			)}
+
+			{selectedActionType?.type === 'status' && (
+				<ClayForm.Group>
+					<label htmlFor="update-status">Status</label>
+
+					<ClaySelect
+						aria-label="Select"
+						className={!status ? 'select-placeholder' : ''}
+						defaultValue={status}
+						id="update-status"
+						onChange={({target}) => {
+							setStatus(target.value);
+						}}
+						onClickCapture={() =>
+							updateActionInfo({
+								description,
+								executionType,
+								name,
+								priority,
+								scriptLanguage,
+								status,
+							})
+						}
+					>
+						<ClaySelect.Option
+							hidden
+							key={0}
+							label={Liferay.Language.get('choose-an-option')}
+							value="choose-an-option"
+						/>
+
+						{statuses &&
+							statuses.map((item) => (
+								<ClaySelect.Option
+									key={item.value}
+									label={item.label}
+									value={item.value}
+								/>
+							))}
+					</ClaySelect>
+				</ClayForm.Group>
+			)}
 
 			{typeof executionTypeInput !== 'undefined' && (
 				<ClayForm.Group>
@@ -150,6 +258,8 @@ const BaseActionsInfo = ({
 								name,
 								priority,
 								script,
+								scriptLanguage,
+								status,
 							})
 						}
 					>
@@ -195,6 +305,8 @@ const BaseActionsInfo = ({
 							name,
 							priority,
 							script,
+							scriptLanguage,
+							status,
 						});
 					}}
 					onChange={({target}) => {
@@ -211,17 +323,17 @@ const BaseActionsInfo = ({
 };
 
 BaseActionsInfo.propTypes = {
+	actionTypes: PropTypes.array,
 	description: PropTypes.string,
 	executionType: PropTypes.string,
 	executionTypeInput: PropTypes.func,
-	executionTypeOptions: PropTypes.object,
+	executionTypeOptions: PropTypes.array,
 	name: PropTypes.string,
 	placeholderName: PropTypes.string,
 	placeholderScript: PropTypes.string,
-	priority: PropTypes.number,
+	priority: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	script: PropTypes.string,
-	scriptLabel: PropTypes.string,
-	scriptLabelSecondary: PropTypes.string,
+	scriptLanguage: PropTypes.string,
 	selectedItem: PropTypes.object,
 	setDescription: PropTypes.func,
 	setExecutionType: PropTypes.func,
@@ -229,6 +341,7 @@ BaseActionsInfo.propTypes = {
 	setName: PropTypes.func,
 	setPriority: PropTypes.func,
 	setScript: PropTypes.func,
+	setScriptLanguage: PropTypes.func,
 	updateActionInfo: PropTypes.func,
 };
 

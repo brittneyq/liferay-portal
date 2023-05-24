@@ -192,7 +192,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 		AssetVocabulary vocabulary =
 			assetVocabularyLocalService.
 				getAssetVocabularyByExternalReferenceCode(
-					groupId, externalReferenceCode);
+					externalReferenceCode, groupId);
 
 		AssetVocabularyPermission.check(
 			getPermissionChecker(), vocabulary.getVocabularyId(),
@@ -285,7 +285,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 	public List<AssetVocabulary> getGroupVocabularies(
 		long groupId, int visibilityType) {
 
-		return assetVocabularyLocalService.getGroupVocabularies(
+		return assetVocabularyPersistence.filterFindByG_V(
 			groupId, visibilityType);
 	}
 
@@ -316,7 +316,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 	public List<AssetVocabulary> getGroupVocabularies(
 		long[] groupIds, int[] visibilityTypes) {
 
-		return assetVocabularyLocalService.getGroupVocabularies(
+		return assetVocabularyPersistence.filterFindByG_V(
 			groupIds, visibilityTypes);
 	}
 

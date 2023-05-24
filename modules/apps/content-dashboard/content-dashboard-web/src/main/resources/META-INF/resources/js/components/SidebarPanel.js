@@ -16,7 +16,14 @@ import ClayAlert from '@clayui/alert';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
 import {fetch} from 'frontend-js-web';
-import React, {useEffect, useImperativeHandle, useReducer, useRef} from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useReducer,
+	useRef,
+	useState,
+} from 'react';
 
 import {CLOSE_PANEL_VALUE} from '../utils/constants';
 import Sidebar from './Sidebar';
@@ -62,6 +69,7 @@ const dataReducer = (state, action) => {
 			return {
 				...state,
 				isOpen: true,
+				loading: true,
 			};
 
 		case 'SET_ERROR':
@@ -97,22 +105,31 @@ const dataReducer = (state, action) => {
 
 const SidebarPanel = React.forwardRef(
 	(
-		{fetchURL, onClose, singlePageApplicationEnabled, viewComponent: View},
+		{
+			fetchURL: initialFetchUrl,
+			onClose,
+			singlePageApplicationEnabled,
+			viewComponent: View,
+		},
 		ref
 	) => {
+		const [fetchURL, setFetchURL] = useState(initialFetchUrl);
 		const CurrentViewRef = useRef(View);
 
 		const isMounted = useIsMounted();
 
 		const [state, dispatch] = useReducer(dataReducer, initialState);
 
-		const safeDispatch = (action) => {
-			if (isMounted()) {
-				dispatch(action);
-			}
-		};
+		const safeDispatch = useCallback(
+			(action) => {
+				if (isMounted()) {
+					dispatch(action);
+				}
+			},
+			[isMounted]
+		);
 
-		const getData = (fetchURL) => {
+		const getData = useCallback(() => {
 			safeDispatch({type: 'LOAD_DATA'});
 
 			fetch(fetchURL, {
@@ -139,15 +156,14 @@ const SidebarPanel = React.forwardRef(
 						type: 'SET_ERROR',
 					});
 				});
-		};
+		}, [fetchURL, safeDispatch]);
 
 		const onCloseHandle = () =>
 			onClose ? onClose() : safeDispatch({type: 'CLOSE_SIDEBAR'});
 
 		useEffect(() => {
-			getData(fetchURL);
-			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [fetchURL]);
+			getData();
+		}, [getData]);
 
 		useEffect(() => {
 			CurrentViewRef.current = View;
@@ -181,15 +197,15 @@ const SidebarPanel = React.forwardRef(
 			open: (fetchURL, View) => {
 				CurrentViewRef.current = View;
 
-				getData(fetchURL);
-
 				safeDispatch({type: 'OPEN_SIDEBAR'});
+
+				setFetchURL(fetchURL);
 			},
 		}));
 
 		return (
 			<Sidebar
-				fetchData={() => getData(fetchURL)}
+				fetchData={getData}
 				onClose={onCloseHandle}
 				open={state.isOpen}
 			>
@@ -206,7 +222,14 @@ const SidebarPanel = React.forwardRef(
 						</ClayAlert>
 					</>
 				) : (
-					state?.data && <CurrentViewRef.current {...state.data} />
+					state?.data && (
+						<CurrentViewRef.current
+							{...state.data}
+							singlePageApplicationEnabled={
+								singlePageApplicationEnabled
+							}
+						/>
+					)
 				)}
 			</Sidebar>
 		);

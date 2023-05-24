@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 
 import java.util.Locale;
@@ -33,7 +33,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alejandro Tardín
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.depot.model.DepotEntry",
 	service = ModelDocumentContributor.class
 )
@@ -55,11 +54,10 @@ public class DepotEntryModelDocumentContributor
 			String languageId = LocaleUtil.toLanguageId(locale);
 
 			document.addText(
-				LocalizationUtil.getLocalizedName(
-					Field.DESCRIPTION, languageId),
+				_localization.getLocalizedName(Field.DESCRIPTION, languageId),
 				group.getDescription(locale));
 			document.addText(
-				LocalizationUtil.getLocalizedName(Field.NAME, languageId),
+				_localization.getLocalizedName(Field.NAME, languageId),
 				group.getName(locale));
 		}
 	}
@@ -69,5 +67,8 @@ public class DepotEntryModelDocumentContributor
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private Localization _localization;
 
 }

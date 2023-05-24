@@ -229,104 +229,127 @@ public class CommerceDiscountCommerceAccountGroupRelModelImpl
 		<String, Function<CommerceDiscountCommerceAccountGroupRel, Object>>
 			getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map
 		<String, BiConsumer<CommerceDiscountCommerceAccountGroupRel, Object>>
 			getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map
-		<String, Function<CommerceDiscountCommerceAccountGroupRel, Object>>
-			_attributeGetterFunctions;
-	private static final Map
-		<String, BiConsumer<CommerceDiscountCommerceAccountGroupRel, Object>>
-			_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<CommerceDiscountCommerceAccountGroupRel, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String,
-					 Function
-						 <CommerceDiscountCommerceAccountGroupRel, Object>>();
-		Map<String, BiConsumer<CommerceDiscountCommerceAccountGroupRel, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String,
-					 BiConsumer<CommerceDiscountCommerceAccountGroupRel, ?>>();
+		private static final Map
+			<String, Function<CommerceDiscountCommerceAccountGroupRel, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion",
-			CommerceDiscountCommerceAccountGroupRel::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
-				CommerceDiscountCommerceAccountGroupRel::setMvccVersion);
-		attributeGetterFunctions.put(
-			"commerceDiscountCommerceAccountGroupRelId",
-			CommerceDiscountCommerceAccountGroupRel::
-				getCommerceDiscountCommerceAccountGroupRelId);
-		attributeSetterBiConsumers.put(
-			"commerceDiscountCommerceAccountGroupRelId",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+		static {
+			Map
+				<String,
+				 Function<CommerceDiscountCommerceAccountGroupRel, Object>>
+					attributeGetterFunctions =
+						new LinkedHashMap
+							<String,
+							 Function
+								 <CommerceDiscountCommerceAccountGroupRel,
+								  Object>>();
+
+			attributeGetterFunctions.put(
+				"mvccVersion",
+				CommerceDiscountCommerceAccountGroupRel::getMvccVersion);
+			attributeGetterFunctions.put(
+				"commerceDiscountCommerceAccountGroupRelId",
 				CommerceDiscountCommerceAccountGroupRel::
-					setCommerceDiscountCommerceAccountGroupRelId);
-		attributeGetterFunctions.put(
-			"companyId", CommerceDiscountCommerceAccountGroupRel::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
-				CommerceDiscountCommerceAccountGroupRel::setCompanyId);
-		attributeGetterFunctions.put(
-			"userId", CommerceDiscountCommerceAccountGroupRel::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
-				CommerceDiscountCommerceAccountGroupRel::setUserId);
-		attributeGetterFunctions.put(
-			"userName", CommerceDiscountCommerceAccountGroupRel::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, String>)
-				CommerceDiscountCommerceAccountGroupRel::setUserName);
-		attributeGetterFunctions.put(
-			"createDate",
-			CommerceDiscountCommerceAccountGroupRel::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Date>)
-				CommerceDiscountCommerceAccountGroupRel::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate",
-			CommerceDiscountCommerceAccountGroupRel::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Date>)
-				CommerceDiscountCommerceAccountGroupRel::setModifiedDate);
-		attributeGetterFunctions.put(
-			"commerceDiscountId",
-			CommerceDiscountCommerceAccountGroupRel::getCommerceDiscountId);
-		attributeSetterBiConsumers.put(
-			"commerceDiscountId",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
-				CommerceDiscountCommerceAccountGroupRel::setCommerceDiscountId);
-		attributeGetterFunctions.put(
-			"commerceAccountGroupId",
-			CommerceDiscountCommerceAccountGroupRel::getCommerceAccountGroupId);
-		attributeSetterBiConsumers.put(
-			"commerceAccountGroupId",
-			(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					getCommerceDiscountCommerceAccountGroupRelId);
+			attributeGetterFunctions.put(
+				"companyId",
+				CommerceDiscountCommerceAccountGroupRel::getCompanyId);
+			attributeGetterFunctions.put(
+				"userId", CommerceDiscountCommerceAccountGroupRel::getUserId);
+			attributeGetterFunctions.put(
+				"userName",
+				CommerceDiscountCommerceAccountGroupRel::getUserName);
+			attributeGetterFunctions.put(
+				"createDate",
+				CommerceDiscountCommerceAccountGroupRel::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate",
+				CommerceDiscountCommerceAccountGroupRel::getModifiedDate);
+			attributeGetterFunctions.put(
+				"commerceDiscountId",
+				CommerceDiscountCommerceAccountGroupRel::getCommerceDiscountId);
+			attributeGetterFunctions.put(
+				"commerceAccountGroupId",
 				CommerceDiscountCommerceAccountGroupRel::
-					setCommerceAccountGroupId);
+					getCommerceAccountGroupId);
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String,
+			 BiConsumer<CommerceDiscountCommerceAccountGroupRel, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<CommerceDiscountCommerceAccountGroupRel, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String,
+						 BiConsumer
+							 <CommerceDiscountCommerceAccountGroupRel, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					CommerceDiscountCommerceAccountGroupRel::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"commerceDiscountCommerceAccountGroupRelId",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					CommerceDiscountCommerceAccountGroupRel::
+						setCommerceDiscountCommerceAccountGroupRelId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					CommerceDiscountCommerceAccountGroupRel::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					CommerceDiscountCommerceAccountGroupRel::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, String>)
+					CommerceDiscountCommerceAccountGroupRel::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Date>)
+					CommerceDiscountCommerceAccountGroupRel::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Date>)
+					CommerceDiscountCommerceAccountGroupRel::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"commerceDiscountId",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					CommerceDiscountCommerceAccountGroupRel::
+						setCommerceDiscountId);
+			attributeSetterBiConsumers.put(
+				"commerceAccountGroupId",
+				(BiConsumer<CommerceDiscountCommerceAccountGroupRel, Long>)
+					CommerceDiscountCommerceAccountGroupRel::
+						setCommerceAccountGroupId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -815,41 +838,6 @@ public class CommerceDiscountCommerceAccountGroupRelModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<CommerceDiscountCommerceAccountGroupRel, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry
-				<String,
-				 Function<CommerceDiscountCommerceAccountGroupRel, Object>>
-					entry : attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<CommerceDiscountCommerceAccountGroupRel, Object>
-				attributeGetterFunction = entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply(
-					(CommerceDiscountCommerceAccountGroupRel)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function
@@ -876,7 +864,8 @@ public class CommerceDiscountCommerceAccountGroupRelModelImpl
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<CommerceDiscountCommerceAccountGroupRel, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

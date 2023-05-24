@@ -40,7 +40,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"commerce.health.status.display.order:Integer=90",
 		"commerce.health.status.key=" + CommerceHealthStatusConstants.CURRENCIES_COMMERCE_HEALTH_STATUS_KEY
@@ -58,7 +57,8 @@ public class CurrenciesCommerceHealthHttpStatus
 			httpServletRequest);
 
 		try {
-			_commerceCurrencyLocalService.importDefaultValues(serviceContext);
+			_commerceCurrencyLocalService.importDefaultValues(
+				true, serviceContext);
 		}
 		catch (Exception exception) {
 			_log.error(exception);

@@ -22,17 +22,21 @@ import com.liferay.account.service.base.AccountRoleServiceBaseImpl;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.permission.PortalPermission;
-import com.liferay.portal.kernel.service.permission.RolePermission;
+import com.liferay.portal.kernel.util.OrderByComparator;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Brian Wing Shun Chan
@@ -130,6 +134,26 @@ public class AccountRoleServiceImpl extends AccountRoleServiceBaseImpl {
 	}
 
 	@Override
+	public BaseModelSearchResult<AccountRole> searchAccountRoles(
+			long companyId, long[] accountEntryIds, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end,
+			OrderByComparator<?> orderByComparator)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (params == null) {
+			params = new LinkedHashMap<>();
+		}
+
+		params.put("permissionUserId", permissionChecker.getUserId());
+
+		return accountRoleLocalService.searchAccountRoles(
+			companyId, accountEntryIds, keywords, params, start, end,
+			orderByComparator);
+	}
+
+	@Override
 	public void setUserAccountRoles(
 			long accountEntryId, long[] accountRoleIds, long userId)
 		throws PortalException {
@@ -171,9 +195,11 @@ public class AccountRoleServiceImpl extends AccountRoleServiceBaseImpl {
 	}
 
 	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
 		target = "(model.class.name=com.liferay.account.model.AccountEntry)"
 	)
-	private ModelResourcePermission<AccountEntry>
+	private volatile ModelResourcePermission<AccountEntry>
 		_accountEntryModelResourcePermission;
 
 	@Reference(
@@ -184,8 +210,5 @@ public class AccountRoleServiceImpl extends AccountRoleServiceBaseImpl {
 
 	@Reference
 	private PortalPermission _portalPermission;
-
-	@Reference
-	private RolePermission _rolePermission;
 
 }

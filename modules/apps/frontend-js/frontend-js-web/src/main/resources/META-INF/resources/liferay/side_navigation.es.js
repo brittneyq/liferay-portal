@@ -338,6 +338,34 @@ SideNavigation.prototype = {
 		this._emitter.emit(event, this);
 	},
 
+	_focusNavigation() {
+		const container = document.querySelector(this.options.container);
+
+		if (!container) {
+			return;
+		}
+
+		const navigation = container.querySelector(this.options.navigation);
+
+		if (!navigation) {
+			container.focus();
+
+			return;
+		}
+
+		navigation.focus();
+	},
+
+	_focusTrigger() {
+		const toggler = this.toggler;
+
+		if (!toggler) {
+			return;
+		}
+
+		toggler.focus();
+	},
+
 	_getSidenavWidth() {
 		const options = this.options;
 
@@ -735,25 +763,6 @@ SideNavigation.prototype = {
 			this._renderNav();
 		}
 
-		if (toggler.parentElement && options.skipLinkLabel && container?.id) {
-			this.skipLink = document.createElement('a');
-
-			this.skipLink.className = 'd-none mx-2 px-2 py-1';
-			this.skipLink.href = `#${container.id}`;
-			this.skipLink.textContent = options.skipLinkLabel;
-
-			const {nextElementSibling, parentElement} = toggler;
-
-			if (nextElementSibling) {
-				parentElement.insertBefore(this.skipLink, nextElementSibling);
-			}
-			else {
-				parentElement.appendChild(this.skipLink);
-			}
-		}
-
-		this._updateSkipLink();
-
 		// Force Reflow for IE11 Browser Bug
 
 		setStyles(container, {
@@ -805,25 +814,6 @@ SideNavigation.prototype = {
 
 			fn();
 		}, SideNavigation.TRANSITION_DURATION);
-	},
-
-	_updateSkipLink() {
-		const container = document.querySelector(this.options.container);
-
-		if (!container) {
-			return;
-		}
-
-		if (this.skipLink) {
-			if (hasClass(container, 'closed')) {
-				this.skipLink.classList.add('d-none');
-				this.skipLink.classList.remove('sr-only', 'sr-only-focusable');
-			}
-			else {
-				this.skipLink.classList.add('sr-only', 'sr-only-focusable');
-				this.skipLink.classList.remove('d-none');
-			}
-		}
 	},
 
 	clearHeight() {
@@ -889,12 +879,6 @@ SideNavigation.prototype = {
 
 			handleWindowResize = null;
 		}
-
-		if (this.skipLink) {
-			this.skipLink.parentElement.removeChild(this.skipLink);
-
-			this.skipLink = null;
-		}
 	},
 
 	hide() {
@@ -907,7 +891,8 @@ SideNavigation.prototype = {
 	},
 
 	hideSidenav() {
-		const options = this.options;
+		const instance = this;
+		const options = instance.options;
 
 		const container = document.querySelector(options.container);
 
@@ -916,7 +901,7 @@ SideNavigation.prototype = {
 			const navigation = container.querySelector(options.navigation);
 			const menu = navigation.querySelector('.sidenav-menu');
 
-			const sidenavRight = this._isSidenavRight();
+			const sidenavRight = instance._isSidenavRight();
 
 			let positionDirection = options.rtl ? 'right' : 'left';
 
@@ -937,9 +922,13 @@ SideNavigation.prototype = {
 
 			if (sidenavRight) {
 				setStyles(menu, {
-					[positionDirection]: px(this._getSidenavWidth()),
+					[positionDirection]: px(instance._getSidenavWidth()),
 				});
 			}
+
+			instance._subscribeSidenavTransitionEnd(menu, () => {
+				instance._focusTrigger();
+			});
 		}
 	},
 
@@ -985,6 +974,8 @@ SideNavigation.prototype = {
 					'closed.lexicon.sidenav',
 					instance
 				);
+
+				instance._focusTrigger();
 			});
 
 			if (hasClass(content, openClass)) {
@@ -1051,7 +1042,6 @@ SideNavigation.prototype = {
 				toggler.dataset.loadingIndicatorTpl ||
 				options.loadingIndicatorTPL;
 			options.openClass = toggler.dataset.openClass || 'open';
-			options.skipLinkLabel = toggler.dataset.skipLinkLabel;
 			options.type = toggler.dataset.type;
 			options.typeMobile = toggler.dataset.typeMobile;
 			options.url = toggler.dataset.url;
@@ -1209,7 +1199,8 @@ SideNavigation.prototype = {
 	},
 
 	showSidenav() {
-		const options = this.options;
+		const instance = this;
+		const options = instance.options;
 
 		const container = document.querySelector(options.container);
 		const navigation = container.querySelector(options.navigation);
@@ -1223,10 +1214,14 @@ SideNavigation.prototype = {
 		const url = options.url;
 
 		if (url) {
-			this._loadUrl(menu, url);
+			instance._loadUrl(menu, url);
 		}
 
-		this.setWidth();
+		instance.setWidth();
+
+		instance._subscribeSidenavTransitionEnd(menu, () => {
+			instance._focusNavigation();
+		});
 	},
 
 	showSimpleSidenav() {
@@ -1270,6 +1265,8 @@ SideNavigation.prototype = {
 				instance._emit('open.lexicon.sidenav');
 
 				dispatchCustomEvent(document, 'open.lexicon.sidenav', instance);
+
+				this._focusNavigation();
 			});
 
 			setClasses(content, {
@@ -1414,8 +1411,6 @@ SideNavigation.prototype = {
 			active: closed,
 			open: closed,
 		});
-
-		this._updateSkipLink();
 	},
 
 	toggleSimpleSidenav() {
@@ -1427,8 +1422,6 @@ SideNavigation.prototype = {
 		else {
 			this.hideSimpleSidenav();
 		}
-
-		this._updateSkipLink();
 	},
 
 	visible() {

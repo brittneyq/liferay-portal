@@ -12,7 +12,7 @@
  * details.
  */
 
-import {openConfirmModal, openToast} from 'frontend-js-web';
+import {openConfirmModal} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useContext, useState} from 'react';
 
@@ -61,115 +61,25 @@ const formatActions = (actions, itemData) => {
 		: [];
 };
 
-export function handleAction(
-	{
-		confirmationMessage,
-		event,
-		itemId,
-		method,
-		onClick,
-		setLoading,
-		size,
-		successMessage,
-		target,
-		title,
-		url,
-	},
-	{
+function Actions({actions, itemData, itemId, menuActive, onMenuActiveChange}) {
+	const {
 		executeAsyncItemAction,
 		highlightItems,
+		inlineEditingSettings,
+		loadData,
+		onActionDropdownItemClick,
 		openModal,
 		openSidePanel,
 		toggleItemInlineEdit,
-	}
-) {
-	const doAction = () => {
-		if (target?.includes('modal')) {
-			event.preventDefault();
-
-			if (target === MODAL_PERMISSIONS) {
-				openPermissionsModal(url);
-			}
-			else {
-				openModal({
-					size: resolveModalSize(target),
-					title,
-					url,
-				});
-			}
-		}
-		else if (target === 'sidePanel') {
-			event.preventDefault();
-
-			highlightItems([itemId]);
-			openSidePanel({
-				size: size || 'lg',
-				title,
-				url,
-			});
-		}
-		else if (target === 'async' || target === 'headless') {
-			event.preventDefault();
-
-			setLoading(true);
-			executeAsyncItemAction(url, method)
-				.then(() => {
-					openToast({
-						message:
-							successMessage ||
-							Liferay.Language.get('action-completed'),
-						type: 'success',
-					});
-					setLoading(false);
-				})
-				.catch((_) => {
-					setLoading(false);
-				});
-		}
-		else if (target === 'inlineEdit') {
-			event.preventDefault();
-
-			toggleItemInlineEdit(itemId);
-		}
-		else if (target === 'blank') {
-			event.preventDefault();
-
-			window.open(url);
-		}
-		else if (onClick) {
-			event.preventDefault();
-
-			event.target.setAttribute('onClick', onClick);
-			event.target.onclick();
-			event.target.removeAttribute('onClick');
-		}
-	};
-
-	if (confirmationMessage) {
-		openConfirmModal({
-			message: confirmationMessage,
-			onConfirm: (isConfirmed) => {
-				if (isConfirmed) {
-					doAction();
-				}
-			},
-		});
-	}
-	else {
-		doAction();
-	}
-}
-function Actions({actions, itemData, itemId}) {
-	const context = useContext(FrontendDataSetContext);
-	const {inlineEditingSettings, onActionDropdownItemClick} = context;
-
-	const [loading, setLoading] = useState(false);
+	} = useContext(FrontendDataSetContext);
 
 	const [
 		{
 			activeView: {quickActionsEnabled},
 		},
 	] = useContext(ViewsContext);
+
+	const [loading, setLoading] = useState(false);
 
 	const inlineEditingAvailable =
 		inlineEditingSettings && itemData.actions?.update;
@@ -186,42 +96,100 @@ function Actions({actions, itemData, itemId}) {
 		});
 	}
 
-	const handleClick = ({
-		action,
-		closeMenu,
-		event,
-		itemData,
-		itemId,
-		size = 'lg',
-	}) => {
-		if (onActionDropdownItemClick) {
-			onActionDropdownItemClick({
+	const handleClick = ({action, closeMenu, event}) => {
+		const {data, href, method, onClick, target} = action;
+
+		const {
+			confirmationMessage,
+			errorMessage,
+			status,
+			successMessage,
+			title,
+		} = data ?? {};
+
+		const url = formatActionURL(href, itemData);
+
+		const doAction = () => {
+			if (target?.includes('modal')) {
+				event.preventDefault();
+
+				if (target === MODAL_PERMISSIONS) {
+					openPermissionsModal(url);
+				}
+				else {
+					openModal({
+						size: resolveModalSize(target),
+						title,
+						url,
+					});
+				}
+			}
+			else if (target === 'sidePanel') {
+				event.preventDefault();
+
+				highlightItems([itemId]);
+
+				openSidePanel({
+					size: 'lg',
+					title,
+					url,
+				});
+			}
+			else if (target === 'async' || target === 'headless') {
+				event.preventDefault();
+
+				setLoading(true);
+
+				executeAsyncItemAction({
+					errorMessage,
+					method: method ?? data?.method,
+					setActionItemLoading: setLoading,
+					successMessage,
+					url,
+				});
+			}
+			else if (target === 'inlineEdit') {
+				event.preventDefault();
+
+				toggleItemInlineEdit(itemId);
+			}
+			else if (target === 'blank') {
+				event.preventDefault();
+
+				window.open(url);
+			}
+
+			const exposedProps = {
 				action,
 				event,
 				itemData,
+				loadData,
+				openSidePanel,
+			};
+
+			if (onClick) {
+				onClick(exposedProps);
+			}
+
+			if (onActionDropdownItemClick) {
+				onActionDropdownItemClick(exposedProps);
+			}
+		};
+
+		if (confirmationMessage) {
+			openConfirmModal({
+				message: confirmationMessage,
+				onConfirm: (isConfirmed) => {
+					if (isConfirmed) {
+						doAction();
+					}
+				},
+				status,
+				title,
 			});
 		}
-
-		if (!isLink(action.target, action.onClick)) {
-			event.preventDefault();
-
-			const {data, onClick, target} = action;
-
-			handleAction(
-				{
-					confirmationMessage: data?.confirmationMessage,
-					event,
-					itemId,
-					method: action.method ?? action.data?.method,
-					onClick,
-					setLoading,
-					size,
-					successMessage: data?.successMessage,
-					target,
-					url: formatActionURL(action.href, itemData),
-				},
-				context
-			);
+		else {
+			doAction();
 		}
 
 		if (closeMenu) {
@@ -243,11 +211,12 @@ function Actions({actions, itemData, itemId}) {
 			)}
 			<ActionsDropdown
 				actions={formattedActions}
-				handleAction={handleAction}
 				itemData={itemData}
 				itemId={itemId}
 				loading={loading}
+				menuActive={menuActive}
 				onClick={handleClick}
+				onMenuActiveChange={onMenuActiveChange}
 				setLoading={setLoading}
 			/>
 		</>
@@ -257,6 +226,7 @@ function Actions({actions, itemData, itemId}) {
 const actionType = PropTypes.shape({
 	data: PropTypes.shape({
 		confirmationMessage: PropTypes.string,
+		errorMessage: PropTypes.string,
 		method: PropTypes.oneOf(['delete', 'get', 'patch', 'post']),
 		permissionKey: PropTypes.string,
 		successMessage: PropTypes.string,
@@ -265,7 +235,7 @@ const actionType = PropTypes.shape({
 	icon: PropTypes.string,
 	label: PropTypes.string.isRequired,
 	method: PropTypes.oneOf(['delete', 'get', 'patch', 'post']),
-	onClick: PropTypes.string,
+	onClick: PropTypes.func,
 	target: PropTypes.oneOf([
 		'async',
 		'headless',

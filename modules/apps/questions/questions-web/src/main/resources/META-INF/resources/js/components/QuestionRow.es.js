@@ -30,9 +30,12 @@ import UserIcon from './UserIcon.es';
 
 export default function QuestionRow({
 	context,
+	creatorId,
 	currentSection,
 	items,
+	linkProps,
 	question,
+	rowSelected,
 	showSectionLabel,
 }) {
 	const sectionTitle =
@@ -55,8 +58,15 @@ export default function QuestionRow({
 				userId: '0',
 		  };
 
+	const isRowSelected = question.friendlyUrlPath === rowSelected;
+
 	return (
-		<div className="c-mt-4 c-p-3 position-relative question-row text-secondary">
+		<div
+			className={classNames(
+				'c-mt-4 c-p-3 position-relative question-row text-secondary',
+				{'question-row-selected': isRowSelected}
+			)}
+		>
 			<div className="align-items-center d-flex flex-wrap justify-content-between">
 				<span>
 					{showSectionLabel && (
@@ -123,6 +133,7 @@ export default function QuestionRow({
 			<Link
 				className="questions-title stretched-link"
 				to={`/questions/${sectionTitle}/${question.friendlyUrlPath}`}
+				{...linkProps}
 			>
 				<h2
 					className={classNames(
@@ -172,7 +183,12 @@ export default function QuestionRow({
 
 			<div className="align-items-sm-center align-items-start d-flex flex-column-reverse flex-sm-row justify-content-between">
 				<div className="c-mt-3 c-mt-sm-0 stretched-link-layer">
-					<Link to={creatorInformation.link}>
+					<Link
+						className={classNames({
+							'disabled-link': !!creatorId,
+						})}
+						to={creatorInformation.link}
+					>
 						<UserIcon
 							fullName={creatorInformation.name}
 							portraitURL={creatorInformation.portraitURL}

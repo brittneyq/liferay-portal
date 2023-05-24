@@ -68,7 +68,7 @@ const VehicleInfo = () => {
 	};
 
 	const handleSaveChanges = (currentForm: any) => {
-		const hasAllRequiredFieldsToNextStep = currentForm.every(
+		const hasAllRequiredFieldsToNextStep = currentForm?.every(
 			(_form: any) =>
 				_form.annualMileage !== '' &&
 				_form.make !== '' &&
@@ -79,7 +79,7 @@ const VehicleInfo = () => {
 
 		const minAnnualMileage = 50;
 
-		const annualGreaterThanFifty = currentForm.every(
+		const annualGreaterThanFifty = currentForm?.every(
 			(_form: any) => _form.annualMileage >= minAnnualMileage
 		);
 
@@ -100,9 +100,9 @@ const VehicleInfo = () => {
 	}, [state.steps.vehicleInfo]);
 
 	return (
-		<div className="bg-neutral-0 mx-8">
+		<div className="bg-neutral-0 mx-1 mx-md-8">
 			<ClayForm>
-				{form.map((currentForm, index) => (
+				{form?.map((currentForm, index) => (
 					<VehicleInfoForm
 						form={form}
 						formIndex={index}

@@ -35,12 +35,11 @@ renderResponse.setTitle(editable ? LanguageUtil.get(request, "edit-template") : 
 	<form id="<portlet:namespace />fm" name="<portlet:namespace />fm">
 		<input id="<portlet:namespace />batchPlannerPlanId" name="<portlet:namespace />batchPlannerPlanId" type="hidden" value="<%= batchPlannerPlanId %>" />
 		<input id="<portlet:namespace />externalType" name="<portlet:namespace />externalType" type="hidden" value="" />
-		<input id="<portlet:namespace />taskItemDelegateName" name="<portlet:namespace />taskItemDelegateName" type="hidden" value="DEFAULT" />
 
 		<div class="row">
 			<div class="col-lg-6 d-flex flex-column">
 				<div class="card flex-fill">
-					<h4 class="card-header"><%= LanguageUtil.get(request, "import-settings") %></h4>
+					<h4 class="card-header"><liferay-ui:message key="import-settings" /></h4>
 
 					<div class="card-body">
 						<liferay-frontend:edit-form-body>
@@ -98,33 +97,17 @@ renderResponse.setTitle(editable ? LanguageUtil.get(request, "edit-template") : 
 								/>
 							</clay:alert>
 
-							<div class="mt-2">
-								<clay:checkbox
-									checked="<%= false %>"
-									disabled="<%= true %>"
-									label='<%= LanguageUtil.get(request, "detect-category-names-from-CSV-file") %>'
-									name="headerCheckbox"
-								/>
-							</div>
-
-							<div class="mt-2">
-								<clay:checkbox
-									checked="<%= false %>"
-									id='<%= liferayPortletResponse.getNamespace() + "allowUpdate" %>'
-									label='<%= LanguageUtil.get(request, "override-existing-records") %>'
-									name='<%= liferayPortletResponse.getNamespace() + "allowUpdate" %>'
-								/>
-							</div>
-
-							<div class="mt-2">
-								<clay:checkbox
-									checked="<%= true %>"
-									disabled="<%= true %>"
-									id='<%= liferayPortletResponse.getNamespace() + "onUpdateDoPatch" %>'
-									label='<%= LanguageUtil.get(request, "ignore-blank-field-values-during-import") %>'
-									name='<%= liferayPortletResponse.getNamespace() + "onUpdateDoPatch" %>'
-								/>
-							</div>
+							<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPS-173135") %>'>
+								<div class="mt-2">
+									<clay:checkbox
+										checked="<%= false %>"
+										disabled="<%= true %>"
+										id='<%= liferayPortletResponse.getNamespace() + "detectCategoryNames" %>'
+										label='<%= LanguageUtil.get(request, "detect-category-names-from-CSV-file") %>'
+										name='<%= liferayPortletResponse.getNamespace() + "detectCategoryNames" %>'
+									/>
+								</div>
+							</c:if>
 
 							<div class="mt-2">
 								<clay:checkbox
@@ -134,6 +117,14 @@ renderResponse.setTitle(editable ? LanguageUtil.get(request, "edit-template") : 
 									name='<%= liferayPortletResponse.getNamespace() + "onErrorFail" %>'
 								/>
 							</div>
+
+							<clay:row>
+								<clay:col>
+									<react:component
+										module="js/components/Strategies"
+									/>
+								</clay:col>
+							</clay:row>
 						</liferay-frontend:edit-form-body>
 					</div>
 				</div>
@@ -141,7 +132,7 @@ renderResponse.setTitle(editable ? LanguageUtil.get(request, "edit-template") : 
 
 			<div class="col-lg-6 d-flex flex-column">
 				<div class="card flex-fill">
-					<h4 class="card-header"><%= LanguageUtil.get(request, "file-settings") %></h4>
+					<h4 class="card-header"><liferay-ui:message key="file-settings" /></h4>
 
 					<div class="card-body">
 						<liferay-frontend:edit-form-body>

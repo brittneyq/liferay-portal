@@ -15,7 +15,7 @@
 package com.liferay.commerce.internal.model.listener;
 
 import com.liferay.account.model.AccountEntry;
-import com.liferay.commerce.account.exception.CommerceAccountOrdersException;
+import com.liferay.commerce.exception.CommerceAccountOrdersException;
 import com.liferay.commerce.internal.search.CommerceOrderBatchReindexer;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.service.CommerceShippingOptionAccountEntryRelLocalService;
@@ -31,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, immediate = true, service = ModelListener.class)
+@Component(service = ModelListener.class)
 public class AccountEntryModelListener extends BaseModelListener<AccountEntry> {
 
 	@Override

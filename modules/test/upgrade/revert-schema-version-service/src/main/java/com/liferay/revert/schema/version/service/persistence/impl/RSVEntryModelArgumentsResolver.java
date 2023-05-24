@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {RSVEntryModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.revert.schema.version.model.impl.RSVEntryImpl",
+		"table.name=RSVEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class RSVEntryModelArgumentsResolver implements ArgumentsResolver {
 

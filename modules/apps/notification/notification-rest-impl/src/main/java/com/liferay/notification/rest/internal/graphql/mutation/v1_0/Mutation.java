@@ -20,9 +20,11 @@ import com.liferay.notification.rest.resource.v1_0.NotificationTemplateResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResource;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
@@ -60,6 +62,30 @@ public class Mutation {
 
 		_notificationTemplateResourceComponentServiceObjects =
 			notificationTemplateResourceComponentServiceObjects;
+	}
+
+	@GraphQLField
+	public Response createNotificationQueueEntriesPageExportBatch(
+			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("sort") String sortsString,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("contentType") String contentType,
+			@GraphQLName("fieldNames") String fieldNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_notificationQueueEntryResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			notificationQueueEntryResource ->
+				notificationQueueEntryResource.
+					postNotificationQueueEntriesPageExportBatch(
+						search,
+						_filterBiFunction.apply(
+							notificationQueueEntryResource, filterString),
+						_sortsBiFunction.apply(
+							notificationQueueEntryResource, sortsString),
+						callbackURL, contentType, fieldNames));
 	}
 
 	@GraphQLField
@@ -109,6 +135,30 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public Response createNotificationTemplatesPageExportBatch(
+			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("sort") String sortsString,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("contentType") String contentType,
+			@GraphQLName("fieldNames") String fieldNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_notificationTemplateResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			notificationTemplateResource ->
+				notificationTemplateResource.
+					postNotificationTemplatesPageExportBatch(
+						search,
+						_filterBiFunction.apply(
+							notificationTemplateResource, filterString),
+						_sortsBiFunction.apply(
+							notificationTemplateResource, sortsString),
+						callbackURL, contentType, fieldNames));
+	}
+
+	@GraphQLField
 	public NotificationTemplate createNotificationTemplate(
 			@GraphQLName("notificationTemplate") NotificationTemplate
 				notificationTemplate)
@@ -134,6 +184,24 @@ public class Mutation {
 			notificationTemplateResource ->
 				notificationTemplateResource.postNotificationTemplateBatch(
 					callbackURL, object));
+	}
+
+	@GraphQLField
+	public NotificationTemplate
+			updateNotificationTemplateByExternalReferenceCode(
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("notificationTemplate") NotificationTemplate
+					notificationTemplate)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_notificationTemplateResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			notificationTemplateResource ->
+				notificationTemplateResource.
+					putNotificationTemplateByExternalReferenceCode(
+						externalReferenceCode, notificationTemplate));
 	}
 
 	@GraphQLField
@@ -209,6 +277,19 @@ public class Mutation {
 					callbackURL, object));
 	}
 
+	@GraphQLField
+	public NotificationTemplate createNotificationTemplateCopy(
+			@GraphQLName("notificationTemplateId") Long notificationTemplateId)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_notificationTemplateResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			notificationTemplateResource ->
+				notificationTemplateResource.postNotificationTemplateCopy(
+					notificationTemplateId));
+	}
+
 	private <T, R, E1 extends Throwable, E2 extends Throwable> R
 			_applyComponentServiceObjects(
 				ComponentServiceObjects<T> componentServiceObjects,
@@ -263,6 +344,9 @@ public class Mutation {
 		notificationQueueEntryResource.setGroupLocalService(_groupLocalService);
 		notificationQueueEntryResource.setRoleLocalService(_roleLocalService);
 
+		notificationQueueEntryResource.setVulcanBatchEngineExportTaskResource(
+			_vulcanBatchEngineExportTaskResource);
+
 		notificationQueueEntryResource.setVulcanBatchEngineImportTaskResource(
 			_vulcanBatchEngineImportTaskResource);
 	}
@@ -282,6 +366,9 @@ public class Mutation {
 		notificationTemplateResource.setGroupLocalService(_groupLocalService);
 		notificationTemplateResource.setRoleLocalService(_roleLocalService);
 
+		notificationTemplateResource.setVulcanBatchEngineExportTaskResource(
+			_vulcanBatchEngineExportTaskResource);
+
 		notificationTemplateResource.setVulcanBatchEngineImportTaskResource(
 			_vulcanBatchEngineImportTaskResource);
 	}
@@ -293,6 +380,7 @@ public class Mutation {
 
 	private AcceptLanguage _acceptLanguage;
 	private com.liferay.portal.kernel.model.Company _company;
+	private BiFunction<Object, String, Filter> _filterBiFunction;
 	private GroupLocalService _groupLocalService;
 	private HttpServletRequest _httpServletRequest;
 	private HttpServletResponse _httpServletResponse;
@@ -300,6 +388,8 @@ public class Mutation {
 	private BiFunction<Object, String, Sort[]> _sortsBiFunction;
 	private UriInfo _uriInfo;
 	private com.liferay.portal.kernel.model.User _user;
+	private VulcanBatchEngineExportTaskResource
+		_vulcanBatchEngineExportTaskResource;
 	private VulcanBatchEngineImportTaskResource
 		_vulcanBatchEngineImportTaskResource;
 

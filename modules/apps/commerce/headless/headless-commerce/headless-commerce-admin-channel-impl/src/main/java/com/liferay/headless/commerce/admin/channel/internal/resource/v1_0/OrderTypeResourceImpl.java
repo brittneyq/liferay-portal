@@ -14,6 +14,7 @@
 
 package com.liferay.headless.commerce.admin.channel.internal.resource.v1_0;
 
+import com.liferay.commerce.model.CommerceOrderType;
 import com.liferay.commerce.payment.model.CommercePaymentMethodGroupRelQualifier;
 import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelQualifierService;
 import com.liferay.commerce.shipping.engine.fixed.model.CommerceShippingFixedOptionQualifier;
@@ -21,8 +22,8 @@ import com.liferay.commerce.shipping.engine.fixed.service.CommerceShippingFixedO
 import com.liferay.headless.commerce.admin.channel.dto.v1_0.OrderType;
 import com.liferay.headless.commerce.admin.channel.dto.v1_0.PaymentMethodGroupRelOrderType;
 import com.liferay.headless.commerce.admin.channel.dto.v1_0.ShippingFixedOptionOrderType;
-import com.liferay.headless.commerce.admin.channel.internal.dto.v1_0.converter.OrderTypeDTOConverter;
 import com.liferay.headless.commerce.admin.channel.resource.v1_0.OrderTypeResource;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldSupport;
@@ -36,7 +37,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/order-type.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = {NestedFieldSupport.class, OrderTypeResource.class}
@@ -88,7 +88,9 @@ public class OrderTypeResourceImpl
 	private CommerceShippingFixedOptionQualifierService
 		_commerceShippingFixedOptionQualifierService;
 
-	@Reference
-	private OrderTypeDTOConverter _orderTypeDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.channel.internal.dto.v1_0.converter.OrderTypeDTOConverter)"
+	)
+	private DTOConverter<CommerceOrderType, OrderType> _orderTypeDTOConverter;
 
 }

@@ -14,7 +14,7 @@
 
 package com.liferay.headless.commerce.delivery.order.internal.resource.v1_0;
 
-import com.liferay.commerce.constants.CommercePaymentConstants;
+import com.liferay.commerce.constants.CommercePaymentMethodConstants;
 import com.liferay.commerce.constants.CommercePortletKeys;
 import com.liferay.commerce.exception.NoSuchOrderException;
 import com.liferay.commerce.model.CommerceOrder;
@@ -22,11 +22,9 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.util.CommerceCheckoutStep;
-import com.liferay.commerce.util.CommerceCheckoutStepServicesTracker;
+import com.liferay.commerce.util.CommerceCheckoutStepRegistry;
 import com.liferay.headless.commerce.delivery.order.dto.v1_0.PlacedOrder;
-import com.liferay.headless.commerce.delivery.order.internal.dto.v1_0.PlacedOrderDTOConverter;
 import com.liferay.headless.commerce.delivery.order.resource.v1_0.PlacedOrderResource;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -35,17 +33,18 @@ import com.liferay.portal.events.ThemeServicePreAction;
 import com.liferay.portal.kernel.encryptor.Encryptor;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.security.Key;
 
@@ -59,7 +58,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Andrea Sbarra
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/placed-order.properties",
 	scope = ServiceScope.PROTOTYPE, service = PlacedOrderResource.class
 )
@@ -74,7 +72,7 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 			_commerceChannelLocalService.getCommerceChannel(channelId);
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_commerceOrderService.getPlacedCommerceOrders(
 					commerceChannel.getGroupId(), accountId, null,
 					pagination.getStartPosition(), pagination.getEndPosition()),
@@ -116,7 +114,7 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 		sb.append(_portal.getPortalURL(contextHttpServletRequest));
 		sb.append(_portal.getPathModule());
 		sb.append(CharPool.SLASH);
-		sb.append(CommercePaymentConstants.SERVLET_PATH);
+		sb.append(CommercePaymentMethodConstants.SERVLET_PATH);
 		sb.append("?groupId=");
 		sb.append(commerceOrder.getGroupId());
 		sb.append(StringPool.AMPERSAND);
@@ -163,8 +161,8 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 			"checkoutStepName",
 			() -> {
 				CommerceCheckoutStep commerceCheckoutStep =
-					_commerceCheckoutStepServicesTracker.
-						getCommerceCheckoutStep("order-confirmation");
+					_commerceCheckoutStepRegistry.getCommerceCheckoutStep(
+						"order-confirmation");
 
 				return commerceCheckoutStep.getName();
 			}
@@ -220,8 +218,7 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
-	private CommerceCheckoutStepServicesTracker
-		_commerceCheckoutStepServicesTracker;
+	private CommerceCheckoutStepRegistry _commerceCheckoutStepRegistry;
 
 	@Reference
 	private CommerceOrderService _commerceOrderService;
@@ -232,8 +229,10 @@ public class PlacedOrderResourceImpl extends BasePlacedOrderResourceImpl {
 	@Reference
 	private Encryptor _encryptor;
 
-	@Reference
-	private PlacedOrderDTOConverter _placedOrderDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.delivery.order.internal.dto.v1_0.converter.PlacedOrderDTOConverter)"
+	)
+	private DTOConverter<CommerceOrder, PlacedOrder> _placedOrderDTOConverter;
 
 	@Reference
 	private Portal _portal;

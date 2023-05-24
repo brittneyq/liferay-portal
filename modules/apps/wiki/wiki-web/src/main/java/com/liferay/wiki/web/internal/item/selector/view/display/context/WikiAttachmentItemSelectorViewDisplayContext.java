@@ -19,7 +19,6 @@ import com.liferay.document.library.kernel.util.DLValidatorUtil;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.taglib.servlet.taglib.util.RepositoryEntryBrowserTagUtil;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
@@ -27,6 +26,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -71,7 +71,7 @@ public class WikiAttachmentItemSelectorViewDisplayContext {
 		_wikiAttachmentItemSelectorView = wikiAttachmentItemSelectorView;
 
 		_portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(
-			_httpServletRequest);
+			httpServletRequest);
 	}
 
 	public Set<String> getAllowedCreationMenuUIItemKeys() {
@@ -115,7 +115,7 @@ public class WikiAttachmentItemSelectorViewDisplayContext {
 		}
 
 		WikiFileUploadConfiguration wikiFileUploadConfiguration =
-			_getWikiFileUploadsConfiguration();
+			_getWikiFileUploadConfiguration();
 
 		return wikiFileUploadConfiguration.attachmentMimeTypes();
 	}
@@ -167,7 +167,7 @@ public class WikiAttachmentItemSelectorViewDisplayContext {
 
 	public long getWikiAttachmentMaxSize() throws ConfigurationException {
 		WikiFileUploadConfiguration wikiFileUploadConfiguration =
-			_getWikiFileUploadsConfiguration();
+			_getWikiFileUploadConfiguration();
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)_httpServletRequest.getAttribute(
@@ -188,7 +188,7 @@ public class WikiAttachmentItemSelectorViewDisplayContext {
 		return _search;
 	}
 
-	private WikiFileUploadConfiguration _getWikiFileUploadsConfiguration()
+	private WikiFileUploadConfiguration _getWikiFileUploadConfiguration()
 		throws ConfigurationException {
 
 		if (_wikiFileUploadConfiguration == null) {

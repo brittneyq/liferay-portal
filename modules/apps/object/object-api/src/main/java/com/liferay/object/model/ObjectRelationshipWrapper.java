@@ -470,6 +470,11 @@ public class ObjectRelationshipWrapper
 	}
 
 	@Override
+	public boolean isSelf() {
+		return model.isSelf();
+	}
+
+	@Override
 	public void persist() {
 		model.persist();
 	}
@@ -741,6 +746,11 @@ public class ObjectRelationshipWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

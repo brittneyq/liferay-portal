@@ -84,7 +84,7 @@ public class AssetVocabularyLocalServiceImpl
 
 		Group group = _groupLocalService.getGroup(groupId);
 
-		long defaultUserId = _userLocalService.getDefaultUserId(
+		long guestUserId = _userLocalService.getGuestUserId(
 			group.getCompanyId());
 
 		Map<Locale, String> titleMap = new HashMap<>();
@@ -101,7 +101,7 @@ public class AssetVocabularyLocalServiceImpl
 		serviceContext.setScopeGroupId(groupId);
 
 		return assetVocabularyLocalService.addVocabulary(
-			defaultUserId, groupId, StringPool.BLANK, titleMap, null,
+			guestUserId, groupId, StringPool.BLANK, titleMap, null,
 			StringPool.BLANK, serviceContext);
 	}
 
@@ -630,8 +630,8 @@ public class AssetVocabularyLocalServiceImpl
 		}
 
 		AssetVocabulary assetVocabulary =
-			assetVocabularyPersistence.fetchByG_ERC(
-				groupId, externalReferenceCode);
+			assetVocabularyPersistence.fetchByERC_G(
+				externalReferenceCode, groupId);
 
 		if (assetVocabulary != null) {
 			throw new DuplicateVocabularyExternalReferenceCodeException(

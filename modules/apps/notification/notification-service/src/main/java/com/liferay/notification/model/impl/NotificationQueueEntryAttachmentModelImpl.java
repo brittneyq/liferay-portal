@@ -209,72 +209,90 @@ public class NotificationQueueEntryAttachmentModelImpl
 	public Map<String, Function<NotificationQueueEntryAttachment, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<NotificationQueueEntryAttachment, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map
-		<String, Function<NotificationQueueEntryAttachment, Object>>
-			_attributeGetterFunctions;
-	private static final Map
-		<String, BiConsumer<NotificationQueueEntryAttachment, Object>>
-			_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<NotificationQueueEntryAttachment, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String,
-					 Function<NotificationQueueEntryAttachment, Object>>();
-		Map<String, BiConsumer<NotificationQueueEntryAttachment, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String, BiConsumer<NotificationQueueEntryAttachment, ?>>();
+		private static final Map
+			<String, Function<NotificationQueueEntryAttachment, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", NotificationQueueEntryAttachment::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<NotificationQueueEntryAttachment, Long>)
-				NotificationQueueEntryAttachment::setMvccVersion);
-		attributeGetterFunctions.put(
-			"notificationQueueEntryAttachmentId",
-			NotificationQueueEntryAttachment::
-				getNotificationQueueEntryAttachmentId);
-		attributeSetterBiConsumers.put(
-			"notificationQueueEntryAttachmentId",
-			(BiConsumer<NotificationQueueEntryAttachment, Long>)
+		static {
+			Map<String, Function<NotificationQueueEntryAttachment, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String,
+						 Function<NotificationQueueEntryAttachment, Object>>();
+
+			attributeGetterFunctions.put(
+				"mvccVersion",
+				NotificationQueueEntryAttachment::getMvccVersion);
+			attributeGetterFunctions.put(
+				"notificationQueueEntryAttachmentId",
 				NotificationQueueEntryAttachment::
-					setNotificationQueueEntryAttachmentId);
-		attributeGetterFunctions.put(
-			"companyId", NotificationQueueEntryAttachment::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<NotificationQueueEntryAttachment, Long>)
-				NotificationQueueEntryAttachment::setCompanyId);
-		attributeGetterFunctions.put(
-			"fileEntryId", NotificationQueueEntryAttachment::getFileEntryId);
-		attributeSetterBiConsumers.put(
-			"fileEntryId",
-			(BiConsumer<NotificationQueueEntryAttachment, Long>)
-				NotificationQueueEntryAttachment::setFileEntryId);
-		attributeGetterFunctions.put(
-			"notificationQueueEntryId",
-			NotificationQueueEntryAttachment::getNotificationQueueEntryId);
-		attributeSetterBiConsumers.put(
-			"notificationQueueEntryId",
-			(BiConsumer<NotificationQueueEntryAttachment, Long>)
-				NotificationQueueEntryAttachment::setNotificationQueueEntryId);
+					getNotificationQueueEntryAttachmentId);
+			attributeGetterFunctions.put(
+				"companyId", NotificationQueueEntryAttachment::getCompanyId);
+			attributeGetterFunctions.put(
+				"fileEntryId",
+				NotificationQueueEntryAttachment::getFileEntryId);
+			attributeGetterFunctions.put(
+				"notificationQueueEntryId",
+				NotificationQueueEntryAttachment::getNotificationQueueEntryId);
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<NotificationQueueEntryAttachment, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<NotificationQueueEntryAttachment, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String,
+						 BiConsumer<NotificationQueueEntryAttachment, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<NotificationQueueEntryAttachment, Long>)
+					NotificationQueueEntryAttachment::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"notificationQueueEntryAttachmentId",
+				(BiConsumer<NotificationQueueEntryAttachment, Long>)
+					NotificationQueueEntryAttachment::
+						setNotificationQueueEntryAttachmentId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<NotificationQueueEntryAttachment, Long>)
+					NotificationQueueEntryAttachment::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"fileEntryId",
+				(BiConsumer<NotificationQueueEntryAttachment, Long>)
+					NotificationQueueEntryAttachment::setFileEntryId);
+			attributeSetterBiConsumers.put(
+				"notificationQueueEntryId",
+				(BiConsumer<NotificationQueueEntryAttachment, Long>)
+					NotificationQueueEntryAttachment::
+						setNotificationQueueEntryId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -599,40 +617,6 @@ public class NotificationQueueEntryAttachmentModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<NotificationQueueEntryAttachment, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry
-				<String, Function<NotificationQueueEntryAttachment, Object>>
-					entry : attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<NotificationQueueEntryAttachment, Object>
-				attributeGetterFunction = entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply(
-					(NotificationQueueEntryAttachment)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function
@@ -654,7 +638,8 @@ public class NotificationQueueEntryAttachmentModelImpl
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<NotificationQueueEntryAttachment, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

@@ -246,17 +246,27 @@ public class CPDefinitionLocalServiceUtil {
 		getService().checkCPDefinitions();
 	}
 
-	public static CPDefinition copyCPDefinition(long cpDefinitionId)
+	public static CPDefinition cloneCPDefinition(
+			long userId, long cpDefinitionId, long groupId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
-		return getService().copyCPDefinition(cpDefinitionId);
+		return getService().cloneCPDefinition(
+			userId, cpDefinitionId, groupId, serviceContext);
+	}
+
+	public static CPDefinition copyCPDefinition(long sourceCPDefinitionId)
+		throws PortalException {
+
+		return getService().copyCPDefinition(sourceCPDefinitionId);
 	}
 
 	public static CPDefinition copyCPDefinition(
-			long cpDefinitionId, long groupId, int status)
+			long sourceCPDefinitionId, long groupId, int status)
 		throws PortalException {
 
-		return getService().copyCPDefinition(cpDefinitionId, groupId, status);
+		return getService().copyCPDefinition(
+			sourceCPDefinitionId, groupId, status);
 	}
 
 	/**
@@ -655,11 +665,26 @@ public class CPDefinitionLocalServiceUtil {
 		return getService().getCPDefinitionShortDescriptionMap(cpDefinitionId);
 	}
 
+	public static CPDefinition getCProductCPDefinition(
+			long cProductId, int version)
+		throws PortalException {
+
+		return getService().getCProductCPDefinition(cProductId, version);
+	}
+
 	public static List<CPDefinition> getCProductCPDefinitions(
 		long cProductId, int status, int start, int end) {
 
 		return getService().getCProductCPDefinitions(
 			cProductId, status, start, end);
+	}
+
+	public static List<CPDefinition> getCProductCPDefinitions(
+		long cProductId, int status, int start, int end,
+		OrderByComparator<CPDefinition> orderByComparator) {
+
+		return getService().getCProductCPDefinitions(
+			cProductId, status, start, end, orderByComparator);
 	}
 
 	public static com.liferay.commerce.product.model.CPAttachmentFileEntry
@@ -691,6 +716,13 @@ public class CPDefinitionLocalServiceUtil {
 			getIndexableActionableDynamicQuery() {
 
 		return getService().getIndexableActionableDynamicQuery();
+	}
+
+	public static String getLayoutPageTemplateEntryUuid(
+		long groupId, long cpDefinitionId) {
+
+		return getService().getLayoutPageTemplateEntryUuid(
+			groupId, cpDefinitionId);
 	}
 
 	public static String getLayoutUuid(long groupId, long cpDefinitionId) {
@@ -763,11 +795,13 @@ public class CPDefinitionLocalServiceUtil {
 	public static com.liferay.portal.kernel.search.BaseModelSearchResult
 		<CPDefinition> searchCPDefinitions(
 				long companyId, long[] groupIds, String keywords, int status,
-				int start, int end, com.liferay.portal.kernel.search.Sort sort)
+				boolean ignoreCommerceAccountGroup, int start, int end,
+				com.liferay.portal.kernel.search.Sort sort)
 			throws PortalException {
 
 		return getService().searchCPDefinitions(
-			companyId, groupIds, keywords, status, start, end, sort);
+			companyId, groupIds, keywords, status, ignoreCommerceAccountGroup,
+			start, end, sort);
 	}
 
 	public static com.liferay.portal.kernel.search.BaseModelSearchResult
@@ -785,13 +819,13 @@ public class CPDefinitionLocalServiceUtil {
 	public static com.liferay.portal.kernel.search.BaseModelSearchResult
 		<CPDefinition> searchCPDefinitionsByChannelGroupId(
 				long companyId, long[] groupIds, long commerceChannelGroupId,
-				String keywords, int status, int start, int end,
-				com.liferay.portal.kernel.search.Sort sort)
+				String keywords, int status, boolean ignoreCommerceAccountGroup,
+				int start, int end, com.liferay.portal.kernel.search.Sort sort)
 			throws PortalException {
 
 		return getService().searchCPDefinitionsByChannelGroupId(
 			companyId, groupIds, commerceChannelGroupId, keywords, status,
-			start, end, sort);
+			ignoreCommerceAccountGroup, start, end, sort);
 	}
 
 	public static void updateAsset(
@@ -1010,6 +1044,10 @@ public class CPDefinitionLocalServiceUtil {
 
 	public static CPDefinitionLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(CPDefinitionLocalService service) {
+		_service = service;
 	}
 
 	private static volatile CPDefinitionLocalService _service;

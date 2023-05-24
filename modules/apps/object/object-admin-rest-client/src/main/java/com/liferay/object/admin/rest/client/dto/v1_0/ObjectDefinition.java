@@ -58,31 +58,31 @@ public class ObjectDefinition implements Cloneable, Serializable {
 
 	protected Boolean accountEntryRestricted;
 
-	public Long getAccountEntryRestrictedObjectFieldId() {
-		return accountEntryRestrictedObjectFieldId;
+	public String getAccountEntryRestrictedObjectFieldName() {
+		return accountEntryRestrictedObjectFieldName;
 	}
 
-	public void setAccountEntryRestrictedObjectFieldId(
-		Long accountEntryRestrictedObjectFieldId) {
+	public void setAccountEntryRestrictedObjectFieldName(
+		String accountEntryRestrictedObjectFieldName) {
 
-		this.accountEntryRestrictedObjectFieldId =
-			accountEntryRestrictedObjectFieldId;
+		this.accountEntryRestrictedObjectFieldName =
+			accountEntryRestrictedObjectFieldName;
 	}
 
-	public void setAccountEntryRestrictedObjectFieldId(
-		UnsafeSupplier<Long, Exception>
-			accountEntryRestrictedObjectFieldIdUnsafeSupplier) {
+	public void setAccountEntryRestrictedObjectFieldName(
+		UnsafeSupplier<String, Exception>
+			accountEntryRestrictedObjectFieldNameUnsafeSupplier) {
 
 		try {
-			accountEntryRestrictedObjectFieldId =
-				accountEntryRestrictedObjectFieldIdUnsafeSupplier.get();
+			accountEntryRestrictedObjectFieldName =
+				accountEntryRestrictedObjectFieldNameUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected Long accountEntryRestrictedObjectFieldId;
+	protected String accountEntryRestrictedObjectFieldName;
 
 	public Map<String, Map<String, String>> getActions() {
 		return actions;
@@ -169,6 +169,27 @@ public class ObjectDefinition implements Cloneable, Serializable {
 
 	protected Date dateModified;
 
+	public String getDefaultLanguageId() {
+		return defaultLanguageId;
+	}
+
+	public void setDefaultLanguageId(String defaultLanguageId) {
+		this.defaultLanguageId = defaultLanguageId;
+	}
+
+	public void setDefaultLanguageId(
+		UnsafeSupplier<String, Exception> defaultLanguageIdUnsafeSupplier) {
+
+		try {
+			defaultLanguageId = defaultLanguageIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String defaultLanguageId;
+
 	public Boolean getEnableCategorization() {
 		return enableCategorization;
 	}
@@ -210,6 +231,50 @@ public class ObjectDefinition implements Cloneable, Serializable {
 	}
 
 	protected Boolean enableComments;
+
+	public Boolean getEnableLocalization() {
+		return enableLocalization;
+	}
+
+	public void setEnableLocalization(Boolean enableLocalization) {
+		this.enableLocalization = enableLocalization;
+	}
+
+	public void setEnableLocalization(
+		UnsafeSupplier<Boolean, Exception> enableLocalizationUnsafeSupplier) {
+
+		try {
+			enableLocalization = enableLocalizationUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean enableLocalization;
+
+	public Boolean getEnableObjectEntryHistory() {
+		return enableObjectEntryHistory;
+	}
+
+	public void setEnableObjectEntryHistory(Boolean enableObjectEntryHistory) {
+		this.enableObjectEntryHistory = enableObjectEntryHistory;
+	}
+
+	public void setEnableObjectEntryHistory(
+		UnsafeSupplier<Boolean, Exception>
+			enableObjectEntryHistoryUnsafeSupplier) {
+
+		try {
+			enableObjectEntryHistory =
+				enableObjectEntryHistoryUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean enableObjectEntryHistory;
 
 	public String getExternalReferenceCode() {
 		return externalReferenceCode;
@@ -271,6 +336,27 @@ public class ObjectDefinition implements Cloneable, Serializable {
 	}
 
 	protected Map<String, String> label;
+
+	public Boolean getModifiable() {
+		return modifiable;
+	}
+
+	public void setModifiable(Boolean modifiable) {
+		this.modifiable = modifiable;
+	}
+
+	public void setModifiable(
+		UnsafeSupplier<Boolean, Exception> modifiableUnsafeSupplier) {
+
+		try {
+			modifiable = modifiableUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean modifiable;
 
 	public String getName() {
 		return name;
@@ -377,6 +463,30 @@ public class ObjectDefinition implements Cloneable, Serializable {
 	}
 
 	protected ObjectRelationship[] objectRelationships;
+
+	public ObjectValidationRule[] getObjectValidationRules() {
+		return objectValidationRules;
+	}
+
+	public void setObjectValidationRules(
+		ObjectValidationRule[] objectValidationRules) {
+
+		this.objectValidationRules = objectValidationRules;
+	}
+
+	public void setObjectValidationRules(
+		UnsafeSupplier<ObjectValidationRule[], Exception>
+			objectValidationRulesUnsafeSupplier) {
+
+		try {
+			objectValidationRules = objectValidationRulesUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected ObjectValidationRule[] objectValidationRules;
 
 	public ObjectView[] getObjectViews() {
 		return objectViews;
@@ -505,6 +615,27 @@ public class ObjectDefinition implements Cloneable, Serializable {
 
 	protected Boolean portlet;
 
+	public String getRestContextPath() {
+		return restContextPath;
+	}
+
+	public void setRestContextPath(String restContextPath) {
+		this.restContextPath = restContextPath;
+	}
+
+	public void setRestContextPath(
+		UnsafeSupplier<String, Exception> restContextPathUnsafeSupplier) {
+
+		try {
+			restContextPath = restContextPathUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String restContextPath;
+
 	public String getScope() {
 		return scope;
 	}
@@ -589,26 +720,26 @@ public class ObjectDefinition implements Cloneable, Serializable {
 
 	protected Boolean system;
 
-	public Long getTitleObjectFieldId() {
-		return titleObjectFieldId;
+	public String getTitleObjectFieldName() {
+		return titleObjectFieldName;
 	}
 
-	public void setTitleObjectFieldId(Long titleObjectFieldId) {
-		this.titleObjectFieldId = titleObjectFieldId;
+	public void setTitleObjectFieldName(String titleObjectFieldName) {
+		this.titleObjectFieldName = titleObjectFieldName;
 	}
 
-	public void setTitleObjectFieldId(
-		UnsafeSupplier<Long, Exception> titleObjectFieldIdUnsafeSupplier) {
+	public void setTitleObjectFieldName(
+		UnsafeSupplier<String, Exception> titleObjectFieldNameUnsafeSupplier) {
 
 		try {
-			titleObjectFieldId = titleObjectFieldIdUnsafeSupplier.get();
+			titleObjectFieldName = titleObjectFieldNameUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected Long titleObjectFieldId;
+	protected String titleObjectFieldName;
 
 	@Override
 	public ObjectDefinition clone() throws CloneNotSupportedException {

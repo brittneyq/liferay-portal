@@ -51,7 +51,7 @@ public class PoshiContextTest extends TestCase {
 
 		PropsUtil.set("test.base.dir.name", poshiFileDir);
 
-		PoshiContext.readFiles(poshiFileNames, poshiFileDir);
+		PoshiContext.readFiles(true, poshiFileNames, poshiFileDir);
 	}
 
 	@After
@@ -63,12 +63,12 @@ public class PoshiContextTest extends TestCase {
 	@Test
 	public void testGetFilePath() throws Exception {
 		String actualFilePath = PoshiContext.getFilePathFromFileName(
-			"Action2.action", PoshiContext.getDefaultNamespace());
+			"Macro.macro", PoshiContext.getDefaultNamespace());
 
 		String baseDirName = FileUtil.getCanonicalPath(
 			"src/test/resources/com/liferay/poshi/core/");
 
-		File file = new File(baseDirName, "/dependencies/test/Action2.action");
+		File file = new File(baseDirName, "/dependencies/test/Macro.macro");
 
 		String expectedFilePath = file.getCanonicalPath();
 

@@ -16,6 +16,7 @@ package com.liferay.portal.vulcan.util;
 
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.search.BooleanClause;
@@ -53,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * @author Brian Wing Shun Chan
@@ -84,7 +84,7 @@ public class SearchUtil {
 	public static <T> Page<T> search(
 			Map<String, Map<String, String>> actions,
 			UnsafeConsumer<BooleanQuery, Exception> booleanQueryUnsafeConsumer,
-			Filter filter, String indexerClassName, String keywords,
+			Filter filter, Indexer<?> indexer, String keywords,
 			Pagination pagination,
 			UnsafeConsumer<QueryConfig, Exception> queryConfigUnsafeConsumer,
 			UnsafeConsumer<SearchContext, Exception>
@@ -95,8 +95,6 @@ public class SearchUtil {
 
 		Hits hits = null;
 		long totalCount = 0;
-
-		Indexer<?> indexer = IndexerRegistryUtil.getIndexer(indexerClassName);
 
 		if (sorts == null) {
 			sorts = new Sort[] {
@@ -135,6 +133,25 @@ public class SearchUtil {
 		return Page.of(
 			(actions != null) ? actions : Collections.emptyMap(),
 			_getFacets(searchContext), items, pagination, totalCount);
+	}
+
+	public static <T> Page<T> search(
+			Map<String, Map<String, String>> actions,
+			UnsafeConsumer<BooleanQuery, Exception> booleanQueryUnsafeConsumer,
+			Filter filter, String indexerClassName, String keywords,
+			Pagination pagination,
+			UnsafeConsumer<QueryConfig, Exception> queryConfigUnsafeConsumer,
+			UnsafeConsumer<SearchContext, Exception>
+				searchContextUnsafeConsumer,
+			Sort[] sorts,
+			UnsafeFunction<Document, T, Exception> transformUnsafeFunction)
+		throws Exception {
+
+		return search(
+			actions, booleanQueryUnsafeConsumer, filter,
+			IndexerRegistryUtil.getIndexer(indexerClassName), keywords,
+			pagination, queryConfigUnsafeConsumer, searchContextUnsafeConsumer,
+			sorts, transformUnsafeFunction);
 	}
 
 	public static class SearchContext
@@ -286,11 +303,16 @@ public class SearchUtil {
 			return null;
 		}
 
-		return Stream.of(
-			sorts
-		).flatMap(
-			sort -> Stream.of(sort.getFieldName(), !sort.isReverse())
-		).toArray();
+		Object[] sortsByComparatorColumns = new Object[sorts.length * 2];
+
+		for (int i = 0; i < sorts.length; i++) {
+			Sort sort = sorts[i];
+
+			sortsByComparatorColumns[i * 2] = sort.getFieldName();
+			sortsByComparatorColumns[(i * 2) + 1] = !sort.isReverse();
+		}
+
+		return sortsByComparatorColumns;
 	}
 
 }

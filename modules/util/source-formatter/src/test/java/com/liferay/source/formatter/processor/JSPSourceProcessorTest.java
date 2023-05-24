@@ -84,12 +84,20 @@ public class JSPSourceProcessorTest extends BaseSourceProcessorTestCase {
 	@Test
 	public void testIncorrectMethodCalls() throws Exception {
 		test(
-			"IncorrectMethodCalls.testjsp",
-			new String[] {
-				"Use type 'LiferayPortletResponse' to call 'getNamespace()'",
-				"Use type 'LiferayPortletResponse' to call 'getNamespace()'"
-			},
-			new Integer[] {21, 28});
+			SourceProcessorTestParameters.create(
+				"IncorrectMethodCalls.testjsp"
+			).addExpectedMessage(
+				"Use type 'LiferayPortletResponse' to call 'getNamespace()'", 21
+			).addExpectedMessage(
+				"Use type 'LiferayPortletResponse' to call 'getNamespace()'", 28
+			));
+	}
+
+	@Test
+	public void testLanguageUtilCall() throws Exception {
+		test(
+			"LanguageUtilCall.testjsp",
+			"Use <liferay-ui:message> tag instead of LanguageUtil.get", 17);
 	}
 
 	@Test
@@ -98,14 +106,26 @@ public class JSPSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testMissingTaglibAttributes() throws Exception {
+		test(
+			"MissingTaglibAttributes.testjsp",
+			"When using <clay:dropdown-actions>, always specify one of the " +
+				"follwing attributes: 'aria-label', 'aria-labelledby', 'title'",
+			19);
+	}
+
+	@Test
 	public void testMissingTaglibs() throws Exception {
 		test(
-			"MissingTaglibs.testjsp",
-			new String[] {
-				"Missing taglib for tag with prefix 'aui'",
-				"Missing taglib for tag with prefix 'liferay-portlet'",
+			SourceProcessorTestParameters.create(
+				"MissingTaglibs.testjsp"
+			).addExpectedMessage(
+				"Missing taglib for tag with prefix 'aui'"
+			).addExpectedMessage(
+				"Missing taglib for tag with prefix 'liferay-portlet'"
+			).addExpectedMessage(
 				"Missing taglib for tag with prefix 'liferay-ui'"
-			});
+			));
 	}
 
 	@Test

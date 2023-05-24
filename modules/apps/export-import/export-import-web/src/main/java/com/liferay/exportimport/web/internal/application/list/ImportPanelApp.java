@@ -35,7 +35,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Daniel Kocsis
  */
 @Component(
-	immediate = true,
 	property = {
 		"panel.app.order:Integer=400",
 		"panel.category.key=" + PanelCategoryKeys.SITE_ADMINISTRATION_PUBLISHING
@@ -43,6 +42,11 @@ import org.osgi.service.component.annotations.Reference;
 	service = PanelApp.class
 )
 public class ImportPanelApp extends BasePanelApp {
+
+	@Override
+	public Portlet getPortlet() {
+		return _portlet;
+	}
 
 	@Override
 	public String getPortletId() {
@@ -73,13 +77,9 @@ public class ImportPanelApp extends BasePanelApp {
 		return portletURL;
 	}
 
-	@Override
 	@Reference(
-		target = "(javax.portlet.name=" + ExportImportPortletKeys.IMPORT + ")",
-		unbind = "-"
+		target = "(javax.portlet.name=" + ExportImportPortletKeys.IMPORT + ")"
 	)
-	public void setPortlet(Portlet portlet) {
-		super.setPortlet(portlet);
-	}
+	private Portlet _portlet;
 
 }

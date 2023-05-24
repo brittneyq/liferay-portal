@@ -18,10 +18,10 @@ import com.liferay.dynamic.data.mapping.constants.DDMActionKeys;
 import com.liferay.dynamic.data.mapping.constants.DDMFormConstants;
 import com.liferay.dynamic.data.mapping.form.web.internal.security.permission.resource.DDMFormInstancePermission;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
-import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
+import com.liferay.object.exception.ObjectEntryValuesException;
+import com.liferay.object.model.ObjectFieldSetting;
+import com.liferay.object.service.ObjectFieldSettingLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -67,6 +68,13 @@ public class DDMFormUploadFileEntryHandler implements UploadFileEntryHandler {
 			String fileName = uploadPortletRequest.getFileName("file");
 
 			_ddmFormUploadValidator.validateFileSize(file, fileName);
+
+			long objectFieldId = ParamUtil.getLong(
+				uploadPortletRequest, "objectFieldId");
+
+			if (objectFieldId > 0) {
+				_validateAttachmentObjectField(fileName, objectFieldId);
+			}
 
 			_ddmFormUploadValidator.validateFileExtension(fileName);
 
@@ -112,13 +120,27 @@ public class DDMFormUploadFileEntryHandler implements UploadFileEntryHandler {
 	private long _getDDMFormDefaultUserId(long companyId)
 		throws PortalException {
 
-		Company company = _companyLocalService.getCompany(companyId);
+		return _userLocalService.getUserIdByScreenName(
+			companyId, DDMFormConstants.DDM_FORM_DEFAULT_USER_SCREEN_NAME);
+	}
 
-		return _userLocalService.getUserIdByEmailAddress(
-			companyId,
-			StringBundler.concat(
-				DDMFormConstants.DDM_FORM_DEFAULT_USER_SCREEN_NAME,
-				StringPool.AT, company.getMx()));
+	private void _validateAttachmentObjectField(
+			String fileName, long objectFieldId)
+		throws PortalException {
+
+		ObjectFieldSetting objectFieldSetting =
+			_objectFieldSettingLocalService.fetchObjectFieldSetting(
+				objectFieldId, "acceptedFileExtensions");
+
+		String value = objectFieldSetting.getValue();
+
+		if (!ArrayUtil.contains(
+				value.split("\\s*,\\s*"), FileUtil.getExtension(fileName),
+				true)) {
+
+			throw new ObjectEntryValuesException.InvalidFileExtension(
+				FileUtil.getExtension(fileName), fileName);
+		}
 	}
 
 	@Reference
@@ -126,6 +148,9 @@ public class DDMFormUploadFileEntryHandler implements UploadFileEntryHandler {
 
 	@Reference
 	private DDMFormUploadValidator _ddmFormUploadValidator;
+
+	@Reference
+	private ObjectFieldSettingLocalService _objectFieldSettingLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;

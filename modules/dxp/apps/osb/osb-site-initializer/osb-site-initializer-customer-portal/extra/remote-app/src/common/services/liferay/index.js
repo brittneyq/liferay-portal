@@ -24,9 +24,14 @@ export const Liferay = window.Liferay || {
 		getPortalURL: () => window.location.origin,
 		getScopeGroupId: () => 0,
 		getSiteGroupId: () => 0,
-		getUserId: () => 0,
+		getUserId: () => '0',
 	},
+
 	Util: {
+		SessionStorage: Object.assign(sessionStorage, {
+			Types: {},
+		}),
+		isTablet: () => false,
 		navigate: (path) => window.location.assign(path),
 		openToast: (options) => alert(options),
 	},

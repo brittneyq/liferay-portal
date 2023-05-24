@@ -12,6 +12,7 @@
  * details.
  */
 
+import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayEmptyState from '@clayui/empty-state';
 import ClayIcon from '@clayui/icon';
@@ -62,6 +63,7 @@ import {
 	getErrorObject,
 	getFullPath,
 	historyPushWithSlug,
+	processGraphQLError,
 } from '../../utils/utils.es';
 import FlagsContainer from './components/FlagsContainer';
 
@@ -89,7 +91,9 @@ export default withRouter(
 
 		const editorRef = useRef('');
 
-		const [isPostButtonDisable, setIsPostButtonDisable] = useState(true);
+		const [isModerate, setIsModerate] = useState(false);
+		const [isPostButtonDisabled, setIsPostButtonDisabled] = useState(true);
+		const [isVisibleEditor, setIsVisibleEditor] = useState(false);
 		const [showDeleteModalPanel, setShowDeleteModalPanel] = useState(false);
 
 		const [allowSubscription, setAllowSubscription] = useState(false);
@@ -203,9 +207,24 @@ export default withRouter(
 			[allowSubscription, question, subscribe, setQuestion]
 		);
 
+		const onShowEditorAnswer = () => {
+			const threadAnswers = answers.items || [];
+
+			const hasUserAnswered = threadAnswers.some(
+				(answer) => answer.creator.id === Number(context.userId)
+			);
+			if (!context.trustedUser && hasUserAnswered) {
+				setIsModerate(true);
+			}
+
+			return setIsVisibleEditor(true);
+		};
+
 		const onCreateAnswer = async () => {
+			setIsPostButtonDisabled(true);
+
 			try {
-				await createAnswer({
+				const {error} = await createAnswer({
 					fetchOptionsOverrides: getContextLink(
 						`${sectionTitle}/${questionId}`
 					),
@@ -214,6 +233,12 @@ export default withRouter(
 						messageBoardThreadId: question.id,
 					},
 				});
+
+				if (error) {
+					setIsPostButtonDisabled(false);
+
+					return processGraphQLError(error);
+				}
 
 				editorRef.current.clearContent();
 
@@ -227,8 +252,13 @@ export default withRouter(
 					pageSize: 20,
 					siteKey: context.siteKey,
 				});
+				setIsVisibleEditor(false);
 			}
-			catch (error) {}
+			catch (error) {
+				processGraphQLError(error);
+			}
+
+			setIsPostButtonDisabled(false);
 		};
 
 		const deleteAnswer = useCallback(
@@ -318,6 +348,37 @@ export default withRouter(
 					</div>
 				)}
 
+				{isModerate && (
+					<ClayAlert.ToastContainer>
+						<ClayAlert
+							autoClose={6000}
+							displayType="warning"
+							onClose={() => setIsModerate(false)}
+							title={Liferay.Language.get(
+								'are-you-sure-you-want-to-add-another-answer'
+							)}
+							variant="inline"
+						>
+							<div>
+								{Liferay.Language.get(
+									'you-can-add-a-comment-to-continue-the-existing-thread'
+								)}
+							</div>
+
+							<ClayAlert.Footer>
+								<ClayButton.Group className="ml-0">
+									<ClayButton
+										alert
+										onClick={() => setIsModerate(false)}
+									>
+										{Liferay.Language.get('cancel')}
+									</ClayButton>
+								</ClayButton.Group>
+							</ClayAlert.Footer>
+						</ClayAlert>
+					</ClayAlert.ToastContainer>
+				)}
+
 				<div className="c-mt-5">
 					{!loading && !error && (
 						<div className="questions-container row">
@@ -386,7 +447,7 @@ export default withRouter(
 											)}
 										</h1>
 
-										<p className="c-mb-0 small text-secondary">
+										<div className="c-mb-0 d-flex small text-secondary">
 											<EditedTimestamp
 												dateCreated={
 													question.dateCreated
@@ -401,7 +462,7 @@ export default withRouter(
 
 											{`
 											/ ${lang.sub(Liferay.Language.get('viewed-x-times'), [question.viewCount])}`}
-										</p>
+										</div>
 									</div>
 
 									{!question.locked && (
@@ -521,7 +582,10 @@ export default withRouter(
 								</div>
 
 								<div className="c-mt-4 position-relative questions-creator text-center text-md-right">
-									<CreatorRow question={question} />
+									<CreatorRow
+										answers={answers}
+										question={question}
+									/>
 								</div>
 
 								<h3 className="c-mt-4 text-secondary">
@@ -546,6 +610,7 @@ export default withRouter(
 											<Answer
 												answer={answer}
 												answerChange={answerChange}
+												answers={answers}
 												canMarkAsAnswer={
 													!question.locked &&
 													!!question.actions.replace
@@ -566,43 +631,59 @@ export default withRouter(
 									question.actions &&
 									question.actions['reply-to-thread'] && (
 										<div className="c-mt-5">
-											<DefaultQuestionsEditor
-												label={Liferay.Language.get(
-													'your-answer'
-												)}
-												onContentLengthValid={
-													setIsPostButtonDisable
-												}
-												question={question}
-												ref={editorRef}
-											/>
+											{isVisibleEditor && (
+												<>
+													<DefaultQuestionsEditor
+														label={Liferay.Language.get(
+															'your-answer'
+														)}
+														onContentLengthValid={
+															setIsPostButtonDisabled
+														}
+														question={question}
+														ref={editorRef}
+													/>
 
-											{!question.subscribed && (
-												<SubscritionCheckbox
-													checked={allowSubscription}
-													setChecked={
-														setAllowSubscription
-													}
-												/>
+													<SubscritionCheckbox
+														checked={
+															allowSubscription
+														}
+														setChecked={
+															setAllowSubscription
+														}
+													/>
+												</>
 											)}
 
-											{!question.locked && (
+											{!isVisibleEditor && (
 												<ClayButton
-													disabled={
-														isPostButtonDisable
-													}
 													displayType="primary"
-													onClick={onCreateAnswer}
+													onClick={onShowEditorAnswer}
 												>
-													{context.trustedUser
-														? Liferay.Language.get(
-																'post-answer'
-														  )
-														: Liferay.Language.get(
-																'submit-for-publication'
-														  )}
+													{Liferay.Language.get(
+														'add-answer'
+													)}
 												</ClayButton>
 											)}
+
+											{!question.locked &&
+												isVisibleEditor && (
+													<ClayButton
+														disabled={
+															isPostButtonDisabled
+														}
+														displayType="primary"
+														onClick={onCreateAnswer}
+													>
+														{context.trustedUser
+															? Liferay.Language.get(
+																	'post-answer'
+															  )
+															: Liferay.Language.get(
+																	'submit-for-workflow'
+															  )}
+													</ClayButton>
+												)}
 										</div>
 									)}
 							</div>

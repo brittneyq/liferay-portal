@@ -16,9 +16,11 @@ package com.liferay.portal.search.internal.background.task;
 
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
+import com.liferay.portal.kernel.change.tracking.sql.CTSQLModeThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
@@ -34,7 +36,6 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.osgi.framework.BundleContext;
@@ -47,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrew Betts
  */
 @Component(
-	immediate = true,
 	property = "background.task.executor.class.name=com.liferay.portal.search.internal.background.task.ReindexSingleIndexerBackgroundTaskExecutor",
 	service = {
 		BackgroundTaskExecutor.class,
@@ -95,7 +95,8 @@ public class ReindexSingleIndexerBackgroundTaskExecutor
 	}
 
 	@Override
-	protected void reindex(String className, long[] companyIds)
+	protected void reindex(
+			String className, long[] companyIds, String executionMode)
 		throws Exception {
 
 		Indexer<?> indexer = indexerRegistry.getIndexer(className);
@@ -104,8 +105,7 @@ public class ReindexSingleIndexerBackgroundTaskExecutor
 			return;
 		}
 
-		Collection<SearchEngine> searchEngines =
-			searchEngineHelper.getSearchEngines();
+		SearchEngine searchEngine = searchEngineHelper.getSearchEngine();
 
 		boolean systemIndexer = _isSystemIndexer(indexer);
 
@@ -120,13 +120,24 @@ public class ReindexSingleIndexerBackgroundTaskExecutor
 				ReindexBackgroundTaskConstants.SINGLE_START, companyId,
 				companyIds);
 
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Start reindexing company ", companyId,
+						" for class name ", className));
+			}
+
+			CTSQLModeThreadLocal.CTSQLMode ctSQLMode =
+				CTSQLModeThreadLocal.getCTSQLMode();
+
 			try {
-				for (SearchEngine searchEngine : searchEngines) {
-					searchEngine.initialize(companyId);
-				}
+				CTSQLModeThreadLocal.setCTSQLModeWithSafeCloseable(
+					CTSQLModeThreadLocal.CTSQLMode.CT_ALL);
+
+				searchEngine.initialize(companyId);
 
 				indexWriterHelper.deleteEntityDocuments(
-					indexer.getSearchEngineId(), companyId, className, true);
+					companyId, className, true);
 
 				indexer.reindex(new String[] {String.valueOf(companyId)});
 			}
@@ -134,9 +145,18 @@ public class ReindexSingleIndexerBackgroundTaskExecutor
 				_log.error(exception);
 			}
 			finally {
+				CTSQLModeThreadLocal.setCTSQLModeWithSafeCloseable(ctSQLMode);
+
 				reindexStatusMessageSender.sendStatusMessage(
 					ReindexBackgroundTaskConstants.SINGLE_END, companyId,
 					companyIds);
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Finished reindexing company ", companyId,
+							" for class name ", className));
+				}
 			}
 		}
 	}

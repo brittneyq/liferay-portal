@@ -31,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true, property = "search.engine.impl=Elasticsearch",
+	property = "search.engine.impl=Elasticsearch",
 	service = SuggesterTranslator.class
 )
 public class ElasticsearchSuggesterTranslator
@@ -60,29 +60,13 @@ public class ElasticsearchSuggesterTranslator
 		return _termSuggesterTranslator.translate(termSuggester);
 	}
 
-	@Reference(unbind = "-")
-	protected void setCompletionSuggesterTranslator(
-		CompletionSuggesterTranslator completionSuggesterTranslator) {
-
-		_completionSuggesterTranslator = completionSuggesterTranslator;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPhraseSuggesterTranslator(
-		PhraseSuggesterTranslator phraseSuggesterTranslator) {
-
-		_phraseSuggesterTranslator = phraseSuggesterTranslator;
-	}
-
-	@Reference(unbind = "-")
-	protected void setTermSuggesterTranslator(
-		TermSuggesterTranslator termSuggesterTranslator) {
-
-		_termSuggesterTranslator = termSuggesterTranslator;
-	}
-
+	@Reference
 	private CompletionSuggesterTranslator _completionSuggesterTranslator;
+
+	@Reference
 	private PhraseSuggesterTranslator _phraseSuggesterTranslator;
+
+	@Reference
 	private TermSuggesterTranslator _termSuggesterTranslator;
 
 }

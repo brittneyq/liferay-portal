@@ -12,7 +12,6 @@
  * details.
  */
 
-type Locale = Liferay.Language.Locale;
 type LocalizedValue<T> = Liferay.Language.LocalizedValue<T>;
 
 type NotificationTemplate = {
@@ -21,6 +20,7 @@ type NotificationTemplate = {
 	body: LocalizedValue<string>;
 	cc: string;
 	description: string;
+	externalReferenceCode: string;
 	from: string;
 	fromName: LocalizedValue<string>;
 	id: number;
@@ -28,29 +28,36 @@ type NotificationTemplate = {
 	objectDefinitionId: number | null;
 	subject: LocalizedValue<string>;
 	to: LocalizedValue<string>;
+	type: 'email' | 'userNotification';
 };
 
 interface ObjectAction {
 	active: boolean;
 	conditionExpression?: string;
 	description?: string;
+	errorMessage: LocalizedValue<string>;
 	id?: number;
+	label: LocalizedValue<string>;
 	name: string;
 	objectActionExecutorKey: string;
 	objectActionTriggerKey: string;
+	objectDefinitionId?: number;
 	objectDefinitionsRelationshipsURL: string;
-	parameters?: ObjectActionParameters;
+	parameters: ObjectActionParameters;
 	script?: string;
 }
 
 interface ObjectActionParameters {
 	lineCount?: number;
+	notificationTemplateExternalReferenceCode?: string;
 	notificationTemplateId?: number;
+	objectDefinitionExternalReferenceCode?: string;
 	objectDefinitionId?: number;
 	predefinedValues?: PredefinedValue[];
 	relatedObjectEntries?: boolean;
 	script?: string;
 	secret?: string;
+	system?: boolean;
 	url?: string;
 }
 
@@ -58,13 +65,18 @@ type ObjectFieldBusinessType =
 	| 'Aggregation'
 	| 'Attachment'
 	| 'Date'
+	| 'DateTime'
 	| 'Decimal'
+	| 'Encrypted'
+	| 'Formula'
 	| 'Integer'
 	| 'LongInteger'
 	| 'LongText'
+	| 'MultiselectPicklist'
 	| 'Picklist'
 	| 'PrecisionDecimal'
 	| 'Relationship'
+	| 'RichText'
 	| 'Text'
 	| 'Workflow Status';
 interface ObjectFieldType {
@@ -75,15 +87,17 @@ interface ObjectFieldType {
 }
 interface ObjectField {
 	DBType: string;
-	businessType: ObjectFieldBusinessType | string;
+	businessType: ObjectFieldBusinessType;
 	defaultValue?: string;
 	externalReferenceCode?: string;
 	id: number;
 	indexed: boolean;
 	indexedAsKeyword: boolean;
-	indexedLanguageId: Locale | null;
+	indexedLanguageId: Liferay.Language.Locale | null;
 	label: LocalizedValue<string>;
-	listTypeDefinitionId: number;
+	listTypeDefinitionExternalReferenceCode: string;
+	listTypeDefinitionId?: number;
+	localized: boolean;
 	name: string;
 	objectFieldSettings?: ObjectFieldSetting[];
 	relationshipId?: number;
@@ -101,17 +115,27 @@ interface ObjectFieldView extends ObjectField {
 }
 
 interface ObjectDefinition {
+	accountEntryRestricted: boolean;
+	accountEntryRestrictedObjectFieldId: string;
+	accountEntryRestrictedObjectFieldName: string;
 	active: boolean;
 	dateCreated: string;
 	dateModified: string;
+	dbTableName?: string;
+	defaultLanguageId: Liferay.Language.Locale;
 	enableCategorization: boolean;
 	enableComments: boolean;
+	enableLocalization: boolean;
+	enableObjectEntryHistory: boolean;
+	externalReferenceCode: string;
 	id: number;
 	label: LocalizedValue<string>;
+	modifiable?: boolean;
 	name: string;
 	objectActions: [];
 	objectFields: ObjectField[];
 	objectLayouts: [];
+	objectRelationships: [];
 	objectViews: [];
 	panelCategoryKey: string;
 	parameterRequired?: boolean;
@@ -126,24 +150,37 @@ interface ObjectDefinition {
 	};
 	storageType?: string;
 	system: boolean;
-	titleObjectFieldId: number;
+	titleObjectFieldId: number | string;
+	titleObjectFieldName: string;
 }
+
+type ObjectFieldSettingValue =
+	| LocalizedValue<string>
+	| NameValueObject[]
+	| ObjectFieldFilterSetting[]
+	| ObjectFieldPicklistSetting
+	| boolean
+	| number
+	| string;
 
 interface ObjectFieldSetting {
 	name: ObjectFieldSettingName;
 	objectFieldId?: number;
-	value:
-		| string
-		| number
-		| boolean
-		| NameValueObject[]
-		| ObjectFieldFilterSetting[]
-		| ObjectFieldPicklistSetting;
+	value: ObjectFieldSettingValue;
 }
 
 interface ObjectEntry {
+	creator: {
+		additionalName: string;
+		contentType: string;
+		familyName: string;
+		givenName: string;
+		id: number;
+		name: string;
+	};
 	dateCreated: string;
 	dateModified: string;
+	externalReferenceCode: string;
 	id: number;
 	name: string;
 	status: {
@@ -201,17 +238,27 @@ type TFilterOperators = {
 
 type ObjectFieldSettingName =
 	| 'acceptedFileExtensions'
+	| 'defaultValue'
+	| 'defaultValueType'
 	| 'fileSource'
 	| 'filters'
 	| 'function'
 	| 'maxLength'
 	| 'maximumFileSize'
+	| 'objectDefinition1ShortName'
 	| 'objectFieldName'
 	| 'objectRelationshipName'
+	| 'output'
+	| 'readOnly'
+	| 'readOnlyScript'
+	| 'script'
 	| 'showCounter'
 	| 'showFilesInDocumentsAndMedia'
 	| 'stateFlow'
-	| 'storageDLFolderPath';
+	| 'storageDLFolderPath'
+	| 'timeStorage'
+	| 'uniqueValues'
+	| 'uniqueValuesErrorMessage';
 
 interface ObjectValidation {
 	active: boolean;
@@ -230,16 +277,19 @@ interface ObjectRelationship {
 	id: number;
 	label: LocalizedValue<string>;
 	name: string;
+	objectDefinitionExternalReferenceCode1: string;
+	objectDefinitionExternalReferenceCode2: string;
 	objectDefinitionId1: number;
 	objectDefinitionId2: number;
 	readonly objectDefinitionName2: string;
 	objectRelationshipId: number;
-	parameterObjectFieldId?: number;
-	reverse?: boolean;
+	parameterObjectFieldName?: string;
+	reverse: boolean;
 	type: ObjectRelationshipType;
 }
 
-interface ObjectDefinitionsRelationship {
+interface AddObjectEntryDefinitions {
+	externalReferenceCode: string;
 	id: number;
 	label: string;
 	related?: boolean;
@@ -253,19 +303,39 @@ type ObjectValidationType = {
 };
 
 interface PickList {
+	actions: Actions;
+	externalReferenceCode: string;
 	id: number;
+	key: string;
 	listTypeEntries: PickListItem[];
 	name: string;
+	name_i18n: LocalizedValue<string>;
 }
 
 interface PickListItem {
+	externalReferenceCode: string;
 	id: number;
 	key: string;
 	name: string;
+	name_i18n: LocalizedValue<string>;
+}
+
+interface Actions {
+	delete: HTTPMethod;
+	get: HTTPMethod;
+	permissions: HTTPMethod;
+	update: HTTPMethod;
+}
+
+interface HTTPMethod {
+	href: string;
+	method: string;
 }
 
 interface PredefinedValue {
+	businessType: ObjectFieldBusinessType;
 	inputAsValue: boolean;
+	label: LocalizedValue<string>;
 	name: string;
 	value: string;
 }
@@ -275,15 +345,21 @@ interface LabelValueObject {
 	value: string;
 }
 
+interface LabelNameObject {
+	label: string;
+	name: string;
+}
+
 interface NameValueObject {
 	name: string;
 	value: string;
 }
 
-interface ObjectDefinitionsRelationship {
+interface AddObjectEntryDefinitions {
 	id: number;
 	label: string;
 	related?: boolean;
+	system?: boolean;
 }
 
 interface ObjectState {

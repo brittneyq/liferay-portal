@@ -42,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sergio González
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + MBPortletKeys.MESSAGE_BOARDS_ADMIN,
 		"path=/message_boards/view_category"
@@ -54,8 +53,7 @@ public class CategoryPermissionsPortletConfigurationIcon
 
 	@Override
 	public String getMessage(PortletRequest portletRequest) {
-		return _language.get(
-			getResourceBundle(getLocale(portletRequest)), "permissions");
+		return _language.get(getLocale(portletRequest), "permissions");
 	}
 
 	@Override
@@ -101,7 +99,7 @@ public class CategoryPermissionsPortletConfigurationIcon
 
 		User user = themeDisplay.getUser();
 
-		if (user.isDefaultUser()) {
+		if (user.isGuestUser()) {
 			return false;
 		}
 
@@ -125,11 +123,6 @@ public class CategoryPermissionsPortletConfigurationIcon
 		}
 
 		return true;
-	}
-
-	@Override
-	public boolean isToolTip() {
-		return false;
 	}
 
 	@Override

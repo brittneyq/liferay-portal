@@ -17,12 +17,12 @@ package com.liferay.saml.opensaml.integration.internal.servlet.profile;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.struts.Definition;
 import com.liferay.portal.struts.TilesUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.saml.constants.SamlWebKeys;
 import com.liferay.saml.opensaml.integration.internal.BaseSamlTestCase;
-import com.liferay.saml.opensaml.integration.internal.binding.SamlBinding;
 import com.liferay.saml.persistence.model.SamlIdpSpSession;
 import com.liferay.saml.persistence.model.SamlSpSession;
 import com.liferay.saml.persistence.model.impl.SamlIdpSpConnectionImpl;
@@ -90,16 +90,24 @@ public class SingleLogoutProfileIntegrationTest extends BaseSamlTestCase {
 
 		_singleLogoutProfileImpl = new SingleLogoutProfileImpl();
 
-		_singleLogoutProfileImpl.setIdentifierGenerationStrategyFactory(
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "identifierGenerationStrategyFactory",
 			identifierGenerationStrategyFactory);
-		_singleLogoutProfileImpl.setMetadataManager(metadataManagerImpl);
-		_singleLogoutProfileImpl.setPortal(portal);
-		_singleLogoutProfileImpl.setSamlBindings(samlBindings);
-		_singleLogoutProfileImpl.setSamlPeerBindingLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "metadataManager", metadataManagerImpl);
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "portal", portal);
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "samlBindingProvider",
+			samlBindingProvider);
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "_samlPeerBindingLocalService",
 			samlPeerBindingLocalService);
-		_singleLogoutProfileImpl.setSamlProviderConfigurationHelper(
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "samlProviderConfigurationHelper",
 			samlProviderConfigurationHelper);
-		_singleLogoutProfileImpl.setSamlSpSessionLocalService(
+		ReflectionTestUtil.setFieldValue(
+			_singleLogoutProfileImpl, "samlSpSessionLocalService",
 			_samlSpSessionLocalService);
 
 		prepareServiceProvider(SP_ENTITY_ID);
@@ -239,14 +247,13 @@ public class SingleLogoutProfileIntegrationTest extends BaseSamlTestCase {
 
 		mockHttpServletRequest = getMockHttpServletRequest(redirect);
 
-		SamlBinding samlBinding = _singleLogoutProfileImpl.getSamlBinding(
-			SAMLConstants.SAML2_REDIRECT_BINDING_URI);
-
 		MessageContext<LogoutRequest> messageContext =
 			(MessageContext<LogoutRequest>)
 				_singleLogoutProfileImpl.decodeSamlMessage(
 					mockHttpServletRequest, mockHttpServletResponse,
-					samlBinding, true);
+					samlBindingProvider.getSamlBinding(
+						SAMLConstants.SAML2_REDIRECT_BINDING_URI),
+					true);
 
 		InOutOperationContext<LogoutRequest, ?> inOutOperationContext =
 			messageContext.getSubcontext(InOutOperationContext.class);
@@ -312,12 +319,11 @@ public class SingleLogoutProfileIntegrationTest extends BaseSamlTestCase {
 
 		mockHttpServletRequest = getMockHttpServletRequest(redirect);
 
-		SamlBinding samlBinding = _singleLogoutProfileImpl.getSamlBinding(
-			SAMLConstants.SAML2_REDIRECT_BINDING_URI);
-
 		MessageContext<?> messageContext =
 			_singleLogoutProfileImpl.decodeSamlMessage(
-				mockHttpServletRequest, mockHttpServletResponse, samlBinding,
+				mockHttpServletRequest, mockHttpServletResponse,
+				samlBindingProvider.getSamlBinding(
+					SAMLConstants.SAML2_REDIRECT_BINDING_URI),
 				true);
 
 		InOutOperationContext<?, ?> inOutOperationContext =

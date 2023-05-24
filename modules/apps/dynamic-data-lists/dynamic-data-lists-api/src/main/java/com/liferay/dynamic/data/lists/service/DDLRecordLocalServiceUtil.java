@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides the local service utility for DDLRecord. This utility wraps
@@ -84,6 +85,17 @@ public class DDLRecordLocalServiceUtil {
 
 		return getService().addRecord(
 			userId, groupId, recordSetId, displayIndex, ddmFormValues,
+			serviceContext);
+	}
+
+	public static DDLRecord addRecord(
+			long userId, long groupId, long recordSetId, int displayIndex,
+			Map<String, Serializable> fieldsMap,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addRecord(
+			userId, groupId, recordSetId, displayIndex, fieldsMap,
 			serviceContext);
 	}
 
@@ -744,6 +756,17 @@ public class DDLRecordLocalServiceUtil {
 	}
 
 	public static DDLRecord updateRecord(
+			long userId, long recordId, int displayIndex,
+			Map<String, Serializable> fieldsMap, boolean mergeFields,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().updateRecord(
+			userId, recordId, displayIndex, fieldsMap, mergeFields,
+			serviceContext);
+	}
+
+	public static DDLRecord updateRecord(
 			long userId, long recordId, long ddmStorageId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
@@ -775,6 +798,10 @@ public class DDLRecordLocalServiceUtil {
 
 	public static DDLRecordLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(DDLRecordLocalService service) {
+		_service = service;
 	}
 
 	private static volatile DDLRecordLocalService _service;

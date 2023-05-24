@@ -18,8 +18,8 @@ import com.liferay.data.engine.content.type.DataDefinitionContentType;
 import com.liferay.data.engine.field.type.util.LocalizedValueUtil;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinitionField;
-import com.liferay.data.engine.rest.internal.content.type.DataDefinitionContentTypeTracker;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
+import com.liferay.data.engine.rest.internal.content.type.DataDefinitionContentTypeRegistry;
+import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesRegistry;
 import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
@@ -32,6 +32,7 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalService;
 import com.liferay.dynamic.data.mapping.spi.converter.SPIDDMFormRuleConverter;
 import com.liferay.dynamic.data.mapping.util.SettingsDDMFormFieldsUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -55,8 +56,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Jeyvison Nascimento
@@ -64,8 +63,8 @@ import java.util.stream.Stream;
 public class DataDefinitionUtil {
 
 	public static DataDefinition toDataDefinition(
-			DataDefinitionContentTypeTracker dataDefinitionContentTypeTracker,
-			DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
+			DataDefinitionContentTypeRegistry dataDefinitionContentTypeRegistry,
+			DDMFormFieldTypeServicesRegistry ddmFormFieldTypeServicesRegistry,
 			DDMStructure ddmStructure,
 			DDMStructureLayoutLocalService ddmStructureLayoutLocalService,
 			SPIDDMFormRuleConverter spiDDMFormRuleConverter)
@@ -74,7 +73,7 @@ public class DataDefinitionUtil {
 		DDMForm ddmForm = ddmStructure.getDDMForm();
 
 		DataDefinitionContentType dataDefinitionContentType =
-			dataDefinitionContentTypeTracker.getDataDefinitionContentType(
+			dataDefinitionContentTypeRegistry.getDataDefinitionContentType(
 				ddmStructure.getClassNameId());
 
 		return new DataDefinition() {
@@ -83,13 +82,14 @@ public class DataDefinitionUtil {
 					ddmForm.getAvailableLocales());
 				contentType = dataDefinitionContentType.getContentType();
 				dataDefinitionFields = _toDataDefinitionFields(
-					ddmForm.getDDMFormFields(), ddmFormFieldTypeServicesTracker,
+					ddmForm.getDDMFormFields(),
+					ddmFormFieldTypeServicesRegistry,
 					ddmStructureLayoutLocalService);
 				dataDefinitionKey = ddmStructure.getStructureKey();
 				dateCreated = ddmStructure.getCreateDate();
 				dateModified = ddmStructure.getModifiedDate();
 				defaultDataLayout = DataLayoutUtil.toDataLayout(
-					ddmFormFieldTypeServicesTracker,
+					ddmFormFieldTypeServicesRegistry,
 					ddmStructure.fetchDDMStructureLayout(),
 					spiDDMFormRuleConverter);
 				defaultLanguageId = LanguageUtil.getLanguageId(
@@ -108,12 +108,12 @@ public class DataDefinitionUtil {
 
 	private static Map<String, Object> _getCustomProperties(
 		DDMFormField ddmFormField,
-		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
+		DDMFormFieldTypeServicesRegistry ddmFormFieldTypeServicesRegistry,
 		DDMStructureLayoutLocalService ddmStructureLayoutLocalService) {
 
 		Map<String, DDMFormField> settingsDDMFormFieldsMap =
 			SettingsDDMFormFieldsUtil.getSettingsDDMFormFields(
-				ddmFormFieldTypeServicesTracker, ddmFormField.getType());
+				ddmFormFieldTypeServicesRegistry, ddmFormField.getType());
 
 		Map<String, Object> properties = ddmFormField.getProperties();
 
@@ -225,13 +225,13 @@ public class DataDefinitionUtil {
 
 	private static DataDefinitionField _toDataDefinitionField(
 		DDMFormField ddmFormField,
-		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
+		DDMFormFieldTypeServicesRegistry ddmFormFieldTypeServicesRegistry,
 		DDMStructureLayoutLocalService ddmStructureLayoutLocalService) {
 
 		return new DataDefinitionField() {
 			{
 				customProperties = _getCustomProperties(
-					ddmFormField, ddmFormFieldTypeServicesTracker,
+					ddmFormField, ddmFormFieldTypeServicesRegistry,
 					ddmStructureLayoutLocalService);
 				defaultValue = LocalizedValueUtil.toLocalizedValuesMap(
 					ddmFormField.getPredefinedValue());
@@ -245,7 +245,7 @@ public class DataDefinitionUtil {
 				name = ddmFormField.getName();
 				nestedDataDefinitionFields = _toDataDefinitionFields(
 					ddmFormField.getNestedDDMFormFields(),
-					ddmFormFieldTypeServicesTracker,
+					ddmFormFieldTypeServicesRegistry,
 					ddmStructureLayoutLocalService);
 				readOnly = ddmFormField.isReadOnly();
 				repeatable = ddmFormField.isRepeatable();
@@ -259,24 +259,15 @@ public class DataDefinitionUtil {
 
 	private static DataDefinitionField[] _toDataDefinitionFields(
 		List<DDMFormField> ddmFormFields,
-		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
+		DDMFormFieldTypeServicesRegistry ddmFormFieldTypeServicesRegistry,
 		DDMStructureLayoutLocalService ddmStructureLayoutLocalService) {
 
-		if (ListUtil.isEmpty(ddmFormFields)) {
-			return new DataDefinitionField[0];
-		}
-
-		Stream<DDMFormField> stream = ddmFormFields.stream();
-
-		return stream.map(
+		return TransformUtil.transformToArray(
+			ddmFormFields,
 			ddmFormField -> _toDataDefinitionField(
-				ddmFormField, ddmFormFieldTypeServicesTracker,
-				ddmStructureLayoutLocalService)
-		).collect(
-			Collectors.toList()
-		).toArray(
-			new DataDefinitionField[0]
-		);
+				ddmFormField, ddmFormFieldTypeServicesRegistry,
+				ddmStructureLayoutLocalService),
+			DataDefinitionField.class);
 	}
 
 	private static JSONArray _toJSONArray(String value) {
@@ -293,15 +284,8 @@ public class DataDefinitionUtil {
 	}
 
 	private static String[] _toLanguageIds(Set<Locale> locales) {
-		Stream<Locale> stream = locales.stream();
-
-		return stream.map(
-			LanguageUtil::getLanguageId
-		).collect(
-			Collectors.toList()
-		).toArray(
-			new String[0]
-		);
+		return TransformUtil.transformToArray(
+			locales, LanguageUtil::getLanguageId, String.class);
 	}
 
 	private static Map<String, List<JSONObject>> _toMap(

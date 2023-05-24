@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {AuditEventModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.portal.security.audit.storage.model.impl.AuditEventImpl",
+		"table.name=Audit_AuditEvent"
+	},
+	service = ArgumentsResolver.class
 )
 public class AuditEventModelArgumentsResolver implements ArgumentsResolver {
 

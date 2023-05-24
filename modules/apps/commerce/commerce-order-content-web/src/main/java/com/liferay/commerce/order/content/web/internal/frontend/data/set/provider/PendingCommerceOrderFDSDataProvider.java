@@ -14,6 +14,7 @@
 
 package com.liferay.commerce.order.content.web.internal.frontend.data.set.provider;
 
+import com.liferay.commerce.context.CommerceGroupThreadLocal;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.order.content.web.internal.constants.CommerceOrderFDSNames;
 import com.liferay.commerce.order.content.web.internal.frontend.data.set.util.CommerceOrderFDSUtil;
@@ -43,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceOrderFDSNames.PENDING_ORDERS,
 	service = FDSDataProvider.class
 )
@@ -68,11 +68,13 @@ public class PendingCommerceOrderFDSDataProvider
 			return Collections.emptyList();
 		}
 
+		CommerceGroupThreadLocal.set(commerceChannel.getGroup());
+
 		List<CommerceOrder> commerceOrders =
-			_commerceOrderService.getUserPendingCommerceOrders(
+			_commerceOrderService.getUserOpenCommerceOrders(
 				commerceChannel.getCompanyId(), commerceChannel.getGroupId(),
 				fdsKeywords.getKeywords(), fdsPagination.getStartPosition(),
-				fdsPagination.getEndPosition());
+				fdsPagination.getEndPosition(), sort);
 
 		return CommerceOrderFDSUtil.getOrders(
 			commerceChannel.getGroupId(), commerceOrders,

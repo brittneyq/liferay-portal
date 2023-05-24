@@ -24,6 +24,7 @@ import com.liferay.client.extension.type.factory.CETImplFactory;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropertiesUtil;
@@ -48,13 +49,16 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Brian Wing Shun Chan
  */
-@Component(immediate = true, service = CETFactory.class)
+@Component(service = CETFactory.class)
 public class CETFactoryImpl implements CETFactory {
 
 	public CETFactoryImpl() {
 		_cetImplFactories = HashMapBuilder.<String, CETImplFactory>put(
 			ClientExtensionEntryConstants.TYPE_CUSTOM_ELEMENT,
 			new CustomElementCETImplFactoryImpl()
+		).put(
+			ClientExtensionEntryConstants.TYPE_FDS_CELL_RENDERER,
+			new FDSCellRendererCETImplFactoryImpl()
 		).put(
 			ClientExtensionEntryConstants.TYPE_GLOBAL_CSS,
 			new GlobalCSSCETImplFactoryImpl()
@@ -65,8 +69,17 @@ public class CETFactoryImpl implements CETFactory {
 			ClientExtensionEntryConstants.TYPE_IFRAME,
 			new IFrameCETImplFactoryImpl()
 		).put(
+			ClientExtensionEntryConstants.TYPE_JS_IMPORT_MAPS_ENTRY,
+			new JSImportMapsEntryCETImplFactoryImpl()
+		).put(
+			ClientExtensionEntryConstants.TYPE_STATIC_CONTENT,
+			new StaticContentCETImplFactoryImpl()
+		).put(
 			ClientExtensionEntryConstants.TYPE_THEME_CSS,
 			 new ThemeCSSCETImplFactoryImpl()
+		).put(
+			ClientExtensionEntryConstants.TYPE_THEME_SPRITEMAP,
+			 new ThemeSpritemapCETImplFactoryImpl()
 		).put(
 			ClientExtensionEntryConstants.TYPE_THEME_FAVICON,
 			new ThemeFaviconCETImplFactoryImpl()
@@ -158,7 +171,11 @@ public class CETFactoryImpl implements CETFactory {
 		CETImplFactory cetImplFactory = _cetImplFactories.get(type);
 
 		if (cetImplFactory != null) {
-			return cetImplFactory;
+			String key = FEATURE_FLAG_KEYS.get(type);
+
+			if ((key == null) || FeatureFlagManagerUtil.isEnabled(key)) {
+				return cetImplFactory;
+			}
 		}
 
 		throw new ClientExtensionEntryTypeException("Unknown type " + type);

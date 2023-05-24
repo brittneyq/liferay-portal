@@ -344,6 +344,17 @@ public class CPDefinitionOptionRelLocalServiceUtil {
 
 	public static Map<Long, List<Long>>
 			getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
+				long cpDefinitionId, boolean skuContributorsOnly,
+				com.liferay.portal.kernel.json.JSONArray skuOptionJSONArray)
+		throws PortalException {
+
+		return getService().
+			getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
+				cpDefinitionId, skuContributorsOnly, skuOptionJSONArray);
+	}
+
+	public static Map<Long, List<Long>>
+			getCPDefinitionOptionRelCPDefinitionOptionValueRelIds(
 				long cpDefinitionId, boolean skuContributorsOnly, String json)
 		throws PortalException {
 
@@ -599,6 +610,10 @@ public class CPDefinitionOptionRelLocalServiceUtil {
 
 	public static CPDefinitionOptionRelLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(CPDefinitionOptionRelLocalService service) {
+		_service = service;
 	}
 
 	private static volatile CPDefinitionOptionRelLocalService _service;

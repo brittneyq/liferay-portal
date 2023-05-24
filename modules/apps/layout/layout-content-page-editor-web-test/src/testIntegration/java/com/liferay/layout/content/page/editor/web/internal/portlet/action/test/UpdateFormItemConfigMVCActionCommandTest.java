@@ -15,7 +15,7 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.util.configuration.FragmentConfigurationField;
@@ -26,6 +26,7 @@ import com.liferay.info.field.type.BooleanInfoFieldType;
 import com.liferay.info.field.type.DateInfoFieldType;
 import com.liferay.info.field.type.FileInfoFieldType;
 import com.liferay.info.field.type.InfoFieldType;
+import com.liferay.info.field.type.LongTextInfoFieldType;
 import com.liferay.info.field.type.NumberInfoFieldType;
 import com.liferay.info.field.type.RelationshipInfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
@@ -36,6 +37,7 @@ import com.liferay.info.test.util.model.MockObject;
 import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
@@ -74,7 +76,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.props.test.util.PropsTemporarySwapper;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -99,6 +100,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.runtime.ServiceComponentRuntime;
 import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
+import org.osgi.util.promise.Promise;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -168,14 +170,12 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 						).infoFieldSetEntries(
 							ListUtil.fromArray(allInfoFields)
 						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", true)) {
+						_editPageInfoItemCapability)) {
 
 			JSONObject addItemJSONObject =
 				ContentLayoutTestUtil.addItemToLayout(
-					_layout, "{}", LayoutDataItemTypeConstants.TYPE_FORM,
-					_segmentsExperienceId);
+					"{}", LayoutDataItemTypeConstants.TYPE_FORM, _layout,
+					_layoutStructureProvider, _segmentsExperienceId);
 
 			long classNameId = _portal.getClassNameId(
 				MockObject.class.getName());
@@ -223,14 +223,12 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 						).infoFieldSetEntries(
 							ListUtil.fromArray(_INFO_FIELDS)
 						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", true)) {
+						_editPageInfoItemCapability)) {
 
 			JSONObject addItemJSONObject =
 				ContentLayoutTestUtil.addItemToLayout(
-					_layout, "{}", LayoutDataItemTypeConstants.TYPE_FORM,
-					_segmentsExperienceId);
+					"{}", LayoutDataItemTypeConstants.TYPE_FORM, _layout,
+					_layoutStructureProvider, _segmentsExperienceId);
 
 			long classNameId = _portal.getClassNameId(
 				MockObject.class.getName());
@@ -263,7 +261,7 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 	}
 
 	@Test
-	public void testUpdateFormItemConfigMVCActionCommandMappingFormFFDisabled()
+	public void testUpdateFormItemConfigMVCActionCommandMappingForm()
 		throws Exception {
 
 		try (ComponentEnablerTemporarySwapper componentEnablerTemporarySwapper =
@@ -276,61 +274,12 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 						).infoFieldSetEntries(
 							ListUtil.fromArray(_INFO_FIELDS)
 						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", false)) {
-
-			JSONObject jsonObject = ContentLayoutTestUtil.addItemToLayout(
-				_layout, "{}", LayoutDataItemTypeConstants.TYPE_FORM,
-				_segmentsExperienceId);
-
-			long classNameId = _portal.getClassNameId(
-				MockObject.class.getName());
-
-			String formItemId = jsonObject.getString("addedItemId");
-
-			JSONObject updateFormJSONObject = ReflectionTestUtil.invoke(
-				_mvcActionCommand, "_updateFormStyledLayoutStructureItemConfig",
-				new Class<?>[] {ActionRequest.class, ActionResponse.class},
-				_getMockLiferayPortletActionRequest(
-					JSONUtil.put(
-						"classNameId", classNameId
-					).put(
-						"classTypeId", "0"
-					).toString(),
-					formItemId, _layout),
-				new MockLiferayPortletActionResponse());
-
-			_assertUpdateFormStyledLayoutStructureItemConfigJSONObject(
-				updateFormJSONObject, 0, StringPool.BLANK, StringPool.BLANK, 0);
-
-			_assertFormStyledLayoutStructureItem(
-				classNameId, 0, formItemId, new InfoField<?>[0], true, false);
-		}
-	}
-
-	@Test
-	public void testUpdateFormItemConfigMVCActionCommandMappingFormFFEnabled()
-		throws Exception {
-
-		try (ComponentEnablerTemporarySwapper componentEnablerTemporarySwapper =
-				new ComponentEnablerTemporarySwapper(
-					_BUNDLE_SYMBOLIC_NAME, _COMPONENT_CLASS_NAME, true);
-			MockInfoServiceRegistrationHolder
-				mockInfoServiceRegistrationHolder =
-					new MockInfoServiceRegistrationHolder(
-						InfoFieldSet.builder(
-						).infoFieldSetEntries(
-							ListUtil.fromArray(_INFO_FIELDS)
-						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", true)) {
+						_editPageInfoItemCapability)) {
 
 			JSONObject addItemJSONObject =
 				ContentLayoutTestUtil.addItemToLayout(
-					_layout, "{}", LayoutDataItemTypeConstants.TYPE_FORM,
-					_segmentsExperienceId);
+					"{}", LayoutDataItemTypeConstants.TYPE_FORM, _layout,
+					_layoutStructureProvider, _segmentsExperienceId);
 
 			long classNameId = _portal.getClassNameId(
 				MockObject.class.getName());
@@ -412,14 +361,12 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 						).infoFieldSetEntries(
 							ListUtil.fromArray(allInfoFields)
 						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", true)) {
+						_editPageInfoItemCapability)) {
 
 			JSONObject addItemJSONObject =
 				ContentLayoutTestUtil.addItemToLayout(
-					_layout, "{}", LayoutDataItemTypeConstants.TYPE_FORM,
-					_segmentsExperienceId);
+					"{}", LayoutDataItemTypeConstants.TYPE_FORM, _layout,
+					_layoutStructureProvider, _segmentsExperienceId);
 
 			long classNameId = _portal.getClassNameId(
 				MockObject.class.getName());
@@ -472,16 +419,14 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 						).infoFieldSetEntries(
 							ListUtil.fromArray(_INFO_FIELDS)
 						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", false)) {
+						_editPageInfoItemCapability)) {
 
 			long classNameId = _portal.getClassNameId(
 				MockObject.class.getName());
 
 			JSONObject jsonObject = ContentLayoutTestUtil.addFormToLayout(
-				_layout, String.valueOf(classNameId), "0",
-				_segmentsExperienceId, false, _INFO_FIELDS);
+				false, String.valueOf(classNameId), "0", _layout,
+				_layoutStructureProvider, _segmentsExperienceId, _INFO_FIELDS);
 
 			String formItemId = jsonObject.getString("addedItemId");
 
@@ -528,16 +473,14 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 						).infoFieldSetEntries(
 							ListUtil.fromArray(_INFO_FIELDS)
 						).build(),
-						_editPageInfoItemCapability);
-			PropsTemporarySwapper propsTemporarySwapper =
-				new PropsTemporarySwapper("feature.flag.LPS-157738", true)) {
+						_editPageInfoItemCapability)) {
 
 			long classNameId = _portal.getClassNameId(
 				MockObject.class.getName());
 
 			JSONObject jsonObject = ContentLayoutTestUtil.addFormToLayout(
-				_layout, String.valueOf(classNameId), "0",
-				_segmentsExperienceId, false, _INFO_FIELDS);
+				false, String.valueOf(classNameId), "0", _layout,
+				_layoutStructureProvider, _segmentsExperienceId, _INFO_FIELDS);
 
 			String formItemId = jsonObject.getString("addedItemId");
 
@@ -625,8 +568,7 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 							childrenItemIds.get(i));
 
 			_assertFragmentEntry(
-				infoField.getUniqueId(),
-				_getExpectedRendererKey(infoField.getInfoFieldType()),
+				infoField.getUniqueId(), _getExpectedRendererKey(infoField),
 				fragmentStyledLayoutStructureItem.getFragmentEntryLinkId(),
 				assertRendererKey);
 		}
@@ -703,7 +645,9 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 			expectedErrorMessage, jsonObject.getString("errorMessage"));
 	}
 
-	private String _getExpectedRendererKey(InfoFieldType infoFieldType) {
+	private String _getExpectedRendererKey(InfoField infoField) {
+		InfoFieldType infoFieldType = infoField.getInfoFieldType();
+
 		if (infoFieldType instanceof BooleanInfoFieldType) {
 			return "INPUTS-checkbox";
 		}
@@ -714,6 +658,10 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 
 		if (infoFieldType instanceof FileInfoFieldType) {
 			return "INPUTS-file-upload";
+		}
+
+		if (infoFieldType instanceof LongTextInfoFieldType) {
+			return "INPUTS-textarea";
 		}
 
 		if (infoFieldType instanceof NumberInfoFieldType) {
@@ -804,8 +752,8 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 	private EditPageInfoItemCapability _editPageInfoItemCapability;
 
 	@Inject
-	private FragmentCollectionContributorTracker
-		_fragmentCollectionContributorTracker;
+	private FragmentCollectionContributorRegistry
+		_fragmentCollectionContributorRegistry;
 
 	@Inject
 	private FragmentEntryConfigurationParser _fragmentEntryConfigurationParser;
@@ -824,6 +772,9 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 	@Inject
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
+
+	@Inject
+	private LayoutStructureProvider _layoutStructureProvider;
 
 	@Inject(
 		filter = "mvc.command.name=/layout_content_page_editor/update_form_item_config"
@@ -846,8 +797,9 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 	private class ComponentEnablerTemporarySwapper implements AutoCloseable {
 
 		public ComponentEnablerTemporarySwapper(
-			String bundleSymbolicName, String componentClassName,
-			boolean enabled) {
+				String bundleSymbolicName, String componentClassName,
+				boolean enabled)
+			throws Exception {
 
 			BundleContext bundleContext = SystemBundleUtil.getBundleContext();
 
@@ -873,12 +825,16 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 				_componentDescriptionDTO);
 
 			if (enabled) {
-				_serviceComponentRuntime.enableComponent(
+				Promise<?> promise = _serviceComponentRuntime.enableComponent(
 					_componentDescriptionDTO);
+
+				promise.getValue();
 			}
 			else {
-				_serviceComponentRuntime.disableComponent(
+				Promise<?> promise = _serviceComponentRuntime.disableComponent(
 					_componentDescriptionDTO);
+
+				promise.getValue();
 			}
 		}
 
@@ -889,12 +845,16 @@ public class UpdateFormItemConfigMVCActionCommandTest {
 			}
 
 			if (_componentEnabled) {
-				_serviceComponentRuntime.enableComponent(
+				Promise<?> promise = _serviceComponentRuntime.enableComponent(
 					_componentDescriptionDTO);
+
+				promise.getValue();
 			}
 			else {
-				_serviceComponentRuntime.disableComponent(
+				Promise<?> promise = _serviceComponentRuntime.disableComponent(
 					_componentDescriptionDTO);
+
+				promise.getValue();
 			}
 		}
 

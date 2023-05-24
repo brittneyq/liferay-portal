@@ -29,11 +29,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Riccardo Alberti
  */
-@Component(
-	enabled = false, immediate = true,
-	property = "verify.process.name=com.liferay.commerce.price.list.service",
-	service = {CommercePriceListServiceVerifyProcess.class, VerifyProcess.class}
-)
+@Component(property = "initial.deployment=true", service = VerifyProcess.class)
 public class CommercePriceListServiceVerifyProcess extends VerifyProcess {
 
 	public void verifyBasePriceLists() throws Exception {

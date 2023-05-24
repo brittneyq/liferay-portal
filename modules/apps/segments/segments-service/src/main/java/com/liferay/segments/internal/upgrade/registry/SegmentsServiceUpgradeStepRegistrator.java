@@ -29,7 +29,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author David Arques
  */
-@Component(immediate = true, service = UpgradeStepRegistrator.class)
+@Component(service = UpgradeStepRegistrator.class)
 public class SegmentsServiceUpgradeStepRegistrator
 	implements UpgradeStepRegistrator {
 
@@ -46,7 +46,7 @@ public class SegmentsServiceUpgradeStepRegistrator
 			new MVCCVersionUpgradeProcess() {
 
 				@Override
-				protected String[] getModuleTableNames() {
+				protected String[] getTableNames() {
 					return new String[] {
 						"SegmentsEntry", "SegmentsEntryRel",
 						"SegmentsExperience", "SegmentsExperiment",
@@ -79,6 +79,15 @@ public class SegmentsServiceUpgradeStepRegistrator
 			"2.5.0", "2.6.0",
 			new com.liferay.segments.internal.upgrade.v2_6_0.
 				SegmentsExperienceUpgradeProcess());
+
+		registry.register("2.6.0", "2.6.1", new DummyUpgradeStep());
+
+		registry.register(
+			"2.6.1", "2.7.0",
+			UpgradeProcessFactory.alterColumnName(
+				"SegmentsExperience", "classPK", "plid LONG"),
+			UpgradeProcessFactory.dropColumns(
+				"SegmentsExperience", "classNameId"));
 	}
 
 	@Reference

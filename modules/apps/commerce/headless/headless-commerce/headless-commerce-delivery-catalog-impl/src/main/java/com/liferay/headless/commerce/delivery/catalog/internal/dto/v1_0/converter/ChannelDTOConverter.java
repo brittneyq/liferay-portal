@@ -27,9 +27,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Crescenzo Rega
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.headless.commerce.delivery.catalog.dto.v1_0.Channel",
-	service = {ChannelDTOConverter.class, DTOConverter.class}
+	service = DTOConverter.class
 )
 public class ChannelDTOConverter
 	implements DTOConverter<CommerceChannel, Channel> {

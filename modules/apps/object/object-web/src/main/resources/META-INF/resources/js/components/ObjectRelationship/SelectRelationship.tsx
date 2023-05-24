@@ -12,65 +12,120 @@
  * details.
  */
 
-import {API, Select} from '@liferay/object-js-components-web';
+import {
+	API,
+	AutoComplete,
+	getLocalizableLabel,
+	stringIncludesQuery,
+} from '@liferay/object-js-components-web';
 import React, {useEffect, useMemo, useState} from 'react';
+
+interface IProps {
+	error?: string;
+	objectDefinitionExternalReferenceCode: string;
+	onChange: (objectFieldName: string) => void;
+	value?: string;
+}
 
 export default function SelectRelationship({
 	error,
-	objectDefinitionId,
+	objectDefinitionExternalReferenceCode,
 	onChange,
 	value,
 	...otherProps
 }: IProps) {
+	const [creationLanguageId, setCreationLanguageId] = useState<
+		Liferay.Language.Locale
+	>();
 	const [fields, setFields] = useState<ObjectField[]>([]);
+	const [query, setQuery] = useState<string>('');
 	const options = useMemo(
 		() =>
-			fields.map(
-				({label}) => label[Liferay.ThemeDisplay.getDefaultLanguageId()]!
-			),
-		[fields]
+			fields.map(({label, name}) => {
+				return {
+					label: getLocalizableLabel(
+						creationLanguageId as Liferay.Language.Locale,
+						label,
+						name
+					),
+					name,
+				};
+			}),
+		[creationLanguageId, fields]
 	);
-	const selectedValue = useMemo(() => {
-		const index = fields.findIndex(({id}) => id === value);
 
-		return index === -1 ? undefined : index;
+	const filteredOptions = useMemo(() => {
+		if (options) {
+			return options.filter((option) =>
+				stringIncludesQuery(option.label, query)
+			);
+		}
+	}, [options, query]);
+
+	const selectedValue = useMemo(() => {
+		return fields.find(({name}) => name === value);
 	}, [fields, value]);
 
 	useEffect(() => {
-		if (objectDefinitionId) {
-			API.getObjectFields(objectDefinitionId).then((fields) => {
-				const options = fields.filter(
+		if (objectDefinitionExternalReferenceCode) {
+			const makeFetch = async () => {
+				const items = await API.getObjectFieldsByExternalReferenceCode(
+					objectDefinitionExternalReferenceCode
+				);
+
+				const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
+					objectDefinitionExternalReferenceCode
+				);
+
+				setCreationLanguageId(objectDefinition.defaultLanguageId);
+
+				const options = items.filter(
 					({businessType}) => businessType === 'Relationship'
 				);
+
+				setCreationLanguageId(objectDefinition.defaultLanguageId);
+
 				setFields(options);
-			});
+			};
+
+			makeFetch();
 		}
 		else {
 			setFields([]);
 		}
-	}, [objectDefinitionId]);
+	}, [objectDefinitionExternalReferenceCode]);
 
 	return (
-		<Select
+		<AutoComplete<LabelNameObject>
+			creationLanguageId={creationLanguageId as Liferay.Language.Locale}
+			emptyStateMessage={Liferay.Language.get('no-parameters-were-found')}
 			error={error}
+			items={filteredOptions ?? []}
 			label={Liferay.Language.get('parameter')}
-			onChange={(event) => {
-				onChange?.(fields[Number(event.target.value)].id);
+			onChangeQuery={setQuery}
+			onSelectItem={({name}) => {
+				onChange(
+					fields.find(({name: fieldName}) => fieldName === name)
+						?.name!
+				);
 			}}
-			options={options}
+			query={query}
 			required
 			tooltip={Liferay.Language.get(
 				'choose-a-relationship-field-from-the-selected-object'
 			)}
-			value={selectedValue}
+			value={getLocalizableLabel(
+				creationLanguageId as Liferay.Language.Locale,
+				selectedValue?.label,
+				selectedValue?.name
+			)}
 			{...otherProps}
-		/>
+		>
+			{({label, name}) => (
+				<div className="d-flex justify-content-between">
+					{label ?? name}
+				</div>
+			)}
+		</AutoComplete>
 	);
-}
-
-interface IProps {
-	error?: string;
-	objectDefinitionId?: number;
-	onChange?: (objectFieldId: number) => void;
-	value?: number;
 }

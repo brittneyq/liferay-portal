@@ -42,7 +42,6 @@ import com.liferay.portal.model.impl.ResourceActionModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
@@ -176,7 +175,7 @@ public class ResourceActionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ResourceAction>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ResourceAction resourceAction : list) {
@@ -559,7 +558,8 @@ public class ResourceActionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {name};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -690,7 +690,7 @@ public class ResourceActionPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByN_A, finderArgs);
+				_finderPathFetchByN_A, finderArgs, this);
 		}
 
 		if (result instanceof ResourceAction) {
@@ -813,7 +813,8 @@ public class ResourceActionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {name, actionId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1291,7 +1292,7 @@ public class ResourceActionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ResourceAction>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1361,7 +1362,7 @@ public class ResourceActionPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1453,29 +1454,13 @@ public class ResourceActionPersistenceImpl
 			new String[] {String.class.getName(), String.class.getName()},
 			new String[] {"name", "actionId"}, false);
 
-		_setResourceActionUtilPersistence(this);
+		ResourceActionUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setResourceActionUtilPersistence(null);
+		ResourceActionUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(ResourceActionImpl.class.getName());
-	}
-
-	private void _setResourceActionUtilPersistence(
-		ResourceActionPersistence resourceActionPersistence) {
-
-		try {
-			Field field = ResourceActionUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, resourceActionPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_RESOURCEACTION =

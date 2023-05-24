@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.util.SetUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -77,7 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Igor Beslic
  * @generated
  */
-@Component(service = {BatchPlannerPlanPersistence.class, BasePersistence.class})
+@Component(service = BatchPlannerPlanPersistence.class)
 public class BatchPlannerPlanPersistenceImpl
 	extends BasePersistenceImpl<BatchPlannerPlan>
 	implements BatchPlannerPlanPersistence {
@@ -197,7 +195,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BatchPlannerPlan batchPlannerPlan : list) {
@@ -895,7 +893,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1086,7 +1084,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BatchPlannerPlan batchPlannerPlan : list) {
@@ -1826,7 +1824,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, userId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2029,7 +2027,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BatchPlannerPlan batchPlannerPlan : list) {
@@ -2771,7 +2769,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, export};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2975,7 +2973,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BatchPlannerPlan batchPlannerPlan : list) {
@@ -3767,7 +3765,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, name};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -3997,7 +3995,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BatchPlannerPlan batchPlannerPlan : list) {
@@ -4740,7 +4738,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, template};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -4950,7 +4948,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BatchPlannerPlan batchPlannerPlan : list) {
@@ -5735,7 +5733,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, export, template};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -6267,7 +6265,7 @@ public class BatchPlannerPlanPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<BatchPlannerPlan>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -6337,7 +6335,7 @@ public class BatchPlannerPlanPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -6527,30 +6525,14 @@ public class BatchPlannerPlanPersistenceImpl
 			},
 			new String[] {"companyId", "export", "template"}, false);
 
-		_setBatchPlannerPlanUtilPersistence(this);
+		BatchPlannerPlanUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setBatchPlannerPlanUtilPersistence(null);
+		BatchPlannerPlanUtil.setPersistence(null);
 
 		entityCache.removeCache(BatchPlannerPlanImpl.class.getName());
-	}
-
-	private void _setBatchPlannerPlanUtilPersistence(
-		BatchPlannerPlanPersistence batchPlannerPlanPersistence) {
-
-		try {
-			Field field = BatchPlannerPlanUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, batchPlannerPlanPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -6638,9 +6620,5 @@ public class BatchPlannerPlanPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private BatchPlannerPlanModelArgumentsResolver
-		_batchPlannerPlanModelArgumentsResolver;
 
 }

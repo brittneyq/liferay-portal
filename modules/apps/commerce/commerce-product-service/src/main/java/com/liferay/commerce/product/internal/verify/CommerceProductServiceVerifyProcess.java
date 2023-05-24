@@ -35,11 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false, immediate = true,
-	property = "verify.process.name=com.liferay.commerce.product.service",
-	service = {CommerceProductServiceVerifyProcess.class, VerifyProcess.class}
-)
+@Component(property = "initial.deployment=true", service = VerifyProcess.class)
 public class CommerceProductServiceVerifyProcess extends VerifyProcess {
 
 	public void verifyCPMeasurementUnits() throws Exception {

@@ -16,13 +16,14 @@ package com.liferay.content.dashboard.web.internal.dao.search;
 
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.content.dashboard.item.ContentDashboardItem;
+import com.liferay.content.dashboard.item.ContentDashboardItemFactory;
 import com.liferay.content.dashboard.web.internal.constants.ContentDashboardPortletKeys;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItem;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactory;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryTracker;
+import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryRegistry;
 import com.liferay.content.dashboard.web.internal.search.request.ContentDashboardSearchContextBuilder;
 import com.liferay.content.dashboard.web.internal.searcher.ContentDashboardSearchRequestBuilderFactory;
-import com.liferay.info.search.InfoSearchClassMapperTracker;
+import com.liferay.info.search.InfoSearchClassMapperRegistry;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -40,11 +41,8 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.searcher.SearchResponse;
 import com.liferay.portal.search.searcher.Searcher;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
@@ -58,18 +56,18 @@ public class ContentDashboardItemSearchContainerFactory {
 	public static ContentDashboardItemSearchContainerFactory getInstance(
 		AssetCategoryLocalService assetCategoryLocalService,
 		AssetVocabularyLocalService assetVocabularyLocalService,
-		ContentDashboardItemFactoryTracker contentDashboardItemFactoryTracker,
+		ContentDashboardItemFactoryRegistry contentDashboardItemFactoryRegistry,
 		ContentDashboardSearchRequestBuilderFactory
 			contentDashboardSearchRequestBuilderFactory,
-		InfoSearchClassMapperTracker infoSearchClassMapperTracker,
+		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		Portal portal, PortletRequest portletRequest,
 		PortletResponse portletResponse, Searcher searcher) {
 
 		return new ContentDashboardItemSearchContainerFactory(
 			assetCategoryLocalService, assetVocabularyLocalService,
-			contentDashboardItemFactoryTracker,
+			contentDashboardItemFactoryRegistry,
 			contentDashboardSearchRequestBuilderFactory,
-			infoSearchClassMapperTracker, portal, portletRequest,
+			infoSearchClassMapperRegistry, portal, portletRequest,
 			portletResponse, searcher);
 	}
 
@@ -87,26 +85,26 @@ public class ContentDashboardItemSearchContainerFactory {
 	private ContentDashboardItemSearchContainerFactory(
 		AssetCategoryLocalService assetCategoryLocalService,
 		AssetVocabularyLocalService assetVocabularyLocalService,
-		ContentDashboardItemFactoryTracker contentDashboardItemFactoryTracker,
+		ContentDashboardItemFactoryRegistry contentDashboardItemFactoryRegistry,
 		ContentDashboardSearchRequestBuilderFactory
 			contentDashboardSearchRequestBuilderFactory,
-		InfoSearchClassMapperTracker infoSearchClassMapperTracker,
+		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		Portal portal, PortletRequest portletRequest,
 		PortletResponse portletResponse, Searcher searcher) {
 
 		_assetCategoryLocalService = assetCategoryLocalService;
 		_assetVocabularyLocalService = assetVocabularyLocalService;
-		_contentDashboardItemFactoryTracker =
-			contentDashboardItemFactoryTracker;
+		_contentDashboardItemFactoryRegistry =
+			contentDashboardItemFactoryRegistry;
 		_contentDashboardSearchRequestBuilderFactory =
 			contentDashboardSearchRequestBuilderFactory;
-		_infoSearchClassMapperTracker = infoSearchClassMapperTracker;
+		_infoSearchClassMapperRegistry = infoSearchClassMapperRegistry;
 		_portal = portal;
 		_portletRequest = portletRequest;
 		_portletResponse = portletResponse;
 		_searcher = searcher;
 
-		_locale = _portal.getLocale(_portletRequest);
+		_locale = portal.getLocale(portletRequest);
 	}
 
 	private SearchContainer<ContentDashboardItem<?>> _create(
@@ -116,24 +114,11 @@ public class ContentDashboardItemSearchContainerFactory {
 		SearchResponse searchResponse = _getSearchResponse(end, start);
 
 		searchContainer.setResultsAndTotal(
-			() -> _getContentDashboardItems(searchResponse.getDocuments71()),
+			() -> TransformUtil.transform(
+				searchResponse.getDocuments71(), this::_toContentDashboardItem),
 			searchResponse.getTotalHits());
 
 		return searchContainer;
-	}
-
-	private List<ContentDashboardItem<?>> _getContentDashboardItems(
-		List<Document> documents) {
-
-		Stream<Document> stream = documents.stream();
-
-		return stream.map(
-			this::_toContentDashboardItem
-		).filter(
-			Objects::nonNull
-		).collect(
-			Collectors.toList()
-		);
 	}
 
 	private SearchContainer<ContentDashboardItem<?>>
@@ -242,8 +227,8 @@ public class ContentDashboardItemSearchContainerFactory {
 
 	private ContentDashboardItem<?> _toContentDashboardItem(Document document) {
 		ContentDashboardItemFactory<?> contentDashboardItemFactory =
-			_contentDashboardItemFactoryTracker.getContentDashboardItemFactory(
-				_infoSearchClassMapperTracker.getClassName(
+			_contentDashboardItemFactoryRegistry.getContentDashboardItemFactory(
+				_infoSearchClassMapperRegistry.getClassName(
 					document.get(Field.ENTRY_CLASS_NAME)));
 
 		if (contentDashboardItemFactory == null) {
@@ -258,11 +243,11 @@ public class ContentDashboardItemSearchContainerFactory {
 
 	private final AssetCategoryLocalService _assetCategoryLocalService;
 	private final AssetVocabularyLocalService _assetVocabularyLocalService;
-	private final ContentDashboardItemFactoryTracker
-		_contentDashboardItemFactoryTracker;
+	private final ContentDashboardItemFactoryRegistry
+		_contentDashboardItemFactoryRegistry;
 	private final ContentDashboardSearchRequestBuilderFactory
 		_contentDashboardSearchRequestBuilderFactory;
-	private final InfoSearchClassMapperTracker _infoSearchClassMapperTracker;
+	private final InfoSearchClassMapperRegistry _infoSearchClassMapperRegistry;
 	private final Locale _locale;
 	private String _orderByCol;
 	private String _orderByType;

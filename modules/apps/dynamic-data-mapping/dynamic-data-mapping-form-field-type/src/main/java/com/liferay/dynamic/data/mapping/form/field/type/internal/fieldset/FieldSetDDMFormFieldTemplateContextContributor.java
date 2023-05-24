@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -41,8 +40,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -51,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Carlos Lancha
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.FIELDSET,
 	service = {
 		DDMFormFieldTemplateContextContributor.class,
@@ -137,13 +133,8 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 			rowsJSONArray.put(_createRowJSONObject(visibleNestedFields));
 		}
 
-		Stream<Object> invisibleNestedFieldsStream = nestedFields.stream();
-
-		List<Object> invisibleNestedFields = invisibleNestedFieldsStream.filter(
-			nestedField -> !_isNestedFieldVisible(nestedField)
-		).collect(
-			Collectors.toList()
-		);
+		List<Object> invisibleNestedFields = ListUtil.filter(
+			nestedFields, nestedField -> !_isNestedFieldVisible(nestedField));
 
 		if (!invisibleNestedFields.isEmpty()) {
 			rowsJSONArray.put(_createRowJSONObject(invisibleNestedFields));
@@ -154,7 +145,7 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 
 	protected JSONArray getRowsJSONArray(String definition) {
 		try {
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			JSONObject jsonObject = jsonFactory.createJSONObject(
 				StringUtil.replace(definition, "fieldNames", "fields"));
 
 			JSONArray pagesJSONArray = jsonObject.getJSONArray("pages");
@@ -214,13 +205,7 @@ public class FieldSetDDMFormFieldTemplateContextContributor
 	}
 
 	private List<Object> _getVisibleNestedFields(List<Object> nestedFields) {
-		Stream<Object> visibleNestedFieldsStream = nestedFields.stream();
-
-		return visibleNestedFieldsStream.filter(
-			this::_isNestedFieldVisible
-		).collect(
-			Collectors.toList()
-		);
+		return ListUtil.filter(nestedFields, this::_isNestedFieldVisible);
 	}
 
 	private boolean _isNestedFieldVisible(Object nestedField) {

@@ -17,6 +17,7 @@ package com.liferay.portal.search.indexer.clauses.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.search.JournalArticleBlueprintBuilder;
@@ -34,9 +35,10 @@ import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.SearchEngine;
+import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -44,6 +46,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.SearchResponse;
@@ -57,9 +60,11 @@ import com.liferay.users.admin.test.util.search.GroupBlueprint;
 import com.liferay.users.admin.test.util.search.GroupSearchFixture;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -83,10 +88,13 @@ public class IndexerClausesChangeTrackingTest {
 
 	@Before
 	public void setUp() throws Exception {
+		Assume.assumeTrue(!_isSearchEngine("Solr"));
+
 		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
 		JournalArticleSearchFixture journalArticleSearchFixture =
-			new JournalArticleSearchFixture(journalArticleLocalService);
+			new JournalArticleSearchFixture(
+				ddmStructureLocalService, journalArticleLocalService, portal);
 
 		_ctCollection = addCTCollection();
 		_group = groupSearchFixture.addGroup(new GroupBlueprint());
@@ -95,8 +103,10 @@ public class IndexerClausesChangeTrackingTest {
 	}
 
 	@Test
-	public void testBaseIndexer() throws Exception {
-		Assert.assertTrue(journalArticleIndexer instanceof BaseIndexer);
+	public void testDefaultIndexer1() throws Exception {
+		Assert.assertEquals(
+			"class com.liferay.portal.search.internal.indexer.DefaultIndexer",
+			String.valueOf(journalArticleIndexer.getClass()));
 
 		JournalArticle journalArticle = addJournalArticle("Gamma Article");
 
@@ -136,7 +146,7 @@ public class IndexerClausesChangeTrackingTest {
 	}
 
 	@Test
-	public void testDefaultIndexer() throws Exception {
+	public void testDefaultIndexer2() throws Exception {
 		Assert.assertEquals(
 			"class com.liferay.portal.search.internal.indexer.DefaultIndexer",
 			String.valueOf(mbMessageIndexer.getClass()));
@@ -293,8 +303,8 @@ public class IndexerClausesChangeTrackingTest {
 		}
 
 		DocumentsAssert.assertValuesIgnoreRelevance(
-			searchResponse.getRequestString(),
-			searchResponse.getDocumentsStream(), _TITLE_EN_US, expected);
+			searchResponse.getRequestString(), searchResponse.getDocuments(),
+			_TITLE_EN_US, expected);
 	}
 
 	protected void updateJournalArticle(
@@ -322,9 +332,17 @@ public class IndexerClausesChangeTrackingTest {
 	}
 
 	@Inject
+	protected static DDMStructureLocalService ddmStructureLocalService;
+
+	@Inject
+	protected static Portal portal;
+
+	@Inject
 	protected CTCollectionLocalService ctCollectionLocalService;
 
-	@Inject(filter = "component.name=*.JournalArticleIndexer")
+	@Inject(
+		filter = "indexer.class.name=com.liferay.journal.model.JournalArticle"
+	)
 	protected Indexer<JournalArticle> journalArticleIndexer;
 
 	@Inject
@@ -349,6 +367,12 @@ public class IndexerClausesChangeTrackingTest {
 			_group.getGroupId(), _user.getUserId());
 	}
 
+	private boolean _isSearchEngine(String vendor) {
+		SearchEngine searchEngine = _searchEngineHelper.getSearchEngine();
+
+		return Objects.equals(searchEngine.getVendor(), vendor);
+	}
+
 	private static final String _TITLE_EN_US = StringBundler.concat(
 		Field.TITLE, StringPool.UNDERLINE, LocaleUtil.US);
 
@@ -359,6 +383,10 @@ public class IndexerClausesChangeTrackingTest {
 	private Group _group;
 
 	private JournalArticleSearchFixture _journalArticleSearchFixture;
+
+	@Inject
+	private SearchEngineHelper _searchEngineHelper;
+
 	private User _user;
 
 }

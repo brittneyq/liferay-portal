@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -272,48 +270,21 @@ public abstract class DispatchTriggerLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the dispatch trigger with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the dispatch trigger's external reference code
-	 * @return the matching dispatch trigger, or <code>null</code> if a matching dispatch trigger could not be found
-	 */
 	@Override
 	public DispatchTrigger fetchDispatchTriggerByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return dispatchTriggerPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return dispatchTriggerPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchDispatchTriggerByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public DispatchTrigger fetchDispatchTriggerByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchDispatchTriggerByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the dispatch trigger with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the dispatch trigger's external reference code
-	 * @return the matching dispatch trigger
-	 * @throws PortalException if a matching dispatch trigger could not be found
-	 */
 	@Override
 	public DispatchTrigger getDispatchTriggerByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return dispatchTriggerPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return dispatchTriggerPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -543,7 +514,7 @@ public abstract class DispatchTriggerLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		DispatchTriggerLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -558,7 +529,7 @@ public abstract class DispatchTriggerLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		dispatchTriggerLocalService = (DispatchTriggerLocalService)aopProxy;
 
-		_setLocalServiceUtilService(dispatchTriggerLocalService);
+		DispatchTriggerLocalServiceUtil.setService(dispatchTriggerLocalService);
 	}
 
 	/**
@@ -600,23 +571,6 @@ public abstract class DispatchTriggerLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		DispatchTriggerLocalService dispatchTriggerLocalService) {
-
-		try {
-			Field field =
-				DispatchTriggerLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, dispatchTriggerLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

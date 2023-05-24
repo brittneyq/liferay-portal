@@ -172,7 +172,7 @@
 
 		<!-- Finder methods -->
 
-		<finder name="Name_Nickname" return-type="Collection" where="nickname is not NULL">
+		<finder name="Name_Nickname" return-type="Collection" where="nickname IS NOT NULL">
 			<finder-column name="name" />
 		</finder>
 	</entity>
@@ -350,6 +350,27 @@
 		<!-- Finder methods -->
 
 		<finder name="Name" return-type="NullConvertibleEntry" unique="true">
+			<finder-column name="name" />
+		</finder>
+	</entity>
+	<entity local-service="true" name="RedundantIndexEntry" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="redundantIndexEntryId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="name" type="String" />
+
+		<!-- Finder methods -->
+
+		<finder name="C_N" return-type="RedundantIndexEntry" unique="true">
+			<finder-column name="companyId" />
 			<finder-column name="name" />
 		</finder>
 	</entity>

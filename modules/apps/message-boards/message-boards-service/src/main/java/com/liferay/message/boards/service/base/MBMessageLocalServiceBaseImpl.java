@@ -66,8 +66,6 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -275,47 +273,20 @@ public abstract class MBMessageLocalServiceBaseImpl
 		return mbMessagePersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the message-boards message with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the message-boards message's external reference code
-	 * @return the matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
-	 */
 	@Override
 	public MBMessage fetchMBMessageByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
-		return mbMessagePersistence.fetchByG_ERC(
-			groupId, externalReferenceCode);
+		return mbMessagePersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchMBMessageByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public MBMessage fetchMBMessageByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return fetchMBMessageByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the message-boards message with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the message-boards message's external reference code
-	 * @return the matching message-boards message
-	 * @throws PortalException if a matching message-boards message could not be found
-	 */
 	@Override
 	public MBMessage getMBMessageByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return mbMessagePersistence.findByG_ERC(groupId, externalReferenceCode);
+		return mbMessagePersistence.findByERC_G(externalReferenceCode, groupId);
 	}
 
 	/**
@@ -655,7 +626,7 @@ public abstract class MBMessageLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		MBMessageLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -670,7 +641,7 @@ public abstract class MBMessageLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		mbMessageLocalService = (MBMessageLocalService)aopProxy;
 
-		_setLocalServiceUtilService(mbMessageLocalService);
+		MBMessageLocalServiceUtil.setService(mbMessageLocalService);
 	}
 
 	/**
@@ -726,22 +697,6 @@ public abstract class MBMessageLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		MBMessageLocalService mbMessageLocalService) {
-
-		try {
-			Field field = MBMessageLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, mbMessageLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

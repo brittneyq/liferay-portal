@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.price.list.internal.discovery;
 
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.commerce.price.list.discovery.CommercePriceListDiscovery;
 import com.liferay.commerce.price.list.model.CommercePriceList;
 import com.liferay.commerce.price.list.service.CommercePriceListLocalService;
@@ -25,7 +25,6 @@ import com.liferay.commerce.product.service.CommerceChannelAccountEntryRelLocalS
 import com.liferay.portal.kernel.exception.PortalException;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -34,11 +33,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Riccardo Alberti
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false,
-	property = "commerce.price.list.discovery.key=" + CommercePricingConstants.ORDER_BY_HIERARCHY,
-	service = CommercePriceListDiscovery.class
-)
+@Component(service = CommercePriceListDiscovery.class)
 public class CommercePriceListHierarchyDiscoveryImpl
 	implements CommercePriceListDiscovery {
 
@@ -131,8 +126,7 @@ public class CommercePriceListHierarchyDiscoveryImpl
 		}
 
 		long[] commerceAccountGroupIds =
-			_commerceAccountHelper.getCommerceAccountGroupIds(
-				commerceAccountId);
+			_accountGroupLocalService.getAccountGroupIds(commerceAccountId);
 
 		commercePriceLists =
 			_commercePriceListLocalService.
@@ -288,6 +282,11 @@ public class CommercePriceListHierarchyDiscoveryImpl
 		return firstEligibleCommercePriceList;
 	}
 
+	@Override
+	public String getCommercePriceListDiscoveryKey() {
+		return CommercePricingConstants.ORDER_BY_HIERARCHY;
+	}
+
 	private CommercePriceList _getDefaultCommercePriceList(
 			CommerceChannelAccountEntryRel commerceChannelAccountEntryRel,
 			List<CommercePriceList> commercePriceLists)
@@ -297,16 +296,12 @@ public class CommercePriceListHierarchyDiscoveryImpl
 			return null;
 		}
 
-		Stream<CommercePriceList> commercePriceListsStream =
-			commercePriceLists.stream();
+		for (CommercePriceList commercePriceList : commercePriceLists) {
+			if (commerceChannelAccountEntryRel.getClassPK() !=
+					commercePriceList.getCommercePriceListId()) {
 
-		if (commercePriceListsStream.mapToLong(
-				CommercePriceList::getCommercePriceListId
-			).anyMatch(
-				commercePriceListId ->
-					commercePriceListId ==
-						commerceChannelAccountEntryRel.getClassPK()
-			)) {
+				continue;
+			}
 
 			return _commercePriceListLocalService.getCommercePriceList(
 				commerceChannelAccountEntryRel.getClassPK());
@@ -316,7 +311,7 @@ public class CommercePriceListHierarchyDiscoveryImpl
 	}
 
 	@Reference
-	private CommerceAccountHelper _commerceAccountHelper;
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceChannelAccountEntryRelLocalService

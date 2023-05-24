@@ -14,6 +14,7 @@
 
 package com.liferay.portal.cache.internal.dao.orm;
 
+import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
@@ -24,12 +25,8 @@ import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
 import com.liferay.portal.kernel.cache.PortalCacheManager;
 import com.liferay.portal.kernel.cache.PortalCacheManagerListener;
-import com.liferay.portal.kernel.cluster.ClusterExecutor;
-import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
-import com.liferay.portal.kernel.cluster.ClusterRequest;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
@@ -37,8 +34,6 @@ import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LRUMap;
-import com.liferay.portal.kernel.util.MethodHandler;
-import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.servlet.filters.threadlocal.ThreadLocalFilterThreadLocal;
@@ -57,9 +52,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
  */
-@Component(
-	immediate = true, service = {CacheRegistryItem.class, EntityCache.class}
-)
+@Component(service = {CacheRegistryItem.class, EntityCache.class})
 public class EntityCacheImpl
 	implements CacheRegistryItem, EntityCache, PortalCacheManagerListener {
 
@@ -97,6 +90,22 @@ public class EntityCacheImpl
 		_notifyFinderCache(null, null, true);
 
 		_portalCaches.clear();
+	}
+
+	@Override
+	public Serializable getLocalCacheResult(
+		Class<?> clazz, Serializable primaryKey) {
+
+		if (_isLocalCacheEnabled()) {
+			Map<Serializable, Serializable> localCache = _localCache.get();
+
+			Serializable localCacheKey = new LocalCacheKey(
+				clazz.getName(), primaryKey);
+
+			return localCache.get(localCacheKey);
+		}
+
+		return null;
 	}
 
 	@Override
@@ -277,11 +286,6 @@ public class EntityCacheImpl
 		portalCacheManager.registerPortalCacheManagerListener(this);
 	}
 
-	@Reference(unbind = "-")
-	protected void setFinderCacheImpl(FinderCacheImpl finderCacheImpl) {
-		_finderCacheImpl = finderCacheImpl;
-	}
-
 	private boolean _isLocalCacheEnabled() {
 		if (_localCache == null) {
 			return false;
@@ -290,14 +294,15 @@ public class EntityCacheImpl
 		return ThreadLocalFilterThreadLocal.isFilterInvoked();
 	}
 
-	private void _notify(
-		String className, BaseModel<?> baseModel, Boolean removePortalCache,
-		long companyId) {
+	private void _notifyFinderCache(
+		String className, BaseModel<?> baseModel, Boolean removePortalCache) {
 
 		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setWithSafeCloseable(companyId)) {
+				CompanyThreadLocal.setWithSafeCloseable(
+					CompanyThreadLocal.getCompanyId())) {
 
-			FinderCacheImpl finderCacheImpl = _finderCacheImpl;
+			FinderCacheImpl finderCacheImpl =
+				(FinderCacheImpl)_finderCacheSnapshot.get();
 
 			if (finderCacheImpl == null) {
 				return;
@@ -325,39 +330,6 @@ public class EntityCacheImpl
 					finderCacheImpl.clearByEntityCache(className);
 				}
 			}
-		}
-	}
-
-	private void _notifyFinderCache(
-		String className, BaseModel<?> baseModel, Boolean removePortalCache) {
-
-		_notify(
-			className, baseModel, removePortalCache,
-			CompanyThreadLocal.getCompanyId());
-
-		if (!_clusterExecutor.isEnabled() ||
-			!ClusterInvokeThreadLocal.isEnabled()) {
-
-			return;
-		}
-
-		try {
-			MethodHandler methodHandler = new MethodHandler(
-				_notifyMethodKey,
-				new Object[] {
-					className, baseModel, removePortalCache,
-					CompanyThreadLocal.getCompanyId()
-				});
-
-			ClusterRequest clusterRequest =
-				ClusterRequest.createMulticastRequest(methodHandler, true);
-
-			clusterRequest.setFireAndForget(true);
-
-			_clusterExecutor.execute(clusterRequest);
-		}
-		catch (Throwable throwable) {
-			_log.error("Unable to notify cluster", throwable);
 		}
 	}
 
@@ -441,16 +413,8 @@ public class EntityCacheImpl
 	private static final String _GROUP_KEY_PREFIX =
 		EntityCache.class.getName() + StringPool.PERIOD;
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		EntityCacheImpl.class);
-
-	private static volatile FinderCacheImpl _finderCacheImpl;
-	private static final MethodKey _notifyMethodKey = new MethodKey(
-		EntityCacheImpl.class, "_notify", String.class, BaseModel.class,
-		Boolean.class, long.class);
-
-	@Reference
-	private ClusterExecutor _clusterExecutor;
+	private static final Snapshot<FinderCache> _finderCacheSnapshot =
+		new Snapshot<>(EntityCacheImpl.class, FinderCache.class);
 
 	private boolean _dbPartitionEnabled;
 	private ThreadLocal<LRUMap<Serializable, Serializable>> _localCache;

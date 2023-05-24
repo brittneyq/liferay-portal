@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -54,7 +53,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcellus Tavares
  */
 @Component(
-	immediate = true, property = "ddm.form.values.deserializer.type=json",
+	property = "ddm.form.values.deserializer.type=json",
 	service = DDMFormValuesDeserializer.class
 )
 public class DDMFormValuesJSONDeserializer
@@ -166,12 +165,10 @@ public class DDMFormValuesJSONDeserializer
 			return false;
 		}
 
-		Set<String> keys = jsonObject.keySet();
-
-		Stream<String> stream = keys.stream();
-
-		if (stream.anyMatch(this::_isInvalidLocale)) {
-			return false;
+		for (String key : jsonObject.keySet()) {
+			if (_isInvalidLocale(key)) {
+				return false;
+			}
 		}
 
 		return true;

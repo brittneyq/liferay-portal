@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		DEDataListViewModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.data.engine.model.impl.DEDataListViewImpl",
+		"table.name=DEDataListView"
+	},
+	service = ArgumentsResolver.class
 )
 public class DEDataListViewModelArgumentsResolver implements ArgumentsResolver {
 

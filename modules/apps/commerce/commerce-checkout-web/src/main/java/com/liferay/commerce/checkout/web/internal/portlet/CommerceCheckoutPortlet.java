@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.checkout.web.internal.portlet;
 
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
+import com.liferay.account.constants.AccountConstants;
 import com.liferay.commerce.checkout.web.internal.display.context.CheckoutDisplayContext;
 import com.liferay.commerce.constants.CommerceCheckoutWebKeys;
 import com.liferay.commerce.constants.CommerceOrderConstants;
@@ -24,16 +24,16 @@ import com.liferay.commerce.order.CommerceOrderHttpHelper;
 import com.liferay.commerce.order.CommerceOrderValidatorRegistry;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderService;
-import com.liferay.commerce.util.CommerceCheckoutStepServicesTracker;
+import com.liferay.commerce.util.CommerceCheckoutStepRegistry;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
+import com.liferay.portal.kernel.cookies.constants.CookiesConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.model.WorkflowInstanceLink;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
-import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -64,7 +64,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-commerce-checkout",
@@ -83,7 +82,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.version=3.0"
 	},
-	service = {CommerceCheckoutPortlet.class, Portlet.class}
+	service = Portlet.class
 )
 public class CommerceCheckoutPortlet extends MVCPortlet {
 
@@ -113,18 +112,21 @@ public class CommerceCheckoutPortlet extends MVCPortlet {
 			CommerceOrder commerceOrder = _getCommerceOrder(renderRequest);
 
 			if (commerceOrder != null) {
+				renderRequest.setAttribute(
+					CommerceCheckoutWebKeys.COMMERCE_ORDER, commerceOrder);
+
 				HttpServletRequest httpServletRequest =
 					_portal.getHttpServletRequest(renderRequest);
 				HttpServletResponse httpServletResponse =
 					_portal.getHttpServletResponse(renderResponse);
 
 				boolean continueAsGuest = GetterUtil.getBoolean(
-					CookieKeys.getCookie(
-						_portal.getHttpServletRequest(renderRequest),
-						CookieKeys.COMMERCE_CONTINUE_AS_GUEST));
+					CookiesManagerUtil.getCookieValue(
+						CookiesConstants.NAME_COMMERCE_CONTINUE_AS_GUEST,
+						httpServletRequest));
 
 				if ((commerceOrder.getCommerceAccountId() ==
-						CommerceAccountConstants.ACCOUNT_ID_GUEST) &&
+						AccountConstants.ACCOUNT_ENTRY_ID_GUEST) &&
 					!continueAsGuest) {
 
 					httpServletResponse.sendRedirect(
@@ -136,30 +138,27 @@ public class CommerceCheckoutPortlet extends MVCPortlet {
 							 LocaleUtil.getSiteDefault(), commerceOrder)) {
 
 					httpServletResponse.sendRedirect(
-						_getOrderDetailsURL(renderRequest));
+						_getOrderDetailsURL(renderRequest, commerceOrder));
 				}
 				else if (!commerceOrder.isOpen() &&
 						 (continueAsGuest || commerceOrder.isGuestOrder())) {
 
-					CookieKeys.deleteCookies(
+					CookiesManagerUtil.deleteCookies(
+						CookiesManagerUtil.getDomain(httpServletRequest),
 						httpServletRequest, httpServletResponse,
-						CookieKeys.getDomain(httpServletRequest),
 						CommerceOrder.class.getName() + StringPool.POUND +
 							commerceOrder.getGroupId());
 
-					CookieKeys.deleteCookies(
+					CookiesManagerUtil.deleteCookies(
+						CookiesManagerUtil.getDomain(httpServletRequest),
 						httpServletRequest, httpServletResponse,
-						CookieKeys.getDomain(httpServletRequest),
-						CookieKeys.COMMERCE_CONTINUE_AS_GUEST);
+						CookiesConstants.NAME_COMMERCE_CONTINUE_AS_GUEST);
 				}
-
-				renderRequest.setAttribute(
-					CommerceCheckoutWebKeys.COMMERCE_ORDER, commerceOrder);
 			}
 
 			CheckoutDisplayContext checkoutDisplayContext =
 				new CheckoutDisplayContext(
-					_commerceCheckoutStepServicesTracker,
+					_commerceCheckoutStepRegistry,
 					_portal.getLiferayPortletRequest(renderRequest),
 					_portal.getLiferayPortletResponse(renderResponse), _portal);
 
@@ -207,13 +206,13 @@ public class CommerceCheckoutPortlet extends MVCPortlet {
 			_portal.getHttpServletRequest(portletRequest));
 	}
 
-	private String _getOrderDetailsURL(PortletRequest portletRequest)
+	private String _getOrderDetailsURL(
+			PortletRequest portletRequest, CommerceOrder commerceOrder)
 		throws PortalException {
 
 		PortletURL portletURL =
 			_commerceOrderHttpHelper.getCommerceCartPortletURL(
-				_portal.getHttpServletRequest(portletRequest),
-				_getCommerceOrder(portletRequest));
+				_portal.getHttpServletRequest(portletRequest), commerceOrder);
 
 		if (portletURL == null) {
 			return StringPool.BLANK;
@@ -256,8 +255,7 @@ public class CommerceCheckoutPortlet extends MVCPortlet {
 	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
-	private CommerceCheckoutStepServicesTracker
-		_commerceCheckoutStepServicesTracker;
+	private CommerceCheckoutStepRegistry _commerceCheckoutStepRegistry;
 
 	@Reference
 	private CommerceOrderHttpHelper _commerceOrderHttpHelper;
@@ -267,9 +265,6 @@ public class CommerceCheckoutPortlet extends MVCPortlet {
 
 	@Reference
 	private CommerceOrderValidatorRegistry _commerceOrderValidatorRegistry;
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
 
 	@Reference
 	private Portal _portal;

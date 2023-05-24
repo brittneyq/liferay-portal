@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, service = InfoItemPermissionProvider.class)
+@Component(service = InfoItemPermissionProvider.class)
 public class CPDefinitionSpecificationOptionValueInfoItemPermissionProvider
 	implements InfoItemPermissionProvider
 		<CPDefinitionSpecificationOptionValue> {
@@ -93,7 +93,7 @@ public class CPDefinitionSpecificationOptionValueInfoItemPermissionProvider
 		try {
 			CPDefinitionSpecificationOptionValue
 				cpDefinitionSpecificationOptionValue =
-					_definitionSpecificationOptionValueLocalService.
+					_cpDefinitionSpecificationOptionValueLocalService.
 						getCPDefinitionSpecificationOptionValue(
 							classPKInfoItemIdentifier.getClassPK());
 
@@ -114,6 +114,6 @@ public class CPDefinitionSpecificationOptionValueInfoItemPermissionProvider
 
 	@Reference
 	private CPDefinitionSpecificationOptionValueLocalService
-		_definitionSpecificationOptionValueLocalService;
+		_cpDefinitionSpecificationOptionValueLocalService;
 
 }

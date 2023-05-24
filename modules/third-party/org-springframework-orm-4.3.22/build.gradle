@@ -3,6 +3,7 @@ import com.liferay.gradle.plugins.patcher.PatchTask
 apply plugin: "com.liferay.patcher"
 
 task deployJar(type: Copy)
+task jarManifest
 task jarPatched(type: Zip)
 task patch(type: PatchTask)
 
@@ -37,6 +38,12 @@ jar {
 	dependsOn jarPatched
 }
 
+jarManifest {
+	doLast {
+		ant.jar(destfile: jar.archivePath, update: true)
+	}
+}
+
 jarPatched {
 	archiveName = jar.archiveName
 	destinationDir = jar.destinationDir
@@ -53,6 +60,8 @@ patch {
 	ext {
 		autoClean = false
 	}
+
+	fileNames "org/springframework/orm/hibernate3/SpringSessionSynchronization.java"
 
 	originalLibModuleName = "spring-orm"
 }

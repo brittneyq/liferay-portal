@@ -10,3 +10,6 @@
  */
 
 export * from './queries/useGetUserAccount';
+export * from './queries/useGetMyUserAccount';
+export * from './queries/useGetUserAccountsByAccountExternalReferenceCode';
+export * from './mutations/useDeleteUserAccountByEmailAddress';

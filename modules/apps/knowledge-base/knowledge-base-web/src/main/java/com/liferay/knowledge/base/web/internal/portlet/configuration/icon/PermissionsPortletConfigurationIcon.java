@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
 	service = PortletConfigurationIcon.class
 )
@@ -93,7 +92,7 @@ public class PermissionsPortletConfigurationIcon
 
 			User user = themeDisplay.getUser();
 
-			if (user.isDefaultUser() ||
+			if (user.isGuestUser() ||
 				!_portletResourcePermission.contains(
 					themeDisplay.getPermissionChecker(),
 					themeDisplay.getScopeGroup(), ActionKeys.PERMISSIONS) ||

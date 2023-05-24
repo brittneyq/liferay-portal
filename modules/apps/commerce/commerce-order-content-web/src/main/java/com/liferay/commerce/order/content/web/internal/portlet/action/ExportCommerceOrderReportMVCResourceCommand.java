@@ -14,19 +14,19 @@
 
 package com.liferay.commerce.order.content.web.internal.portlet.action;
 
-import com.liferay.commerce.account.model.CommerceAccount;
+import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.constants.CommercePortletKeys;
 import com.liferay.commerce.currency.util.CommercePriceFormatter;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceOrderType;
-import com.liferay.commerce.product.service.CommerceChannelService;
 import com.liferay.commerce.report.exporter.CommerceReportExporter;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.service.CommerceOrderTypeService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.Group;
@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.service.CompanyService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
@@ -58,7 +57,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  */
 @Component(
-	enabled = false,
 	property = {
 		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_ORDER_CONTENT,
 		"mvc.command.name=/commerce_order_content/export_commerce_order_report"
@@ -90,7 +88,7 @@ public class ExportCommerceOrderReportMVCResourceCommand
 		HashMapBuilder.HashMapWrapper<String, Object> hashMapWrapper =
 			new HashMapBuilder.HashMapWrapper<>();
 
-		CommerceAccount commerceAccount = commerceOrder.getCommerceAccount();
+		AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
 		if (billingAddress != null) {
 			hashMapWrapper.put(
@@ -136,7 +134,7 @@ public class ExportCommerceOrderReportMVCResourceCommand
 			commerceOrder.getCommerceOrderItems();
 
 		hashMapWrapper.put(
-			"commerceAccountName", commerceAccount.getName()
+			"commerceAccountName", accountEntry.getName()
 		).put(
 			"commerceOrderId", commerceOrder.getCommerceOrderId()
 		).put(
@@ -155,11 +153,13 @@ public class ExportCommerceOrderReportMVCResourceCommand
 				return commerceOrderType.getName(themeDisplay.getLanguageId());
 			}
 		).put(
-			"companyId", commerceAccount.getCompanyId()
+			"companyId", accountEntry.getCompanyId()
 		).put(
 			"externalReferenceCode",
 			(commerceOrder.getExternalReferenceCode() != null) ?
 				commerceOrder.getExternalReferenceCode() : StringPool.BLANK
+		).put(
+			"language", _language
 		).put(
 			"locale", themeDisplay.getLocale()
 		).put(
@@ -299,6 +299,8 @@ public class ExportCommerceOrderReportMVCResourceCommand
 				commerceOrder.getCommerceCurrency(),
 				commerceOrder.getShippingWithTaxAmount(),
 				themeDisplay.getLocale())
+		).put(
+			"siteDefaultLocale", themeDisplay.getSiteDefaultLocale()
 		).put(
 			"subtotalDiscountAmount",
 			_commercePriceFormatter.format(
@@ -448,9 +450,6 @@ public class ExportCommerceOrderReportMVCResourceCommand
 	}
 
 	@Reference
-	private CommerceChannelService _commerceChannelService;
-
-	@Reference
 	private CommerceOrderService _commerceOrderService;
 
 	@Reference
@@ -463,10 +462,10 @@ public class ExportCommerceOrderReportMVCResourceCommand
 	private CommerceReportExporter _commerceReportExporter;
 
 	@Reference
-	private CompanyService _companyService;
+	private DLAppLocalService _dlAppLocalService;
 
 	@Reference
-	private DLAppLocalService _dlAppLocalService;
+	private Language _language;
 
 	@Reference
 	private Portal _portal;

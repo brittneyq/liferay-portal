@@ -55,8 +55,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -594,7 +592,7 @@ public abstract class CPDefinitionVirtualSettingLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CPDefinitionVirtualSettingLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -610,7 +608,8 @@ public abstract class CPDefinitionVirtualSettingLocalServiceBaseImpl
 		cpDefinitionVirtualSettingLocalService =
 			(CPDefinitionVirtualSettingLocalService)aopProxy;
 
-		_setLocalServiceUtilService(cpDefinitionVirtualSettingLocalService);
+		CPDefinitionVirtualSettingLocalServiceUtil.setService(
+			cpDefinitionVirtualSettingLocalService);
 	}
 
 	/**
@@ -656,24 +655,6 @@ public abstract class CPDefinitionVirtualSettingLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CPDefinitionVirtualSettingLocalService
-			cpDefinitionVirtualSettingLocalService) {
-
-		try {
-			Field field =
-				CPDefinitionVirtualSettingLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpDefinitionVirtualSettingLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected CPDefinitionVirtualSettingLocalService
 		cpDefinitionVirtualSettingLocalService;
 
@@ -684,18 +665,6 @@ public abstract class CPDefinitionVirtualSettingLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPDefinitionVirtualSettingLocalServiceBaseImpl.class);

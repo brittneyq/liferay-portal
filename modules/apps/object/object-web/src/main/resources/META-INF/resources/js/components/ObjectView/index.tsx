@@ -22,6 +22,7 @@ import {
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
+import {defaultLanguageId} from '../../utils/constants';
 import BasicInfoScreen from './BasicInfoScreen/BasicInfoScreen';
 import {DefaultSortScreen} from './DefaultSortScreen/DefaultSortScreen';
 import {FilterScreen} from './FilterScreen/FilterScreen';
@@ -49,7 +50,15 @@ const TABS = [
 ];
 
 const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
-	const [{isViewOnly, objectView, objectViewId}, dispatch] = useViewContext();
+	const [
+		{
+			isViewOnly,
+			objectDefinitionExternalReferenceCode,
+			objectView,
+			objectViewId,
+		},
+		dispatch,
+	] = useViewContext();
 
 	const [activeIndex, setActiveIndex] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(true);
@@ -67,7 +76,13 @@ const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 				`/o/object-admin/v1.0/object-views/${objectViewId}`
 			);
 
-			const objectFields = await API.getObjectFields(objectDefinitionId);
+			const objectFields = await API.getObjectFieldsByExternalReferenceCode(
+				objectDefinitionExternalReferenceCode
+			);
+
+			const objectDefinition = await API.getObjectDefinitionByExternalReferenceCode(
+				objectDefinitionExternalReferenceCode
+			);
 
 			const objectView = {
 				defaultObjectView,
@@ -80,24 +95,18 @@ const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 
 			dispatch({
 				payload: {
-					objectView,
-				},
-				type: TYPES.ADD_OBJECT_VIEW,
-			});
-
-			dispatch({
-				payload: {
+					creationLanguageId: objectDefinition.defaultLanguageId,
 					objectFields,
 					objectView,
 				},
-				type: TYPES.ADD_OBJECT_FIELDS,
+				type: TYPES.ADD_OBJECT_VIEW,
 			});
 
 			setLoading(false);
 		};
 
 		makeFetch();
-	}, [objectViewId, dispatch]);
+	}, [objectDefinitionExternalReferenceCode, objectViewId, dispatch]);
 
 	const removeUnnecessaryPropertiesFromObjectView = (
 		objectView: TObjectView
@@ -153,11 +162,7 @@ const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 
 		const {objectViewColumns} = newObjectView;
 
-		if (
-			invalidateRequired(
-				objectView.name[Liferay.ThemeDisplay.getDefaultLanguageId()]
-			)
-		) {
+		if (invalidateRequired(objectView.name[defaultLanguageId])) {
 			openToast({
 				message: Liferay.Language.get('a-name-is-required'),
 				type: 'danger',
@@ -228,6 +233,7 @@ const CustomView: React.FC<React.HTMLAttributes<HTMLElement>> = () => {
 interface ICustomViewWrapperProps extends React.HTMLAttributes<HTMLElement> {
 	filterOperators: TFilterOperators;
 	isViewOnly: boolean;
+	objectDefinitionExternalReferenceCode: string;
 	objectViewId: string;
 	workflowStatusJSONArray: TWorkflowStatus[];
 }
@@ -235,6 +241,7 @@ interface ICustomViewWrapperProps extends React.HTMLAttributes<HTMLElement> {
 const CustomViewWrapper: React.FC<ICustomViewWrapperProps> = ({
 	filterOperators,
 	isViewOnly,
+	objectDefinitionExternalReferenceCode,
 	objectViewId,
 	workflowStatusJSONArray,
 }) => {
@@ -243,6 +250,7 @@ const CustomViewWrapper: React.FC<ICustomViewWrapperProps> = ({
 			value={{
 				filterOperators,
 				isViewOnly,
+				objectDefinitionExternalReferenceCode,
 				objectViewId,
 				workflowStatusJSONArray,
 			}}

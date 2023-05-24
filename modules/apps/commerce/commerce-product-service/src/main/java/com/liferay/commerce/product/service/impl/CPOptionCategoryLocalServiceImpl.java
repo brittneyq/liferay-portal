@@ -25,7 +25,7 @@ import com.liferay.commerce.product.service.CPSpecificationOptionLocalService;
 import com.liferay.commerce.product.service.base.CPOptionCategoryLocalServiceBaseImpl;
 import com.liferay.commerce.product.service.persistence.CPDefinitionSpecificationOptionValuePersistence;
 import com.liferay.commerce.product.service.persistence.CPSpecificationOptionPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -60,10 +59,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Marco Leo
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.product.model.CPOptionCategory",
+	service = AopService.class
+)
 public class CPOptionCategoryLocalServiceImpl
 	extends CPOptionCategoryLocalServiceBaseImpl {
 
@@ -79,7 +85,7 @@ public class CPOptionCategoryLocalServiceImpl
 
 		key = _friendlyURLNormalizer.normalize(key);
 
-		validate(0, user.getCompanyId(), key);
+		_validate(0, user.getCompanyId(), key);
 
 		long cpOptionCategoryId = counterLocalService.increment();
 
@@ -205,10 +211,10 @@ public class CPOptionCategoryLocalServiceImpl
 			long companyId, String keywords, int start, int end, Sort sort)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, keywords, start, end, sort);
 
-		return searchCPOptionCategories(searchContext);
+		return _searchCPOptionCategories(searchContext);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
@@ -223,7 +229,7 @@ public class CPOptionCategoryLocalServiceImpl
 
 		key = _friendlyURLNormalizer.normalize(key);
 
-		validate(
+		_validate(
 			cpOptionCategory.getCPOptionCategoryId(),
 			cpOptionCategory.getCompanyId(), key);
 
@@ -235,7 +241,7 @@ public class CPOptionCategoryLocalServiceImpl
 		return cpOptionCategoryPersistence.update(cpOptionCategory);
 	}
 
-	protected SearchContext buildSearchContext(
+	private SearchContext _buildSearchContext(
 		long companyId, String keywords, int start, int end, Sort sort) {
 
 		SearchContext searchContext = new SearchContext();
@@ -276,7 +282,7 @@ public class CPOptionCategoryLocalServiceImpl
 		return searchContext;
 	}
 
-	protected List<CPOptionCategory> getCPOptionCategories(Hits hits)
+	private List<CPOptionCategory> _getCPOptionCategories(Hits hits)
 		throws PortalException {
 
 		List<Document> documents = hits.toList();
@@ -308,7 +314,7 @@ public class CPOptionCategoryLocalServiceImpl
 		return cpOptionCategories;
 	}
 
-	protected BaseModelSearchResult<CPOptionCategory> searchCPOptionCategories(
+	private BaseModelSearchResult<CPOptionCategory> _searchCPOptionCategories(
 			SearchContext searchContext)
 		throws PortalException {
 
@@ -319,14 +325,14 @@ public class CPOptionCategoryLocalServiceImpl
 			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
 
 			return new BaseModelSearchResult<>(
-				getCPOptionCategories(hits), hits.getLength());
+				_getCPOptionCategories(hits), hits.getLength());
 		}
 
 		throw new SearchException(
 			"Unable to fix the search index after 10 attempts");
 	}
 
-	protected void validate(long cpOptionCategoryId, long companyId, String key)
+	private void _validate(long cpOptionCategoryId, long companyId, String key)
 		throws PortalException {
 
 		CPOptionCategory cpOptionCategory =
@@ -343,30 +349,28 @@ public class CPOptionCategoryLocalServiceImpl
 		Field.ENTRY_CLASS_PK, Field.COMPANY_ID, Field.UID
 	};
 
-	@BeanReference(
-		type = CPDefinitionSpecificationOptionValueLocalService.class
-	)
+	@Reference
 	private CPDefinitionSpecificationOptionValueLocalService
 		_cpDefinitionSpecificationOptionValueLocalService;
 
-	@BeanReference(type = CPDefinitionSpecificationOptionValuePersistence.class)
+	@Reference
 	private CPDefinitionSpecificationOptionValuePersistence
 		_cpDefinitionSpecificationOptionValuePersistence;
 
-	@BeanReference(type = CPSpecificationOptionLocalService.class)
+	@Reference
 	private CPSpecificationOptionLocalService
 		_cpSpecificationOptionLocalService;
 
-	@BeanReference(type = CPSpecificationOptionPersistence.class)
+	@Reference
 	private CPSpecificationOptionPersistence _cpSpecificationOptionPersistence;
 
-	@ServiceReference(type = FriendlyURLNormalizer.class)
+	@Reference
 	private FriendlyURLNormalizer _friendlyURLNormalizer;
 
-	@ServiceReference(type = ResourceLocalService.class)
+	@Reference
 	private ResourceLocalService _resourceLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

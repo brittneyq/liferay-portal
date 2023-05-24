@@ -84,14 +84,19 @@ export default function useSubmitLXCEnvironment(
 
 			if (data) {
 				const liferayExperienceCloudEnvironmentId =
-					data.c?.createLiferayExperienceCloudEnvironment
-						?.liferayExperienceCloudEnvironmentId;
+					data.createLiferayExperienceCloudEnvironment?.id;
 
 				await updateAccountSubscriptionGroupsInfo({
+					context: {
+						displaySuccess: false,
+						type: 'liferay-rest',
+					},
 					variables: {
 						accountSubscriptionGroup: {
 							accountKey: project.accountKey,
 							activationStatus: STATUS_TAG_TYPE_NAMES.inProgress,
+							r_accountEntryToAccountSubscriptionGroup_accountEntryId:
+								project.id,
 						},
 						id: subscriptionGroupLxcId,
 					},

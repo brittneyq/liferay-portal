@@ -206,58 +206,75 @@ public class DSLQueryStatusEntryModelImpl
 	public Map<String, Function<DSLQueryStatusEntry, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<DSLQueryStatusEntry, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<DSLQueryStatusEntry, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<DSLQueryStatusEntry, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<DSLQueryStatusEntry, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<DSLQueryStatusEntry, Object>>();
-		Map<String, BiConsumer<DSLQueryStatusEntry, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap<String, BiConsumer<DSLQueryStatusEntry, ?>>();
+		private static final Map<String, Function<DSLQueryStatusEntry, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"dslQueryStatusEntryId",
-			DSLQueryStatusEntry::getDslQueryStatusEntryId);
-		attributeSetterBiConsumers.put(
-			"dslQueryStatusEntryId",
-			(BiConsumer<DSLQueryStatusEntry, Long>)
-				DSLQueryStatusEntry::setDslQueryStatusEntryId);
-		attributeGetterFunctions.put(
-			"dslQueryEntryId", DSLQueryStatusEntry::getDslQueryEntryId);
-		attributeSetterBiConsumers.put(
-			"dslQueryEntryId",
-			(BiConsumer<DSLQueryStatusEntry, Long>)
-				DSLQueryStatusEntry::setDslQueryEntryId);
-		attributeGetterFunctions.put("status", DSLQueryStatusEntry::getStatus);
-		attributeSetterBiConsumers.put(
-			"status",
-			(BiConsumer<DSLQueryStatusEntry, String>)
-				DSLQueryStatusEntry::setStatus);
-		attributeGetterFunctions.put(
-			"statusDate", DSLQueryStatusEntry::getStatusDate);
-		attributeSetterBiConsumers.put(
-			"statusDate",
-			(BiConsumer<DSLQueryStatusEntry, Date>)
-				DSLQueryStatusEntry::setStatusDate);
+		static {
+			Map<String, Function<DSLQueryStatusEntry, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<DSLQueryStatusEntry, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"dslQueryStatusEntryId",
+				DSLQueryStatusEntry::getDslQueryStatusEntryId);
+			attributeGetterFunctions.put(
+				"dslQueryEntryId", DSLQueryStatusEntry::getDslQueryEntryId);
+			attributeGetterFunctions.put(
+				"status", DSLQueryStatusEntry::getStatus);
+			attributeGetterFunctions.put(
+				"statusDate", DSLQueryStatusEntry::getStatusDate);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<DSLQueryStatusEntry, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<DSLQueryStatusEntry, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<DSLQueryStatusEntry, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"dslQueryStatusEntryId",
+				(BiConsumer<DSLQueryStatusEntry, Long>)
+					DSLQueryStatusEntry::setDslQueryStatusEntryId);
+			attributeSetterBiConsumers.put(
+				"dslQueryEntryId",
+				(BiConsumer<DSLQueryStatusEntry, Long>)
+					DSLQueryStatusEntry::setDslQueryEntryId);
+			attributeSetterBiConsumers.put(
+				"status",
+				(BiConsumer<DSLQueryStatusEntry, String>)
+					DSLQueryStatusEntry::setStatus);
+			attributeSetterBiConsumers.put(
+				"statusDate",
+				(BiConsumer<DSLQueryStatusEntry, Date>)
+					DSLQueryStatusEntry::setStatusDate);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -553,37 +570,6 @@ public class DSLQueryStatusEntryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<DSLQueryStatusEntry, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<DSLQueryStatusEntry, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<DSLQueryStatusEntry, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((DSLQueryStatusEntry)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, DSLQueryStatusEntry>
@@ -600,7 +586,8 @@ public class DSLQueryStatusEntryModelImpl
 
 	public <T> T getColumnValue(String columnName) {
 		Function<DSLQueryStatusEntry, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

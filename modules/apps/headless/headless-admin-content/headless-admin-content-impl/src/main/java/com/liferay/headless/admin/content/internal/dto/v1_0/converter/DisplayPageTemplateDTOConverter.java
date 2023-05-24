@@ -19,7 +19,7 @@ import com.liferay.headless.admin.content.internal.dto.v1_0.util.CreatorUtil;
 import com.liferay.headless.admin.content.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.admin.content.internal.dto.v1_0.util.DisplayPageTemplateSettingsUtil;
 import com.liferay.headless.delivery.dto.v1_0.PageDefinition;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
@@ -41,7 +41,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "dto.class.name=com.liferay.layout.page.template.model.LayoutPageTemplateEntry",
-	service = {DisplayPageTemplateDTOConverter.class, DTOConverter.class}
+	service = DTOConverter.class
 )
 public class DisplayPageTemplateDTOConverter
 	implements DTOConverter<LayoutPageTemplateEntry, DisplayPageTemplate> {
@@ -66,7 +66,7 @@ public class DisplayPageTemplateDTOConverter
 				availableLanguages = LocaleUtil.toW3cLanguageIds(
 					layout.getAvailableLanguageIds());
 				creator = CreatorUtil.toCreator(
-					_portal, dtoConverterContext.getUriInfoOptional(),
+					dtoConverterContext, _portal,
 					_userLocalService.fetchUser(
 						layoutPageTemplateEntry.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(
@@ -80,7 +80,7 @@ public class DisplayPageTemplateDTOConverter
 				displayPageTemplateSettings =
 					DisplayPageTemplateSettingsUtil.
 						getDisplayPageTemplateSettings(
-							dtoConverterContext, _infoItemServiceTracker,
+							dtoConverterContext, _infoItemServiceRegistry,
 							layout, layoutPageTemplateEntry, _portal);
 				markedAsDefault = layoutPageTemplateEntry.isDefaultTemplate();
 				siteId = layout.getGroupId();
@@ -126,7 +126,7 @@ public class DisplayPageTemplateDTOConverter
 	}
 
 	@Reference
-	private InfoItemServiceTracker _infoItemServiceTracker;
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

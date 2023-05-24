@@ -23,7 +23,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -67,7 +67,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sergio González
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.display-category=category.hidden",
@@ -76,7 +75,8 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.name=" + MentionsPortletKeys.MENTIONS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator"
+		"javax.portlet.security-role-ref=administrator",
+		"javax.portlet.version=3.0"
 	},
 	service = Portlet.class
 )
@@ -134,10 +134,10 @@ public class MentionsPortlet extends MVCPortlet {
 			Supplier<List<User>> usersSupplier, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
 
 		for (User user : usersSupplier.get()) {
-			if (user.isDefaultUser() ||
+			if (user.isGuestUser() ||
 				(themeDisplay.getUserId() == user.getUserId())) {
 
 				continue;
@@ -177,8 +177,7 @@ public class MentionsPortlet extends MVCPortlet {
 			return JSONUtil.put("strategy", "default");
 		}
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			strategyString);
+		JSONObject jsonObject = _jsonFactory.createJSONObject(strategyString);
 
 		if (jsonObject.isNull("strategy")) {
 			throw new PortalException(
@@ -210,8 +209,8 @@ public class MentionsPortlet extends MVCPortlet {
 				List<User> filteredUsers = new ArrayList<>();
 
 				List<User> users = mentionsStrategy.getUsers(
-					themeDisplay.getCompanyId(), themeDisplay.getUserId(),
-					query, jsonObject);
+					themeDisplay.getCompanyId(), themeDisplay.getSiteGroupId(),
+					themeDisplay.getUserId(), query, jsonObject);
 
 				for (User user : users) {
 					PermissionChecker permissionChecker =
@@ -242,6 +241,9 @@ public class MentionsPortlet extends MVCPortlet {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MentionsPortlet.class);
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private LayoutPermission _layoutPermission;

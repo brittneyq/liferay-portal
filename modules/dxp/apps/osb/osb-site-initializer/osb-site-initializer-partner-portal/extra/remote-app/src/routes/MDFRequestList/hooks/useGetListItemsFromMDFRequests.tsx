@@ -12,43 +12,34 @@
 import {useMemo} from 'react';
 
 import {MDFColumnKey} from '../../../common/enums/mdfColumnKey';
-import useGetMDFRequests from '../../../common/services/liferay/object/mdf-requests/useGetMDFRequests';
+import MDFRequestDTO from '../../../common/interfaces/dto/mdfRequestDTO';
 import getMDFActivityPeriod from '../utils/getMDFActivityPeriod';
 import getMDFBudgetInfos from '../utils/getMDFBudgetInfos';
 import getMDFDates from '../utils/getMDFDates';
+import getSummaryMDFClaims from '../utils/getSummaryMDFClaims';
 
 export default function useGetListItemsFromMDFRequests(
-	page: number,
-	pageSize: number
+	items?: MDFRequestDTO[]
 ) {
-	const swrResponse = useGetMDFRequests(page, pageSize);
-
-	const listItems = useMemo(
+	return useMemo(
 		() =>
-			swrResponse.data?.items.map((item) => {
-				return {
-					[MDFColumnKey.ID]: `Request-${item.id}`,
-					...getMDFActivityPeriod(
-						item.minDateActivity,
-						item.maxDateActivity
-					),
-					[MDFColumnKey.PARTNER]:
-						item.r_accountToMDFRequests_accountEntry?.name,
-					...getMDFDates(item.dateCreated, item.dateModified),
-					...getMDFBudgetInfos(
-						item.totalCostOfExpense,
-						item.totalMDFRequestAmount
-					),
-				};
-			}),
-		[swrResponse.data?.items]
+			items?.map((item) => ({
+				...getSummaryMDFClaims(item.currency, item.mdfReqToMDFClms),
+				[MDFColumnKey.ID]: String(item.id),
+				[MDFColumnKey.NAME]: item.overallCampaignName,
+				...getMDFActivityPeriod(
+					item.minDateActivity,
+					item.maxDateActivity
+				),
+				[MDFColumnKey.STATUS]: item.mdfRequestStatus?.name,
+				[MDFColumnKey.PARTNER]: item.companyName,
+				...getMDFDates(item.dateCreated, item.dateModified),
+				...getMDFBudgetInfos(
+					item.totalCostOfExpense,
+					item.totalMDFRequestAmount,
+					item.currency
+				),
+			})),
+		[items]
 	);
-
-	return {
-		...swrResponse,
-		data: {
-			...swrResponse.data,
-			items: listItems,
-		},
-	};
 }

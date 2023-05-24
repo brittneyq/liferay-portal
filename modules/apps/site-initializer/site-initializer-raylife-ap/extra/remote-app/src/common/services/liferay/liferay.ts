@@ -21,11 +21,23 @@ interface IThemeDisplay {
 	getUserName: () => string;
 }
 
+export type LiferayStorage = Storage & {
+	getItem(key: string, consentType: string): string | null;
+	setItem(key: string, value: string, consentType: string): void;
+};
+
+export type LiferayOnAction<T> = (payload: T) => void;
+
 interface ILiferay {
 	ThemeDisplay: IThemeDisplay;
+	Util: {
+		LocalStorage: LiferayStorage & {TYPES: {[key: string]: string}};
+		SessionStorage: LiferayStorage & {TYPES: {[key: string]: string}};
+	};
 	authToken: string;
-	detach: (eventName: string, options?: any) => void;
-	on: (eventName: string, options?: any) => void;
+	detach: <T = any>(eventName: string, action?: (payload: T) => void) => void;
+	on: <T = any>(eventName: string, action?: (payload: T) => void) => void;
+	publish: (eventName: string, optopms?: any) => void;
 }
 
 declare global {
@@ -33,6 +45,8 @@ declare global {
 		Liferay: ILiferay;
 	}
 }
+
+const TYPES = {};
 
 export const Liferay = window.Liferay || {
 	ThemeDisplay: {
@@ -43,5 +57,10 @@ export const Liferay = window.Liferay || {
 		getUserId: () => '',
 		getUserName: () => 'Test Test',
 	},
+	Util: {
+		LocalStorage: Object.assign(localStorage, {TYPES}),
+		SessionStorage: Object.assign(sessionStorage, {TYPES}),
+	},
 	authToken: '',
+	publish: '',
 };

@@ -31,7 +31,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "frontend.data.set.name=" + CommerceShipmentFDSNames.ORDER_SHIPMENTS,
 	service = FDSView.class
 )
@@ -49,7 +48,7 @@ public class CommerceOrderShipmentTableFDSView extends BaseTableFDSView {
 		).add(
 			"address", "address"
 		).add(
-			"createDate", "create-date"
+			"createDateString", "create-date"
 		).add(
 			"status", "status",
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(

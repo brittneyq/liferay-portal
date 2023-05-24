@@ -38,6 +38,18 @@ definition {
 		Click(locator1 = "CP2NavigationMenu#BUTTON_SAVE");
 	}
 
+	macro assertStatusOptions {
+		Click(
+			locator1 = "CP2NavigationMenu#STATUS_BUTTON",
+			title = "Active");
+
+		for (var status : list ${statusList}) {
+			var status = ${status};
+
+			AssertVisible(locator1 = "CP2NavigationMenu#STATUS_OPTIONS");
+		}
+	}
+
 	macro cancelTeamMembersInvitation {
 		Click(locator1 = "CP2NavigationMenu#INVITE_MEMBERS_CANCEL_BUTTON");
 	}
@@ -49,25 +61,11 @@ definition {
 	macro clickOnProductButton {
 		Click(
 			locator1 = "CP2NavigationMenu#PRODUCT",
-			product = "${product}");
+			product = ${product});
 	}
 
 	macro clickOnShowButton {
 		Click(locator1 = "CP2NavigationMenu#SHOW_BUTTON");
-	}
-
-	macro clickOnStatusButton {
-		Click(
-			locator1 = "CP2NavigationMenu#STATUS_BUTTON",
-			title = "${title}");
-
-		Click(
-			locator1 = "CP2NavigationMenu#SELECT_STATUS_OVERVIEW",
-			status = "All");
-
-		Click(
-			locator1 = "CP2NavigationMenu#SELECT_STATUS_OVERVIEW",
-			status = "${status}");
 	}
 
 	macro goToCP2 {
@@ -76,7 +74,7 @@ definition {
 		Click(locator1 = "CP2NavigationMenu#APPLICATIONS_MENU_ACCOUNTS");
 
 		Click(
-			key_site = "${site}",
+			key_site = ${site},
 			locator1 = "ApplicationsMenu#SITE_LINK");
 	}
 
@@ -93,13 +91,13 @@ definition {
 
 		Click(
 			locator1 = "RaylifeRetrieveEmail#ID_CREATED",
-			value1 = "${idCreated}");
+			value1 = ${idCreated});
 
 		WaitForElementPresent(locator1 = "RaylifeRetrieveEmail#QUOTE_RETRIEVE_LINK");
 
 		var openURL = selenium.getAttribute("RaylifeRetrieveEmail#SITE_LINK");
 
-		Navigator.openSpecificURL(url = "${openURL}");
+		Navigator.openSpecificURL(url = ${openURL});
 	}
 
 }

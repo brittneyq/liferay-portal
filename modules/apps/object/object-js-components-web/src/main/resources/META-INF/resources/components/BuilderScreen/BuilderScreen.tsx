@@ -21,16 +21,16 @@ import React, {useMemo, useState} from 'react';
 import {DndProvider} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
 
-import {stringIncludesQuery} from '../../utils/string';
+import {filterArrayByQuery} from '../../utils/array';
+import {getLocalizableLabel} from '../../utils/string';
 import {Card} from '../Card';
-import {ManagementToolbarSearch} from '../ManagementToolbarSearch';
+import {ManagementToolbarSearch} from '../ManagementToolbar/ManagementToolbarSearch';
 import BuilderListItem from './BuilderListItem';
 
 import './BuilderScreen.scss';
 
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
-
 export function BuilderScreen({
+	creationLanguageId,
 	defaultSort,
 	disableEdit,
 	emptyState,
@@ -51,9 +51,11 @@ export function BuilderScreen({
 	const [query, setQuery] = useState('');
 
 	const filteredItems = useMemo(() => {
-		return objectColumns.filter(({fieldLabel}: TBuilderScreenColumn) =>
-			stringIncludesQuery(fieldLabel as string, query)
-		);
+		return filterArrayByQuery({
+			array: objectColumns,
+			query,
+			str: 'fieldLabel',
+		});
 	}, [objectColumns, query]);
 
 	const tableItems = query ? filteredItems : objectColumns;
@@ -69,6 +71,7 @@ export function BuilderScreen({
 
 					<ManagementToolbar.Item>
 						<ClayButtonWithIcon
+							aria-label={Liferay.Language.get('add')}
 							className="nav-btn nav-btn-monospaced"
 							onClick={openModal}
 							symbol="plus"
@@ -152,9 +155,11 @@ export function BuilderScreen({
 												  )
 											: filter
 											? viewColumn?.objectFieldBusinessType
-											: viewColumn?.label[
-													defaultLanguageId
-											  ]
+											: getLocalizableLabel(
+													creationLanguageId as Liferay.Language.Locale,
+													viewColumn?.label,
+													viewColumn.objectFieldName
+											  )
 									}
 									thirdColumnValues={
 										viewColumn?.valueList ??
@@ -190,10 +195,6 @@ export function BuilderScreen({
 	);
 }
 
-type TName = {
-	[key: string]: string;
-};
-
 type TLabelValueObject = {
 	label: string;
 	value: string;
@@ -204,7 +205,7 @@ type TBuilderScreenColumn = {
 	disableEdit?: boolean;
 	fieldLabel?: string;
 	filterBy?: string;
-	label: TName;
+	label: LocalizedValue<string>;
 	objectFieldBusinessType?: string;
 	objectFieldName: string;
 	priority?: number;
@@ -215,6 +216,7 @@ type TBuilderScreenColumn = {
 };
 
 interface IProps {
+	creationLanguageId?: Liferay.Language.Locale;
 	defaultSort?: boolean;
 	disableEdit?: boolean;
 	emptyState: {

@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CommerceDiscountRelModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.commerce.discount.model.impl.CommerceDiscountRelImpl",
+		"table.name=CommerceDiscountRel"
+	},
+	service = ArgumentsResolver.class
 )
 public class CommerceDiscountRelModelArgumentsResolver
 	implements ArgumentsResolver {

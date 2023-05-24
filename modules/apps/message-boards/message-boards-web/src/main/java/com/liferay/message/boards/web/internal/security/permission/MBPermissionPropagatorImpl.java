@@ -42,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Hugo Huijser
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + MBPortletKeys.MESSAGE_BOARDS,
 		"javax.portlet.name=" + MBPortletKeys.MESSAGE_BOARDS_ADMIN
@@ -76,20 +75,6 @@ public class MBPermissionPropagatorImpl extends BasePermissionPropagator {
 			_propagateMBRolePermissions(
 				actionRequest, className, primKey, roleIds);
 		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setMBCategoryLocalService(
-		MBCategoryLocalService mbCategoryLocalService) {
-
-		_mbCategoryLocalService = mbCategoryLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setMBMessageLocalService(
-		MBMessageLocalService mbMessageLocalService) {
-
-		_mbMessageLocalService = mbMessageLocalService;
 	}
 
 	private void _propagateCategoryRolePermissions(
@@ -225,7 +210,10 @@ public class MBPermissionPropagatorImpl extends BasePermissionPropagator {
 		}
 	}
 
+	@Reference
 	private MBCategoryLocalService _mbCategoryLocalService;
+
+	@Reference
 	private MBMessageLocalService _mbMessageLocalService;
 
 }

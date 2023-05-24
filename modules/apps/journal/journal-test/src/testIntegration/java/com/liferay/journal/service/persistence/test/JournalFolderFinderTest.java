@@ -80,39 +80,42 @@ public class JournalFolderFinderTest {
 	}
 
 	@Test
-	public void testCountF_A_ByG_F() throws Exception {
+	public void testCountF_A_ByG_F_DDMSK() throws Exception {
 		QueryDefinition<Object> queryDefinition = new QueryDefinition<>();
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_ANY);
 
 		Assert.assertEquals(
 			3,
-			_journalFolderFinder.countF_A_ByG_F(
-				_group.getGroupId(), _folder1.getFolderId(), queryDefinition));
+			_journalFolderFinder.countF_A_ByG_F_DDMSI(
+				_group.getGroupId(), _folder1.getFolderId(), 0,
+				queryDefinition));
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH);
 
 		Assert.assertEquals(
 			1,
-			_journalFolderFinder.countF_A_ByG_F(
-				_group.getGroupId(), _folder1.getFolderId(), queryDefinition));
+			_journalFolderFinder.countF_A_ByG_F_DDMSI(
+				_group.getGroupId(), _folder1.getFolderId(), 0,
+				queryDefinition));
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH, true);
 
 		Assert.assertEquals(
 			2,
-			_journalFolderFinder.countF_A_ByG_F(
-				_group.getGroupId(), _folder1.getFolderId(), queryDefinition));
+			_journalFolderFinder.countF_A_ByG_F_DDMSI(
+				_group.getGroupId(), _folder1.getFolderId(), 0,
+				queryDefinition));
 	}
 
 	@Test
-	public void testFindF_A_ByG_F() throws Exception {
+	public void testFindF_A_ByG_F_DDMSK() throws Exception {
 		QueryDefinition<Object> queryDefinition = new QueryDefinition<>();
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_ANY);
 
-		List<Object> results = _journalFolderFinder.findF_A_ByG_F(
-			_group.getGroupId(), _folder1.getFolderId(), queryDefinition);
+		List<Object> results = _journalFolderFinder.findF_A_ByG_F_DDMSI(
+			_group.getGroupId(), _folder1.getFolderId(), 0, queryDefinition);
 
 		Assert.assertEquals(results.toString(), 3, results.size());
 
@@ -135,8 +138,8 @@ public class JournalFolderFinderTest {
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH);
 
-		results = _journalFolderFinder.findF_A_ByG_F(
-			_group.getGroupId(), _folder1.getFolderId(), queryDefinition);
+		results = _journalFolderFinder.findF_A_ByG_F_DDMSI(
+			_group.getGroupId(), _folder1.getFolderId(), 0, queryDefinition);
 
 		Assert.assertEquals(results.toString(), 1, results.size());
 
@@ -156,8 +159,8 @@ public class JournalFolderFinderTest {
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH, true);
 
-		results = _journalFolderFinder.findF_A_ByG_F(
-			_group.getGroupId(), _folder1.getFolderId(), queryDefinition);
+		results = _journalFolderFinder.findF_A_ByG_F_DDMSI(
+			_group.getGroupId(), _folder1.getFolderId(), 0, queryDefinition);
 
 		Assert.assertEquals(results.toString(), 2, results.size());
 

@@ -20,9 +20,12 @@ import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
 import com.liferay.info.collection.provider.CollectionQuery;
 import com.liferay.info.collection.provider.InfoCollectionProvider;
 import com.liferay.info.pagination.InfoPage;
+import com.liferay.info.sort.Sort;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -33,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Pavel Savinov
  */
-@Component(immediate = true, service = InfoCollectionProvider.class)
+@Component(service = InfoCollectionProvider.class)
 public class HighestRatedAssetsInfoCollectionProvider
 	extends BaseAssetsInfoCollectionProvider
 	implements InfoCollectionProvider<AssetEntry> {
@@ -42,8 +45,13 @@ public class HighestRatedAssetsInfoCollectionProvider
 	public InfoPage<AssetEntry> getCollectionInfoPage(
 		CollectionQuery collectionQuery) {
 
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
 		AssetEntryQuery assetEntryQuery = getAssetEntryQuery(
-			"ratings", "DESC", collectionQuery.getPagination());
+			serviceContext.getCompanyId(), serviceContext.getScopeGroupId(),
+			collectionQuery.getPagination(), new Sort("ratings", true),
+			new Sort("title", true));
 
 		try {
 			return InfoPage.of(

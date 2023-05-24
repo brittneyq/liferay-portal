@@ -18,10 +18,10 @@ import React from 'react';
 
 import {StoreAPIContextProvider} from '../../../../src/main/resources/META-INF/resources/page_editor/app/contexts/StoreContext';
 import ItemSelector from '../../../../src/main/resources/META-INF/resources/page_editor/common/components/ItemSelector';
-import {openItemSelector} from '../../../../src/main/resources/META-INF/resources/page_editor/core/openItemSelector';
+import {openItemSelector} from '../../../../src/main/resources/META-INF/resources/page_editor/common/openItemSelector';
 
 jest.mock(
-	'../../../../src/main/resources/META-INF/resources/page_editor/app/config',
+	'../../../../src/main/resources/META-INF/resources/page_editor/app/config/index',
 	() => ({
 		config: {
 			infoItemSelectorUrl: 'infoItemSelectorUrl',
@@ -31,11 +31,16 @@ jest.mock(
 );
 
 jest.mock(
-	'../../../../src/main/resources/META-INF/resources/page_editor/core/openItemSelector',
+	'../../../../src/main/resources/META-INF/resources/page_editor/common/openItemSelector',
 	() => ({
 		openItemSelector: jest.fn(() => {}),
 	})
 );
+
+jest.mock('frontend-js-web', () => ({
+	...jest.requireActual('frontend-js-web'),
+	sub: jest.fn((langKey, args) => langKey.replace('x', args)),
+}));
 
 function renderItemSelector({
 	pageContents = [],
@@ -45,10 +50,6 @@ function renderItemSelector({
 	const state = {
 		pageContents,
 	};
-
-	Liferay.Util.sub.mockImplementation((langKey, args) =>
-		langKey.replace('x', args)
-	);
 
 	return render(
 		<StoreAPIContextProvider dispatch={() => {}} getState={() => state}>

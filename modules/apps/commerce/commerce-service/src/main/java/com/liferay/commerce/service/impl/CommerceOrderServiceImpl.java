@@ -14,39 +14,48 @@
 
 package com.liferay.commerce.service.impl;
 
-import com.liferay.commerce.account.constants.CommerceAccountActionKeys;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.service.CommerceAccountLocalService;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.commerce.constants.CommerceActionKeys;
 import com.liferay.commerce.constants.CommerceOrderActionKeys;
 import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.service.base.CommerceOrderServiceBaseImpl;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Locale;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Andrea Di Giorgi
  * @author Marco Leo
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = {
+		"json.web.service.context.name=commerce",
+		"json.web.service.context.path=CommerceOrder"
+	},
+	service = AopService.class
+)
 public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 
 	@Override
@@ -55,9 +64,13 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 			long commerceOrderTypeId)
 		throws PortalException {
 
-		_portletResourcePermission.check(
-			getPermissionChecker(), groupId,
-			CommerceOrderActionKeys.ADD_COMMERCE_ORDER);
+		AccountEntry accountEntry = _getAccountEntry(commerceAccountId);
+
+		if (accountEntry.isBusinessAccount()) {
+			_portletResourcePermission.check(
+				getPermissionChecker(), accountEntry.getAccountEntryGroupId(),
+				CommerceOrderActionKeys.ADD_COMMERCE_ORDER);
+		}
 
 		return commerceOrderLocalService.addCommerceOrder(
 			getUserId(), groupId, commerceAccountId, commerceCurrencyId,
@@ -86,9 +99,14 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 				externalReferenceCode, serviceContext.getCompanyId());
 
 		if (commerceOrder == null) {
-			_portletResourcePermission.check(
-				getPermissionChecker(), serviceContext.getScopeGroupId(),
-				CommerceOrderActionKeys.ADD_COMMERCE_ORDER);
+			AccountEntry accountEntry = _getAccountEntry(commerceAccountId);
+
+			if (accountEntry.isBusinessAccount()) {
+				_portletResourcePermission.check(
+					getPermissionChecker(),
+					accountEntry.getAccountEntryGroupId(),
+					CommerceOrderActionKeys.ADD_COMMERCE_ORDER);
+			}
 		}
 		else {
 			_commerceOrderModelResourcePermission.check(
@@ -489,8 +507,9 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 	}
 
 	@Override
-	public List<CommerceOrder> getUserPendingCommerceOrders(
-			long companyId, long groupId, String keywords, int start, int end)
+	public List<CommerceOrder> getUserOpenCommerceOrders(
+			long companyId, long groupId, String keywords, int start, int end,
+			Sort sort)
 		throws PortalException {
 
 		long[] commerceAccountIds = _getCommerceAccountIds(groupId);
@@ -498,7 +517,16 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 		return commerceOrderLocalService.getCommerceOrders(
 			companyId, groupId, commerceAccountIds, keywords,
 			new int[] {CommerceOrderConstants.ORDER_STATUS_OPEN}, false, start,
-			end);
+			end, sort);
+	}
+
+	@Override
+	public List<CommerceOrder> getUserPendingCommerceOrders(
+			long companyId, long groupId, String keywords, int start, int end)
+		throws PortalException {
+
+		return commerceOrderService.getUserOpenCommerceOrders(
+			companyId, groupId, keywords, start, end, null);
 	}
 
 	@Override
@@ -518,12 +546,22 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 			long companyId, long groupId, String keywords, int start, int end)
 		throws PortalException {
 
+		return getUserPlacedCommerceOrders(
+			companyId, groupId, keywords, start, end, null);
+	}
+
+	@Override
+	public List<CommerceOrder> getUserPlacedCommerceOrders(
+			long companyId, long groupId, String keywords, int start, int end,
+			Sort sort)
+		throws PortalException {
+
 		long[] commerceAccountIds = _getCommerceAccountIds(groupId);
 
 		return commerceOrderLocalService.getCommerceOrders(
 			companyId, groupId, commerceAccountIds, keywords,
 			new int[] {CommerceOrderConstants.ORDER_STATUS_OPEN}, true, start,
-			end);
+			end, sort);
 	}
 
 	@Override
@@ -550,8 +588,8 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 			getPermissionChecker(), userCommerceOrderId, ActionKeys.UPDATE);
 
 		commerceOrderLocalService.mergeGuestCommerceOrder(
-			guestCommerceOrderId, userCommerceOrderId, commerceContext,
-			serviceContext);
+			getUserId(), guestCommerceOrderId, userCommerceOrderId,
+			commerceContext, serviceContext);
 	}
 
 	@Override
@@ -979,22 +1017,34 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 	}
 
 	private void _checkAccountOrder(
-			long groupId, long commerceAccountId, String action)
+			long groupId, long accountEntryId, String action)
 		throws PortalException {
 
-		CommerceAccount commerceAccount =
-			_commerceAccountLocalService.fetchCommerceAccount(
-				commerceAccountId);
+		AccountEntry accountEntry = _accountEntryLocalService.fetchAccountEntry(
+			accountEntryId);
 
-		if (commerceAccount == null) {
+		if (accountEntry == null) {
 			_portletResourcePermission.check(
 				getPermissionChecker(), groupId, action);
 		}
-		else if (commerceAccount.isBusinessAccount()) {
+		else if (accountEntry.isBusinessAccount()) {
 			_portletResourcePermission.check(
-				getPermissionChecker(),
-				commerceAccount.getCommerceAccountGroup(), action);
+				getPermissionChecker(), accountEntry.getAccountEntryGroup(),
+				action);
 		}
+	}
+
+	private AccountEntry _getAccountEntry(long accountEntryId)
+		throws PortalException {
+
+		User user = getUser();
+
+		if ((user == null) || user.isGuestUser()) {
+			return _accountEntryLocalService.getGuestAccountEntry(
+				user.getCompanyId());
+		}
+
+		return _accountEntryLocalService.getAccountEntry(accountEntryId);
 	}
 
 	private long[] _getCommerceAccountIds(long groupId) throws PortalException {
@@ -1004,7 +1054,7 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 
 		if (!portletResourcePermission.contains(
 				getPermissionChecker(), groupId,
-				CommerceAccountActionKeys.MANAGE_ALL_ACCOUNTS)) {
+				CommerceOrderActionKeys.MANAGE_ALL_ACCOUNTS)) {
 
 			return _commerceAccountHelper.getUserCommerceAccountIds(
 				getUserId(), groupId);
@@ -1013,24 +1063,24 @@ public class CommerceOrderServiceImpl extends CommerceOrderServiceBaseImpl {
 		return null;
 	}
 
-	private static volatile ModelResourcePermission<CommerceOrder>
-		_commerceOrderModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				CommerceOrderServiceImpl.class,
-				"_commerceOrderModelResourcePermission", CommerceOrder.class);
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				CommerceOrderServiceImpl.class, "_portletResourcePermission",
-				CommerceOrderConstants.RESOURCE_NAME);
+	@Reference
+	private AccountEntryLocalService _accountEntryLocalService;
 
-	@ServiceReference(type = CommerceAccountHelper.class)
+	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;
 
-	@ServiceReference(type = CommerceAccountLocalService.class)
-	private CommerceAccountLocalService _commerceAccountLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.commerce.model.CommerceOrder)"
+	)
+	private ModelResourcePermission<CommerceOrder>
+		_commerceOrderModelResourcePermission;
 
-	@ServiceReference(type = GroupLocalService.class)
+	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference(
+		target = "(resource.name=" + CommerceOrderConstants.RESOURCE_NAME + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
 
 }

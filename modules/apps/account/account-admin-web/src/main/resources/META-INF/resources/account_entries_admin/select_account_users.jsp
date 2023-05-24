@@ -27,7 +27,6 @@ SelectAccountUsersManagementToolbarDisplayContext selectAccountUsersManagementTo
 <portlet:renderURL var="addAccountEntryUserURL">
 	<portlet:param name="mvcRenderCommandName" value="/account_admin/add_account_user" />
 	<portlet:param name="redirect" value='<%= ParamUtil.getString(request, "redirect") %>' />
-	<portlet:param name="backURL" value='<%= ParamUtil.getString(request, "redirect") %>' />
 	<portlet:param name="accountEntryId" value="<%= String.valueOf(selectAccountUsersDisplayContext.getAccountEntryId()) %>" />
 </portlet:renderURL>
 
@@ -35,8 +34,6 @@ SelectAccountUsersManagementToolbarDisplayContext selectAccountUsersManagementTo
 	additionalProps='<%=
 		HashMapBuilder.<String, Object>put(
 			"addAccountEntryUserURL", addAccountEntryUserURL.toString()
-		).put(
-			"openModalOnRedirect", selectAccountUsersDisplayContext.isOpenModalOnRedirect()
 		).build()
 	%>'
 	managementToolbarDisplayContext="<%= selectAccountUsersManagementToolbarDisplayContext %>"
@@ -64,7 +61,7 @@ SelectAccountUsersManagementToolbarDisplayContext selectAccountUsersManagementTo
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand-small table-cell-minw-150"
 				name="name"
-				property="name"
+				value="<%= HtmlUtil.escape(accountUserDisplay.getName()) %>"
 			/>
 
 			<liferay-ui:search-container-column-text
@@ -76,13 +73,13 @@ SelectAccountUsersManagementToolbarDisplayContext selectAccountUsersManagementTo
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand-small table-cell-minw-150"
 				name="job-title"
-				property="jobTitle"
+				value="<%= HtmlUtil.escape(accountUserDisplay.getJobTitle()) %>"
 			/>
 
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand-small table-cell-minw-150"
 				name="account-roles"
-				value="<%= accountUserDisplay.getAccountRoleNamesString(selectAccountUsersDisplayContext.getAccountEntryId(), locale) %>"
+				value="<%= HtmlUtil.escape(accountUserDisplay.getAccountRoleNamesString(selectAccountUsersDisplayContext.getAccountEntryId(), locale)) %>"
 			/>
 
 			<c:if test="<%= selectAccountUsersDisplayContext.isSingleSelect() %>">

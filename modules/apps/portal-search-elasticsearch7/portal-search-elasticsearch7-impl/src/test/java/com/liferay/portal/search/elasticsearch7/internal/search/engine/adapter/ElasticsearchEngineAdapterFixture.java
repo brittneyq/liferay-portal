@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.elasticsearch7.internal.search.engine.adapter;
 
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.search.elasticsearch7.internal.connection.ElasticsearchClientResolver;
 import com.liferay.portal.search.elasticsearch7.internal.document.DefaultElasticsearchDocumentFactory;
 import com.liferay.portal.search.elasticsearch7.internal.document.ElasticsearchDocumentFactory;
@@ -40,6 +41,10 @@ public class ElasticsearchEngineAdapterFixture {
 		_searchEngineAdapter = createSearchEngineAdapter(
 			_elasticsearchClientResolver, _getElasticsearchDocumentFactory(),
 			_facetProcessor);
+	}
+
+	public void tearDown() {
+		_searchRequestExecutorFixture.tearDown();
 	}
 
 	protected static SearchEngineAdapter createSearchEngineAdapter(
@@ -70,13 +75,12 @@ public class ElasticsearchEngineAdapterFixture {
 				}
 			};
 
-		SearchRequestExecutorFixture searchRequestExecutorFixture =
-			new SearchRequestExecutorFixture() {
-				{
-					setElasticsearchClientResolver(elasticsearchClientResolver);
-					setFacetProcessor(facetProcessor);
-				}
-			};
+		_searchRequestExecutorFixture = new SearchRequestExecutorFixture() {
+			{
+				setElasticsearchClientResolver(elasticsearchClientResolver);
+				setFacetProcessor(facetProcessor);
+			}
+		};
 
 		SnapshotRequestExecutorFixture snapshotRequestExecutorFixture =
 			new SnapshotRequestExecutorFixture() {
@@ -88,26 +92,33 @@ public class ElasticsearchEngineAdapterFixture {
 		clusterRequestExecutorFixture.setUp();
 		documentRequestExecutorFixture.setUp();
 		indexRequestExecutorFixture.setUp();
-		searchRequestExecutorFixture.setUp();
+		_searchRequestExecutorFixture.setUp();
 		snapshotRequestExecutorFixture.setUp();
 
-		return new ElasticsearchSearchEngineAdapterImpl() {
-			{
-				setClusterRequestExecutor(
-					clusterRequestExecutorFixture.getClusterRequestExecutor());
-				setDocumentRequestExecutor(
-					documentRequestExecutorFixture.
-						getDocumentRequestExecutor());
-				setIndexRequestExecutor(
-					indexRequestExecutorFixture.getIndexRequestExecutor());
-				setSearchRequestExecutor(
-					searchRequestExecutorFixture.getSearchRequestExecutor());
-				setSnapshotRequestExecutor(
-					snapshotRequestExecutorFixture.
-						getSnapshotRequestExecutor());
-				setThrowOriginalExceptions(true);
-			}
-		};
+		SearchEngineAdapter searchEngineAdapter =
+			new ElasticsearchSearchEngineAdapterImpl() {
+				{
+					setThrowOriginalExceptions(true);
+				}
+			};
+
+		ReflectionTestUtil.setFieldValue(
+			searchEngineAdapter, "_clusterRequestExecutor",
+			clusterRequestExecutorFixture.getClusterRequestExecutor());
+		ReflectionTestUtil.setFieldValue(
+			searchEngineAdapter, "_documentRequestExecutor",
+			documentRequestExecutorFixture.getDocumentRequestExecutor());
+		ReflectionTestUtil.setFieldValue(
+			searchEngineAdapter, "_indexRequestExecutor",
+			indexRequestExecutorFixture.getIndexRequestExecutor());
+		ReflectionTestUtil.setFieldValue(
+			searchEngineAdapter, "_searchRequestExecutor",
+			_searchRequestExecutorFixture.getSearchRequestExecutor());
+		ReflectionTestUtil.setFieldValue(
+			searchEngineAdapter, "_snapshotRequestExecutor",
+			snapshotRequestExecutorFixture.getSnapshotRequestExecutor());
+
+		return searchEngineAdapter;
 	}
 
 	protected void setElasticsearchClientResolver(
@@ -135,6 +146,8 @@ public class ElasticsearchEngineAdapterFixture {
 
 		return new DefaultElasticsearchDocumentFactory();
 	}
+
+	private static SearchRequestExecutorFixture _searchRequestExecutorFixture;
 
 	private ElasticsearchClientResolver _elasticsearchClientResolver;
 	private ElasticsearchDocumentFactory _elasticsearchDocumentFactory;

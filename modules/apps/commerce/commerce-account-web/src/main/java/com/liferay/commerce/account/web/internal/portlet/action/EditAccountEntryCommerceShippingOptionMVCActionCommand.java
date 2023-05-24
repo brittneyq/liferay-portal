@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_ADMIN,
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT,
@@ -98,13 +97,13 @@ public class EditAccountEntryCommerceShippingOptionMVCActionCommand
 			_commerceShippingFixedOptionService.
 				fetchCommerceShippingFixedOption(commerceShippingFixedOptionId);
 
-		if ((commerceShippingFixedOption == null) &&
-			(commerceShippingOptionAccountEntryRel != null)) {
-
-			_commerceShippingOptionAccountEntryRelService.
-				deleteCommerceShippingOptionAccountEntryRel(
-					commerceShippingOptionAccountEntryRel.
-						getCommerceShippingOptionAccountEntryRelId());
+		if (commerceShippingFixedOption == null) {
+			if (commerceShippingOptionAccountEntryRel != null) {
+				_commerceShippingOptionAccountEntryRelService.
+					deleteCommerceShippingOptionAccountEntryRel(
+						commerceShippingOptionAccountEntryRel.
+							getCommerceShippingOptionAccountEntryRelId());
+			}
 
 			return null;
 		}

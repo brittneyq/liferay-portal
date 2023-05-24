@@ -39,12 +39,13 @@ import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_ADMIN,
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT,
@@ -75,8 +76,8 @@ public class EditAccountEntryAddressMVCActionCommand
 
 		String defaultType = ParamUtil.getString(actionRequest, "defaultType");
 
-		if (Objects.equals("billing", defaultType) ||
-			Objects.equals("shipping", defaultType)) {
+		if (Objects.equals(defaultType, "billing") ||
+			Objects.equals(defaultType, "shipping")) {
 
 			long accountEntryId = ParamUtil.getLong(
 				actionRequest, "accountEntryId");
@@ -90,10 +91,10 @@ public class EditAccountEntryAddressMVCActionCommand
 				addressId = accountEntryAddress.getAddressId();
 			}
 
-			if (Objects.equals("billing", defaultType)) {
+			if (Objects.equals(defaultType, "billing")) {
 				accountEntry.setDefaultBillingAddressId(addressId);
 			}
-			else if (Objects.equals("shipping", defaultType)) {
+			else if (Objects.equals(defaultType, "shipping")) {
 				accountEntry.setDefaultShippingAddressId(addressId);
 			}
 
@@ -180,9 +181,11 @@ public class EditAccountEntryAddressMVCActionCommand
 	}
 
 	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY,
 		target = "(model.class.name=com.liferay.account.model.AccountEntry)"
 	)
-	private ModelResourcePermission<AccountEntry>
+	private volatile ModelResourcePermission<AccountEntry>
 		_accountEntryModelResourcePermission;
 
 	@Reference

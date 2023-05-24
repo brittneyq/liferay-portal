@@ -25,7 +25,7 @@ import com.liferay.commerce.product.service.CPDefinitionSpecificationOptionValue
 import com.liferay.commerce.product.service.base.CPSpecificationOptionLocalServiceBaseImpl;
 import com.liferay.expando.kernel.service.ExpandoRowLocalService;
 import com.liferay.petra.string.CharPool;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -58,7 +58,6 @@ import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -68,10 +67,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Andrea Di Giorgi
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.product.model.CPSpecificationOption",
+	service = AopService.class
+)
 public class CPSpecificationOptionLocalServiceImpl
 	extends CPSpecificationOptionLocalServiceBaseImpl {
 
@@ -89,7 +95,7 @@ public class CPSpecificationOptionLocalServiceImpl
 
 		key = _friendlyURLNormalizer.normalize(key);
 
-		validate(0, user.getCompanyId(), titleMap, key);
+		_validate(0, user.getCompanyId(), titleMap, key);
 
 		long cpSpecificationOptionId = counterLocalService.increment();
 
@@ -199,10 +205,10 @@ public class CPSpecificationOptionLocalServiceImpl
 				int end, Sort sort)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, facetable, keywords, start, end, sort);
 
-		return searchCPSpecificationOptions(searchContext);
+		return _searchCPSpecificationOptions(searchContext);
 	}
 
 	@Override
@@ -235,7 +241,7 @@ public class CPSpecificationOptionLocalServiceImpl
 
 		key = _friendlyURLNormalizer.normalize(key);
 
-		validate(
+		_validate(
 			cpSpecificationOption.getCPSpecificationOptionId(),
 			cpSpecificationOption.getCompanyId(), titleMap, key);
 
@@ -249,13 +255,13 @@ public class CPSpecificationOptionLocalServiceImpl
 		cpSpecificationOption = cpSpecificationOptionPersistence.update(
 			cpSpecificationOption);
 
-		reindexCPDefinitions(
+		_reindexCPDefinitions1(
 			cpSpecificationOption.getCompanyId(), cpSpecificationOptionId);
 
 		return cpSpecificationOption;
 	}
 
-	protected SearchContext buildSearchContext(
+	private SearchContext _buildSearchContext(
 		long companyId, Boolean facetable, String keywords, int start, int end,
 		Sort sort) {
 
@@ -308,7 +314,7 @@ public class CPSpecificationOptionLocalServiceImpl
 		return searchContext;
 	}
 
-	protected List<CPSpecificationOption> getCPSpecificationOptions(Hits hits)
+	private List<CPSpecificationOption> _getCPSpecificationOptions(Hits hits)
 		throws PortalException {
 
 		List<Document> documents = hits.toList();
@@ -342,69 +348,18 @@ public class CPSpecificationOptionLocalServiceImpl
 		return cpSpecificationOptions;
 	}
 
-	protected void reindexCPDefinitions(
+	private void _reindexCPDefinitions1(
 		long companyId, long cpSpecificationOptionId) {
 
 		TransactionCommitCallbackUtil.registerCallback(
 			() -> {
-				_reindexCPDefinitions(companyId, cpSpecificationOptionId);
+				_reindexCPDefinitions2(companyId, cpSpecificationOptionId);
 
 				return null;
 			});
 	}
 
-	protected BaseModelSearchResult<CPSpecificationOption>
-			searchCPSpecificationOptions(SearchContext searchContext)
-		throws PortalException {
-
-		Indexer<CPSpecificationOption> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(CPSpecificationOption.class);
-
-		for (int i = 0; i < 10; i++) {
-			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
-
-			List<CPSpecificationOption> cpSpecificationOptions =
-				getCPSpecificationOptions(hits);
-
-			if (cpSpecificationOptions != null) {
-				return new BaseModelSearchResult<>(
-					cpSpecificationOptions, hits.getLength());
-			}
-		}
-
-		throw new SearchException(
-			"Unable to fix the search index after 10 attempts");
-	}
-
-	protected void validate(
-			long cpSpecificationOptionId, long companyId,
-			Map<Locale, String> titleMap, String key)
-		throws PortalException {
-
-		Locale locale = LocaleUtil.getSiteDefault();
-
-		String title = titleMap.get(locale);
-
-		if (Validator.isNull(title)) {
-			throw new CPSpecificationOptionTitleException();
-		}
-
-		if (Validator.isNull(key)) {
-			throw new CPSpecificationOptionKeyException.MustNotBeNull();
-		}
-
-		CPSpecificationOption cpSpecificationOption =
-			cpSpecificationOptionPersistence.fetchByC_K(companyId, key);
-
-		if ((cpSpecificationOption != null) &&
-			(cpSpecificationOption.getCPSpecificationOptionId() !=
-				cpSpecificationOptionId)) {
-
-			throw new DuplicateCPSpecificationOptionKeyException();
-		}
-	}
-
-	private void _reindexCPDefinitions(
+	private void _reindexCPDefinitions2(
 			long companyId, long cpSpecificationOptionId)
 		throws Exception {
 
@@ -443,10 +398,59 @@ public class CPSpecificationOptionLocalServiceImpl
 					}
 				}
 			});
-		indexableActionableDynamicQuery.setSearchEngineId(
-			indexer.getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
+	}
+
+	private BaseModelSearchResult<CPSpecificationOption>
+			_searchCPSpecificationOptions(SearchContext searchContext)
+		throws PortalException {
+
+		Indexer<CPSpecificationOption> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(CPSpecificationOption.class);
+
+		for (int i = 0; i < 10; i++) {
+			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
+
+			List<CPSpecificationOption> cpSpecificationOptions =
+				_getCPSpecificationOptions(hits);
+
+			if (cpSpecificationOptions != null) {
+				return new BaseModelSearchResult<>(
+					cpSpecificationOptions, hits.getLength());
+			}
+		}
+
+		throw new SearchException(
+			"Unable to fix the search index after 10 attempts");
+	}
+
+	private void _validate(
+			long cpSpecificationOptionId, long companyId,
+			Map<Locale, String> titleMap, String key)
+		throws PortalException {
+
+		Locale locale = LocaleUtil.getSiteDefault();
+
+		String title = titleMap.get(locale);
+
+		if (Validator.isNull(title)) {
+			throw new CPSpecificationOptionTitleException();
+		}
+
+		if (Validator.isNull(key)) {
+			throw new CPSpecificationOptionKeyException.MustNotBeNull();
+		}
+
+		CPSpecificationOption cpSpecificationOption =
+			cpSpecificationOptionPersistence.fetchByC_K(companyId, key);
+
+		if ((cpSpecificationOption != null) &&
+			(cpSpecificationOption.getCPSpecificationOptionId() !=
+				cpSpecificationOptionId)) {
+
+			throw new DuplicateCPSpecificationOptionKeyException();
+		}
 	}
 
 	private static final String[] _SELECTED_FIELD_NAMES = {
@@ -456,22 +460,20 @@ public class CPSpecificationOptionLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPSpecificationOptionLocalServiceImpl.class);
 
-	@BeanReference(
-		type = CPDefinitionSpecificationOptionValueLocalService.class
-	)
+	@Reference
 	private CPDefinitionSpecificationOptionValueLocalService
 		_cpDefinitionSpecificationOptionValueLocalService;
 
-	@ServiceReference(type = ExpandoRowLocalService.class)
+	@Reference
 	private ExpandoRowLocalService _expandoRowLocalService;
 
-	@ServiceReference(type = FriendlyURLNormalizer.class)
+	@Reference
 	private FriendlyURLNormalizer _friendlyURLNormalizer;
 
-	@ServiceReference(type = ResourceLocalService.class)
+	@Reference
 	private ResourceLocalService _resourceLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

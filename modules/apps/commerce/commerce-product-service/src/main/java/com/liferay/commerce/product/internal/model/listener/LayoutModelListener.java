@@ -29,7 +29,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Riccardo Ferrari
  */
-@Component(enabled = false, immediate = true, service = ModelListener.class)
+@Component(service = ModelListener.class)
 public class LayoutModelListener extends BaseModelListener<Layout> {
 
 	@Override
@@ -40,7 +40,7 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 
 		List<CPDisplayLayout> cpDisplayLayouts =
 			_cpDisplayLayoutLocalService.
-				fetchCPDisplayLayoutByGroupIdAndLayoutUuid(
+				getCPDisplayLayoutsByGroupIdAndLayoutUuid(
 					layout.getGroupId(), layout.getUuid());
 
 		for (CPDisplayLayout cpDisplayLayout : cpDisplayLayouts) {

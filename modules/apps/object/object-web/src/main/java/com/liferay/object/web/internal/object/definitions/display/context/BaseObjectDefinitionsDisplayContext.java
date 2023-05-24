@@ -16,8 +16,8 @@ package com.liferay.object.web.internal.object.definitions.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
+import com.liferay.object.constants.ObjectWebKeys;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.web.internal.constants.ObjectWebKeys;
 import com.liferay.object.web.internal.display.context.helper.ObjectRequestHelper;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
@@ -54,13 +54,22 @@ public abstract class BaseObjectDefinitionsDisplayContext {
 		return creationMenu;
 	}
 
-	public long getObjectDefinitionId() {
+	public ObjectDefinition getObjectDefinition() {
 		HttpServletRequest httpServletRequest =
 			objectRequestHelper.getRequest();
 
-		ObjectDefinition objectDefinition =
-			(ObjectDefinition)httpServletRequest.getAttribute(
-				ObjectWebKeys.OBJECT_DEFINITION);
+		return (ObjectDefinition)httpServletRequest.getAttribute(
+			ObjectWebKeys.OBJECT_DEFINITION);
+	}
+
+	public String getObjectDefinitionExternalReferenceCode() {
+		ObjectDefinition objectDefinition = getObjectDefinition();
+
+		return objectDefinition.getExternalReferenceCode();
+	}
+
+	public long getObjectDefinitionId() {
+		ObjectDefinition objectDefinition = getObjectDefinition();
 
 		return objectDefinition.getObjectDefinitionId();
 	}

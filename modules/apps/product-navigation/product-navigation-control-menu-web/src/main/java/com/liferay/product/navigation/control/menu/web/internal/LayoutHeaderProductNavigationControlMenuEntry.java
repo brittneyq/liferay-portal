@@ -15,11 +15,14 @@
 package com.liferay.product.navigation.control.menu.web.internal;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.info.constants.InfoDisplayWebKeys;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemFieldValues;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
+import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
+import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
 import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -34,7 +37,6 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
@@ -58,7 +60,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"product.navigation.control.menu.category.key=" + ProductNavigationControlMenuCategoryKeys.TOOLS,
 		"product.navigation.control.menu.entry.order:Integer=100"
@@ -86,28 +87,37 @@ public class LayoutHeaderProductNavigationControlMenuEntry
 
 		Writer writer = httpServletResponse.getWriter();
 
-		StringBundler sb = new StringBundler(17);
+		StringBundler sb = new StringBundler(22);
 
-		sb.append("<li class=\"");
+		sb.append("<div class=\"");
 		sb.append(_getCssClass(httpServletRequest));
 		sb.append("\"><span class=\"align-items-center ");
 		sb.append("control-menu-level-1-heading d-flex mr-1\" ");
-		sb.append("data-qa-id=\"headerTitle\"><span class=\"");
-		sb.append("lfr-portal-tooltip text-truncate\" title=\"");
+		sb.append("data-qa-id=\"headerTitle\"><h1 class=\"");
+		sb.append("lfr-portal-tooltip h4 mb-0\" title=\"");
 
-		String headerTitle = HtmlUtil.escapeAttribute(
-			_getHeaderTitle(httpServletRequest));
+		String headerTitle = _getHeaderTitle(httpServletRequest);
 
-		sb.append(headerTitle);
+		sb.append(HtmlUtil.escapeAttribute(headerTitle));
 
 		sb.append("\">");
-		sb.append(headerTitle);
-		sb.append("</span>");
+		sb.append(HtmlUtil.escape(headerTitle));
 
 		if (_hasDraftLayout(httpServletRequest) &&
 			_hasEditPermission(httpServletRequest)) {
 
-			sb.append("<sup class=\"flex-shrink-0 small\">*</sup>");
+			sb.append("<span class=\"sr-only\">");
+			sb.append(_language.get(httpServletRequest, "draft"));
+			sb.append("</span>");
+		}
+
+		sb.append("</h1>");
+
+		if (_hasDraftLayout(httpServletRequest) &&
+			_hasEditPermission(httpServletRequest)) {
+
+			sb.append("<sup aria-hidden=\"true\" ");
+			sb.append("class=\"flex-shrink-0 small\">*</sup>");
 		}
 
 		sb.append("</span>");
@@ -119,6 +129,8 @@ public class LayoutHeaderProductNavigationControlMenuEntry
 			sb.append(_language.get(httpServletRequest, "draft"));
 			sb.append("</span></span>");
 		}
+
+		sb.append("</div>");
 
 		writer.write(sb.toString());
 
@@ -189,36 +201,36 @@ public class LayoutHeaderProductNavigationControlMenuEntry
 		}
 
 		if (layout.isTypeAssetDisplay()) {
-			Object infoItem = httpServletRequest.getAttribute(
-				InfoDisplayWebKeys.INFO_ITEM);
+			LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
+				(LayoutDisplayPageObjectProvider<?>)
+					httpServletRequest.getAttribute(
+						LayoutDisplayPageWebKeys.
+							LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER);
 
-			InfoItemFieldValuesProvider<Object> infoItemFieldValuesProvider =
-				(InfoItemFieldValuesProvider)httpServletRequest.getAttribute(
-					InfoDisplayWebKeys.INFO_ITEM_FIELD_VALUES_PROVIDER);
+			if (layoutDisplayPageObjectProvider != null) {
+				InfoItemFieldValuesProvider infoItemFieldValuesProvider =
+					_infoItemServiceRegistry.getFirstInfoItemService(
+						InfoItemFieldValuesProvider.class,
+						layoutDisplayPageObjectProvider.getClassName());
 
-			if ((infoItem != null) && (infoItemFieldValuesProvider != null)) {
 				InfoItemFieldValues infoItemFieldValues =
 					infoItemFieldValuesProvider.getInfoItemFieldValues(
-						infoItem);
+						layoutDisplayPageObjectProvider.getDisplayObject());
 
 				InfoFieldValue<Object> titleInfoFieldValue =
 					infoItemFieldValues.getInfoFieldValue("title");
 
 				if (titleInfoFieldValue != null) {
-					return HtmlUtil.escape(
-						String.valueOf(
-							titleInfoFieldValue.getValue(
-								themeDisplay.getLocale())));
+					return String.valueOf(
+						titleInfoFieldValue.getValue(themeDisplay.getLocale()));
 				}
 
 				InfoFieldValue<Object> nameInfoFieldValue =
 					infoItemFieldValues.getInfoFieldValue("name");
 
 				if (nameInfoFieldValue != null) {
-					return HtmlUtil.escape(
-						String.valueOf(
-							nameInfoFieldValue.getValue(
-								themeDisplay.getLocale())));
+					return String.valueOf(
+						nameInfoFieldValue.getValue(themeDisplay.getLocale()));
 				}
 			}
 
@@ -226,12 +238,11 @@ public class LayoutHeaderProductNavigationControlMenuEntry
 				WebKeys.LAYOUT_ASSET_ENTRY);
 
 			if (assetEntry != null) {
-				return HtmlUtil.escape(
-					assetEntry.getTitle(themeDisplay.getLanguageId()));
+				return assetEntry.getTitle(themeDisplay.getLanguageId());
 			}
 		}
 
-		return HtmlUtil.escape(layout.getName(themeDisplay.getLocale()));
+		return layout.getName(themeDisplay.getLocale());
 	}
 
 	private boolean _hasDraftLayout(HttpServletRequest httpServletRequest) {
@@ -311,6 +322,9 @@ public class LayoutHeaderProductNavigationControlMenuEntry
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutHeaderProductNavigationControlMenuEntry.class);
+
+	@Reference
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Reference
 	private Language _language;

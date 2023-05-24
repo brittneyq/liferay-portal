@@ -21,13 +21,12 @@ import {
 	API,
 	FormError,
 	Input,
+	REQUIRED_MSG,
 	useForm,
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
-import {TName} from './Layout/types';
-
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
+import {defaultLanguageId} from '../utils/constants';
 
 const ModalAddListTypeDefinition: React.FC<IProps> = ({
 	apiURL,
@@ -55,7 +54,7 @@ const ModalAddListTypeDefinition: React.FC<IProps> = ({
 		const errors: FormError<TInitialValues> = {};
 
 		if (!values.name_i18n[defaultLanguageId]) {
-			errors.name_i18n = Liferay.Language.get('required');
+			errors.name_i18n = REQUIRED_MSG;
 		}
 
 		return errors;
@@ -124,7 +123,7 @@ interface IProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 type TInitialValues = {
-	name_i18n: TName;
+	name_i18n: LocalizedValue<string>;
 };
 
 const ModalWithProvider: React.FC<IProps> = ({apiURL}) => {

@@ -17,7 +17,13 @@ import './index.scss';
 export interface CustomItem<T = string> {
 	checked?: boolean;
 	description?: string;
+	disabled?: boolean;
 	label: string;
+	popover?: {
+		body: string;
+		header: string;
+	};
+	type?: string;
 	value?: T;
 }
 export interface SelectProps {
@@ -29,12 +35,13 @@ export interface SelectProps {
 	label?: string;
 	placeholder?: string;
 	required?: boolean;
-	value?: string | number | string[];
+	value?: string;
 }
 interface IProps extends SelectProps {
 	children: ReactNode;
 	dropdownActive: boolean;
 	setDropdownActive: React.Dispatch<React.SetStateAction<boolean>>;
+	trigger?: JSX.Element;
 }
 export declare function BaseSelect({
 	children,
@@ -48,6 +55,7 @@ export declare function BaseSelect({
 	placeholder,
 	required,
 	setDropdownActive,
+	trigger,
 	value,
 	...restProps
 }: IProps): JSX.Element;

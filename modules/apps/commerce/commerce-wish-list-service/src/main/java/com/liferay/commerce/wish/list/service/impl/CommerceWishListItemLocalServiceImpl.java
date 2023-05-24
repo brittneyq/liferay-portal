@@ -27,9 +27,9 @@ import com.liferay.commerce.wish.list.model.CommerceWishList;
 import com.liferay.commerce.wish.list.model.CommerceWishListItem;
 import com.liferay.commerce.wish.list.service.base.CommerceWishListItemLocalServiceBaseImpl;
 import com.liferay.commerce.wish.list.service.persistence.CommerceWishListPersistence;
-import com.liferay.counter.kernel.service.CounterLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -38,7 +38,9 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
+import java.util.Map;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -46,7 +48,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Di Giorgi
  */
 @Component(
-	enabled = false,
+	configurationPid = "com.liferay.commerce.wish.list.internal.configuration.CommerceWishListConfiguration",
 	property = "model.class.name=com.liferay.commerce.wish.list.model.CommerceWishListItem",
 	service = AopService.class
 )
@@ -90,9 +92,9 @@ public class CommerceWishListItemLocalServiceImpl
 			_commerceWishListPersistence.findByPrimaryKey(commerceWishListId);
 		User user = _userLocalService.getUser(serviceContext.getUserId());
 
-		validate(commerceWishList, cProductId, cpInstanceUuid);
+		_validate(commerceWishList, cProductId, cpInstanceUuid);
 
-		long commerceWishListItemId = _counterLocalService.increment();
+		long commerceWishListItemId = counterLocalService.increment();
 
 		CommerceWishListItem commerceWishListItem =
 			commerceWishListItemPersistence.create(commerceWishListItemId);
@@ -188,7 +190,13 @@ public class CommerceWishListItemLocalServiceImpl
 			commerceWishListId);
 	}
 
-	protected void validate(
+	@Activate
+	protected void activate(Map<String, Object> properties) {
+		_commerceWishListConfiguration = ConfigurableUtil.createConfigurable(
+			CommerceWishListConfiguration.class, properties);
+	}
+
+	private void _validate(
 			CommerceWishList commerceWishList, long cProductId,
 			String cpInstanceUuid)
 		throws PortalException {
@@ -223,14 +231,10 @@ public class CommerceWishListItemLocalServiceImpl
 		}
 	}
 
-	@Reference
 	private CommerceWishListConfiguration _commerceWishListConfiguration;
 
 	@Reference
 	private CommerceWishListPersistence _commerceWishListPersistence;
-
-	@Reference
-	private CounterLocalService _counterLocalService;
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;

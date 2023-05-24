@@ -21,6 +21,7 @@ import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeService;
+import com.liferay.document.library.util.DLFileEntryTypeUtil;
 import com.liferay.document.library.web.internal.info.item.FileEntryInfoItemFields;
 import com.liferay.dynamic.data.mapping.exception.NoSuchStructureException;
 import com.liferay.dynamic.data.mapping.info.item.provider.DDMStructureInfoItemFieldSetProvider;
@@ -40,7 +41,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import java.util.ArrayList;
@@ -288,18 +289,14 @@ public class FileEntryInfoItemFormProvider
 		long ddmStructureId, long fileEntryTypeId) {
 
 		try {
-			DLFileEntryType fileEntryType =
-				_dlFileEntryTypeService.getFileEntryType(fileEntryTypeId);
-
-			List<com.liferay.dynamic.data.mapping.kernel.DDMStructure>
-				ddmStructures = fileEntryType.getDDMStructures();
+			List<DDMStructure> ddmStructures =
+				DLFileEntryTypeUtil.getDDMStructures(
+					_dlFileEntryTypeService.getFileEntryType(fileEntryTypeId));
 
 			List<InfoFieldSet> infoFieldSets = new ArrayList<>(
 				ddmStructures.size());
 
-			for (com.liferay.dynamic.data.mapping.kernel.DDMStructure
-					ddmStructure : ddmStructures) {
-
+			for (DDMStructure ddmStructure : ddmStructures) {
 				if (ddmStructure.getStructureId() == ddmStructureId) {
 					continue;
 				}
@@ -332,6 +329,8 @@ public class FileEntryInfoItemFormProvider
 				ddmStructure.getNameMap());
 
 			return InfoLocalizedValue.<String>builder(
+			).defaultLocale(
+				LocaleUtil.fromLanguageId(ddmStructure.getDefaultLanguageId())
 			).values(
 				nameMap
 			).build();
@@ -376,9 +375,6 @@ public class FileEntryInfoItemFormProvider
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private Portal _portal;
 
 	@Reference
 	private TemplateInfoItemFieldSetProvider _templateInfoItemFieldSetProvider;

@@ -48,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"commerce.checkout.step.name=" + PaymentMethodCommerceCheckoutStep.NAME,
 		"commerce.checkout.step.order:Integer=40"
@@ -124,16 +123,6 @@ public class PaymentMethodCommerceCheckoutStep
 			"/checkout_step/payment_method.jsp");
 	}
 
-	@Reference(
-		target = "(model.class.name=com.liferay.commerce.model.CommerceOrder)",
-		unbind = "-"
-	)
-	protected void setModelResourcePermission(
-		ModelResourcePermission<CommerceOrder> modelResourcePermission) {
-
-		_commerceOrderModelResourcePermission = modelResourcePermission;
-	}
-
 	private void _updateCommerceOrderPaymentMethod(ActionRequest actionRequest)
 		throws Exception {
 
@@ -189,6 +178,9 @@ public class PaymentMethodCommerceCheckoutStep
 	@Reference
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
+	@Reference(
+		target = "(model.class.name=com.liferay.commerce.model.CommerceOrder)"
+	)
 	private ModelResourcePermission<CommerceOrder>
 		_commerceOrderModelResourcePermission;
 

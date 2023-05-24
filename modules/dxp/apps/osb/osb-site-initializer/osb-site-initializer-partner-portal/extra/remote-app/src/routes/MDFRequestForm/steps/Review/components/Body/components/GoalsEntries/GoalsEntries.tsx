@@ -9,62 +9,105 @@
  * distribution rights of the Software.
  */
 
+import Table from '../../../../../../../../common/components/Table';
 import MDFRequest from '../../../../../../../../common/interfaces/mdfRequest';
-import Table from '../../../Table';
 
 interface IProps {
 	mdfRequest: MDFRequest;
 }
 
+interface Item {
+	[key: string]: string | undefined;
+}
 const GoalsEntries = ({mdfRequest}: IProps) => (
 	<div>
-		<Table
-			items={[
+		<Table<Item>
+			className="bg-brand-primary-lighten-6 border-top table-striped"
+			columns={[
 				{
-					title: 'Company Name',
-					value: mdfRequest.company.name,
+					columnKey: 'title',
+					label: 'Partner Summary',
 				},
 				{
-					title: 'Region',
-					value: mdfRequest.country.name,
+					columnKey: 'value',
+					label: '',
 				},
 			]}
-			title="Partner Summary"
+			rows={[
+				{
+					title: 'Company Name',
+					value: mdfRequest.company?.name,
+				},
+				{
+					title: 'Country',
+					value: mdfRequest.partnerCountry?.name,
+				},
+			]}
 		/>
 
-		<Table
-			items={[
+		<Table<Item>
+			className="bg-brand-primary-lighten-6 border-top table-striped"
+			columns={[
+				{
+					columnKey: 'title',
+					label: 'Activity Summary',
+				},
+				{
+					columnKey: 'value',
+					label: '',
+				},
+			]}
+			rows={[
+				{
+					title: 'Provide the name of the campaign',
+					value: mdfRequest.overallCampaignName,
+				},
 				{
 					title:
-						'Provide a name and short description of the overall campaign',
-					value: mdfRequest.overallCampaign,
+						'Provide a short description of the overall campaign',
+					value: mdfRequest.overallCampaignDescription,
 				},
 				{
 					title: 'Liferay business/sales goals',
-					value: mdfRequest.liferayBusinessSalesGoals.join(', '),
+					value:
+						mdfRequest.liferayBusinessSalesGoals !== undefined &&
+						mdfRequest.liferayBusinessSalesGoals.includes(
+							'Other - Please describe'
+						)
+							? mdfRequest.liferayBusinessSalesGoalsOther
+							: mdfRequest.liferayBusinessSalesGoals?.join('; '),
 				},
 			]}
-			title="Activity Summary"
 		/>
 
-		<Table
-			items={[
+		<Table<Item>
+			className="bg-brand-primary-lighten-6 border-top table-striped"
+			columns={[
+				{
+					columnKey: 'title',
+					label: 'Target Market',
+				},
+				{
+					columnKey: 'value',
+					label: '',
+				},
+			]}
+			rows={[
 				{
 					title: 'Target Market(s)',
-					value: mdfRequest.targetMarkets.join(', '),
+					value: mdfRequest.targetMarkets?.join('; '),
 				},
 				{
 					title: 'Additional Options',
-					value: mdfRequest.additionalOption.name
-						? mdfRequest.additionalOption.name
+					value: mdfRequest.additionalOption?.name
+						? mdfRequest.additionalOption?.name
 						: 'N/A',
 				},
 				{
 					title: 'Target Audience/Role',
-					value: mdfRequest.targetAudienceRoles.join(', '),
+					value: mdfRequest.targetAudienceRoles?.join('; '),
 				},
 			]}
-			title="Target Market"
 		/>
 	</div>
 );

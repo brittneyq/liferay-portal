@@ -53,19 +53,13 @@ public class NotificationQueueEntryWrapper
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("notificationTemplateId", getNotificationTemplateId());
-		attributes.put("bcc", getBcc());
 		attributes.put("body", getBody());
-		attributes.put("cc", getCc());
 		attributes.put("classNameId", getClassNameId());
 		attributes.put("classPK", getClassPK());
-		attributes.put("from", getFrom());
-		attributes.put("fromName", getFromName());
 		attributes.put("priority", getPriority());
-		attributes.put("sent", isSent());
 		attributes.put("sentDate", getSentDate());
 		attributes.put("subject", getSubject());
-		attributes.put("to", getTo());
-		attributes.put("toName", getToName());
+		attributes.put("type", getType());
 		attributes.put("status", getStatus());
 
 		return attributes;
@@ -123,22 +117,10 @@ public class NotificationQueueEntryWrapper
 			setNotificationTemplateId(notificationTemplateId);
 		}
 
-		String bcc = (String)attributes.get("bcc");
-
-		if (bcc != null) {
-			setBcc(bcc);
-		}
-
 		String body = (String)attributes.get("body");
 
 		if (body != null) {
 			setBody(body);
-		}
-
-		String cc = (String)attributes.get("cc");
-
-		if (cc != null) {
-			setCc(cc);
 		}
 
 		Long classNameId = (Long)attributes.get("classNameId");
@@ -153,28 +135,10 @@ public class NotificationQueueEntryWrapper
 			setClassPK(classPK);
 		}
 
-		String from = (String)attributes.get("from");
-
-		if (from != null) {
-			setFrom(from);
-		}
-
-		String fromName = (String)attributes.get("fromName");
-
-		if (fromName != null) {
-			setFromName(fromName);
-		}
-
 		Double priority = (Double)attributes.get("priority");
 
 		if (priority != null) {
 			setPriority(priority);
-		}
-
-		Boolean sent = (Boolean)attributes.get("sent");
-
-		if (sent != null) {
-			setSent(sent);
 		}
 
 		Date sentDate = (Date)attributes.get("sentDate");
@@ -189,16 +153,10 @@ public class NotificationQueueEntryWrapper
 			setSubject(subject);
 		}
 
-		String to = (String)attributes.get("to");
+		String type = (String)attributes.get("type");
 
-		if (to != null) {
-			setTo(to);
-		}
-
-		String toName = (String)attributes.get("toName");
-
-		if (toName != null) {
-			setToName(toName);
+		if (type != null) {
+			setType(type);
 		}
 
 		Integer status = (Integer)attributes.get("status");
@@ -214,16 +172,6 @@ public class NotificationQueueEntryWrapper
 	}
 
 	/**
-	 * Returns the bcc of this notification queue entry.
-	 *
-	 * @return the bcc of this notification queue entry
-	 */
-	@Override
-	public String getBcc() {
-		return model.getBcc();
-	}
-
-	/**
 	 * Returns the body of this notification queue entry.
 	 *
 	 * @return the body of this notification queue entry
@@ -231,16 +179,6 @@ public class NotificationQueueEntryWrapper
 	@Override
 	public String getBody() {
 		return model.getBody();
-	}
-
-	/**
-	 * Returns the cc of this notification queue entry.
-	 *
-	 * @return the cc of this notification queue entry
-	 */
-	@Override
-	public String getCc() {
-		return model.getCc();
 	}
 
 	/**
@@ -294,26 +232,6 @@ public class NotificationQueueEntryWrapper
 	}
 
 	/**
-	 * Returns the from of this notification queue entry.
-	 *
-	 * @return the from of this notification queue entry
-	 */
-	@Override
-	public String getFrom() {
-		return model.getFrom();
-	}
-
-	/**
-	 * Returns the from name of this notification queue entry.
-	 *
-	 * @return the from name of this notification queue entry
-	 */
-	@Override
-	public String getFromName() {
-		return model.getFromName();
-	}
-
-	/**
 	 * Returns the modified date of this notification queue entry.
 	 *
 	 * @return the modified date of this notification queue entry
@@ -341,6 +259,11 @@ public class NotificationQueueEntryWrapper
 	@Override
 	public long getNotificationQueueEntryId() {
 		return model.getNotificationQueueEntryId();
+	}
+
+	@Override
+	public NotificationRecipient getNotificationRecipient() {
+		return model.getNotificationRecipient();
 	}
 
 	/**
@@ -374,16 +297,6 @@ public class NotificationQueueEntryWrapper
 	}
 
 	/**
-	 * Returns the sent of this notification queue entry.
-	 *
-	 * @return the sent of this notification queue entry
-	 */
-	@Override
-	public boolean getSent() {
-		return model.getSent();
-	}
-
-	/**
 	 * Returns the sent date of this notification queue entry.
 	 *
 	 * @return the sent date of this notification queue entry
@@ -414,23 +327,13 @@ public class NotificationQueueEntryWrapper
 	}
 
 	/**
-	 * Returns the to of this notification queue entry.
+	 * Returns the type of this notification queue entry.
 	 *
-	 * @return the to of this notification queue entry
+	 * @return the type of this notification queue entry
 	 */
 	@Override
-	public String getTo() {
-		return model.getTo();
-	}
-
-	/**
-	 * Returns the to name of this notification queue entry.
-	 *
-	 * @return the to name of this notification queue entry
-	 */
-	@Override
-	public String getToName() {
-		return model.getToName();
+	public String getType() {
+		return model.getType();
 	}
 
 	/**
@@ -463,29 +366,9 @@ public class NotificationQueueEntryWrapper
 		return model.getUserUuid();
 	}
 
-	/**
-	 * Returns <code>true</code> if this notification queue entry is sent.
-	 *
-	 * @return <code>true</code> if this notification queue entry is sent; <code>false</code> otherwise
-	 */
-	@Override
-	public boolean isSent() {
-		return model.isSent();
-	}
-
 	@Override
 	public void persist() {
 		model.persist();
-	}
-
-	/**
-	 * Sets the bcc of this notification queue entry.
-	 *
-	 * @param bcc the bcc of this notification queue entry
-	 */
-	@Override
-	public void setBcc(String bcc) {
-		model.setBcc(bcc);
 	}
 
 	/**
@@ -496,16 +379,6 @@ public class NotificationQueueEntryWrapper
 	@Override
 	public void setBody(String body) {
 		model.setBody(body);
-	}
-
-	/**
-	 * Sets the cc of this notification queue entry.
-	 *
-	 * @param cc the cc of this notification queue entry
-	 */
-	@Override
-	public void setCc(String cc) {
-		model.setCc(cc);
 	}
 
 	@Override
@@ -551,26 +424,6 @@ public class NotificationQueueEntryWrapper
 	@Override
 	public void setCreateDate(Date createDate) {
 		model.setCreateDate(createDate);
-	}
-
-	/**
-	 * Sets the from of this notification queue entry.
-	 *
-	 * @param from the from of this notification queue entry
-	 */
-	@Override
-	public void setFrom(String from) {
-		model.setFrom(from);
-	}
-
-	/**
-	 * Sets the from name of this notification queue entry.
-	 *
-	 * @param fromName the from name of this notification queue entry
-	 */
-	@Override
-	public void setFromName(String fromName) {
-		model.setFromName(fromName);
 	}
 
 	/**
@@ -634,16 +487,6 @@ public class NotificationQueueEntryWrapper
 	}
 
 	/**
-	 * Sets whether this notification queue entry is sent.
-	 *
-	 * @param sent the sent of this notification queue entry
-	 */
-	@Override
-	public void setSent(boolean sent) {
-		model.setSent(sent);
-	}
-
-	/**
 	 * Sets the sent date of this notification queue entry.
 	 *
 	 * @param sentDate the sent date of this notification queue entry
@@ -674,23 +517,13 @@ public class NotificationQueueEntryWrapper
 	}
 
 	/**
-	 * Sets the to of this notification queue entry.
+	 * Sets the type of this notification queue entry.
 	 *
-	 * @param to the to of this notification queue entry
+	 * @param type the type of this notification queue entry
 	 */
 	@Override
-	public void setTo(String to) {
-		model.setTo(to);
-	}
-
-	/**
-	 * Sets the to name of this notification queue entry.
-	 *
-	 * @param toName the to name of this notification queue entry
-	 */
-	@Override
-	public void setToName(String toName) {
-		model.setToName(toName);
+	public void setType(String type) {
+		model.setType(type);
 	}
 
 	/**
@@ -721,6 +554,11 @@ public class NotificationQueueEntryWrapper
 	@Override
 	public void setUserUuid(String userUuid) {
 		model.setUserUuid(userUuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

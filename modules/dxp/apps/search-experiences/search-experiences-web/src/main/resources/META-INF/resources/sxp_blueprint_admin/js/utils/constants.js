@@ -16,22 +16,17 @@ export const INACTIVE = Liferay.Language.get('inactive');
 export const ASCENDING = Liferay.Language.get('ascending');
 export const DESCENDING = Liferay.Language.get('descending');
 
+export const ASSET_CATEGORY_ID = 'asset_category_id';
+
 export const CONFIG_PREFIX = 'configuration';
 
 export const COPY_BUTTON_CSS_CLASS = 'sxp-copy-button';
 
-export const DEFAULT_ERROR = Liferay.Language.get(
-	'an-unexpected-error-occurred'
-);
-
-export const SIDEBARS = {
-	ADD_SXP_ELEMENT: 'addSXPElement',
-	CLAUSE_CONTRIBUTORS: 'clauseContributors',
-	INDEXER_CLAUSES: 'indexerClauses',
-	PREVIEW: 'preview',
+export const DEFAULT_INDEX_CONFIGURATION = {
+	external: false,
+	indexName: '',
 };
 
 export const SXP_ELEMENT_PREFIX = {
 	QUERY: 'querySXPElement',
 };
-export const SXP_ELEMENT_TYPE = {QUERY: 10};

@@ -69,6 +69,15 @@ public class ObjectEntryLocalServiceUtil {
 		return getService().addObjectEntry(objectEntry);
 	}
 
+	public static ObjectEntry addObjectEntry(
+			String externalReferenceCode, long userId,
+			com.liferay.object.model.ObjectDefinition objectDefinition)
+		throws PortalException {
+
+		return getService().addObjectEntry(
+			externalReferenceCode, userId, objectDefinition);
+	}
+
 	public static void addOrUpdateExtensionDynamicObjectDefinitionTableValues(
 			long userId,
 			com.liferay.object.model.ObjectDefinition objectDefinition,
@@ -269,6 +278,13 @@ public class ObjectEntryLocalServiceUtil {
 		return getService().fetchObjectEntry(objectEntryId);
 	}
 
+	public static ObjectEntry fetchObjectEntry(
+		String externalReferenceCode, long objectDefinitionId) {
+
+		return getService().fetchObjectEntry(
+			externalReferenceCode, objectDefinitionId);
+	}
+
 	/**
 	 * Returns the object entry matching the UUID and group.
 	 *
@@ -289,13 +305,14 @@ public class ObjectEntryLocalServiceUtil {
 	}
 
 	public static Map<Object, Long> getAggregationCounts(
-			long objectDefinitionId, String aggregationTerm,
+			long groupId, long objectDefinitionId, String aggregationTerm,
 			com.liferay.petra.sql.dsl.expression.Predicate predicate, int start,
 			int end)
 		throws PortalException {
 
 		return getService().getAggregationCounts(
-			objectDefinitionId, aggregationTerm, predicate, start, end);
+			groupId, objectDefinitionId, aggregationTerm, predicate, start,
+			end);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
@@ -358,17 +375,14 @@ public class ObjectEntryLocalServiceUtil {
 	}
 
 	public static List<ObjectEntry> getObjectEntries(
-			long groupId, long objectDefinitionId, int start, int end)
-		throws PortalException {
+		long groupId, long objectDefinitionId, int start, int end) {
 
 		return getService().getObjectEntries(
 			groupId, objectDefinitionId, start, end);
 	}
 
 	public static List<ObjectEntry> getObjectEntries(
-			long groupId, long objectDefinitionId, int status, int start,
-			int end)
-		throws PortalException {
+		long groupId, long objectDefinitionId, int status, int start, int end) {
 
 		return getService().getObjectEntries(
 			groupId, objectDefinitionId, status, start, end);
@@ -431,6 +445,14 @@ public class ObjectEntryLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getObjectEntry(objectEntryId);
+	}
+
+	public static ObjectEntry getObjectEntry(
+			String externalReferenceCode, long objectDefinitionId)
+		throws PortalException {
+
+		return getService().getObjectEntry(
+			externalReferenceCode, objectDefinitionId);
 	}
 
 	public static ObjectEntry getObjectEntry(
@@ -501,6 +523,19 @@ public class ObjectEntryLocalServiceUtil {
 			objectDefinition, primaryKey);
 	}
 
+	public static Map<String, Serializable> getSystemValues(
+			ObjectEntry objectEntry)
+		throws PortalException {
+
+		return getService().getSystemValues(objectEntry);
+	}
+
+	public static String getTitleValue(long objectDefinitionId, long primaryKey)
+		throws PortalException {
+
+		return getService().getTitleValue(objectDefinitionId, primaryKey);
+	}
+
 	public static Map<String, Serializable> getValues(long objectEntryId)
 		throws PortalException {
 
@@ -514,7 +549,7 @@ public class ObjectEntryLocalServiceUtil {
 	}
 
 	public static List<Map<String, Serializable>> getValuesList(
-			long objectDefinitionId, long groupId, long[] accountEntryIds,
+			long groupId, long companyId, long userId, long objectDefinitionId,
 			com.liferay.petra.sql.dsl.expression.Predicate predicate,
 			String search, int start, int end,
 			com.liferay.petra.sql.dsl.query.sort.OrderByExpression[]
@@ -522,27 +557,27 @@ public class ObjectEntryLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getValuesList(
-			objectDefinitionId, groupId, accountEntryIds, predicate, search,
+			groupId, companyId, userId, objectDefinitionId, predicate, search,
 			start, end, orderByExpressions);
 	}
 
 	public static int getValuesListCount(
-			long objectDefinitionId, long groupId, long[] accountEntryIds,
+			long groupId, long companyId, long userId, long objectDefinitionId,
 			com.liferay.petra.sql.dsl.expression.Predicate predicate,
 			String search)
 		throws PortalException {
 
 		return getService().getValuesListCount(
-			objectDefinitionId, groupId, accountEntryIds, predicate, search);
+			groupId, companyId, userId, objectDefinitionId, predicate, search);
 	}
 
 	public static void insertIntoOrUpdateExtensionTable(
-			long objectDefinitionId, long primaryKey,
+			long userId, long objectDefinitionId, long primaryKey,
 			Map<String, Serializable> values)
 		throws PortalException {
 
 		getService().insertIntoOrUpdateExtensionTable(
-			objectDefinitionId, primaryKey, values);
+			userId, objectDefinitionId, primaryKey, values);
 	}
 
 	public static com.liferay.portal.kernel.search.BaseModelSearchResult
@@ -599,6 +634,10 @@ public class ObjectEntryLocalServiceUtil {
 
 	public static ObjectEntryLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(ObjectEntryLocalService service) {
+		_service = service;
 	}
 
 	private static volatile ObjectEntryLocalService _service;

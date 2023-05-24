@@ -31,7 +31,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "frontend.data.set.name=" + CommerceSubscriptionFDSNames.SUBSCRIPTION_ENTRIES,
 	service = FDSView.class
 )
@@ -55,11 +54,11 @@ public class CommerceSubscriptionEntryTableFDSView extends BaseTableFDSView {
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
 				"link")
 		).add(
-			"commerceAccountId", "account-id",
+			"accountEntryId", "account-id",
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
 				"link")
 		).add(
-			"commerceAccountName", "account-name"
+			"accountEntryName", "account-name"
 		).build();
 	}
 

@@ -16,8 +16,9 @@ import {ClayInput} from '@clayui/form';
 import ClayLayout from '@clayui/layout';
 import ClayToolbar from '@clayui/toolbar';
 import {TranslationAdminSelector} from 'frontend-js-components-web';
+import {localStorage} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React, {useContext, useEffect, useRef} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {isEdge, isNode} from 'react-flow-renderer';
 
 import {DefinitionBuilderContext} from '../../../DefinitionBuilderContext';
@@ -48,14 +49,17 @@ export default function UpperToolbar({
 		definitionDescription,
 		definitionId,
 		definitionTitle,
+		definitionTitleTranslations,
 		elements,
 		selectedLanguageId,
 		setAlertMessage,
 		setAlertType,
+		setBlockingErrors,
 		setDefinitionDescription,
 		setDefinitionId,
 		setDefinitionName,
 		setDefinitionTitle,
+		setDefinitionTitleTranslations,
 		setDeserialize,
 		setElements,
 		setSelectedLanguageId,
@@ -63,13 +67,19 @@ export default function UpperToolbar({
 		setShowDefinitionInfo,
 		setShowInvalidContentMessage,
 		setSourceView,
-		setTranslations,
 		setVersion,
 		showAlert,
 		sourceView,
-		translations,
 		version,
 	} = useContext(DefinitionBuilderContext);
+
+	const [translations, setTranslations] = useState({});
+
+	function findEmptyElements(element, language) {
+		if (element.data.label && !(language in element.data.label)) {
+			return true;
+		}
+	}
 
 	function setAlert(alertMessage, alertType, showAlert) {
 		setAlertMessage(alertMessage);
@@ -83,17 +93,27 @@ export default function UpperToolbar({
 		displayNames,
 		languageIds
 	);
+
 	const errorTitle = () => {
 		if (blockingErrors.errorType === 'duplicated') {
-			return Liferay.Language.get('you-have-the-same-id-in-two-nodes');
+			return Liferay.Language.get(
+				'you-have-the-same-name-in-two-nodes'
+			).slice(0, -1);
 		}
-		if (blockingErrors.errorType === 'emptyField') {
-			return Liferay.Language.get('some-fields-need-to-be-filled');
+		else if (blockingErrors.errorType === 'emptyField') {
+			return Liferay.Language.get('some-fields-need-to-be-filled').slice(
+				0,
+				-1
+			);
+		}
+		else if (blockingErrors.errorType === 'assignment') {
+			return Liferay.Language.get('warning');
 		}
 		else {
 			return Liferay.Language.get('error');
 		}
 	};
+
 	const getXMLContent = (exporting) => {
 		let currentDescription;
 		let currentElements;
@@ -108,7 +128,10 @@ export default function UpperToolbar({
 				const deserializeUtil = new DeserializeUtil();
 				const xmlDefinition = currentEditor.getData();
 
-				deserializeUtil.updateXMLDefinition(xmlDefinition);
+				deserializeUtil.updateXMLDefinition(
+					encodeURIComponent(xmlDefinition)
+				);
+
 				const metadata = deserializeUtil.getMetadata();
 
 				currentName = metadata.name;
@@ -146,20 +169,6 @@ export default function UpperToolbar({
 		}
 	};
 
-	const onInputBlur = () => {
-		if (definitionTitle) {
-			let languageId = defaultLanguageId;
-
-			if (selectedLanguageId) {
-				languageId = selectedLanguageId;
-			}
-
-			setTranslations((previous) => {
-				return {...previous, [languageId]: definitionTitle};
-			});
-		}
-	};
-
 	const definitionNotPublished = version === 0 || !active;
 
 	const redirectToSavedDefinition = (name, version) => {
@@ -175,30 +184,19 @@ export default function UpperToolbar({
 	};
 
 	const publishDefinition = () => {
-		let alertMessage;
-
 		if (!definitionTitle) {
-			alertMessage = Liferay.Language.get('name-workflow-before-publish');
-			setAlert(alertMessage, 'danger', true);
+			setAlert(
+				Liferay.Language.get('name-workflow-before-publish'),
+				'danger',
+				true
+			);
 		}
 		else if (blockingErrors.errorType !== '') {
-			switch (blockingErrors.errorType) {
-				case 'emptyField':
-					alertMessage = Liferay.Language.get(
-						'please-fill-out-the-fields-before-saving-or-publishing'
-					);
-					break;
-				case 'duplicated':
-					alertMessage = Liferay.Language.get(
-						'please-rename-this-with-another-words'
-					);
-					break;
-				default:
-					alertMessage = Liferay.Language.get('error');
-			}
-			setAlert(alertMessage, 'danger', true);
+			setAlert(blockingErrors.errorMessage, 'danger', true);
 		}
 		else {
+			let alertMessage;
+
 			if (definitionNotPublished) {
 				alertMessage = Liferay.Language.get(
 					'workflow-published-successfully'
@@ -215,7 +213,7 @@ export default function UpperToolbar({
 				content: getXMLContent(true),
 				name: definitionId,
 				title: definitionTitle,
-				title_i18n: translations,
+				title_i18n: definitionTitleTranslations,
 				version,
 			}).then((response) => {
 				if (response.ok) {
@@ -223,7 +221,11 @@ export default function UpperToolbar({
 						setDefinitionId(name);
 						setVersion(parseInt(version, 10));
 						if (version === '1') {
-							localStorage.setItem('firstPublished', true);
+							localStorage.setItem(
+								'firstPublished',
+								true,
+								localStorage.TYPES.FUNCTIONAL
+							);
 							redirectToSavedDefinition(name, version);
 						}
 						else {
@@ -241,29 +243,16 @@ export default function UpperToolbar({
 	};
 
 	const saveDefinition = () => {
-		const successMessage = Liferay.Language.get('workflow-saved');
-		const duplicatedAlertMessage = Liferay.Language.get(
-			'please-rename-this-with-another-words'
-		);
-		const emptyFieldAlertMessage = Liferay.Language.get(
-			'please-fill-out-the-fields-before-saving-or-publishing'
-		);
-
-		if (blockingErrors.errorType === 'emptyField') {
-			setAlert(emptyFieldAlertMessage, 'danger', true);
+		if (blockingErrors.errorType !== '') {
+			setAlert(blockingErrors.errorMessage, 'danger', true);
 		}
-
-		if (blockingErrors.errorType === 'duplicated') {
-			setAlert(duplicatedAlertMessage, 'danger', true);
-		}
-
-		if (blockingErrors.errorType === '') {
+		else {
 			saveDefinitionRequest({
 				active,
 				content: getXMLContent(true),
 				name: definitionId,
 				title: definitionTitle,
-				title_i18n: translations,
+				title_i18n: definitionTitleTranslations,
 				version,
 			}).then((response) => {
 				if (response.ok) {
@@ -271,11 +260,19 @@ export default function UpperToolbar({
 						setDefinitionId(name);
 						setVersion(parseInt(version, 10));
 						if (version === '1') {
-							localStorage.setItem('firstSaved', true);
+							localStorage.setItem(
+								'firstSaved',
+								true,
+								localStorage.TYPES.FUNCTIONAL
+							);
 							redirectToSavedDefinition(name, version);
 						}
 						else {
-							setAlert(successMessage, 'success', true);
+							setAlert(
+								Liferay.Language.get('workflow-saved'),
+								'success',
+								true
+							);
 						}
 					});
 				}
@@ -284,23 +281,65 @@ export default function UpperToolbar({
 	};
 
 	useEffect(() => {
-		if (isObjectEmpty(translations)) {
-			setTranslations({
+		if (isObjectEmpty(definitionTitleTranslations)) {
+			setDefinitionTitleTranslations({
 				[defaultLanguageId]: Liferay.Language.get('new-workflow'),
 			});
 		}
 
 		if (selectedLanguageId) {
-			setDefinitionTitle(translations[selectedLanguageId]);
+			setDefinitionTitle(definitionTitleTranslations[selectedLanguageId]);
 		}
-	}, [selectedLanguageId, setDefinitionTitle, setTranslations, translations]);
+	}, [
+		selectedLanguageId,
+		setDefinitionTitle,
+		setDefinitionTitleTranslations,
+		definitionTitleTranslations,
+	]);
 
 	useEffect(() => {
-		if (localStorage.getItem('firstSaved')) {
+		let languageId = defaultLanguageId;
+
+		if (selectedLanguageId) {
+			languageId = selectedLanguageId;
+		}
+
+		setDefinitionTitleTranslations((previous) => ({
+			...previous,
+			[languageId]: definitionTitle,
+		}));
+
+		languageIds.map((currentLanguage) => {
+			const emptyLabel = elements?.find((elements) =>
+				findEmptyElements(elements, currentLanguage)
+			);
+			if (!emptyLabel && definitionTitleTranslations[currentLanguage]) {
+				setTranslations((previous) => ({
+					...previous,
+					[currentLanguage]: true,
+				}));
+			}
+			else {
+				setTranslations((previous) => ({
+					...previous,
+					[currentLanguage]: false,
+				}));
+			}
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [definitionTitle, elements]);
+
+	useEffect(() => {
+		if (localStorage.getItem('firstSaved', localStorage.TYPES.FUNCTIONAL)) {
 			setAlert(Liferay.Language.get('workflow-saved'), 'success', true);
 			localStorage.removeItem('firstSaved');
 		}
-		else if (localStorage.getItem('firstPublished')) {
+		else if (
+			localStorage.getItem(
+				'firstPublished',
+				localStorage.TYPES.FUNCTIONAL
+			)
+		) {
 			setAlert(
 				Liferay.Language.get('workflow-published-successfully'),
 				'success',
@@ -310,6 +349,20 @@ export default function UpperToolbar({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
+
+	useEffect(() => {
+		if (blockingErrors.errorType === 'assignment') {
+			setAlert(blockingErrors.errorMessage, 'warning', true);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [blockingErrors]);
+
+	const resetAlert = () => {
+		setShowAlert(false);
+		if (blockingErrors.errorType === 'assignment') {
+			setBlockingErrors({errorType: ''});
+		}
+	};
 
 	return (
 		<>
@@ -335,7 +388,6 @@ export default function UpperToolbar({
 								className="form-control-inline"
 								disabled={isView}
 								id="definition-title"
-								onBlur={() => onInputBlur()}
 								onChange={({target: {value}}) => {
 									setDefinitionTitle(value);
 								}}
@@ -435,11 +487,11 @@ export default function UpperToolbar({
 					<ClayAlert
 						autoClose={5000}
 						displayType={alertType}
-						onClose={() => setShowAlert(false)}
+						onClose={() => resetAlert()}
 						title={
 							alertType === 'success'
 								? `${Liferay.Language.get('success')}:`
-								: `${errorTitle().slice(0, -1)}:`
+								: `${errorTitle()}:`
 						}
 					>
 						{alertMessage}
@@ -451,9 +503,9 @@ export default function UpperToolbar({
 }
 
 UpperToolbar.propTypes = {
+	definitionTitleTranslations: PropTypes.object,
 	displayNames: PropTypes.arrayOf(PropTypes.string).isRequired,
 	languageIds: PropTypes.arrayOf(PropTypes.string).isRequired,
 	title: PropTypes.PropTypes.string.isRequired,
-	translations: PropTypes.object,
 	version: PropTypes.PropTypes.string.isRequired,
 };

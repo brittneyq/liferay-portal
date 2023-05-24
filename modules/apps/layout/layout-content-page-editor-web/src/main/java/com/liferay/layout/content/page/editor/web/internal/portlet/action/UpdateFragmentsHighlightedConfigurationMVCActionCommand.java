@@ -15,13 +15,14 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.fragment.constants.FragmentConstants;
-import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.model.FragmentComposition;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.renderer.FragmentRenderer;
-import com.liferay.fragment.renderer.FragmentRendererTracker;
+import com.liferay.fragment.renderer.FragmentRendererRegistry;
 import com.liferay.fragment.service.FragmentCompositionService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.constants.ContentPageEditorConstants;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
@@ -45,6 +46,7 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -75,7 +77,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lourdes Fernández Besada
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/layout_content_page_editor/update_fragments_highlighted_configuration"
@@ -107,21 +108,23 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 			WebKeys.THEME_DISPLAY);
 
 		Map<String, Map<String, Object>> layoutElementMaps =
-			_getLayoutElementMaps(themeDisplay.getCompanyId());
+			_getLayoutElementMaps(
+				themeDisplay.getCompanyId(),
+				themeDisplay.getPermissionChecker());
 
 		if (layoutElementMaps.containsKey(fragmentEntryKey)) {
 			return fragmentEntryKey;
 		}
 
 		FragmentRenderer fragmentRenderer =
-			_fragmentRendererTracker.getFragmentRenderer(fragmentEntryKey);
+			_fragmentRendererRegistry.getFragmentRenderer(fragmentEntryKey);
 
 		if (fragmentRenderer != null) {
 			return fragmentEntryKey;
 		}
 
 		FragmentEntry fragmentEntry =
-			_fragmentCollectionContributorTracker.getFragmentEntry(
+			_fragmentCollectionContributorRegistry.getFragmentEntry(
 				fragmentEntryKey);
 
 		if (fragmentEntry != null) {
@@ -129,7 +132,7 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 		}
 
 		FragmentComposition fragmentComposition =
-			_fragmentCollectionContributorTracker.getFragmentComposition(
+			_fragmentCollectionContributorRegistry.getFragmentComposition(
 				fragmentEntryKey);
 
 		if (fragmentComposition != null) {
@@ -207,7 +210,9 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 			}
 
 			Map<String, Map<String, Object>> layoutElementMaps =
-				_getLayoutElementMaps(themeDisplay.getCompanyId());
+				_getLayoutElementMaps(
+					themeDisplay.getCompanyId(),
+					themeDisplay.getPermissionChecker());
 
 			if (layoutElementMaps.containsKey(key)) {
 				Map<String, Object> layoutElementMap = layoutElementMaps.get(
@@ -233,7 +238,7 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 			}
 
 			FragmentRenderer fragmentRenderer =
-				_fragmentRendererTracker.getFragmentRenderer(key);
+				_fragmentRendererRegistry.getFragmentRenderer(key);
 
 			if (fragmentRenderer != null) {
 				String label = fragmentRenderer.getLabel(
@@ -286,7 +291,7 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 			}
 
 			FragmentComposition fragmentComposition =
-				_fragmentCollectionContributorTracker.getFragmentComposition(
+				_fragmentCollectionContributorRegistry.getFragmentComposition(
 					key);
 
 			if (fragmentComposition == null) {
@@ -328,7 +333,7 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 	}
 
 	private Map<String, Map<String, Object>> _getLayoutElementMaps(
-		long companyId) {
+		long companyId, PermissionChecker permissionChecker) {
 
 		if (_layoutElementMaps != null) {
 			return _layoutElementMaps;
@@ -337,7 +342,8 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 		Map<String, Map<String, Object>> layoutElementMaps = new HashMap<>();
 
 		Map<String, List<Map<String, Object>>> layoutElementMapsListMap =
-			ObjectUtil.getLayoutElementMapsListMap(companyId);
+			ObjectUtil.getLayoutElementMapsListMap(
+				companyId, _infoItemServiceRegistry, permissionChecker);
 
 		for (Map.Entry<String, List<Map<String, Object>>> entry :
 				layoutElementMapsListMap.entrySet()) {
@@ -473,8 +479,8 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 		UpdateFragmentsHighlightedConfigurationMVCActionCommand.class);
 
 	@Reference
-	private FragmentCollectionContributorTracker
-		_fragmentCollectionContributorTracker;
+	private FragmentCollectionContributorRegistry
+		_fragmentCollectionContributorRegistry;
 
 	@Reference
 	private FragmentCompositionService _fragmentCompositionService;
@@ -486,10 +492,13 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 	private FragmentEntryLocalService _fragmentEntryLocalService;
 
 	@Reference
-	private FragmentRendererTracker _fragmentRendererTracker;
+	private FragmentRendererRegistry _fragmentRendererRegistry;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Reference
 	private Language _language;

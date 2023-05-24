@@ -271,8 +271,9 @@ public interface DLAppService extends BaseService {
 	 * @throws PortalException if a portal exception occurred
 	 */
 	public Folder addFolder(
-			long repositoryId, long parentFolderId, String name,
-			String description, ServiceContext serviceContext)
+			String externalReferenceCode, long repositoryId,
+			long parentFolderId, String name, String description,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -457,6 +458,22 @@ public interface DLAppService extends BaseService {
 	 */
 	public FileEntry checkOutFileEntry(
 			long fileEntryId, String owner, long expirationTime,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	public FileEntry copyFileEntry(
+			long fileEntryId, long destinationFolderId,
+			long destinationRepositoryId, ServiceContext serviceContext)
+		throws PortalException;
+
+	public FileShortcut copyFileShortcut(
+			long fileShortcutId, long destinationFolderId,
+			long destinationRepositoryId, ServiceContext serviceContext)
+		throws PortalException;
+
+	public Folder copyFolder(
+			long sourceRepositoryId, long sourceFolderId,
+			long destinationRepositoryId, long destinationParentFolderId,
 			ServiceContext serviceContext)
 		throws PortalException;
 
@@ -884,6 +901,11 @@ public interface DLAppService extends BaseService {
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Folder getFolder(long repositoryId, long parentFolderId, String name)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public Folder getFolderByExternalReferenceCode(
+			String externalReferenceCode, long groupId)
 		throws PortalException;
 
 	/**

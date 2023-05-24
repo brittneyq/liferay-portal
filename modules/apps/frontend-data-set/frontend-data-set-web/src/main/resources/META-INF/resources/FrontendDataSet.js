@@ -45,7 +45,6 @@ import {
 	UPDATE_DATASET_DISPLAY,
 } from './utils/eventsDefinitions';
 import {
-	delay,
 	formatItemChanges,
 	getCurrentItemUpdates,
 	getRandomId,
@@ -55,7 +54,7 @@ import {logError} from './utils/logError';
 import getJsModule from './utils/modules';
 import ViewsContext from './views/ViewsContext';
 import getViewComponent from './views/getViewComponent';
-import {updateViewComponent, viewsReducer} from './views/viewsReducer';
+import {VIEWS_ACTION_TYPES, viewsReducer} from './views/viewsReducer';
 
 const DEFAULT_PAGINATION_DELTA = 20;
 const DEFAULT_PAGINATION_PAGE_NUMBER = 1;
@@ -69,6 +68,7 @@ const FrontendDataSet = ({
 	creationMenu,
 	currentURL,
 	customDataRenderers,
+	customViews,
 	customViewsEnabled,
 	filters: initialFilters,
 	formId,
@@ -95,6 +95,7 @@ const FrontendDataSet = ({
 	sidePanelId,
 	sorting: sortingProp,
 	style,
+	uniformActionsDisplay,
 	views,
 }) => {
 	const wrapperRef = useRef(null);
@@ -104,25 +105,6 @@ const FrontendDataSet = ({
 	const [dataSetSupportSidePanelId] = useState(
 		sidePanelId || `support-side-panel-${getRandomId()}`
 	);
-	const [delta, setDelta] = useState(
-		showPagination && (pagination?.initialDelta || DEFAULT_PAGINATION_DELTA)
-	);
-
-	const [filters, setFilters] = useState(() => {
-		return initialFilters.map((filter) => {
-			const preloadedData = filter.preloadedData;
-
-			if (preloadedData) {
-				filter.active = true;
-				filter.selectedData = preloadedData;
-
-				filter.odataFilterString = getOdataFilterString(filter);
-				filter.selectedItemsLabel = getFilterSelectedItemsLabel(filter);
-			}
-
-			return filter;
-		});
-	});
 
 	const [highlightedItemsValue, setHighlightedItemsValue] = useState([]);
 	const [items, setItems] = useState(itemsProp || []);
@@ -136,7 +118,6 @@ const FrontendDataSet = ({
 		initialSelectedItemsValues || []
 	);
 	const [selectedItems, setSelectedItems] = useState([]);
-	const [sorting, setSorting] = useState(sortingProp);
 	const [total, setTotal] = useState(0);
 
 	const getInitialViewsState = () => {
@@ -151,9 +132,13 @@ const FrontendDataSet = ({
 			);
 
 			if (activeViewName) {
-				initialActiveView = views.find(
+				const activeView = views.find(
 					({name}) => name === activeViewName
 				);
+
+				if (activeView) {
+					initialActiveView = activeView;
+				}
 			}
 
 			if (visibleFieldNames) {
@@ -161,29 +146,61 @@ const FrontendDataSet = ({
 			}
 		}
 
+		const activeView = {
+			component: getViewComponent(initialActiveView.contentRenderer),
+			...initialActiveView,
+		};
+
+		const filters = initialFilters.map((filter) => {
+			const preloadedData = filter.preloadedData;
+
+			if (preloadedData) {
+				filter.active = true;
+				filter.selectedData = preloadedData;
+
+				filter.odataFilterString = getOdataFilterString(filter);
+				filter.selectedItemsLabel = getFilterSelectedItemsLabel(filter);
+			}
+
+			return filter;
+		});
+
+		const paginationDelta =
+			showPagination &&
+			(pagination?.initialDelta || DEFAULT_PAGINATION_DELTA);
+
 		return {
-			activeView: {
-				component: getViewComponent(initialActiveView.contentRenderer),
-				...initialActiveView,
-			},
+			activeView,
+			customViews: JSON.parse(customViews),
 			customViewsEnabled,
+			defaultView: {
+				activeView,
+				filters,
+				paginationDelta,
+				sorting: sortingProp,
+				visibleFieldNames: initialVisibleFieldNames,
+			},
+			filters,
+			modifiedFields: {},
+			paginationDelta,
+			sorting: sortingProp,
 			views,
 			visibleFieldNames: initialVisibleFieldNames,
 		};
 	};
 
-	const [viewsState, dispatch] = useThunk(
+	const [viewsState, viewsDispatch] = useThunk(
 		useReducer(viewsReducer, getInitialViewsState())
 	);
+
+	const {activeView, filters, paginationDelta, sorting} = viewsState;
 
 	const {
 		component: View,
 		contentRendererModuleURL,
 		name: activeViewName,
 		...currentViewProps
-	} = viewsState.activeView;
-
-	const selectable = !!(bulkActions?.length && selectedItemsKey);
+	} = activeView;
 
 	const requestData = useCallback(() => {
 		const activeFiltersOdataStrings = filters.reduce(
@@ -199,11 +216,19 @@ const FrontendDataSet = ({
 			currentURL,
 			activeFiltersOdataStrings,
 			searchParam,
-			delta,
+			paginationDelta,
 			pageNumber,
 			sorting
 		);
-	}, [apiURL, currentURL, delta, filters, pageNumber, searchParam, sorting]);
+	}, [
+		apiURL,
+		currentURL,
+		paginationDelta,
+		filters,
+		pageNumber,
+		searchParam,
+		sorting,
+	]);
 
 	const isMounted = useIsMounted();
 
@@ -335,7 +360,10 @@ const FrontendDataSet = ({
 		getJsModule(contentRendererModuleURL)
 			.then((component) => {
 				if (isMounted()) {
-					dispatch(updateViewComponent(activeViewName, component));
+					viewsDispatch({
+						type: VIEWS_ACTION_TYPES.UPDATE_VIEW_COMPONENT,
+						value: {component, name: activeViewName},
+					});
 
 					setComponentLoading(false);
 				}
@@ -350,7 +378,7 @@ const FrontendDataSet = ({
 		View,
 		activeViewName,
 		contentRendererModuleURL,
-		dispatch,
+		viewsDispatch,
 		isMounted,
 		setComponentLoading,
 	]);
@@ -478,13 +506,24 @@ const FrontendDataSet = ({
 		showPagination && pagination && items?.length && total ? (
 			<div className="data-set-pagination-wrapper">
 				<ClayPaginationBarWithBasicItems
-					activeDelta={delta}
+					activeDelta={paginationDelta}
 					activePage={pageNumber}
-					deltas={pagination.deltas}
+					deltas={pagination?.deltas}
 					ellipsisBuffer={3}
-					onDeltaChange={(deltaVal) => {
+					labels={{
+						paginationResults: Liferay.Language.get(
+							'showing-x-to-x-of-x-entries'
+						),
+						perPageItems: Liferay.Language.get('x-items'),
+						selectPerPageItems: Liferay.Language.get('x-items'),
+					}}
+					onDeltaChange={(delta) => {
 						setPageNumber(1);
-						setDelta(deltaVal);
+
+						viewsDispatch({
+							type: VIEWS_ACTION_TYPES.UPDATE_PAGINATION_DELTA,
+							value: delta,
+						});
 					}}
 					onPageChange={setPageNumber}
 					totalItems={total}
@@ -492,7 +531,13 @@ const FrontendDataSet = ({
 			</div>
 		) : null;
 
-	function executeAsyncItemAction(url, method = 'GET') {
+	function executeAsyncItemAction({
+		errorMessage,
+		method = 'GET',
+		setActionItemLoading,
+		successMessage,
+		url,
+	}) {
 		return fetch(url, {
 			headers: {
 				'Accept': 'application/json',
@@ -501,23 +546,45 @@ const FrontendDataSet = ({
 			},
 			method,
 		})
-			.then((_) => {
-				return delay(500).then(() => {
-					if (isMounted()) {
-						Liferay.fire(DATASET_ACTION_PERFORMED, {
-							id,
-						});
+			.then((response) => {
+				if (response.ok) {
+					Liferay.fire(DATASET_ACTION_PERFORMED, {
+						id,
+					});
 
-						return refreshData();
-					}
-				});
+					openToast({
+						message:
+							successMessage ||
+							Liferay.Language.get(
+								'your-request-completed-successfully'
+							),
+						type: 'success',
+					});
+
+					refreshData();
+				}
+				else {
+					openToast({
+						message:
+							errorMessage ||
+							Liferay.Language.get(
+								'an-unexpected-error-occurred'
+							),
+						type: 'danger',
+					});
+
+					setActionItemLoading?.(false);
+				}
 			})
-			.catch((error) => {
-				logError(error);
+			.catch(() => {
 				openToast({
-					message: Liferay.Language.get('unexpected-error'),
+					message:
+						errorMessage ||
+						Liferay.Language.get('an-unexpected-error-occurred'),
 					type: 'danger',
 				});
+
+				setActionItemLoading?.(false);
 			});
 	}
 
@@ -678,7 +745,6 @@ const FrontendDataSet = ({
 				createInlineItem,
 				customDataRenderers,
 				executeAsyncItemAction,
-				filters,
 				formId,
 				formName,
 				highlightItems,
@@ -700,22 +766,24 @@ const FrontendDataSet = ({
 				portletId,
 				searchParam,
 				selectItems,
-				selectable,
+				selectable: Boolean(
+					selectedItemsKey &&
+						(bulkActions?.length || selectionType === 'single')
+				),
 				selectedItemsKey,
 				selectedItemsValue,
 				selectionType,
-				setFilters,
 				sidePanelId: dataSetSupportSidePanelId,
 				sorting,
 				style,
 				toggleItemInlineEdit,
+				uniformActionsDisplay,
 				updateDataSetItems,
 				updateItem,
 				updateSearchParam: setSearchParam,
-				updateSorting: setSorting,
 			}}
 		>
-			<ViewsContext.Provider value={[viewsState, dispatch]}>
+			<ViewsContext.Provider value={[viewsState, viewsDispatch]}>
 				<div className="fds">
 					<Modal id={dataSetSupportModalId} onClose={refreshData} />
 
@@ -767,6 +835,7 @@ const FrontendDataSet = ({
 
 FrontendDataSet.defaultProps = {
 	bulkActions: [],
+	customViews: '{}',
 	filters: [],
 	inlineEditingSettings: null,
 	items: null,

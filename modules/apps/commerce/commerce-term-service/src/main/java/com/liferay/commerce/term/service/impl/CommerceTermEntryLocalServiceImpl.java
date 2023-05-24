@@ -55,7 +55,10 @@ import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.Constants;
@@ -89,7 +92,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.term.model.CommerceTermEntry",
 	service = AopService.class
 )
@@ -120,7 +122,7 @@ public class CommerceTermEntryLocalServiceImpl
 
 		commerceTermEntry.setExternalReferenceCode(externalReferenceCode);
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		commerceTermEntry.setCompanyId(user.getCompanyId());
 		commerceTermEntry.setUserId(user.getUserId());
@@ -174,7 +176,7 @@ public class CommerceTermEntryLocalServiceImpl
 
 		// Resource
 
-		resourceLocalService.addModelResources(
+		_resourceLocalService.addModelResources(
 			commerceTermEntry, serviceContext);
 
 		// Workflow
@@ -199,7 +201,7 @@ public class CommerceTermEntryLocalServiceImpl
 		commerceTermEntry = commerceTermEntryPersistence.remove(
 			commerceTermEntry);
 
-		resourceLocalService.deleteResource(
+		_resourceLocalService.deleteResource(
 			commerceTermEntry.getCompanyId(), CommerceTermEntry.class.getName(),
 			ResourceConstants.SCOPE_INDIVIDUAL,
 			commerceTermEntry.getCommerceTermEntryId());
@@ -345,10 +347,10 @@ public class CommerceTermEntryLocalServiceImpl
 			int start, int end, Sort sort)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, accountEntryId, type, keywords, start, end, sort);
 
-		return searchCommerceTermEntries(searchContext);
+		return _searchCommerceTermEntries(searchContext);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
@@ -374,7 +376,7 @@ public class CommerceTermEntryLocalServiceImpl
 
 		commerceTermEntry.setActive(active);
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		commerceTermEntry.setDisplayDate(
 			_portal.getDate(
@@ -474,7 +476,7 @@ public class CommerceTermEntryLocalServiceImpl
 
 		commerceTermEntry.setStatus(status);
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		commerceTermEntry.setStatusByUserId(user.getUserId());
 		commerceTermEntry.setStatusByUserName(user.getFullName());
@@ -482,98 +484,6 @@ public class CommerceTermEntryLocalServiceImpl
 		commerceTermEntry.setStatusDate(serviceContext.getModifiedDate(date));
 
 		return commerceTermEntryPersistence.update(commerceTermEntry);
-	}
-
-	protected SearchContext buildSearchContext(
-		long companyId, long accountEntryId, String type, String keywords,
-		int start, int end, Sort sort) {
-
-		SearchContext searchContext = new SearchContext();
-
-		searchContext.setAttributes(
-			HashMapBuilder.<String, Serializable>put(
-				Field.NAME, keywords
-			).put(
-				Field.TYPE, type
-			).put(
-				"accountEntryId", accountEntryId
-			).build());
-		searchContext.setCompanyId(companyId);
-		searchContext.setEnd(end);
-
-		if (Validator.isNotNull(keywords)) {
-			searchContext.setKeywords(keywords);
-		}
-
-		if (sort != null) {
-			searchContext.setSorts(sort);
-		}
-
-		searchContext.setStart(start);
-
-		QueryConfig queryConfig = searchContext.getQueryConfig();
-
-		queryConfig.setHighlightEnabled(false);
-		queryConfig.setScoreEnabled(false);
-
-		return searchContext;
-	}
-
-	protected List<CommerceTermEntry> getCommerceTermEntries(Hits hits)
-		throws PortalException {
-
-		List<Document> documents = hits.toList();
-
-		List<CommerceTermEntry> commerceTermEntries = new ArrayList<>(
-			documents.size());
-
-		for (Document document : documents) {
-			long commerceTermEntryId = GetterUtil.getLong(
-				document.get(Field.ENTRY_CLASS_PK));
-
-			CommerceTermEntry commerceTermEntry = fetchCommerceTermEntry(
-				commerceTermEntryId);
-
-			if (commerceTermEntry == null) {
-				commerceTermEntries = null;
-
-				Indexer<CommerceTermEntry> indexer =
-					IndexerRegistryUtil.getIndexer(CommerceTermEntry.class);
-
-				long companyId = GetterUtil.getLong(
-					document.get(Field.COMPANY_ID));
-
-				indexer.delete(companyId, document.getUID());
-			}
-			else if (commerceTermEntries != null) {
-				commerceTermEntries.add(commerceTermEntry);
-			}
-		}
-
-		return commerceTermEntries;
-	}
-
-	protected BaseModelSearchResult<CommerceTermEntry>
-			searchCommerceTermEntries(SearchContext searchContext)
-		throws PortalException {
-
-		Indexer<CommerceTermEntry> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(CommerceTermEntry.class);
-
-		for (int i = 0; i < 10; i++) {
-			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
-
-			List<CommerceTermEntry> commerceTermEntries =
-				getCommerceTermEntries(hits);
-
-			if (commerceTermEntries != null) {
-				return new BaseModelSearchResult<>(
-					commerceTermEntries, hits.getLength());
-			}
-		}
-
-		throw new SearchException(
-			"Unable to fix the search index after 10 attempts");
 	}
 
 	private List<CTermEntryLocalization> _addCommerceTermEntryLocalizedFields(
@@ -635,9 +545,9 @@ public class CommerceTermEntryLocalServiceImpl
 
 			cTermEntryLocalization.setCompanyId(companyId);
 			cTermEntryLocalization.setCommerceTermEntryId(commerceTermEntryId);
+			cTermEntryLocalization.setLanguageId(languageId);
 			cTermEntryLocalization.setDescription(description);
 			cTermEntryLocalization.setLabel(label);
-			cTermEntryLocalization.setLanguageId(languageId);
 		}
 		else {
 			cTermEntryLocalization.setDescription(description);
@@ -645,6 +555,41 @@ public class CommerceTermEntryLocalServiceImpl
 		}
 
 		return cTermEntryLocalizationPersistence.update(cTermEntryLocalization);
+	}
+
+	private SearchContext _buildSearchContext(
+		long companyId, long accountEntryId, String type, String keywords,
+		int start, int end, Sort sort) {
+
+		SearchContext searchContext = new SearchContext();
+
+		searchContext.setAttributes(
+			HashMapBuilder.<String, Serializable>put(
+				Field.NAME, keywords
+			).put(
+				Field.TYPE, type
+			).put(
+				"accountEntryId", accountEntryId
+			).build());
+		searchContext.setCompanyId(companyId);
+		searchContext.setEnd(end);
+
+		if (Validator.isNotNull(keywords)) {
+			searchContext.setKeywords(keywords);
+		}
+
+		if (sort != null) {
+			searchContext.setSorts(sort);
+		}
+
+		searchContext.setStart(start);
+
+		QueryConfig queryConfig = searchContext.getQueryConfig();
+
+		queryConfig.setHighlightEnabled(false);
+		queryConfig.setScoreEnabled(false);
+
+		return searchContext;
 	}
 
 	private void _checkCommerceTermEntriesByDisplayDate()
@@ -697,6 +642,40 @@ public class CommerceTermEntryLocalServiceImpl
 		}
 	}
 
+	private List<CommerceTermEntry> _getCommerceTermEntries(Hits hits)
+		throws PortalException {
+
+		List<Document> documents = hits.toList();
+
+		List<CommerceTermEntry> commerceTermEntries = new ArrayList<>(
+			documents.size());
+
+		for (Document document : documents) {
+			long commerceTermEntryId = GetterUtil.getLong(
+				document.get(Field.ENTRY_CLASS_PK));
+
+			CommerceTermEntry commerceTermEntry = fetchCommerceTermEntry(
+				commerceTermEntryId);
+
+			if (commerceTermEntry == null) {
+				commerceTermEntries = null;
+
+				Indexer<CommerceTermEntry> indexer =
+					IndexerRegistryUtil.getIndexer(CommerceTermEntry.class);
+
+				long companyId = GetterUtil.getLong(
+					document.get(Field.COMPANY_ID));
+
+				indexer.delete(companyId, document.getUID());
+			}
+			else if (commerceTermEntries != null) {
+				commerceTermEntries.add(commerceTermEntry);
+			}
+		}
+
+		return commerceTermEntries;
+	}
+
 	private GroupByStep _getDeliveryTermsEntryGroupByStep(
 		Long companyId, Long commerceOrderTypeId,
 		Long commerceShippingFixedOptionId, FromStep fromStep) {
@@ -718,7 +697,7 @@ public class CommerceTermEntryLocalServiceImpl
 		).innerJoinON(
 			CommerceShippingFixedOptionQualifierTable.INSTANCE,
 			commerceShippingFixedOptionQualifierTableClassNameIdColumn.eq(
-				classNameLocalService.getClassNameId(
+				_classNameLocalService.getClassNameId(
 					CommerceTermEntry.class.getName())
 			).and(
 				CommerceShippingFixedOptionQualifierTable.INSTANCE.classPK.eq(
@@ -727,7 +706,7 @@ public class CommerceTermEntryLocalServiceImpl
 		).leftJoinOn(
 			commerceOrderTypeCommerceTermEntryRel,
 			commerceTermEntryRelTableClassNameIdColumn.eq(
-				classNameLocalService.getClassNameId(
+				_classNameLocalService.getClassNameId(
 					CommerceOrderType.class.getName())
 			).and(
 				commerceOrderTypeCommerceTermEntryRel.commerceTermEntryId.eq(
@@ -784,7 +763,7 @@ public class CommerceTermEntryLocalServiceImpl
 		).innerJoinON(
 			CommercePaymentMethodGroupRelQualifierTable.INSTANCE,
 			commercePaymentMethodGroupRelQualifierTableClassNameIdColumn.eq(
-				classNameLocalService.getClassNameId(
+				_classNameLocalService.getClassNameId(
 					CommerceTermEntry.class.getName())
 			).and(
 				CommercePaymentMethodGroupRelQualifierTable.INSTANCE.classPK.eq(
@@ -793,7 +772,7 @@ public class CommerceTermEntryLocalServiceImpl
 		).leftJoinOn(
 			commerceOrderTypeCommerceTermEntryRel,
 			commerceTermEntryRelTableClassNameIdColumn.eq(
-				classNameLocalService.getClassNameId(
+				_classNameLocalService.getClassNameId(
 					CommerceOrderType.class.getName())
 			).and(
 				commerceOrderTypeCommerceTermEntryRel.commerceTermEntryId.eq(
@@ -826,6 +805,29 @@ public class CommerceTermEntryLocalServiceImpl
 					CommerceTermEntryTable.INSTANCE.type.eq(
 						CommerceTermEntryConstants.TYPE_PAYMENT_TERMS)
 				));
+	}
+
+	private BaseModelSearchResult<CommerceTermEntry> _searchCommerceTermEntries(
+			SearchContext searchContext)
+		throws PortalException {
+
+		Indexer<CommerceTermEntry> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(CommerceTermEntry.class);
+
+		for (int i = 0; i < 10; i++) {
+			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
+
+			List<CommerceTermEntry> commerceTermEntries =
+				_getCommerceTermEntries(hits);
+
+			if (commerceTermEntries != null) {
+				return new BaseModelSearchResult<>(
+					commerceTermEntries, hits.getLength());
+			}
+		}
+
+		throw new SearchException(
+			"Unable to fix the search index after 10 attempts");
 	}
 
 	private CommerceTermEntry _startWorkflowInstance(
@@ -905,6 +907,9 @@ public class CommerceTermEntryLocalServiceImpl
 		CommerceTermEntryLocalServiceImpl.class);
 
 	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
 	private CommerceChannelAccountEntryRelLocalService
 		_commerceChannelAccountEntryRelLocalService;
 
@@ -913,6 +918,12 @@ public class CommerceTermEntryLocalServiceImpl
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private ResourceLocalService _resourceLocalService;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 	@Reference
 	private WorkflowInstanceLinkLocalService _workflowInstanceLinkLocalService;

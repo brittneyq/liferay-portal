@@ -20,20 +20,29 @@ import com.liferay.commerce.model.CommerceShipment;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelService;
 import com.liferay.commerce.service.base.CommerceShipmentServiceBaseImpl;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = {
+		"json.web.service.context.name=commerce",
+		"json.web.service.context.path=CommerceShipment"
+	},
+	service = AopService.class
+)
 public class CommerceShipmentServiceImpl
 	extends CommerceShipmentServiceBaseImpl {
 
@@ -105,7 +114,7 @@ public class CommerceShipmentServiceImpl
 
 		return commerceShipmentLocalService.
 			fetchCommerceShipmentByExternalReferenceCode(
-				companyId, externalReferenceCode);
+				externalReferenceCode, companyId);
 	}
 
 	@Override
@@ -133,14 +142,14 @@ public class CommerceShipmentServiceImpl
 		List<CommerceChannel> commerceChannels = _commerceChannelService.search(
 			companyId);
 
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
+		if (commerceChannels.isEmpty()) {
+			return Collections.emptyList();
+		}
 
 		return commerceShipmentLocalService.getCommerceShipments(
-			commerceChannelGroupIds, status, start, end, orderByComparator);
+			TransformUtil.transformToLongArray(
+				commerceChannels, CommerceChannel::getGroupId),
+			status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -160,14 +169,10 @@ public class CommerceShipmentServiceImpl
 			return Collections.emptyList();
 		}
 
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
-
 		return commerceShipmentLocalService.getCommerceShipments(
-			commerceChannelGroupIds, start, end, orderByComparator);
+			TransformUtil.transformToLongArray(
+				commerceChannels, CommerceChannel::getGroupId),
+			start, end, orderByComparator);
 	}
 
 	@Override
@@ -183,15 +188,14 @@ public class CommerceShipmentServiceImpl
 		List<CommerceChannel> commerceChannels = _commerceChannelService.search(
 			companyId);
 
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
+		if (commerceChannels.isEmpty()) {
+			return Collections.emptyList();
+		}
 
 		return commerceShipmentLocalService.getCommerceShipments(
-			commerceChannelGroupIds, commerceAddressId, start, end,
-			orderByComparator);
+			TransformUtil.transformToLongArray(
+				commerceChannels, CommerceChannel::getGroupId),
+			commerceAddressId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -233,14 +237,9 @@ public class CommerceShipmentServiceImpl
 			return 0;
 		}
 
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
-
 		return commerceShipmentLocalService.getCommerceShipmentsCount(
-			commerceChannelGroupIds);
+			TransformUtil.transformToLongArray(
+				commerceChannels, CommerceChannel::getGroupId));
 	}
 
 	@Override
@@ -254,14 +253,14 @@ public class CommerceShipmentServiceImpl
 		List<CommerceChannel> commerceChannels = _commerceChannelService.search(
 			companyId);
 
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
+		if (commerceChannels.isEmpty()) {
+			return 0;
+		}
 
 		return commerceShipmentLocalService.getCommerceShipmentsCount(
-			commerceChannelGroupIds, status);
+			TransformUtil.transformToLongArray(
+				commerceChannels, CommerceChannel::getGroupId),
+			status);
 	}
 
 	@Override
@@ -275,14 +274,14 @@ public class CommerceShipmentServiceImpl
 		List<CommerceChannel> commerceChannels = _commerceChannelService.search(
 			companyId);
 
-		Stream<CommerceChannel> stream = commerceChannels.stream();
-
-		long[] commerceChannelGroupIds = stream.mapToLong(
-			CommerceChannel::getGroupId
-		).toArray();
+		if (commerceChannels.isEmpty()) {
+			return 0;
+		}
 
 		return commerceShipmentLocalService.getCommerceShipmentsCount(
-			commerceChannelGroupIds, commerceAddressId);
+			TransformUtil.transformToLongArray(
+				commerceChannels, CommerceChannel::getGroupId),
+			commerceAddressId);
 	}
 
 	@Override
@@ -487,13 +486,12 @@ public class CommerceShipmentServiceImpl
 			commerceShipmentId, status);
 	}
 
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				CommerceShipmentServiceImpl.class, "_portletResourcePermission",
-				CommerceConstants.RESOURCE_NAME_COMMERCE_SHIPMENT);
-
-	@ServiceReference(type = CommerceChannelService.class)
+	@Reference
 	private CommerceChannelService _commerceChannelService;
+
+	@Reference(
+		target = "(resource.name=" + CommerceConstants.RESOURCE_NAME_COMMERCE_SHIPMENT + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
 
 }

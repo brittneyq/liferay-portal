@@ -19,8 +19,12 @@ import Highlight from './Highlight.es';
 export default function ArticleBodyRenderer({
 	articleBody,
 	compactMode = false,
+	companyName,
+	elapsedTime,
 	encodingFormat,
+	hasCompanyMx,
 	id,
+	showSignature = true,
 	signature,
 }) {
 	const [
@@ -32,11 +36,13 @@ export default function ArticleBodyRenderer({
 		setArticleBodyContainsParagraph(articleBody.includes('<p>'));
 	}, [articleBody]);
 
+	const _companyName = hasCompanyMx && companyName ? `(${companyName})` : '';
+
 	return (
 		<>
 			{encodingFormat !== 'bbcode' && compactMode && (
 				<div
-					className={`questions-article-body-${id}`}
+					className={`questions-article-body-${id} questions-labels-limit`}
 					dangerouslySetInnerHTML={{__html: articleBody}}
 				/>
 			)}
@@ -46,12 +52,12 @@ export default function ArticleBodyRenderer({
 				</div>
 			)}
 
-			{signature && (
+			{showSignature && signature && (
 				<style
 					dangerouslySetInnerHTML={{
 						__html: `.questions-article-body-${id} ${
 							articleBodyContainsParagraph ? 'p' : 'div'
-						}:last-child:after {content: " - ${signature}"; font-weight: bold;}`,
+						}:last-child:after {content: " - ${signature} ${_companyName} - ${elapsedTime}"; font-weight: bold;}`,
 					}}
 				/>
 			)}

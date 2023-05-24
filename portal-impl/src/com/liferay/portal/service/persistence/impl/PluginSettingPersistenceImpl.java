@@ -44,7 +44,6 @@ import com.liferay.portal.model.impl.PluginSettingModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.HashMap;
@@ -182,7 +181,7 @@ public class PluginSettingPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<PluginSetting>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (PluginSetting pluginSetting : list) {
@@ -541,7 +540,8 @@ public class PluginSettingPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -669,7 +669,7 @@ public class PluginSettingPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByC_P_P, finderArgs);
+				_finderPathFetchByC_P_P, finderArgs, this);
 		}
 
 		if (result instanceof PluginSetting) {
@@ -803,7 +803,8 @@ public class PluginSettingPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, pluginId, pluginType};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -1298,7 +1299,7 @@ public class PluginSettingPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<PluginSetting>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1368,7 +1369,7 @@ public class PluginSettingPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1472,29 +1473,13 @@ public class PluginSettingPersistenceImpl
 			},
 			new String[] {"companyId", "pluginId", "pluginType"}, false);
 
-		_setPluginSettingUtilPersistence(this);
+		PluginSettingUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setPluginSettingUtilPersistence(null);
+		PluginSettingUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(PluginSettingImpl.class.getName());
-	}
-
-	private void _setPluginSettingUtilPersistence(
-		PluginSettingPersistence pluginSettingPersistence) {
-
-		try {
-			Field field = PluginSettingUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, pluginSettingPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_PLUGINSETTING =

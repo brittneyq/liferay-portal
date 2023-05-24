@@ -29,12 +29,12 @@ import com.liferay.document.library.web.internal.search.EntriesChecker;
 import com.liferay.document.library.web.internal.search.EntriesMover;
 import com.liferay.document.library.web.internal.security.permission.resource.DLFileEntryPermission;
 import com.liferay.document.library.web.internal.security.permission.resource.DLFolderPermission;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -48,7 +48,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.RepositoryUtil;
 
@@ -134,14 +133,14 @@ public class DLViewEntriesDisplayContext {
 			}
 		}
 
-		if (DLFileEntryPermission.contains(
-				permissionChecker, fileEntry, ActionKeys.VIEW)) {
+		if ((fileEntry.getSize() > 0) &&
+			DLFileEntryPermission.contains(
+				permissionChecker, fileEntry, ActionKeys.DOWNLOAD)) {
 
 			availableActions.add("download");
 		}
 
-		if (GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-87806")) &&
-			DLFileEntryPermission.contains(
+		if (DLFileEntryPermission.contains(
 				permissionChecker, fileEntry, ActionKeys.PERMISSIONS)) {
 
 			availableActions.add("permissions");
@@ -180,6 +179,12 @@ public class DLViewEntriesDisplayContext {
 			!RepositoryUtil.isExternalRepository(folder.getRepositoryId())) {
 
 			availableActions.add("download");
+		}
+
+		if (DLFolderPermission.contains(
+				permissionChecker, folder, ActionKeys.PERMISSIONS)) {
+
+			availableActions.add("permissions");
 		}
 
 		return availableActions;
@@ -237,7 +242,7 @@ public class DLViewEntriesDisplayContext {
 			_dlAdminDisplayContext.getSearchContainer();
 
 		EntriesChecker entriesChecker = new EntriesChecker(
-			_liferayPortletRequest, _liferayPortletResponse);
+			_liferayPortletResponse);
 
 		entriesChecker.setCssClass("entry-selector");
 		entriesChecker.setRememberCheckBoxStateURLRegex(

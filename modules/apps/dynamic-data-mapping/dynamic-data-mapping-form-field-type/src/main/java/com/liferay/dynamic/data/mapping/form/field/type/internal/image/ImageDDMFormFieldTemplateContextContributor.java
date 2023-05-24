@@ -25,6 +25,8 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.item.selector.criteria.DownloadFileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.image.criterion.ImageItemSelectorCriterion;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
@@ -47,24 +49,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 
 /**
  * @author Carlos Lancha
  */
 @Component(
-	immediate = true, property = "ddm.form.field.type.name=image",
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		ImageDDMFormFieldTemplateContextContributor.class
-	}
+	property = "ddm.form.field.type.name=image",
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class ImageDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
@@ -104,6 +103,18 @@ public class ImageDDMFormFieldTemplateContextContributor
 		).build();
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerList = ServiceTrackerListFactory.open(
+			bundleContext,
+			ImageDDMFormFieldItemSelectorCriterionContributor.class);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerList.close();
+	}
+
 	protected String getValue(String value) {
 		try {
 			JSONObject valueJSONObject = _getValueJSONObject(value);
@@ -138,26 +149,6 @@ public class ImageDDMFormFieldTemplateContextContributor
 		return value;
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC
-	)
-	protected void setImageDDMFormFieldItemSelectorCriterionContributor(
-		ImageDDMFormFieldItemSelectorCriterionContributor
-			imageDDMFormFieldItemSelectorCriterionContributor) {
-
-		_imageDDMFormFieldItemSelectorCriterionContributors.add(
-			imageDDMFormFieldItemSelectorCriterionContributor);
-	}
-
-	protected void unsetImageDDMFormFieldItemSelectorCriterionContributor(
-		ImageDDMFormFieldItemSelectorCriterionContributor
-			imageDDMFormFieldItemSelectorCriterionContributor) {
-
-		_imageDDMFormFieldItemSelectorCriterionContributors.remove(
-			imageDDMFormFieldItemSelectorCriterionContributor);
-	}
-
 	private FileEntry _getFileEntry(JSONObject valueJSONObject) {
 		try {
 			return _dlAppService.getFileEntryByUuidAndGroupId(
@@ -166,7 +157,7 @@ public class ImageDDMFormFieldTemplateContextContributor
 		}
 		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to retrieve file entry ", portalException);
+				_log.debug("Unable to get file entry", portalException);
 			}
 
 			return null;
@@ -193,7 +184,7 @@ public class ImageDDMFormFieldTemplateContextContributor
 
 		for (ImageDDMFormFieldItemSelectorCriterionContributor
 				imageDDMFormFieldItemSelectorCriterionContributor :
-					_imageDDMFormFieldItemSelectorCriterionContributors) {
+					_serviceTrackerList) {
 
 			if (!imageDDMFormFieldItemSelectorCriterionContributor.isVisible(
 					ddmFormFieldRenderingContext)) {
@@ -277,10 +268,6 @@ public class ImageDDMFormFieldTemplateContextContributor
 	@Reference
 	private DLURLHelper _dlURLHelper;
 
-	private final List<ImageDDMFormFieldItemSelectorCriterionContributor>
-		_imageDDMFormFieldItemSelectorCriterionContributors =
-			new CopyOnWriteArrayList<>();
-
 	@Reference
 	private ItemSelector _itemSelector;
 
@@ -292,5 +279,8 @@ public class ImageDDMFormFieldTemplateContextContributor
 
 	@Reference
 	private Portal _portal;
+
+	private ServiceTrackerList
+		<ImageDDMFormFieldItemSelectorCriterionContributor> _serviceTrackerList;
 
 }

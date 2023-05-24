@@ -43,18 +43,9 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.saml.persistence.model.SamlIdpSsoSession;
 import com.liferay.saml.persistence.service.SamlIdpSsoSessionLocalService;
 import com.liferay.saml.persistence.service.SamlIdpSsoSessionLocalServiceUtil;
-import com.liferay.saml.persistence.service.persistence.SamlIdpSpConnectionPersistence;
-import com.liferay.saml.persistence.service.persistence.SamlIdpSpSessionPersistence;
 import com.liferay.saml.persistence.service.persistence.SamlIdpSsoSessionPersistence;
-import com.liferay.saml.persistence.service.persistence.SamlPeerBindingPersistence;
-import com.liferay.saml.persistence.service.persistence.SamlSpAuthRequestPersistence;
-import com.liferay.saml.persistence.service.persistence.SamlSpIdpConnectionPersistence;
-import com.liferay.saml.persistence.service.persistence.SamlSpMessagePersistence;
-import com.liferay.saml.persistence.service.persistence.SamlSpSessionPersistence;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -406,7 +397,7 @@ public abstract class SamlIdpSsoSessionLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		SamlIdpSsoSessionLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -421,7 +412,8 @@ public abstract class SamlIdpSsoSessionLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		samlIdpSsoSessionLocalService = (SamlIdpSsoSessionLocalService)aopProxy;
 
-		_setLocalServiceUtilService(samlIdpSsoSessionLocalService);
+		SamlIdpSsoSessionLocalServiceUtil.setService(
+			samlIdpSsoSessionLocalService);
 	}
 
 	/**
@@ -467,64 +459,14 @@ public abstract class SamlIdpSsoSessionLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		SamlIdpSsoSessionLocalService samlIdpSsoSessionLocalService) {
-
-		try {
-			Field field =
-				SamlIdpSsoSessionLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, samlIdpSsoSessionLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected SamlIdpSpConnectionPersistence samlIdpSpConnectionPersistence;
-
-	@Reference
-	protected SamlIdpSpSessionPersistence samlIdpSpSessionPersistence;
-
 	protected SamlIdpSsoSessionLocalService samlIdpSsoSessionLocalService;
 
 	@Reference
 	protected SamlIdpSsoSessionPersistence samlIdpSsoSessionPersistence;
 
 	@Reference
-	protected SamlPeerBindingPersistence samlPeerBindingPersistence;
-
-	@Reference
-	protected SamlSpAuthRequestPersistence samlSpAuthRequestPersistence;
-
-	@Reference
-	protected SamlSpIdpConnectionPersistence samlSpIdpConnectionPersistence;
-
-	@Reference
-	protected SamlSpMessagePersistence samlSpMessagePersistence;
-
-	@Reference
-	protected SamlSpSessionPersistence samlSpSessionPersistence;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SamlIdpSsoSessionLocalServiceBaseImpl.class);

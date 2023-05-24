@@ -83,6 +83,8 @@ public class ObjectFieldCacheModel
 		sb.append(mvccVersion);
 		sb.append(", uuid=");
 		sb.append(uuid);
+		sb.append(", externalReferenceCode=");
+		sb.append(externalReferenceCode);
 		sb.append(", objectFieldId=");
 		sb.append(objectFieldId);
 		sb.append(", companyId=");
@@ -95,8 +97,6 @@ public class ObjectFieldCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
-		sb.append(", externalReferenceCode=");
-		sb.append(externalReferenceCode);
 		sb.append(", listTypeDefinitionId=");
 		sb.append(listTypeDefinitionId);
 		sb.append(", objectDefinitionId=");
@@ -109,8 +109,6 @@ public class ObjectFieldCacheModel
 		sb.append(dbTableName);
 		sb.append(", dbType=");
 		sb.append(dbType);
-		sb.append(", defaultValue=");
-		sb.append(defaultValue);
 		sb.append(", indexed=");
 		sb.append(indexed);
 		sb.append(", indexedAsKeyword=");
@@ -119,6 +117,8 @@ public class ObjectFieldCacheModel
 		sb.append(indexedLanguageId);
 		sb.append(", label=");
 		sb.append(label);
+		sb.append(", localized=");
+		sb.append(localized);
 		sb.append(", name=");
 		sb.append(name);
 		sb.append(", relationshipType=");
@@ -147,6 +147,13 @@ public class ObjectFieldCacheModel
 			objectFieldImpl.setUuid(uuid);
 		}
 
+		if (externalReferenceCode == null) {
+			objectFieldImpl.setExternalReferenceCode("");
+		}
+		else {
+			objectFieldImpl.setExternalReferenceCode(externalReferenceCode);
+		}
+
 		objectFieldImpl.setObjectFieldId(objectFieldId);
 		objectFieldImpl.setCompanyId(companyId);
 		objectFieldImpl.setUserId(userId);
@@ -170,13 +177,6 @@ public class ObjectFieldCacheModel
 		}
 		else {
 			objectFieldImpl.setModifiedDate(new Date(modifiedDate));
-		}
-
-		if (externalReferenceCode == null) {
-			objectFieldImpl.setExternalReferenceCode("");
-		}
-		else {
-			objectFieldImpl.setExternalReferenceCode(externalReferenceCode);
 		}
 
 		objectFieldImpl.setListTypeDefinitionId(listTypeDefinitionId);
@@ -210,13 +210,6 @@ public class ObjectFieldCacheModel
 			objectFieldImpl.setDBType(dbType);
 		}
 
-		if (defaultValue == null) {
-			objectFieldImpl.setDefaultValue("");
-		}
-		else {
-			objectFieldImpl.setDefaultValue(defaultValue);
-		}
-
 		objectFieldImpl.setIndexed(indexed);
 		objectFieldImpl.setIndexedAsKeyword(indexedAsKeyword);
 
@@ -233,6 +226,8 @@ public class ObjectFieldCacheModel
 		else {
 			objectFieldImpl.setLabel(label);
 		}
+
+		objectFieldImpl.setLocalized(localized);
 
 		if (name == null) {
 			objectFieldImpl.setName("");
@@ -261,6 +256,7 @@ public class ObjectFieldCacheModel
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
+		externalReferenceCode = objectInput.readUTF();
 
 		objectFieldId = objectInput.readLong();
 
@@ -270,7 +266,6 @@ public class ObjectFieldCacheModel
 		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
-		externalReferenceCode = objectInput.readUTF();
 
 		listTypeDefinitionId = objectInput.readLong();
 
@@ -279,13 +274,14 @@ public class ObjectFieldCacheModel
 		dbColumnName = objectInput.readUTF();
 		dbTableName = objectInput.readUTF();
 		dbType = objectInput.readUTF();
-		defaultValue = objectInput.readUTF();
 
 		indexed = objectInput.readBoolean();
 
 		indexedAsKeyword = objectInput.readBoolean();
 		indexedLanguageId = objectInput.readUTF();
 		label = objectInput.readUTF();
+
+		localized = objectInput.readBoolean();
 		name = objectInput.readUTF();
 		relationshipType = objectInput.readUTF();
 
@@ -307,6 +303,13 @@ public class ObjectFieldCacheModel
 			objectOutput.writeUTF(uuid);
 		}
 
+		if (externalReferenceCode == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(externalReferenceCode);
+		}
+
 		objectOutput.writeLong(objectFieldId);
 
 		objectOutput.writeLong(companyId);
@@ -322,13 +325,6 @@ public class ObjectFieldCacheModel
 
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
-
-		if (externalReferenceCode == null) {
-			objectOutput.writeUTF("");
-		}
-		else {
-			objectOutput.writeUTF(externalReferenceCode);
-		}
 
 		objectOutput.writeLong(listTypeDefinitionId);
 
@@ -362,13 +358,6 @@ public class ObjectFieldCacheModel
 			objectOutput.writeUTF(dbType);
 		}
 
-		if (defaultValue == null) {
-			objectOutput.writeUTF("");
-		}
-		else {
-			objectOutput.writeUTF(defaultValue);
-		}
-
 		objectOutput.writeBoolean(indexed);
 
 		objectOutput.writeBoolean(indexedAsKeyword);
@@ -386,6 +375,8 @@ public class ObjectFieldCacheModel
 		else {
 			objectOutput.writeUTF(label);
 		}
+
+		objectOutput.writeBoolean(localized);
 
 		if (name == null) {
 			objectOutput.writeUTF("");
@@ -410,24 +401,24 @@ public class ObjectFieldCacheModel
 
 	public long mvccVersion;
 	public String uuid;
+	public String externalReferenceCode;
 	public long objectFieldId;
 	public long companyId;
 	public long userId;
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
-	public String externalReferenceCode;
 	public long listTypeDefinitionId;
 	public long objectDefinitionId;
 	public String businessType;
 	public String dbColumnName;
 	public String dbTableName;
 	public String dbType;
-	public String defaultValue;
 	public boolean indexed;
 	public boolean indexedAsKeyword;
 	public String indexedLanguageId;
 	public String label;
+	public boolean localized;
 	public String name;
 	public String relationshipType;
 	public boolean required;

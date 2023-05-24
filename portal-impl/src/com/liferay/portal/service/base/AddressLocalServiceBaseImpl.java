@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -49,13 +50,12 @@ import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.AddressPersistence;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -261,47 +261,20 @@ public abstract class AddressLocalServiceBaseImpl
 		return addressPersistence.fetchByUuid_C_First(uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the address with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the address's external reference code
-	 * @return the matching address, or <code>null</code> if a matching address could not be found
-	 */
 	@Override
 	public Address fetchAddressByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return addressPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return addressPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchAddressByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public Address fetchAddressByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchAddressByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the address with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the address's external reference code
-	 * @return the matching address
-	 * @throws PortalException if a matching address could not be found
-	 */
 	@Override
 	public Address getAddressByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return addressPersistence.findByC_ERC(companyId, externalReferenceCode);
+		return addressPersistence.findByERC_C(externalReferenceCode, companyId);
 	}
 
 	/**
@@ -610,14 +583,14 @@ public abstract class AddressLocalServiceBaseImpl
 		persistedModelLocalServiceRegistry.register(
 			"com.liferay.portal.kernel.model.Address", addressLocalService);
 
-		_setLocalServiceUtilService(addressLocalService);
+		AddressLocalServiceUtil.setService(addressLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.portal.kernel.model.Address");
 
-		_setLocalServiceUtilService(null);
+		AddressLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -630,8 +603,22 @@ public abstract class AddressLocalServiceBaseImpl
 		return AddressLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<Address> getCTPersistence() {
+		return addressPersistence;
+	}
+
+	@Override
+	public Class<Address> getModelClass() {
 		return Address.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<Address>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(addressPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -659,22 +646,6 @@ public abstract class AddressLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		AddressLocalService addressLocalService) {
-
-		try {
-			Field field = AddressLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, addressLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

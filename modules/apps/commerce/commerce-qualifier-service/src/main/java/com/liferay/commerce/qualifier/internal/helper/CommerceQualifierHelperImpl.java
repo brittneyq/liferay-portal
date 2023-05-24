@@ -19,8 +19,8 @@ import com.liferay.commerce.qualifier.metadata.CommerceQualifierMetadata;
 import com.liferay.commerce.qualifier.metadata.CommerceQualifierMetadataRegistry;
 import com.liferay.commerce.qualifier.model.CommerceQualifierEntryTable;
 import com.liferay.petra.sql.dsl.Table;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -28,9 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Riccardo Alberti
  */
-@Component(
-	enabled = false, immediate = true, service = CommerceQualifierHelper.class
-)
+@Component(service = CommerceQualifierHelper.class)
 public class CommerceQualifierHelperImpl implements CommerceQualifierHelper {
 
 	public CommerceQualifierEntryTable getAliasCommerceQualifierEntryTable(

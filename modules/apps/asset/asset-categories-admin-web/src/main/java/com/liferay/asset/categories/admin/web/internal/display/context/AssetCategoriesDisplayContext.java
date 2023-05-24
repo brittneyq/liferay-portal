@@ -38,7 +38,6 @@ import com.liferay.depot.service.DepotEntryServiceUtil;
 import com.liferay.exportimport.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
@@ -59,6 +58,7 @@ import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
@@ -105,10 +105,10 @@ public class AssetCategoriesDisplayContext {
 
 		_assetCategoriesAdminWebConfiguration =
 			(AssetCategoriesAdminWebConfiguration)
-				_httpServletRequest.getAttribute(
+				httpServletRequest.getAttribute(
 					AssetCategoriesAdminWebKeys.
 						ASSET_CATEGORIES_ADMIN_CONFIGURATION);
-		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
 
@@ -342,7 +342,9 @@ public class AssetCategoriesDisplayContext {
 
 		emptyOnClickRowChecker.setRememberCheckBoxStateURLRegex(sb.toString());
 
-		categoriesSearchContainer.setRowChecker(emptyOnClickRowChecker);
+		if (vocabulary.getGroupId() == _themeDisplay.getScopeGroupId()) {
+			categoriesSearchContainer.setRowChecker(emptyOnClickRowChecker);
+		}
 
 		_categoriesSearchContainer = categoriesSearchContainer;
 
@@ -843,6 +845,23 @@ public class AssetCategoriesDisplayContext {
 		}
 
 		return false;
+	}
+
+	public boolean isShowCategoriesSelectButton() {
+		try {
+			AssetVocabulary vocabulary = getVocabulary();
+
+			if (vocabulary.getGroupId() != _themeDisplay.getScopeGroupId()) {
+				return false;
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return true;
 	}
 
 	public boolean isShowSelectAssetDisplayPage() {

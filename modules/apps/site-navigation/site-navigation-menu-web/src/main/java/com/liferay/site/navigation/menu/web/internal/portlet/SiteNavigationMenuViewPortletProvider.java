@@ -16,7 +16,7 @@ package com.liferay.site.navigation.menu.web.internal.portlet;
 
 import com.liferay.portal.kernel.portlet.BasePortletProvider;
 import com.liferay.portal.kernel.portlet.ViewPortletProvider;
-import com.liferay.site.navigation.menu.web.internal.constants.SiteNavigationMenuPortletKeys;
+import com.liferay.site.navigation.constants.SiteNavigationMenuPortletKeys;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -24,7 +24,6 @@ import org.osgi.service.component.annotations.Component;
  * @author Juergen Kappler
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.portal.kernel.theme.NavItem",
 	service = ViewPortletProvider.class
 )

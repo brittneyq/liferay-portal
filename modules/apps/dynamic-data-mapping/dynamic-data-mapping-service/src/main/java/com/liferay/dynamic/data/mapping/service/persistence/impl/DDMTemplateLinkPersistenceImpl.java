@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -47,7 +46,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -77,7 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {DDMTemplateLinkPersistence.class, BasePersistence.class})
+@Component(service = DDMTemplateLinkPersistence.class)
 public class DDMTemplateLinkPersistenceImpl
 	extends BasePersistenceImpl<DDMTemplateLink>
 	implements DDMTemplateLinkPersistence {
@@ -201,7 +199,7 @@ public class DDMTemplateLinkPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMTemplateLink>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DDMTemplateLink ddmTemplateLink : list) {
@@ -572,7 +570,7 @@ public class DDMTemplateLinkPersistenceImpl
 
 			finderArgs = new Object[] {templateId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -691,7 +689,8 @@ public class DDMTemplateLinkPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByC_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_C, finderArgs, this);
 		}
 
 		if (result instanceof DDMTemplateLink) {
@@ -798,7 +797,7 @@ public class DDMTemplateLinkPersistenceImpl
 
 			finderArgs = new Object[] {classNameId, classPK};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1416,7 +1415,7 @@ public class DDMTemplateLinkPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMTemplateLink>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1492,7 +1491,7 @@ public class DDMTemplateLinkPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -1641,30 +1640,14 @@ public class DDMTemplateLinkPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"classNameId", "classPK"}, false);
 
-		_setDDMTemplateLinkUtilPersistence(this);
+		DDMTemplateLinkUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setDDMTemplateLinkUtilPersistence(null);
+		DDMTemplateLinkUtil.setPersistence(null);
 
 		entityCache.removeCache(DDMTemplateLinkImpl.class.getName());
-	}
-
-	private void _setDDMTemplateLinkUtilPersistence(
-		DDMTemplateLinkPersistence ddmTemplateLinkPersistence) {
-
-		try {
-			Field field = DDMTemplateLinkUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ddmTemplateLinkPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -1729,9 +1712,5 @@ public class DDMTemplateLinkPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private DDMTemplateLinkModelArgumentsResolver
-		_ddmTemplateLinkModelArgumentsResolver;
 
 }

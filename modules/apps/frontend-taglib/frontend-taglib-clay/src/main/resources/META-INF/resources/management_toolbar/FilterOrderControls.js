@@ -17,6 +17,7 @@ import {ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import {ManagementToolbar} from 'frontend-js-components-web';
+import {sub} from 'frontend-js-web';
 import React, {useContext} from 'react';
 
 import FeatureFlagContext from './FeatureFlagContext';
@@ -69,6 +70,9 @@ const FilterOrderControls = ({
 						)}
 						trigger={
 							<ClayButton
+								aria-label={Liferay.Language.get(
+									'filter-and-order'
+								)}
 								className={classNames('nav-link', {
 									'ml-2 mr-2': showDesignImprovements,
 								})}
@@ -195,10 +199,23 @@ const FilterOrderControls = ({
 				(showDesignImprovements && sortingURL && showOrderToggle)) && (
 				<ManagementToolbar.Item>
 					<LinkOrButton
+						aria-label={sub(
+							showDesignImprovements
+								? Liferay.Language.get(
+										'reverse-order-direction-currently-x'
+								  )
+								: Liferay.Language.get(
+										'reverse-sort-direction-currently-x'
+								  ),
+							sortingOrder === 'desc'
+								? Liferay.Language.get('descending')
+								: Liferay.Language.get('ascending')
+						)}
 						className="nav-link nav-link-monospaced"
 						disabled={disabled}
 						displayType="unstyled"
 						href={sortingURL}
+						role="button"
 						symbol={classNames({
 							'order-list-down': sortingOrder === 'desc',
 							'order-list-up':

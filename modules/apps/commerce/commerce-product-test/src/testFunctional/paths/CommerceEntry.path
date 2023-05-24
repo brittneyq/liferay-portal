@@ -16,6 +16,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHANNEL_ACCOUNT_DEFAULTS_MODAL_DROPDOWN</td>
+	<td>//div[contains(@class,'form-group input-select-wrapper')]//option[contains(text(),'${key_value}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANY_MENU_ITEM</td>
 	<td>//div[contains(@class,'show')]//button[contains(.,'${key_menuItem}')] | //div[contains(@class,'show')]//a[contains(.,'${key_menuItem}')]</td>
 	<td></td>
@@ -86,6 +91,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PRODUCT_DETAIL_UUID</td>
+	<td>//*[contains(text(),'${uuid}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PRODUCT_CARD_COMPARE_CHECKBOX_DISABLED</td>
 	<td>//p[@title='${key_productName}']//../..//input[contains(@aria-label,'Compare') and @disabled]</td>
 	<td></td>
@@ -134,6 +144,16 @@
 	<td>CHANGE_TAX_CATEGORY</td>
 	<td>//label[text()='Shipping Tax Category']/..//input[@type='text']</td>
 	<td></td>
+</tr>
+<tr>
+	<td>COMMERCE_OBJECT_NAME_ON_HEADER</td>
+	<td>//h1[contains(@class,'control-menu-level-1-heading') and contains(.,'${value1}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>HEADER_ERC_VALUE</td>
+	<td>//span[@title="External Reference Code"]//..//strong[contains(@class,'header-info-value') and normalize-space(text()='${key_erc}')]</td>
+	 <td></td>
 </tr>
 <tr>
 	<td>CODE_FIELD</td>
@@ -307,7 +327,7 @@
 </tr>
 <tr>
 	<td>OPTION_SELECT</td>
-	<td>//div[contains (@class, 'select-field-trigger')]/a</td>
+	<td>//div[contains (@class, 'select-field-trigger')]//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -326,6 +346,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>OVERRIDE_DEFAULT_DISPLAY_PAGE_SIDE_PANEL_CHOOSE_BUTTON</td>
+	<td>//*[contains(.,'${key_tabName}')]//..//button[contains(.,'Choose')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CURRENCY_SELECT</td>
 	<td>//div[label[contains(.,'Store Currency')]]/select</td>
 	<td></td>
@@ -333,6 +358,11 @@
 <tr>
 	<td>CURRENCY_COLUMN_VALUE</td>
 	<td>//td[contains(@class,'lfr-name-column')]//*[text()='${key_entryName}']/../..//td[contains(@class,'${key_columnClassName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>INPUT_FIELD_READ_ONLY</td>
+	<td>//div[label[contains(.,'${key_fieldName}')]]//input[@readonly='readonly']</td>
 	<td></td>
 </tr>
 <tr>
@@ -416,6 +446,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SKU_ERC_FIELD</td>
+	<td>//div/input[contains(@id,'externalReferenceCode')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SKU_GLOBAL_TRADE_ITEM_NUMBER_FIELD</td>
 	<td>//div/input[contains(@id,'gtin')]</td>
 	<td></td>
@@ -461,8 +496,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FIX_ISSUE_BUTTON_N</td>
-	<td>//tr[contains (@data-qa-id,'row')]//td/button[contains (@id,'fixIssueButton${key_buttonRowNumber}')and contains(@class,'${key_buttonStatus}')]</td>
+	<td>FIX_ISSUE_BUTTON_NAME</td>
+	<td>//tr/td[contains(@class,'lfr-name-column') and contains(.,'${key_buttonRowName}')]//../td[contains(@class,'lfr-entry-action') and contains(.,'Fix Issue')]/button[(contains(@class,'${key_buttonStatus}'))]</td>
 	<td></td>
 </tr>
 <tr>
@@ -536,6 +571,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ACCORDION_COLLAPSED_CONTAINS</td>
+	<td>//fieldset[contains(@id,'${key_accordionTitle}')]/a[contains(@class,'collapsed')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ROLE_SELECT_BUTTON</td>
 	<td>//div/h3[contains(.,'${key_roleType}')]//..//button</td>
 	<td></td>
@@ -571,6 +611,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>BODY_VERTICAL_ELLIPSIS_ORDER</td>
+	<td>//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]] | //*[contains(@class,'sheet-title')]//*[contains(@class,'dropdown-toggle')][.//*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CHANNEL_TYPE_VALUE</td>
 	<td>//header[contains(., 'Type')]/../div[@class='description']</td>
 	<td></td>
@@ -582,12 +627,37 @@
 </tr>
 <tr>
 	<td>CHANNELS_GENERAL_TAB_EDITS</td>
-	<td>//div[contains(text(),'${key_entryName}')]/following-sibling::div[contains(@class,'item-actions')]//a</td>
+	<td>//div[contains(text(),'${key_entryName}')]/following-sibling::div[contains(@class,'item-actions')]//*</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_ITEMS_PER_PAGE_SELECT</td>
+	<td>//div[contains(@id,'${key_id}')]//../button[contains(@class,'dropdown-toggle btn btn-unstyled')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PAGINATION_RESULTS</td>
 	<td>//div[@class='pagination-results']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_RESULTS_BY_TABLE</td>
+	<td>//div[contains(@id,'${key_id}')]//../div[@class='pagination-results']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_NEXT_PAGES_BY_TABLE</td>
+	<td>//div[contains(@id,'${key_id}')]//a[contains(@class, 'page-link')][*[name()='svg'][contains(@class,'lexicon-icon-angle-right')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_PREVIOUS_PAGES_BY_TABLE</td>
+	<td>//div[contains(@id,'${key_id}')]//a[contains(@class, 'page-link')][*[name()='svg'][contains(@class,'lexicon-icon-angle-left')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_EXACT_PAGE_BY_TABLE</td>
+	<td>//div[contains(@id,'${key_id}')]//ul[contains(@class,'pagination')]//li[contains(@class,'page-item')]//*[contains(@class,'page-link')][normalize-space(text())='${key_pageNumber}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -641,8 +711,28 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ELIGIBILITY_CARD_TITLE</td>
+	<td>//div/h4[contains(.,'${key_eligibilityCardTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TABLE_ENTRY_ROW_NUMBER</td>
 	<td>//div[@class='dnd-tbody']/div[contains(@class,'dnd-tr')][${key_rowNumber}]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ENTRY_ROW_FIELD_GENERIC</td>
+	<td>//div[@class= 'dnd-tr'][${key_rowIndex}]//div[@class='dnd-td'][${key_columnIndex}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ENTRY_LABEL_FIELD</td>
+	<td>//*[contains(@class, 'table-list-title')]/a[text()='${key_entryTitle}']/../../../div[${key_index}]//span[text()='${key_label}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ENTRY_FIELD_VALUE</td>
+	<td>//*[contains(@class, 'table-list-title')]/a[text()='${key_entryTitle}']/../../../div[${key_index}][text()='${key_value}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -671,8 +761,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>TABLE_ENTRY_DELETE_BUTTON</td>
+	<td>//h4[contains(.,'${key_table}')]//..//div/a[contains(.,'${key_entryName}')]//..//..//../div/*[contains(.,'Delete')] | //div[contains(.,'${key_table}')]//div[@class='dnd-tr'][contains(.,'${key_entryName}')]//*[contains(text(),'Delete')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TABLE_ENTRY_EDIT_BUTTON</td>
-	<td>//h4[contains(.,'${key_table}')]//..//div/a[contains(.,'${key_entryName}')]//..//..//../div/a[contains(.,'Edit')] | //div[contains(.,'${key_table}')]//div[@class='dnd-tr'][contains(.,'${key_entryName}')]//a[contains(text(),'Edit')]</td>
+	<td>//h4[contains(.,'${key_table}')]//..//div/a[contains(.,'${key_entryName}')]//..//..//../div/*[contains(.,'Edit')] | //div[contains(.,'${key_table}')]//div[@class='dnd-tr'][contains(.,'${key_entryName}')]//*[contains(text(),'Edit')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ASSERT_TWO_COLUMNS_EDIT_BUTTON</td>
+	<td>//div[contains(@id,'${key_table}')]//div[1][@class='dnd-td' and contains(.,'${key_firstColumnValue}')]/../div[@class='dnd-td' and contains (.,'${key_secondColumnValue}')]/../div[contains(.,'Edit')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ASSERT_TWO_COLUMNS_ELLIPSIS</td>
+	<td>//div[contains(@id,'${key_table}')]//div[1][@class='dnd-td' and contains(.,'${key_firstColumnValue}')]/following::div[@class='dnd-td' and contains (.,'${key_secondColumnValue}')]/following::div[@class='dropdown']</td>
 	<td></td>
 </tr>
 <tr>
@@ -840,6 +945,11 @@
 	<td>//div[@class='side-panel-iframe-title']//h3</td>
 	<td></td>
 </tr>
+<tr>
+	<td>SPECIFIC_SIDE_PANEL_CLOSE_BUTTON</td>
+	<td>//div[contains(@class,'side-panel-iframe-title')][normalize-space()='${key_frameTitle}']/..//button[contains(@class,'side-panel-iframe-close')]</td>
+	<td></td>
+</tr>
 
 <!--PRICE-->
 
@@ -969,6 +1079,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PRODUCT_DETAIL_CARD_HEADER</td>
+	<td>//div[contains(@class,'card d-flex')]//h4[contains(.,'${key_cardName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PRODUCT_FULL_DESCRIPTION</td>
 	<td>//div/label[@class='control-label' and contains(.,'${key_customFieldName}')]/..//p</td>
 	<td></td>
@@ -996,6 +1111,11 @@
 <tr>
 	<td>SUBSCRIPTION_FIELD_LABEL</td>
 	<td>//h4[contains(text(), '${key_subscriptionName}')]/..//label[contains(.,'${key_subscriptionFieldLabel}')]/..//select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBSCRIPTION_FIELD_LABEL_N</td>
+	<td>xpath=(//h4[contains(text(), '${key_subscriptionName}')]/..//label[contains(.,'${key_subscriptionFieldLabel}')]/..//select)[${key_indexNumber}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -1044,6 +1164,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PRODUCT_ENTRY_BASED_ON_STATUS_ELLIPSIS</td>
+	<td>//span[contains(@class,'workflow-status')]//strong[contains(.,'${key_status}')]/../../../..//a[text()='${key_productName}']/../../..//button</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PRODUCT_ENTRY_BASED_ON_STATUS_WITH_ROW</td>
 	<td>xpath=((//strong[contains(.,'${key_status}')])[${key_row}]/../../../..//a[text()='${key_productName}'])</td>
 	<td></td>
@@ -1051,6 +1176,11 @@
 <tr>
 	<td>PRODUCT_STATUS_BASED_ON_PRODUCT_NAME_WITH_ROW</td>
 	<td>xpath=((//a[text()='${key_productName}'])[${key_row}]/../../..//strong[contains(.,'${key_status}')])</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_ENTRY_CHECKBOX</td>
+	<td>//a[text()='${key_productName}']/../../..//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 
@@ -1092,8 +1222,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>HEALTH_CHECK_ICON_CHECK_N</td>
-	<td>//div[contains(@class,'commerce-health-status-check-row-icon-check${key_value}')][not(contains(@class,'hide'))]</td>
+	<td>HEALTH_CHECK_ICON_CHECK_NAME</td>
+	<td>//tr/td[contains(@class,'lfr-name-column') and contains(.,'${key_value}')]//..//div[contains(@class,'commerce-health-status-check-row-icon-check')][not(contains(@class,'hide'))]</td>
 	<td></td>
 </tr>
 <tr>
@@ -1102,13 +1232,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FIRST_CURRENCY_ELEMENT</td>
-	<td>//tr[contains(@data-qa-id,'row')]//a[contains(text(),'${key_entryName}')] | //a[@id='_com_liferay_commerce_currency_web_internal_portlet_CommerceCurrencyPortlet_commerceCurrencies_1_menu']</td>
+	<td>ANY_CURRENCY_PRIORITY_ELEMENT</td>
+	<td>xpath=(//tr[contains(@data-qa-id,'row') and not(contains(@class, 'd-none'))])[${key_rowNumber}]//td//a[text()='${key_entryName}']//..//..//td[contains(@class,"lfr-priority-column")]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LAST_CURRENCY_ELEMENT</td>
-	<td>//tr[contains(@data-qa-id,'row')]//td//a[contains(text(),'${key_entryName}')]//..//..//a[contains(@id,'_commerceCurrencies_10')]</td>
+	<td>LAST_CURRENCY_PRIORITY_ELEMENT</td>
+	<td>xpath=(//tr[contains(@data-qa-id,'row') and not(contains(@class, 'd-none'))])[last()]//td//a[text()='${key_entryName}']//..//..//td[contains(@class,"lfr-priority-column")]</td>
 	<td></td>
 </tr>
 <tr>
@@ -1189,6 +1319,11 @@
 	<td>//a[contains(text(),'${key_itemName}')]//..//..//*[name()='svg'][contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td>WAREHOUSE_ACTIVE_STATUS</td>
+	<td>//div/a[contains(.,'${key_warehouseName}')]//..//..//..//div[(@class='dnd-td') and contains (.,'${key_activeStatus}')]</td>
+	<td></td>
+</tr>
 
 <!--VISIBILITY-->
 
@@ -1197,6 +1332,50 @@
 	<td>//h4[contains(.,"${key_name}")]//span[contains(@id,'toggle-switch')]//..//..//..//div[contains(@class,'collapse show')]</td>
 	<td></td>
 </tr>
+
+<!--SITEMAP-->
+
+<tr>
+	<td>CATEGORY_SITEMAP_URL</td>
+	<td>//*[text()='${key_basePortalURL}/web/minium/g/${key_categoryName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CATEGORY_SITEMAP_URL_HREF_HREFLANG</td>
+	<td>//*[text()='${key_basePortalURL}/web/minium/g/${key_categoryURLName}']/following-sibling::*[@href = '${key_basePortalURL}/web/minium/g/${key_categoryName}'][@hreflang='${key_categoryNameLang}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CATEGORY_LANGUAGE_SITEMAP_URL</td>
+	<td>//*[text()='${key_basePortalURL}/${key_language}/web/minium/g/${key_categoryName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CATEGORY_LANGUAGE_SITEMAP_URL_HREF_HREFLANG</td>
+	<td>//*[text()='${key_basePortalURL}/${key_language}/web/minium/g/${key_categoryURLName}']/following-sibling::*[@href = '${key_basePortalURL}/${key_language}/web/minium/g/${key_categoryName}'][@hreflang='${key_categoryNameLang}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_LANGUAGE_DETAIL_SITEMAP_URL</td>
+	<td>//*[text()='${key_basePortalURL}/${key_language}/web/minium/p/${key_productName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_LANGUAGE_DETAIL_SITEMAP_URL_HREF_HREFLANG</td>
+	<td>//*[text()='${key_basePortalURL}/${key_language}/web/minium/p/${key_productURLName}']/following-sibling::*[@href = '${key_basePortalURL}/${key_language}/web/minium/p/${key_productName}'][@hreflang='${key_productNameLang}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_DETAIL_SITEMAP_URL</td>
+	<td>//*[text()='${key_basePortalURL}/web/minium/p/${key_productName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_DETAIL_SITEMAP_URL_HREF_HREFLANG</td>
+	<td>//*[text()='${key_basePortalURL}/web/minium/p/${key_productURLName}']/following-sibling::*[@href = '${key_basePortalURL}/web/minium/p/${key_productName}'][@hreflang='${key_productNameLang}']</td>
+	<td></td>
+</tr>
+
 </tbody>
 </table>
 </body>

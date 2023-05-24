@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -275,48 +273,21 @@ public abstract class OAuth2ApplicationLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the o auth2 application with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the o auth2 application's external reference code
-	 * @return the matching o auth2 application, or <code>null</code> if a matching o auth2 application could not be found
-	 */
 	@Override
 	public OAuth2Application fetchOAuth2ApplicationByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return oAuth2ApplicationPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return oAuth2ApplicationPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchOAuth2ApplicationByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public OAuth2Application fetchOAuth2ApplicationByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchOAuth2ApplicationByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the o auth2 application with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the o auth2 application's external reference code
-	 * @return the matching o auth2 application
-	 * @throws PortalException if a matching o auth2 application could not be found
-	 */
 	@Override
 	public OAuth2Application getOAuth2ApplicationByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return oAuth2ApplicationPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return oAuth2ApplicationPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -550,7 +521,7 @@ public abstract class OAuth2ApplicationLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		OAuth2ApplicationLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -565,7 +536,8 @@ public abstract class OAuth2ApplicationLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		oAuth2ApplicationLocalService = (OAuth2ApplicationLocalService)aopProxy;
 
-		_setLocalServiceUtilService(oAuth2ApplicationLocalService);
+		OAuth2ApplicationLocalServiceUtil.setService(
+			oAuth2ApplicationLocalService);
 	}
 
 	/**
@@ -608,23 +580,6 @@ public abstract class OAuth2ApplicationLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		OAuth2ApplicationLocalService oAuth2ApplicationLocalService) {
-
-		try {
-			Field field =
-				OAuth2ApplicationLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, oAuth2ApplicationLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

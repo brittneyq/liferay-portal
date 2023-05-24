@@ -216,53 +216,70 @@ public class AccountRoleModelImpl
 	public Map<String, Function<AccountRole, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<AccountRole, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<AccountRole, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<AccountRole, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<AccountRole, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<AccountRole, Object>>();
-		Map<String, BiConsumer<AccountRole, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<AccountRole, ?>>();
+		private static final Map<String, Function<AccountRole, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", AccountRole::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<AccountRole, Long>)AccountRole::setMvccVersion);
-		attributeGetterFunctions.put(
-			"accountRoleId", AccountRole::getAccountRoleId);
-		attributeSetterBiConsumers.put(
-			"accountRoleId",
-			(BiConsumer<AccountRole, Long>)AccountRole::setAccountRoleId);
-		attributeGetterFunctions.put("companyId", AccountRole::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<AccountRole, Long>)AccountRole::setCompanyId);
-		attributeGetterFunctions.put(
-			"accountEntryId", AccountRole::getAccountEntryId);
-		attributeSetterBiConsumers.put(
-			"accountEntryId",
-			(BiConsumer<AccountRole, Long>)AccountRole::setAccountEntryId);
-		attributeGetterFunctions.put("roleId", AccountRole::getRoleId);
-		attributeSetterBiConsumers.put(
-			"roleId", (BiConsumer<AccountRole, Long>)AccountRole::setRoleId);
+		static {
+			Map<String, Function<AccountRole, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap<String, Function<AccountRole, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", AccountRole::getMvccVersion);
+			attributeGetterFunctions.put(
+				"accountRoleId", AccountRole::getAccountRoleId);
+			attributeGetterFunctions.put(
+				"companyId", AccountRole::getCompanyId);
+			attributeGetterFunctions.put(
+				"accountEntryId", AccountRole::getAccountEntryId);
+			attributeGetterFunctions.put("roleId", AccountRole::getRoleId);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<AccountRole, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<AccountRole, ?>> attributeSetterBiConsumers =
+				new LinkedHashMap<String, BiConsumer<AccountRole, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<AccountRole, Long>)AccountRole::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"accountRoleId",
+				(BiConsumer<AccountRole, Long>)AccountRole::setAccountRoleId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<AccountRole, Long>)AccountRole::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"accountEntryId",
+				(BiConsumer<AccountRole, Long>)AccountRole::setAccountEntryId);
+			attributeSetterBiConsumers.put(
+				"roleId",
+				(BiConsumer<AccountRole, Long>)AccountRole::setRoleId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -587,37 +604,6 @@ public class AccountRoleModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<AccountRole, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<AccountRole, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<AccountRole, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((AccountRole)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, AccountRole>
@@ -634,8 +620,9 @@ public class AccountRoleModelImpl
 	private long _roleId;
 
 	public <T> T getColumnValue(String columnName) {
-		Function<AccountRole, Object> function = _attributeGetterFunctions.get(
-			columnName);
+		Function<AccountRole, Object> function =
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

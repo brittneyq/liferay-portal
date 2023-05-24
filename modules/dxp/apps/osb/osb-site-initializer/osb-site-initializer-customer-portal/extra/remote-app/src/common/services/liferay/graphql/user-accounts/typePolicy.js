@@ -9,19 +9,59 @@
  * distribution rights of the Software.
  */
 
+import {Liferay} from '../..';
+import isAccountAdministrator from '../../../../utils/isAccountAdministrator';
+import isSupportSeatRole from '../../../../utils/isSupportSeatRole';
+
 export const userAccountsTypePolicy = {
 	AccountBrief: {
-		keyFields: ['externalReferenceCode'],
+		keyFields: false,
 	},
 	OrganizationBrief: {
-		keyFields: ['id'],
+		keyFields: false,
 	},
 	RoleBrief: {
+		fields: {
+			name: {
+				read(name) {
+					if (name === 'Account Member') {
+						return 'User';
+					}
+
+					if (name === 'Account Administrator') {
+						return 'Administrator';
+					}
+
+					return name;
+				},
+			},
+		},
 		keyFields: ['id'],
 	},
 	UserAccount: {
 		fields: {
-			hasProvisioningRole: {
+			dateCreated: {
+				read(dateCreated) {
+					return new Date(dateCreated);
+				},
+			},
+			isLiferayStaff: {
+				read(_, {readField}) {
+					return !!readField('organizationBriefs').some(
+						(organizationBrief) =>
+							readField('name', organizationBrief) ===
+							'Liferay Staff'
+					);
+				},
+			},
+			isLoggedUser: {
+				read(_, {readField}) {
+					return (
+						readField('id') === +Liferay.ThemeDisplay.getUserId()
+					);
+				},
+			},
+			isProvisioning: {
 				read(_, {readField}) {
 					return !!readField('roleBriefs')?.some(
 						(roleBrief) =>
@@ -29,65 +69,35 @@ export const userAccountsTypePolicy = {
 					);
 				},
 			},
-			isLiferayStaff: {
-				read(_, {readField}) {
-					return !!readField('organizationBriefs')?.some(
-						(organizationBrief) =>
-							readField('name', organizationBrief) ===
-							'Liferay Staff'
-					);
-				},
-			},
-			selectedAccountBrief: {
-				read(_, {args, readField, toReference}) {
-					const accountKey = args?.accountKey;
-
-					if (!accountKey) {
-						return null;
-					}
-
+			selectedAccountSummary: {
+				read(_, {readField, variables: {externalReferenceCode}}) {
 					const accountBriefRef = readField('accountBriefs')?.find(
 						(accountBrief) =>
 							readField('externalReferenceCode', accountBrief) ===
-							accountKey
+							externalReferenceCode
 					);
 
-					if (accountBriefRef) {
-						const hasAccountAdministratorRole = !!readField(
-							'roleBriefs',
-							accountBriefRef
-						)?.find(
-							(roleBrief) =>
-								readField('name', roleBrief) ===
-								'Account Administrator'
-						);
+					const roleBriefs = readField(
+						'roleBriefs',
+						accountBriefRef
+					).map((roleBrief) => ({
+						id: readField('id', roleBrief),
+						name: readField('name', roleBrief),
+					}));
 
-						return {
-							externalReferenceCode: accountKey,
-							hasAccountAdministratorRole,
-							id: readField('id', accountBriefRef),
-							name: readField('name', accountBriefRef),
-						};
-					}
+					const hasAdministratorRole = roleBriefs.some(({name}) =>
+						isAccountAdministrator(name)
+					);
 
-					if (readField('isLiferayStaff')) {
-						const accountRef = toReference({
-							__typename:
-								'com_liferay_headless_admin_user_dto_v1_0_Account',
-							externalReferenceCode: accountKey,
-						});
+					const hasSupportSeatRole = roleBriefs.some(({name}) =>
+						isSupportSeatRole(name)
+					);
 
-						if (accountRef) {
-							return {
-								externalReferenceCode: accountKey,
-								hasAccountAdministratorRole: false,
-								id: readField('id', accountRef),
-								name: readField('name', accountRef),
-							};
-						}
-					}
-
-					return null;
+					return {
+						hasAdministratorRole,
+						hasSupportSeatRole,
+						roleBriefs,
+					};
 				},
 			},
 		},

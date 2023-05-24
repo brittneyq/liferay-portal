@@ -14,11 +14,10 @@
 
 package com.liferay.journal.internal.search;
 
-import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
+import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -48,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lucas Marques de Paula
  */
 @Component(
-	immediate = true,
 	property = "ddm.structure.indexer.class.name=com.liferay.journal.model.JournalArticle",
 	service = DDMStructureIndexer.class
 )
@@ -66,17 +64,6 @@ public class JournalArticleDDMStructureIndexer implements DDMStructureIndexer {
 				!indexer.isIndexerEnabled()) {
 
 				return;
-			}
-
-			String[] ddmStructureKeys = new String[ddmStructureIds.size()];
-
-			for (int i = 0; i < ddmStructureIds.size(); i++) {
-				long ddmStructureId = ddmStructureIds.get(i);
-
-				DDMStructure ddmStructure =
-					ddmStructureLocalService.getDDMStructure(ddmStructureId);
-
-				ddmStructureKeys[i] = ddmStructure.getStructureKey();
 			}
 
 			ActionableDynamicQuery actionableDynamicQuery =
@@ -103,11 +90,11 @@ public class JournalArticleDDMStructureIndexer implements DDMStructureIndexer {
 						RestrictionsFactoryUtil.eqProperty(
 							"journalArticle.groupId", "this.groupId"));
 
-					Property ddmStructureKey = PropertyFactoryUtil.forName(
-						"DDMStructureKey");
+					Property ddmStructureIdProperty =
+						PropertyFactoryUtil.forName("DDMStructureId");
 
 					journalArticleDynamicQuery.add(
-						ddmStructureKey.in(ddmStructureKeys));
+						ddmStructureIdProperty.in(ddmStructureIds));
 
 					if (!isIndexAllArticleVersions()) {
 						Property statusProperty = PropertyFactoryUtil.forName(
@@ -128,11 +115,13 @@ public class JournalArticleDDMStructureIndexer implements DDMStructureIndexer {
 						resourcePrimKeyProperty.in(journalArticleDynamicQuery));
 				});
 			actionableDynamicQuery.setPerformActionMethod(
-				(JournalArticleResource article) -> {
+				(JournalArticleResource journalArticleResource) -> {
+					JournalArticle journalArticle =
+						_journalArticleLocalService.fetchLatestArticle(
+							journalArticleResource.getResourcePrimKey());
+
 					try {
-						indexer.reindex(
-							indexer.getClassName(),
-							article.getResourcePrimKey());
+						indexer.reindex(journalArticle);
 					}
 					catch (Exception exception) {
 						throw new PortalException(exception);
@@ -168,9 +157,6 @@ public class JournalArticleDDMStructureIndexer implements DDMStructureIndexer {
 	protected ConfigurationProvider configurationProvider;
 
 	@Reference
-	protected DDMStructureLocalService ddmStructureLocalService;
-
-	@Reference
 	protected IndexerRegistry indexerRegistry;
 
 	@Reference
@@ -182,5 +168,8 @@ public class JournalArticleDDMStructureIndexer implements DDMStructureIndexer {
 
 	@Reference
 	private IndexStatusManager _indexStatusManager;
+
+	@Reference
+	private JournalArticleLocalService _journalArticleLocalService;
 
 }

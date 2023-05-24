@@ -27,7 +27,7 @@ import com.liferay.commerce.product.content.web.internal.util.CPQueryRule;
 import com.liferay.commerce.product.data.source.CPDataSourceRegistry;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPDefinitionService;
-import com.liferay.commerce.product.type.CPTypeServicesTracker;
+import com.liferay.commerce.product.type.CPTypeRegistry;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
 import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.item.selector.ItemSelector;
@@ -62,7 +62,6 @@ import javax.portlet.PortletConfig;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
@@ -72,7 +71,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "javax.portlet.name=" + CPPortletKeys.CP_PUBLISHER_WEB,
 	service = ConfigurationAction.class
 )
@@ -88,7 +86,7 @@ public class CPPublisherConfigurationAction extends DefaultConfigurationAction {
 						_cpContentListEntryRendererRegistry,
 						_cpContentListRendererRegistry, _cpDataSourceRegistry,
 						_cpDefinitionHelper, _cpInstanceHelper,
-						_cpPublisherWebHelper, _cpTypeServicesTracker,
+						_cpPublisherWebHelper, _cpTypeRegistry,
 						httpServletRequest, _itemSelector);
 
 			httpServletRequest.setAttribute(
@@ -188,15 +186,6 @@ public class CPPublisherConfigurationAction extends DefaultConfigurationAction {
 		if (Validator.isNotNull(redirect)) {
 			actionResponse.sendRedirect(redirect);
 		}
-	}
-
-	@Override
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.commerce.product.content.web)",
-		unbind = "-"
-	)
-	public void setServletContext(ServletContext servletContext) {
-		super.setServletContext(servletContext);
 	}
 
 	private void _addSelection(
@@ -504,7 +493,7 @@ public class CPPublisherConfigurationAction extends DefaultConfigurationAction {
 	private CPPublisherWebHelper _cpPublisherWebHelper;
 
 	@Reference
-	private CPTypeServicesTracker _cpTypeServicesTracker;
+	private CPTypeRegistry _cpTypeRegistry;
 
 	@Reference
 	private ItemSelector _itemSelector;

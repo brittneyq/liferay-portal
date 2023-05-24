@@ -77,6 +77,15 @@ public class CommerceChannelAccountEntryRelServiceUtil {
 			accountEntryId, commerceChannelId, type);
 	}
 
+	public static CommerceChannelAccountEntryRel
+			getCommerceChannelAccountEntryRel(
+				long commerceChannelAccountEntryRelId)
+		throws PortalException {
+
+		return getService().getCommerceChannelAccountEntryRel(
+			commerceChannelAccountEntryRelId);
+	}
+
 	public static List<CommerceChannelAccountEntryRel>
 			getCommerceChannelAccountEntryRels(
 				long accountEntryId, int type, int start, int end,
@@ -86,6 +95,14 @@ public class CommerceChannelAccountEntryRelServiceUtil {
 
 		return getService().getCommerceChannelAccountEntryRels(
 			accountEntryId, type, start, end, orderByComparator);
+	}
+
+	public static List<CommerceChannelAccountEntryRel>
+		getCommerceChannelAccountEntryRels(
+			String className, long classPK, long commerceChannelId, int type) {
+
+		return getService().getCommerceChannelAccountEntryRels(
+			className, classPK, commerceChannelId, type);
 	}
 
 	public static int getCommerceChannelAccountEntryRelsCount(
@@ -118,6 +135,12 @@ public class CommerceChannelAccountEntryRelServiceUtil {
 
 	public static CommerceChannelAccountEntryRelService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		CommerceChannelAccountEntryRelService service) {
+
+		_service = service;
 	}
 
 	private static volatile CommerceChannelAccountEntryRelService _service;

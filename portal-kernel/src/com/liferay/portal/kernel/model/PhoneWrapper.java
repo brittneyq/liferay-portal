@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -42,6 +44,7 @@ public class PhoneWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("phoneId", getPhoneId());
 		attributes.put("companyId", getCompanyId());
@@ -53,7 +56,7 @@ public class PhoneWrapper
 		attributes.put("classPK", getClassPK());
 		attributes.put("number", getNumber());
 		attributes.put("extension", getExtension());
-		attributes.put("typeId", getTypeId());
+		attributes.put("listTypeId", getListTypeId());
 		attributes.put("primary", isPrimary());
 
 		return attributes;
@@ -65,6 +68,12 @@ public class PhoneWrapper
 
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
 		}
 
 		String uuid = (String)attributes.get("uuid");
@@ -133,10 +142,10 @@ public class PhoneWrapper
 			setExtension(extension);
 		}
 
-		Long typeId = (Long)attributes.get("typeId");
+		Long listTypeId = (Long)attributes.get("listTypeId");
 
-		if (typeId != null) {
-			setTypeId(typeId);
+		if (listTypeId != null) {
+			setListTypeId(listTypeId);
 		}
 
 		Boolean primary = (Boolean)attributes.get("primary");
@@ -202,6 +211,16 @@ public class PhoneWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this phone.
+	 *
+	 * @return the ct collection ID of this phone
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the extension of this phone.
 	 *
 	 * @return the extension of this phone
@@ -209,6 +228,23 @@ public class PhoneWrapper
 	@Override
 	public String getExtension() {
 		return model.getExtension();
+	}
+
+	@Override
+	public ListType getListType()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getListType();
+	}
+
+	/**
+	 * Returns the list type ID of this phone.
+	 *
+	 * @return the list type ID of this phone
+	 */
+	@Override
+	public long getListTypeId() {
+		return model.getListTypeId();
 	}
 
 	/**
@@ -269,23 +305,6 @@ public class PhoneWrapper
 	@Override
 	public long getPrimaryKey() {
 		return model.getPrimaryKey();
-	}
-
-	@Override
-	public ListType getType()
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return model.getType();
-	}
-
-	/**
-	 * Returns the type ID of this phone.
-	 *
-	 * @return the type ID of this phone
-	 */
-	@Override
-	public long getTypeId() {
-		return model.getTypeId();
 	}
 
 	/**
@@ -389,6 +408,16 @@ public class PhoneWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this phone.
+	 *
+	 * @param ctCollectionId the ct collection ID of this phone
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the extension of this phone.
 	 *
 	 * @param extension the extension of this phone
@@ -396,6 +425,16 @@ public class PhoneWrapper
 	@Override
 	public void setExtension(String extension) {
 		model.setExtension(extension);
+	}
+
+	/**
+	 * Sets the list type ID of this phone.
+	 *
+	 * @param listTypeId the list type ID of this phone
+	 */
+	@Override
+	public void setListTypeId(long listTypeId) {
+		model.setListTypeId(listTypeId);
 	}
 
 	/**
@@ -459,16 +498,6 @@ public class PhoneWrapper
 	}
 
 	/**
-	 * Sets the type ID of this phone.
-	 *
-	 * @param typeId the type ID of this phone
-	 */
-	@Override
-	public void setTypeId(long typeId) {
-		model.setTypeId(typeId);
-	}
-
-	/**
 	 * Sets the user ID of this phone.
 	 *
 	 * @param userId the user ID of this phone
@@ -506,6 +535,23 @@ public class PhoneWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
+	}
+
+	@Override
+	public Map<String, Function<Phone, Object>> getAttributeGetterFunctions() {
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<Phone, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

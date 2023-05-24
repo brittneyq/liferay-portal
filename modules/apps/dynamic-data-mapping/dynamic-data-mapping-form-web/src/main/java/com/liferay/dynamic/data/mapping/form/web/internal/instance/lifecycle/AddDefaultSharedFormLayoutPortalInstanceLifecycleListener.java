@@ -47,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Leonardo Barros
  */
 @Component(
-	immediate = true,
 	service = {
 		AddDefaultSharedFormLayoutPortalInstanceLifecycleListener.class,
 		PortalInstanceLifecycleListener.class
@@ -100,43 +99,9 @@ public class AddDefaultSharedFormLayoutPortalInstanceLifecycleListener
 		_verifyLayout(privateLayout);
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setLayoutLocalService(
-		LayoutLocalService layoutLocalService) {
-
-		_layoutLocalService = layoutLocalService;
-	}
-
-	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
-	protected void setModuleServiceLifecycle(
-		ModuleServiceLifecycle moduleServiceLifecycle) {
-	}
-
-	@Reference(unbind = "-")
-	protected void setResourcePermissionLocalService(
-		ResourcePermissionLocalService resourcePermissionLocalService) {
-
-		_resourcePermissionLocalService = resourcePermissionLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setRoleLocalService(RoleLocalService roleLocalService) {
-		_roleLocalService = roleLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setUserLocalService(UserLocalService userLocalService) {
-		_userLocalService = userLocalService;
-	}
-
 	private Group _addFormsGroup(long companyId) throws Exception {
 		return _groupLocalService.addGroup(
-			_userLocalService.getDefaultUserId(companyId),
+			_userLocalService.getGuestUserId(companyId),
 			GroupConstants.DEFAULT_PARENT_GROUP_ID, null, 0,
 			GroupConstants.DEFAULT_LIVE_GROUP_ID,
 			HashMapBuilder.put(
@@ -159,12 +124,12 @@ public class AddDefaultSharedFormLayoutPortalInstanceLifecycleListener
 		serviceContext.setAttribute("layoutUpdateable", Boolean.FALSE);
 		serviceContext.setScopeGroupId(groupId);
 
-		long defaultUserId = _userLocalService.getDefaultUserId(companyId);
+		long guestUserId = _userLocalService.getGuestUserId(companyId);
 
-		serviceContext.setUserId(defaultUserId);
+		serviceContext.setUserId(guestUserId);
 
 		Layout layout = _layoutLocalService.addLayout(
-			defaultUserId, groupId, true,
+			guestUserId, groupId, true,
 			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, "Shared",
 			StringPool.BLANK, StringPool.BLANK,
 			DDMFormPortletLayoutTypeConstants.LAYOUT_TYPE, true, "/shared",
@@ -187,12 +152,12 @@ public class AddDefaultSharedFormLayoutPortalInstanceLifecycleListener
 		serviceContext.setAttribute("layoutUpdateable", Boolean.FALSE);
 		serviceContext.setScopeGroupId(groupId);
 
-		long defaultUserId = _userLocalService.getDefaultUserId(companyId);
+		long guestUserId = _userLocalService.getGuestUserId(companyId);
 
-		serviceContext.setUserId(defaultUserId);
+		serviceContext.setUserId(guestUserId);
 
 		return _layoutLocalService.addLayout(
-			defaultUserId, groupId, false,
+			guestUserId, groupId, false,
 			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, "Shared",
 			StringPool.BLANK, StringPool.BLANK,
 			DDMFormPortletLayoutTypeConstants.LAYOUT_TYPE, true, "/shared",
@@ -204,6 +169,15 @@ public class AddDefaultSharedFormLayoutPortalInstanceLifecycleListener
 		throws Exception {
 
 		Role role = _roleLocalService.getRole(companyId, RoleConstants.USER);
+
+		if (_resourcePermissionLocalService.hasResourcePermission(
+				role.getCompanyId(), Layout.class.getName(),
+				ResourceConstants.SCOPE_COMPANY,
+				String.valueOf(layout.getCompanyId()), role.getRoleId(),
+				ActionKeys.VIEW)) {
+
+			return;
+		}
 
 		_resourcePermissionLocalService.addResourcePermission(
 			role.getCompanyId(), Layout.class.getName(),
@@ -224,10 +198,22 @@ public class AddDefaultSharedFormLayoutPortalInstanceLifecycleListener
 		_layoutLocalService.updateLayout(layout);
 	}
 
+	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
+	private ModuleServiceLifecycle _moduleServiceLifecycle;
+
+	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;
+
+	@Reference
 	private RoleLocalService _roleLocalService;
+
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

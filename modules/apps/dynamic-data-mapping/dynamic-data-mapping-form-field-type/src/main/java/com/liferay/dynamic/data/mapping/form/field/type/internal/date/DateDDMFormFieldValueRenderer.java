@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DecimalStyle;
 
 import java.util.Locale;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,14 +43,11 @@ import org.osgi.service.component.annotations.Component;
  * @author Bruno Basto
  */
 @Component(
-	immediate = true,
 	property = {
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE,
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE_TIME
 	},
-	service = {
-		DateDDMFormFieldValueRenderer.class, DDMFormFieldValueRenderer.class
-	}
+	service = DDMFormFieldValueRenderer.class
 )
 public class DateDDMFormFieldValueRenderer
 	implements DDMFormFieldValueRenderer {
@@ -68,11 +64,11 @@ public class DateDDMFormFieldValueRenderer
 			return StringPool.BLANK;
 		}
 
-		Locale locale = Optional.ofNullable(
-			LocaleThreadLocal.getThemeDisplayLocale()
-		).orElse(
-			defaultLocale
-		);
+		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+
+		if (locale == null) {
+			locale = defaultLocale;
+		}
 
 		SimpleDateFormat simpleDateFormat = null;
 

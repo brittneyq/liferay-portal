@@ -37,10 +37,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false, immediate = true,
-	service = InfoItemFieldValuesProvider.class
-)
+@Component(service = InfoItemFieldValuesProvider.class)
 public class CPDefinitionSpecificationOptionValueInfoItemFieldValuesProvider
 	implements InfoItemFieldValuesProvider
 		<CPDefinitionSpecificationOptionValue> {
@@ -78,57 +75,58 @@ public class CPDefinitionSpecificationOptionValueInfoItemFieldValuesProvider
 			CPDefinitionSpecificationOptionValue
 				cpDefinitionSpecificationOptionValue) {
 
-		List<InfoFieldValue<Object>> cpDefinitionInfoFieldValues =
-			new ArrayList<>();
+		List<InfoFieldValue<Object>>
+			cpDefinitionSpecificationOptionValueInfoFieldValues =
+				new ArrayList<>();
 
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					companyIdInfoField,
 				cpDefinitionSpecificationOptionValue.getCompanyId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					cpDefinitionIdInfoField,
 				cpDefinitionSpecificationOptionValue.getCPDefinitionId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					cpDefinitionSpecificationOptionValueIdInfoField,
 				cpDefinitionSpecificationOptionValue.
 					getCPDefinitionSpecificationOptionValueId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					cpOptionCategoryIdInfoField,
 				cpDefinitionSpecificationOptionValue.getCPOptionCategoryId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					cpSpecificationOptionIdInfoField,
 				cpDefinitionSpecificationOptionValue.
 					getCPSpecificationOptionId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					createDateInfoField,
 				cpDefinitionSpecificationOptionValue.getCreateDate()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					defaultLanguageIdInfoField,
 				cpDefinitionSpecificationOptionValue.getDefaultLanguageId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					groupIdInfoField,
 				cpDefinitionSpecificationOptionValue.getGroupId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					lastPublishDateInfoField,
 				cpDefinitionSpecificationOptionValue.getLastPublishDate()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					modifiedDateInfoField,
@@ -140,7 +138,7 @@ public class CPDefinitionSpecificationOptionValueInfoItemFieldValuesProvider
 					getCPSpecificationOptionId());
 
 		if (cpSpecificationOption != null) {
-			cpDefinitionInfoFieldValues.add(
+			cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 				new InfoFieldValue<>(
 					CPDefinitionSpecificationOptionValueInfoItemFields.
 						nameInfoField,
@@ -154,37 +152,37 @@ public class CPDefinitionSpecificationOptionValueInfoItemFieldValuesProvider
 					).build()));
 		}
 
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					priorityInfoField,
 				cpDefinitionSpecificationOptionValue.getPriority()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					stagedModelTypeInfoField,
 				cpDefinitionSpecificationOptionValue.getStagedModelType()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					userIdInfoField,
 				cpDefinitionSpecificationOptionValue.getUserId()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					userNameInfoField,
 				cpDefinitionSpecificationOptionValue.getUserName()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					userUuidInfoField,
 				cpDefinitionSpecificationOptionValue.getUserUuid()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					uuidInfoField,
 				cpDefinitionSpecificationOptionValue.getUuid()));
-		cpDefinitionInfoFieldValues.add(
+		cpDefinitionSpecificationOptionValueInfoFieldValues.add(
 			new InfoFieldValue<>(
 				CPDefinitionSpecificationOptionValueInfoItemFields.
 					valueInfoField,
@@ -197,7 +195,7 @@ public class CPDefinitionSpecificationOptionValueInfoItemFieldValuesProvider
 					cpDefinitionSpecificationOptionValue.getValueMap()
 				).build()));
 
-		return cpDefinitionInfoFieldValues;
+		return cpDefinitionSpecificationOptionValueInfoFieldValues;
 	}
 
 	@Reference

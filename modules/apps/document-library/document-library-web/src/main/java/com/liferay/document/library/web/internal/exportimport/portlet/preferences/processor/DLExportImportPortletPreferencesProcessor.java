@@ -38,7 +38,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -147,7 +147,9 @@ public class DLExportImportPortletPreferencesProcessor
 		if (!_exportImportHelper.isExportPortletData(portletDataContext) ||
 			(selectedRepositoryId != portletDataContext.getGroupId())) {
 
-			if (ExportImportThreadLocal.isStagingInProcess()) {
+			if (ExportImportThreadLocal.isStagingInProcess() &&
+				(selectedRepositoryId > 0)) {
+
 				_saveStagingPreferencesMapping(
 					selectedRepositoryId, null, portletDataContext);
 			}
@@ -505,8 +507,7 @@ public class DLExportImportPortletPreferencesProcessor
 				return null;
 			}
 
-			return JSONFactoryUtil.createJSONObject(
-				stagingPreferencesMappingJSON);
+			return _jsonFactory.createJSONObject(stagingPreferencesMappingJSON);
 		}
 		catch (JSONException jsonException) {
 			throw new PortletDataException(jsonException);
@@ -591,9 +592,10 @@ public class DLExportImportPortletPreferencesProcessor
 	@Reference
 	private DLAppLocalService _dlAppLocalService;
 
-	@Reference
-	private DLCommentsAndRatingsExporterImporterCapability
-		_dlCommentsAndRatingsExporterImporterCapability;
+	@Reference(
+		target = "(component.name=com.liferay.document.library.web.internal.exportimport.portlet.preferences.processor.DLCommentsAndRatingsExporterImporterCapability)"
+	)
+	private Capability _dlCommentsAndRatingsExporterImporterCapability;
 
 	@Reference
 	private DLFolderLocalService _dlFolderLocalService;
@@ -614,5 +616,8 @@ public class DLExportImportPortletPreferencesProcessor
 
 	@Reference(target = "(name=PortletDisplayTemplateImporter)")
 	private Capability _importCapability;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }

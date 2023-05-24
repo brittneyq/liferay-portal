@@ -44,13 +44,13 @@ import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.ClearThreadLocalUtil;
 import com.liferay.portal.kernel.util.ClearTimerThreadUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.ModuleFrameworkPropsValues;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalLifecycleUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.log4j.Log4JUtil;
 import com.liferay.portal.module.framework.ModuleFrameworkUtil;
 import com.liferay.portal.spring.aop.DynamicProxyCreator;
-import com.liferay.portal.spring.compat.CompatBeanDefinitionRegistryPostProcessor;
 import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
 import com.liferay.portal.spring.override.OverrideBeanDefinitionRegistryPostProcessor;
 import com.liferay.portal.tools.DBUpgrader;
@@ -147,13 +147,15 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			_log.error(exception);
 		}
 
-		closeDataSource("counterDataSource");
-
 		closeDataSource("liferayDataSource");
 
 		super.contextDestroyed(servletContextEvent);
 
 		_cleanUpJDBCDrivers();
+
+		ModuleFrameworkUtil.unregisterContext(_arrayApplicationContext);
+
+		_arrayApplicationContext.close();
 
 		try {
 			ModuleFrameworkUtil.stopFramework(
@@ -162,10 +164,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		catch (Exception exception) {
 			_log.error(exception);
 		}
-
-		ModuleFrameworkUtil.unregisterContext(_arrayApplicationContext);
-
-		_arrayApplicationContext.close();
 
 		ClassLoaderPool.unregister(_portalServletContextName);
 		ServletContextClassLoaderPool.unregister(_portalServletContextName);
@@ -264,7 +262,9 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 		FutureTask<Void> springInitTask = null;
 
-		if (PropsValues.MODULE_FRAMEWORK_CONCURRENT_STARTUP_ENABLED) {
+		if (ModuleFrameworkPropsValues.
+				MODULE_FRAMEWORK_CONCURRENT_STARTUP_ENABLED) {
+
 			springInitTask = new FutureTask<>(
 				() -> {
 					super.contextInitialized(servletContextEvent);
@@ -408,9 +408,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 		configurableApplicationContextConfigurator.configure(
 			configurableWebApplicationContext);
-
-		configurableWebApplicationContext.addBeanFactoryPostProcessor(
-			new CompatBeanDefinitionRegistryPostProcessor());
 
 		Properties properties = PropsUtil.getProperties("spring.bean.", true);
 

@@ -62,7 +62,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Raymond Augé
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + SocialActivitiesPortletKeys.SOCIAL_ACTIVITIES,
 		"mvc.command.name=/social_activities/rss"
@@ -178,6 +177,8 @@ public class RSSMVCResourceCommand extends BaseRSSMVCResourceCommand {
 				new Date(socialActivitySet.getCreateDate()));
 			syndEntry.setTitle(
 				_htmlParser.extractText(socialActivityFeedEntry.getTitle()));
+			syndEntry.setUpdatedDate(
+				new Date(socialActivitySet.getModifiedDate()));
 			syndEntry.setUri(socialActivityFeedEntry.getLink());
 
 			syndEntries.add(syndEntry);

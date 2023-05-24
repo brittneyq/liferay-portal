@@ -102,19 +102,6 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 							title='<%= LanguageUtil.get(request, "view") %>'
 						/>
 					</li>
-
-					<c:if test="<%= contentPageEditorDisplayContext.isContentLayout() %>">
-						<li class="nav-item">
-							<clay:button
-								disabled="<%= true %>"
-								displayType="secondary"
-								icon="page-template"
-								monospaced="<%= true %>"
-								small="<%= true %>"
-								title='<%= LanguageUtil.get(request, "create-page-template") %>'
-							/>
-						</li>
-					</c:if>
 				</ul>
 			</li>
 
@@ -145,7 +132,7 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 							<liferay-ui:message key="save-variant" />
 						</c:when>
 						<c:when test="<%= contentPageEditorDisplayContext.isWorkflowEnabled() %>">
-							<liferay-ui:message key="submit-for-publication" />
+							<liferay-ui:message key="submit-for-workflow" />
 						</c:when>
 						<c:otherwise>
 							<liferay-ui:message key="publish" />

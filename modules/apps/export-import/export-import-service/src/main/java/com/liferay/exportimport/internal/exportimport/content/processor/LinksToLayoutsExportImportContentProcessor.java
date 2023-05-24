@@ -50,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Gergely Mathe
  */
 @Component(
-	immediate = true, property = "content.processor.type=LinksToLayouts",
+	property = "content.processor.type=LinksToLayouts",
 	service = ExportImportContentProcessor.class
 )
 public class LinksToLayoutsExportImportContentProcessor
@@ -87,12 +87,12 @@ public class LinksToLayoutsExportImportContentProcessor
 
 	private boolean _isValidateLinksToLayoutsReferences() {
 		try {
-			ExportImportServiceConfiguration configuration =
+			ExportImportServiceConfiguration exportImportServiceConfiguration =
 				_configurationProvider.getCompanyConfiguration(
 					ExportImportServiceConfiguration.class,
 					CompanyThreadLocal.getCompanyId());
 
-			return configuration.validateLayoutReferences();
+			return exportImportServiceConfiguration.validateLayoutReferences();
 		}
 		catch (Exception exception) {
 			_log.error(exception);

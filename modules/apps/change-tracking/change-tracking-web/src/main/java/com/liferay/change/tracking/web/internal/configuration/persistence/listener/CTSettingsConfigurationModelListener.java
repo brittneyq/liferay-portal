@@ -48,7 +48,6 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * @author David Truong
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.change.tracking.configuration.CTSettingsConfiguration",
 	service = ConfigurationModelListener.class
 )
@@ -121,11 +120,16 @@ public class CTSettingsConfigurationModelListener
 							).or(
 								GroupTable.INSTANCE.typeSettings.like(
 									"%staged=true%")
+							).or(
+								GroupTable.INSTANCE.remoteStagingGroupCount.gt(
+									0)
 							).withParentheses()
 						)
 					))) {
 
-			if (group.isStaged() || group.isStagingGroup()) {
+			if (group.hasRemoteStagingGroup() || group.isStaged() ||
+				group.isStagingGroup()) {
+
 				throw new CTStagingEnabledException();
 			}
 		}

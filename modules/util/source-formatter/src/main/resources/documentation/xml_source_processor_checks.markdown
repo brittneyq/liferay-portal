@@ -1,4 +1,4 @@
-# Checks for .action, .function, .jrxml, .macro, .pom, .project, .properties, .svg, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd
+# Checks for .action, .function, .jelly, .jrxml, .macro, .pom, .project, .properties, .svg, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd
 
 Check | Category | Description
 ----- | -------- | -----------
@@ -18,6 +18,7 @@ XMLImportsCheck | [Styling](styling_checks.markdown#styling-checks) | Sorts and 
 XMLIndentationCheck | [Styling](styling_checks.markdown#styling-checks) | Finds incorrect indentation in `.xml` files. |
 XMLIvyFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of dependencies in `ivy.xml` file. |
 XMLLog4jFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of categories in `*-log4j.xml` file. |
+XMLLog4jLoggersCheck | [Miscellaneous](miscellaneous_checks.markdown#miscellaneous-checks) | Checks the loggers defined in `*-log4j.xml` file. |
 XMLLookAndFeelCompatibilityVersionCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Finds missing attribute `version` in `compatibility` element in `*--look-and-feel.xml` file. |
 XMLLookAndFeelFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of attributes in `*--look-and-feel.xml` file. |
 XMLModelHintsFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of attributes in `*-model-hints.xml` file. |
@@ -27,11 +28,14 @@ XMLPortletPreferencesFileCheck | [Styling](styling_checks.markdown#styling-check
 XMLPoshiFileCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Performs several checks on poshi files. |
 XMLProjectElementCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks the project name in `.pom` file. |
 XMLResourceActionsFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in files in directory `resource-actions`. |
+XMLServiceAutoImportDefaultReferencesCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks that the `auto-import-default-references` in `service.xml` does not equal `false`. |
 [XMLServiceEntityNameCheck](check/xml_service_entity_name_check.markdown#xmlserviceentitynamecheck) | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks that the `entity name` in `service.xml` does not equal the `package name`. |
 XMLServiceFileCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Performs several checks on `service.xml` file. |
 [XMLServiceFinderNameCheck](check/xml_service_finder_name_check.markdown#xmlservicefindernamecheck) | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks that the `finder name` in `service.xml`. |
 XMLServiceReferenceCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks for unused references in `service.xml` file. |
+XMLSolrSchemaFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in `portlet-preferences.xml` file. |
 XMLSourcechecksFileCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Performs several checks on `sourcechecks.xml` file. |
+XMLSpringExtenderServiceCheck | [Performance](performance_checks.markdown#performance-checks) | Finds cases where Spring extender service is used as a dependency injection. |
 XMLSpringFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in `*-spring.xml` file. |
 XMLStrutsConfigFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in `struts-config.xml` file. |
 XMLStylingCheck | [Styling](styling_checks.markdown#styling-checks) | Applies rules to enforce consistency in code style. |

@@ -12,6 +12,167 @@
  * details.
  */
 
+export const mockedAudioDocumentProps = {
+	subType: 'Basic Document (Audio)',
+};
+export const mockedCodeDocumentProps = {
+	subType: 'Basic Document (Code)',
+};
+export const mockedCompressDocumentProps = {
+	subType: 'Basic Document (Compressed)',
+};
+export const mockedContentWithPreview = {
+	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
+	clipboard: {
+		name: 'demo.jpg',
+		url: 'mocked/view/url/in/portal',
+	},
+	description: 'Mocked description',
+	preview: {
+		imageURL: 'mocked/preview/url/demo.jpg',
+		url: 'mocked/vuew/url/',
+	},
+	specificFields: {
+		'extension': {
+			title: 'Extension',
+			type: 'string',
+			value: 'jpg',
+		},
+		'latest-version-url': {
+			title: 'Latest Version URL',
+			type: 'URL',
+			value: 'http://localhost:8080/documents/d/guest/tree-png',
+		},
+		'size': {
+			title: 'Size',
+			type: 'string',
+			value: '200 KB',
+		},
+		'web-dav-url': {
+			title: 'WebDAV URL',
+			type: 'URL',
+			value:
+				'http://localhost:8080/webdav/guest/document_library/tree.png',
+		},
+	},
+	subType: 'Basic Document (Image)',
+	type: 'Document',
+	viewURLs: [],
+};
+export const mockedContentWithPreviewWithoutLink = {
+	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
+	clipboard: {
+		name: 'demo.jpg',
+		url: 'mocked/view/url/in/portal',
+	},
+	description: 'Mocked description',
+	preview: {
+		imageURL: 'mocked/preview/url/demo.jpg',
+	},
+	specificFields: {
+		'extension': {
+			title: 'Extension',
+			type: 'string',
+			value: 'jpg',
+		},
+		'latest-version-url': {
+			title: 'Latest Version URL',
+			type: 'URL',
+			value: 'http://localhost:8080/documents/d/guest/tree-png',
+		},
+		'size': {
+			title: 'Size',
+			type: 'string',
+			value: '200 KB',
+		},
+		'web-dav-url': {
+			title: 'WebDAV URL',
+			type: 'URL',
+			value:
+				'http://localhost:8080/webdav/guest/document_library/tree.png',
+		},
+	},
+	subType: 'Basic Document',
+	type: 'Document',
+	viewURLs: [],
+};
+export const mockedCustomDocumentProps = {
+	subType: 'Custom Document',
+};
+export const mockedFileDocumentProps = {
+	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
+	clipboard: {
+		name: 'script.sh',
+		url: 'mocked/view/url/in/portal',
+	},
+	description: 'Mocked description',
+	downloadURL: 'mocked/download/url/demo.jpg&download=true',
+	preview: {
+		imageURL: '',
+		url: 'mocked/vuew/url/',
+	},
+	specificFields: {
+		extension: {
+			title: 'Extension',
+			type: 'string',
+			value: 'sh',
+		},
+		latestVersionUrl: {
+			title: 'Latest Version URL',
+			type: 'URL',
+			value: 'mockedURLValue',
+		},
+		size: {
+			title: 'Size',
+			type: 'string',
+			value: '9 KB',
+		},
+		webDavUrl: {
+			title: 'WebDAV URL',
+			type: 'URL',
+			value: 'mockedURLValue2',
+		},
+	},
+	subType: 'Basic Document (Other)',
+	type: 'Document',
+	viewURLs: [],
+};
+export const mockedImageDocumentProps = {
+	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
+	clipboard: {
+		name: 'demo.jpg',
+		url: 'mocked/view/url/in/portal',
+	},
+	description: 'Mocked description',
+	downloadURL: 'mocked/download/url/demo.jpg&download=true',
+	preview: {
+		imageURL: 'mocked/preview/url/demo.jpg',
+		url: 'mocked/vuew/url/',
+	},
+	specificFields: {
+		extension: {
+			title: 'Extension',
+			type: 'string',
+			value: 'jpg',
+		},
+		size: {
+			title: 'Size',
+			type: 'string',
+			value: '200 KB',
+		},
+	},
+	subType: 'Basic Document (Image)',
+	type: 'Document',
+	viewURLs: [],
+};
+export const mockedNoTaxonomies = {
+	tags: [],
+	vocabularies: {},
+};
+export const mockedPresentationDocumentProps = {
+	subType: 'Basic Document (Presentation)',
+};
+
 export const mockedProps = {
 	allVersions: [
 		{
@@ -53,6 +214,7 @@ export const mockedProps = {
 		},
 	],
 	modifiedDate: '2020-07-27T10:56:56.027',
+	singlePageApplicationEnabled: false,
 	specificFields: {
 		'display-date': {
 			title: 'Display Date',
@@ -260,12 +422,12 @@ export const mockedProps = {
 		},
 	},
 };
-
-export const mockedNoTaxonomies = {
-	tags: [],
-	vocabularies: {},
+export const mockedSpreadsheetDocumentProps = {
+	subType: 'Basic Document (Spreadsheet)',
 };
-
+export const mockedTextDocumentProps = {
+	subType: 'Basic Document (Text)',
+};
 export const mockedUser = {
 	user: {
 		name: 'Kate Williams',
@@ -273,36 +435,12 @@ export const mockedUser = {
 		userId: 20126,
 	},
 };
-
-export const mockedImageDocumentProps = {
-	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
-	clipboard: {
-		name: 'demo.jpg',
-		url: 'mocked/view/url/in/portal',
-	},
-	description: 'Mocked description',
-	downloadURL: 'mocked/download/url/demo.jpg&download=true',
-	preview: {
-		imageURL: 'mocked/preview/url/demo.jpg',
-		url: 'mocked/vuew/url/',
-	},
-	specificFields: {
-		extension: {
-			title: 'Extension',
-			type: 'string',
-			value: 'jpg',
-		},
-		size: {
-			title: 'Size',
-			type: 'string',
-			value: '200 KB',
-		},
-	},
-	subType: 'Basic Document',
-	type: 'Document',
-	viewURLs: [],
+export const mockedVectorialDocumentProps = {
+	subType: 'Basic Document (Vectorial)',
 };
-
+export const mockedVideoDocumentProps = {
+	subType: 'Basic Document (Video)',
+};
 export const mockedVideoShortcutDocumentProps = {
 	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
 	clipboard: {
@@ -331,118 +469,7 @@ export const mockedVideoShortcutDocumentProps = {
 	viewURLs: [],
 };
 
-export const mockedFileDocumentProps = {
-	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
-	clipboard: {
-		name: 'script.sh',
-		url: 'mocked/view/url/in/portal',
-	},
-	description: 'Mocked description',
-	downloadURL: 'mocked/download/url/demo.jpg&download=true',
-	preview: {
-		imageURL: '',
-		url: 'mocked/vuew/url/',
-	},
-	specificFields: {
-		extension: {
-			title: 'Extension',
-			type: 'string',
-			value: 'sh',
-		},
-		latestVersionUrl: {
-			title: 'Latest Version URL',
-			type: 'URL',
-			value: 'mockedURLValue',
-		},
-		size: {
-			title: 'Size',
-			type: 'string',
-			value: '9 KB',
-		},
-		webDavUrl: {
-			title: 'WebDAV URL',
-			type: 'URL',
-			value: 'mockedURLValue2',
-		},
-	},
-	subType: 'Basic Document',
-	type: 'Document',
-	viewURLs: [],
-};
-
-export const mockedContentWithPreview = {
-	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
-	clipboard: {
-		name: 'demo.jpg',
-		url: 'mocked/view/url/in/portal',
-	},
-	description: 'Mocked description',
-	preview: {
-		imageURL: 'mocked/preview/url/demo.jpg',
-		url: 'mocked/vuew/url/',
-	},
-	specificFields: {
-		'extension': {
-			title: 'Extension',
-			type: 'string',
-			value: 'jpg',
-		},
-		'latest-version-url': {
-			title: 'Latest Version URL',
-			type: 'URL',
-			value: 'http://localhost:8080/documents/d/guest/tree-png',
-		},
-		'size': {
-			title: 'Size',
-			type: 'string',
-			value: '200 KB',
-		},
-		'web-dav-url': {
-			title: 'WebDAV URL',
-			type: 'URL',
-			value:
-				'http://localhost:8080/webdav/guest/document_library/tree.png',
-		},
-	},
-	subType: 'Basic Document',
-	type: 'Document',
-	viewURLs: [],
-};
-
-export const mockedContentWithPreviewWithoutLink = {
-	className: 'com.liferay.portal.kernel.repository.model.FileEntry',
-	clipboard: {
-		name: 'demo.jpg',
-		url: 'mocked/view/url/in/portal',
-	},
-	description: 'Mocked description',
-	preview: {
-		imageURL: 'mocked/preview/url/demo.jpg',
-	},
-	specificFields: {
-		'extension': {
-			title: 'Extension',
-			type: 'string',
-			value: 'jpg',
-		},
-		'latest-version-url': {
-			title: 'Latest Version URL',
-			type: 'URL',
-			value: 'http://localhost:8080/documents/d/guest/tree-png',
-		},
-		'size': {
-			title: 'Size',
-			type: 'string',
-			value: '200 KB',
-		},
-		'web-dav-url': {
-			title: 'WebDAV URL',
-			type: 'URL',
-			value:
-				'http://localhost:8080/webdav/guest/document_library/tree.png',
-		},
-	},
-	subType: 'Basic Document',
-	type: 'Document',
-	viewURLs: [],
+export const mockedContentWithVersions = {
+	getItemVersionsURL:
+		'http://localhost:8080/group/guest/p_p_id=com_liferay_content_dashboard_web_portlet_ContentDashboardAdminPortlet&p_p_lifecycle=2&p_p_state=maximized&p_p_mode=view&p_p_resource_id=%2Fcontent_dashboard%2Fget_content_dashboard_item_versions',
 };

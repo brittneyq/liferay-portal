@@ -35,7 +35,6 @@ import java.util.ResourceBundle;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
@@ -44,7 +43,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.portal.search.web.internal.search.results.configuration.SearchResultsWebTemplateConfiguration",
-	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
 	property = "javax.portlet.name=" + SearchResultsPortletKeys.SEARCH_RESULTS,
 	service = TemplateHandler.class
 )
@@ -93,28 +91,45 @@ public class SearchResultsPortletDisplayTemplateHandler
 		templateVariableGroup.empty();
 
 		templateVariableGroup.addVariable(
-			"document-content", SearchResultSummaryDisplayContext.class,
+			"content", SearchResultSummaryDisplayContext.class,
 			PortletDisplayTemplateConstants.ENTRY, "getContent()");
 		templateVariableGroup.addVariable(
-			"document-creation-date", SearchResultSummaryDisplayContext.class,
-			PortletDisplayTemplateConstants.ENTRY, "getCreationDateString()");
-		templateVariableGroup.addVariable(
-			"document-creator-user-name",
-			SearchResultSummaryDisplayContext.class,
+			"created-by-user-name", SearchResultSummaryDisplayContext.class,
 			PortletDisplayTemplateConstants.ENTRY, "getCreatorUserName()");
 		templateVariableGroup.addVariable(
-			"document-title", SearchResultSummaryDisplayContext.class,
-			PortletDisplayTemplateConstants.ENTRY, "getHighlightedTitle()");
+			"created-by-user-portrait", SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY,
+			"getCreatorUserPortraitURLString()");
+		templateVariableGroup.addVariable(
+			"creation-date", SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY, "getCreationDateString()");
 		templateVariableGroup.addCollectionVariable(
 			"documents", List.class, PortletDisplayTemplateConstants.ENTRIES,
 			"document", SearchResultSummaryDisplayContext.class,
 			PortletDisplayTemplateConstants.ENTRY, "getHighlightedTitle()");
+		templateVariableGroup.addVariable(
+			"modified-by-user-name", SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY, "getModifiedByUserName()");
+		templateVariableGroup.addVariable(
+			"modified-by-user-portrait",
+			SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY,
+			"getModifiedByUserPortraitURLString()");
+		templateVariableGroup.addVariable(
+			"modified-date", SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY, "getModifiedDateString()");
+		templateVariableGroup.addVariable(
+			"publish-date", SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY, "getPublishedDateString()");
 		templateVariableGroup.addVariable(
 			"search-container", SearchContainer.class, "searchContainer");
 		templateVariableGroup.addVariable(
 			"search-results-display-context",
 			SearchResultsPortletDisplayContext.class,
 			"searchResultsPortletDisplayContext");
+		templateVariableGroup.addVariable(
+			"title", SearchResultSummaryDisplayContext.class,
+			PortletDisplayTemplateConstants.ENTRY, "getHighlightedTitle()");
 
 		TemplateVariableGroup categoriesServicesTemplateVariableGroup =
 			new TemplateVariableGroup(

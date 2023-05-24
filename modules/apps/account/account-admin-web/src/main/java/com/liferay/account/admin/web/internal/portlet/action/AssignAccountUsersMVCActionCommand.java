@@ -16,7 +16,9 @@ package com.liferay.account.admin.web.internal.portlet.action;
 
 import com.liferay.account.constants.AccountPortletKeys;
 import com.liferay.account.service.AccountEntryUserRelService;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.UserEmailAddressException;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -29,6 +31,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletException;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -37,7 +40,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_ADMIN,
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT,
@@ -45,40 +47,56 @@ import org.osgi.service.component.annotations.Reference;
 	},
 	service = MVCActionCommand.class
 )
-public class AssignAccountUsersMVCActionCommand extends BaseMVCActionCommand {
+public class AssignAccountUsersMVCActionCommand
+	extends BaseTransactionalMVCActionCommand {
 
 	@Override
-	protected void doProcessAction(
+	protected void doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		long accountEntryId = ParamUtil.getLong(
-			actionRequest, "accountEntryId");
-		long[] accountUserIds = ParamUtil.getLongValues(
-			actionRequest, "accountUserIds");
+		try {
+			long accountEntryId = ParamUtil.getLong(
+				actionRequest, "accountEntryId");
+			long[] accountUserIds = ParamUtil.getLongValues(
+				actionRequest, "accountUserIds");
 
-		_accountEntryUserRelService.addAccountEntryUserRels(
-			accountEntryId, accountUserIds);
+			_accountEntryUserRelService.addAccountEntryUserRels(
+				accountEntryId, accountUserIds);
 
-		String portletId = _portal.getPortletId(actionRequest);
+			String portletId = _portal.getPortletId(actionRequest);
 
-		if (!portletId.equals(AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT)) {
-			return;
+			if (!portletId.equals(
+					AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT)) {
+
+				return;
+			}
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
+
+			boolean enableAutomaticSiteMembership = PrefsParamUtil.getBoolean(
+				_portletPreferencesLocalService.getPreferences(
+					themeDisplay.getCompanyId(),
+					PortletKeys.PREFS_OWNER_ID_DEFAULT,
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, themeDisplay.getPlid(),
+					portletId),
+				actionRequest, "enableAutomaticSiteMembership", true);
+
+			if (enableAutomaticSiteMembership) {
+				_userLocalService.addGroupUsers(
+					themeDisplay.getSiteGroupId(), accountUserIds);
+			}
 		}
+		catch (PortalException portalException) {
+			if (portalException instanceof UserEmailAddressException) {
+				hideDefaultErrorMessage(actionRequest);
+				hideDefaultSuccessMessage(actionRequest);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+				sendRedirect(actionRequest, actionResponse);
+			}
 
-		boolean enableAutomaticSiteMembership = PrefsParamUtil.getBoolean(
-			_portletPreferencesLocalService.getPreferences(
-				themeDisplay.getCompanyId(), PortletKeys.PREFS_OWNER_ID_DEFAULT,
-				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, themeDisplay.getPlid(),
-				portletId),
-			actionRequest, "enableAutomaticSiteMembership", true);
-
-		if (enableAutomaticSiteMembership) {
-			_userLocalService.addGroupUsers(
-				themeDisplay.getSiteGroupId(), accountUserIds);
+			throw new PortletException(portalException);
 		}
 	}
 

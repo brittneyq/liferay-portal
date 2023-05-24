@@ -58,8 +58,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -275,65 +273,36 @@ public abstract class ClientExtensionEntryRelLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the client extension entry rel with the matching UUID and company.
+	 * Returns the client extension entry rel matching the UUID and group.
 	 *
 	 * @param uuid the client extension entry rel's UUID
-	 * @param companyId the primary key of the company
+	 * @param groupId the primary key of the group
 	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
 	 */
 	@Override
-	public ClientExtensionEntryRel
-		fetchClientExtensionEntryRelByUuidAndCompanyId(
-			String uuid, long companyId) {
+	public ClientExtensionEntryRel fetchClientExtensionEntryRelByUuidAndGroupId(
+		String uuid, long groupId) {
 
-		return clientExtensionEntryRelPersistence.fetchByUuid_C_First(
-			uuid, companyId, null);
+		return clientExtensionEntryRelPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the client extension entry rel with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the client extension entry rel's external reference code
-	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
-	 */
 	@Override
 	public ClientExtensionEntryRel
 		fetchClientExtensionEntryRelByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long groupId) {
 
-		return clientExtensionEntryRelPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return clientExtensionEntryRelPersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchClientExtensionEntryRelByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public ClientExtensionEntryRel fetchClientExtensionEntryRelByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchClientExtensionEntryRelByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the client extension entry rel with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the client extension entry rel's external reference code
-	 * @return the matching client extension entry rel
-	 * @throws PortalException if a matching client extension entry rel could not be found
-	 */
 	@Override
 	public ClientExtensionEntryRel
 			getClientExtensionEntryRelByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return clientExtensionEntryRelPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return clientExtensionEntryRelPersistence.findByERC_G(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -470,6 +439,9 @@ public abstract class ClientExtensionEntryRelLocalServiceBaseImpl
 		exportActionableDynamicQuery.setCompanyId(
 			portletDataContext.getCompanyId());
 
+		exportActionableDynamicQuery.setGroupId(
+			portletDataContext.getScopeGroupId());
+
 		exportActionableDynamicQuery.setPerformActionMethod(
 			new ActionableDynamicQuery.PerformActionMethod
 				<ClientExtensionEntryRel>() {
@@ -538,20 +510,54 @@ public abstract class ClientExtensionEntryRelLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the client extension entry rel with the matching UUID and company.
+	 * Returns all the client extension entry rels matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the client extension entry rels
+	 * @param companyId the primary key of the company
+	 * @return the matching client extension entry rels, or an empty list if no matches were found
+	 */
+	@Override
+	public List<ClientExtensionEntryRel>
+		getClientExtensionEntryRelsByUuidAndCompanyId(
+			String uuid, long companyId) {
+
+		return clientExtensionEntryRelPersistence.findByUuid_C(uuid, companyId);
+	}
+
+	/**
+	 * Returns a range of client extension entry rels matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the client extension entry rels
+	 * @param companyId the primary key of the company
+	 * @param start the lower bound of the range of client extension entry rels
+	 * @param end the upper bound of the range of client extension entry rels (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the range of matching client extension entry rels, or an empty list if no matches were found
+	 */
+	@Override
+	public List<ClientExtensionEntryRel>
+		getClientExtensionEntryRelsByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			OrderByComparator<ClientExtensionEntryRel> orderByComparator) {
+
+		return clientExtensionEntryRelPersistence.findByUuid_C(
+			uuid, companyId, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the client extension entry rel matching the UUID and group.
 	 *
 	 * @param uuid the client extension entry rel's UUID
-	 * @param companyId the primary key of the company
+	 * @param groupId the primary key of the group
 	 * @return the matching client extension entry rel
 	 * @throws PortalException if a matching client extension entry rel could not be found
 	 */
 	@Override
-	public ClientExtensionEntryRel getClientExtensionEntryRelByUuidAndCompanyId(
-			String uuid, long companyId)
+	public ClientExtensionEntryRel getClientExtensionEntryRelByUuidAndGroupId(
+			String uuid, long groupId)
 		throws PortalException {
 
-		return clientExtensionEntryRelPersistence.findByUuid_C_First(
-			uuid, companyId, null);
+		return clientExtensionEntryRelPersistence.findByUUID_G(uuid, groupId);
 	}
 
 	/**
@@ -603,7 +609,7 @@ public abstract class ClientExtensionEntryRelLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		ClientExtensionEntryRelLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -620,7 +626,8 @@ public abstract class ClientExtensionEntryRelLocalServiceBaseImpl
 		clientExtensionEntryRelLocalService =
 			(ClientExtensionEntryRelLocalService)aopProxy;
 
-		_setLocalServiceUtilService(clientExtensionEntryRelLocalService);
+		ClientExtensionEntryRelLocalServiceUtil.setService(
+			clientExtensionEntryRelLocalService);
 	}
 
 	/**
@@ -678,24 +685,6 @@ public abstract class ClientExtensionEntryRelLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		ClientExtensionEntryRelLocalService
-			clientExtensionEntryRelLocalService) {
-
-		try {
-			Field field =
-				ClientExtensionEntryRelLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, clientExtensionEntryRelLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

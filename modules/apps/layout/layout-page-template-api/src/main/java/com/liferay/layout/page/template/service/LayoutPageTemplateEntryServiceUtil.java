@@ -63,13 +63,13 @@ public class LayoutPageTemplateEntryServiceUtil {
 
 	public static LayoutPageTemplateEntry copyLayoutPageTemplateEntry(
 			long groupId, long layoutPageTemplateCollectionId,
-			long layoutPageTemplateEntryId,
+			long sourceLayoutPageTemplateEntryId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws PortalException {
+		throws Exception {
 
 		return getService().copyLayoutPageTemplateEntry(
-			groupId, layoutPageTemplateCollectionId, layoutPageTemplateEntryId,
-			serviceContext);
+			groupId, layoutPageTemplateCollectionId,
+			sourceLayoutPageTemplateEntryId, serviceContext);
 	}
 
 	public static LayoutPageTemplateEntry
@@ -501,6 +501,10 @@ public class LayoutPageTemplateEntryServiceUtil {
 
 	public static LayoutPageTemplateEntryService getService() {
 		return _service;
+	}
+
+	public static void setService(LayoutPageTemplateEntryService service) {
+		_service = service;
 	}
 
 	private static volatile LayoutPageTemplateEntryService _service;

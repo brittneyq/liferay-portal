@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Chema Balsas
  */
-@Component(immediate = true, service = DynamicInclude.class)
+@Component(service = DynamicInclude.class)
 public class UserLocaleOptionsBottomJSPDynamicInclude
 	extends BaseJSPDynamicInclude {
 
@@ -61,7 +61,7 @@ public class UserLocaleOptionsBottomJSPDynamicInclude
 
 		User user = themeDisplay.getUser();
 
-		if (user.isDefaultUser()) {
+		if (user.isGuestUser()) {
 			return;
 		}
 

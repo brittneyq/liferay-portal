@@ -30,17 +30,17 @@ import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeCon
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelperUtil;
+import com.liferay.portal.kernel.upload.configuration.UploadServletRequestConfigurationProviderUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -131,21 +131,6 @@ public class DisplayPageActionDropdownItemsProvider {
 						() -> hasUpdatePermission,
 						_getRenameDisplayPageActionUnsafeConsumer()
 					).add(
-						() -> {
-							int count =
-								AssetDisplayPageEntryServiceUtil.
-									getAssetDisplayPageEntriesCount(
-										_layoutPageTemplateEntry.
-											getClassNameId(),
-										_layoutPageTemplateEntry.
-											getClassTypeId(),
-										_layoutPageTemplateEntry.
-											getLayoutPageTemplateEntryId(),
-										_layoutPageTemplateEntry.
-											isDefaultTemplate());
-
-							return count > 0;
-						},
 						_getViewUsagesDisplayPageActionUnsafeConsumer()
 					).build());
 				dropdownGroupItem.setSeparator(true);
@@ -351,7 +336,7 @@ public class DisplayPageActionDropdownItemsProvider {
 			).extensions(
 				_layoutPageTemplateAdminWebConfiguration.thumbnailExtensions()
 			).maxFileSize(
-				UploadServletRequestConfigurationHelperUtil.getMaxSize()
+				UploadServletRequestConfigurationProviderUtil.getMaxSize()
 			).portletId(
 				LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES
 			).repositoryName(
@@ -521,6 +506,16 @@ public class DisplayPageActionDropdownItemsProvider {
 		_getViewUsagesDisplayPageActionUnsafeConsumer() {
 
 		return dropdownItem -> {
+			int count =
+				AssetDisplayPageEntryServiceUtil.
+					getAssetDisplayPageEntriesCount(
+						_layoutPageTemplateEntry.getClassNameId(),
+						_layoutPageTemplateEntry.getClassTypeId(),
+						_layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
+						_layoutPageTemplateEntry.isDefaultTemplate());
+
+			dropdownItem.setDisabled(count == 0);
+
 			dropdownItem.setHref(
 				_renderResponse.createRenderURL(), "mvcRenderCommandName",
 				"/layout_page_template_admin/view_asset_display_page_usages",

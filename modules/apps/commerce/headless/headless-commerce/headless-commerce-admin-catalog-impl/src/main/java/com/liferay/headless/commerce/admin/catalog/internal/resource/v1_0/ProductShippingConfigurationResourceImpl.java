@@ -19,11 +19,11 @@ import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPDefinitionService;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.ProductShippingConfiguration;
-import com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.ProductShippingConfigurationDTOConverter;
 import com.liferay.headless.commerce.admin.catalog.internal.util.v1_0.ProductShippingConfigurationUtil;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductShippingConfigurationResource;
 import com.liferay.headless.commerce.core.util.ServiceContextHelper;
 import com.liferay.portal.kernel.change.tracking.CTAware;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
@@ -39,7 +39,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/product-shipping-configuration.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = {
@@ -164,8 +163,10 @@ public class ProductShippingConfigurationResourceImpl
 	@Reference
 	private CPDefinitionService _cpDefinitionService;
 
-	@Reference
-	private ProductShippingConfigurationDTOConverter
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.ProductShippingConfigurationDTOConverter)"
+	)
+	private DTOConverter<CPDefinition, ProductShippingConfiguration>
 		_productShippingConfigurationDTOConverter;
 
 	@Reference

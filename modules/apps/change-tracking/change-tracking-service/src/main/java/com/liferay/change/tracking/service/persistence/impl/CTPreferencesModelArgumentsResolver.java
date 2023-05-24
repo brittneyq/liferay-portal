@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CTPreferencesModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.change.tracking.model.impl.CTPreferencesImpl",
+		"table.name=CTPreferences"
+	},
+	service = ArgumentsResolver.class
 )
 public class CTPreferencesModelArgumentsResolver implements ArgumentsResolver {
 

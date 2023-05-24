@@ -14,6 +14,7 @@
 
 package com.liferay.knowledge.base.web.internal.asset.model;
 
+import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
@@ -23,10 +24,10 @@ import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalService;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
@@ -46,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Peter Shin
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
 	service = AssetRendererFactory.class
 )
@@ -76,7 +76,8 @@ public class KBArticleAssetRendererFactory
 
 		KBArticleAssetRenderer kbArticleAssetRenderer =
 			new KBArticleAssetRenderer(
-				_htmlParser, _getKBArticle(classPK, _getTypeStatus(type)));
+				_assetDisplayPageFriendlyURLProvider, _htmlParser,
+				_getKBArticle(classPK, _getTypeStatus(type)));
 
 		kbArticleAssetRenderer.setAssetRendererType(type);
 		kbArticleAssetRenderer.setServletContext(_servletContext);
@@ -156,6 +157,10 @@ public class KBArticleAssetRendererFactory
 
 		return WorkflowConstants.STATUS_ANY;
 	}
+
+	@Reference
+	private AssetDisplayPageFriendlyURLProvider
+		_assetDisplayPageFriendlyURLProvider;
 
 	@Reference
 	private HtmlParser _htmlParser;

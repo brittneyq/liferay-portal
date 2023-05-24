@@ -15,10 +15,10 @@
 package com.liferay.users.admin.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.ManagementToolbarDisplayContext;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -30,12 +30,13 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.usersadmin.search.UserSearch;
 import com.liferay.portlet.usersadmin.search.UserSearchTerms;
+import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 import com.liferay.users.admin.management.toolbar.FilterContributor;
 import com.liferay.users.admin.web.internal.constants.UsersAdminWebKeys;
 import com.liferay.users.admin.web.internal.util.DisplayStyleUtil;
 
 import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.Objects;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
@@ -69,19 +70,33 @@ public class ViewFlatUsersDisplayContextFactory {
 		UserSearchTerms userSearchTerms =
 			(UserSearchTerms)searchContainer.getSearchTerms();
 
-		ManagementToolbarDisplayContext managementToolbarDisplayContext =
-			new ViewFlatUsersManagementToolbarDisplayContext(
-				liferayPortletRequest, liferayPortletResponse, searchContainer,
-				_isShowDeleteButton(userSearchTerms),
-				_isShowRestoreButton(userSearchTerms));
+		ManagementToolbarDisplayContext managementToolbarDisplayContext;
 
-		Optional<FilterContributor[]> filterContributorsOptional =
-			_getFilterContributorsOptional(httpServletRequest);
+		if (Objects.equals(
+				UsersAdminPortletKeys.SERVICE_ACCOUNTS,
+				PortalUtil.getPortletId(renderRequest))) {
 
-		if (filterContributorsOptional.isPresent()) {
+			managementToolbarDisplayContext =
+				new ViewServiceAccountUsersManagementToolbarDisplayContext(
+					liferayPortletRequest, liferayPortletResponse,
+					searchContainer, _isShowDeleteButton(userSearchTerms),
+					_isShowRestoreButton(userSearchTerms));
+		}
+		else {
+			managementToolbarDisplayContext =
+				new ViewFlatUsersManagementToolbarDisplayContext(
+					liferayPortletRequest, liferayPortletResponse,
+					searchContainer, _isShowDeleteButton(userSearchTerms),
+					_isShowRestoreButton(userSearchTerms));
+		}
+
+		FilterContributor[] filterContributors = _getFilterContributors(
+			httpServletRequest);
+
+		if (filterContributors != null) {
 			managementToolbarDisplayContext =
 				new FiltersManagementToolbarDisplayContextWrapper(
-					filterContributorsOptional.get(), httpServletRequest,
+					filterContributors, httpServletRequest,
 					liferayPortletRequest, liferayPortletResponse,
 					managementToolbarDisplayContext);
 		}
@@ -119,6 +134,9 @@ public class ViewFlatUsersDisplayContextFactory {
 		if (navigation.equals("active")) {
 			status = WorkflowConstants.STATUS_APPROVED;
 		}
+		else if (navigation.equals("all")) {
+			status = WorkflowConstants.STATUS_ANY;
+		}
 		else if (navigation.equals("inactive")) {
 			status = WorkflowConstants.STATUS_INACTIVE;
 		}
@@ -145,13 +163,11 @@ public class ViewFlatUsersDisplayContextFactory {
 
 		LinkedHashMap<String, Object> params = new LinkedHashMap<>();
 
-		Optional<FilterContributor[]> filterContributorsOptional =
-			_getFilterContributorsOptional(httpServletRequest);
+		FilterContributor[] filterContributors = _getFilterContributors(
+			httpServletRequest);
 
-		if (filterContributorsOptional.isPresent()) {
-			for (FilterContributor filterContributor :
-					filterContributorsOptional.get()) {
-
+		if (filterContributors != null) {
+			for (FilterContributor filterContributor : filterContributors) {
 				params.putAll(
 					filterContributor.getSearchParameters(
 						ParamUtil.getString(
@@ -185,12 +201,11 @@ public class ViewFlatUsersDisplayContextFactory {
 		return userSearch;
 	}
 
-	private static Optional<FilterContributor[]> _getFilterContributorsOptional(
+	private static FilterContributor[] _getFilterContributors(
 		HttpServletRequest httpServletRequest) {
 
-		return Optional.ofNullable(
-			(FilterContributor[])httpServletRequest.getAttribute(
-				UsersAdminWebKeys.MANAGEMENT_TOOLBAR_FILTER_CONTRIBUTORS));
+		return (FilterContributor[])httpServletRequest.getAttribute(
+			UsersAdminWebKeys.MANAGEMENT_TOOLBAR_FILTER_CONTRIBUTORS);
 	}
 
 	private static boolean _isShowDeleteButton(

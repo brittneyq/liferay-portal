@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adam Brandizzi
  */
-@Component(immediate = true, service = IndexInformation.class)
+@Component(service = IndexInformation.class)
 public class ElasticsearchIndexInformation implements IndexInformation {
 
 	@Override
@@ -92,18 +92,6 @@ public class ElasticsearchIndexInformation implements IndexInformation {
 		}
 	}
 
-	@Reference(unbind = "-")
-	protected void setElasticsearchClientResolver(
-		ElasticsearchClientResolver elasticsearchClientResolver) {
-
-		_elasticsearchClientResolver = elasticsearchClientResolver;
-	}
-
-	@Reference(unbind = "-")
-	protected void setIndexNameBuilder(IndexNameBuilder indexNameBuilder) {
-		_indexNameBuilder = indexNameBuilder;
-	}
-
 	private IndicesClient _getIndicesClient() {
 		RestHighLevelClient restHighLevelClient =
 			_elasticsearchClientResolver.getRestHighLevelClient(null, true);
@@ -111,7 +99,10 @@ public class ElasticsearchIndexInformation implements IndexInformation {
 		return restHighLevelClient.indices();
 	}
 
+	@Reference
 	private ElasticsearchClientResolver _elasticsearchClientResolver;
+
+	@Reference
 	private IndexNameBuilder _indexNameBuilder;
 
 }

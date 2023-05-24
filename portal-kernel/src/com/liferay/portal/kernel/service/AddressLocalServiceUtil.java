@@ -75,12 +75,12 @@ public class AddressLocalServiceUtil {
 	}
 
 	public static Address copyAddress(
-			long addressId, String className, long classPK,
+			long sourceAddressId, String className, long classPK,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().copyAddress(
-			addressId, className, classPK, serviceContext);
+			sourceAddressId, className, classPK, serviceContext);
 	}
 
 	/**
@@ -245,29 +245,11 @@ public class AddressLocalServiceUtil {
 		return getService().fetchAddress(addressId);
 	}
 
-	/**
-	 * Returns the address with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the address's external reference code
-	 * @return the matching address, or <code>null</code> if a matching address could not be found
-	 */
 	public static Address fetchAddressByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
 		return getService().fetchAddressByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchAddressByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	public static Address fetchAddressByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return getService().fetchAddressByReferenceCode(
-			companyId, externalReferenceCode);
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -300,20 +282,12 @@ public class AddressLocalServiceUtil {
 		return getService().getAddress(addressId);
 	}
 
-	/**
-	 * Returns the address with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the address's external reference code
-	 * @return the matching address
-	 * @throws PortalException if a matching address could not be found
-	 */
 	public static Address getAddressByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
 		return getService().getAddressByExternalReferenceCode(
-			companyId, externalReferenceCode);
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -394,6 +368,22 @@ public class AddressLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
+	public static List<Address> getListTypeAddresses(
+		long companyId, String className, long classPK, long[] listTypeIds) {
+
+		return getService().getListTypeAddresses(
+			companyId, className, classPK, listTypeIds);
+	}
+
+	public static List<Address> getListTypeAddresses(
+		long companyId, String className, long classPK, long[] listTypeIds,
+		int start, int end, OrderByComparator<Address> orderByComparator) {
+
+		return getService().getListTypeAddresses(
+			companyId, className, classPK, listTypeIds, start, end,
+			orderByComparator);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
@@ -410,22 +400,6 @@ public class AddressLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getPersistedModel(primaryKeyObj);
-	}
-
-	public static List<Address> getTypeAddresses(
-		long companyId, String className, long classPK, long[] listTypeIds) {
-
-		return getService().getTypeAddresses(
-			companyId, className, classPK, listTypeIds);
-	}
-
-	public static List<Address> getTypeAddresses(
-		long companyId, String className, long classPK, long[] listTypeIds,
-		int start, int end, OrderByComparator<Address> orderByComparator) {
-
-		return getService().getTypeAddresses(
-			companyId, className, classPK, listTypeIds, start, end,
-			orderByComparator);
 	}
 
 	public static com.liferay.portal.kernel.search.BaseModelSearchResult
@@ -478,6 +452,10 @@ public class AddressLocalServiceUtil {
 
 	public static AddressLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(AddressLocalService service) {
+		_service = service;
 	}
 
 	private static volatile AddressLocalService _service;

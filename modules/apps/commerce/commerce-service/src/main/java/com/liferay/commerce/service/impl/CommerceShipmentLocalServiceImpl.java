@@ -27,6 +27,7 @@ import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceShipment;
 import com.liferay.commerce.model.CommerceShipmentItem;
 import com.liferay.commerce.model.CommerceShippingMethod;
+import com.liferay.commerce.model.attributes.provider.CommerceModelAttributesProvider;
 import com.liferay.commerce.service.CommerceAddressLocalService;
 import com.liferay.commerce.service.CommerceOrderItemLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
@@ -34,10 +35,10 @@ import com.liferay.commerce.service.CommerceShipmentItemLocalService;
 import com.liferay.commerce.service.CommerceShippingMethodLocalService;
 import com.liferay.commerce.service.base.CommerceShipmentLocalServiceBaseImpl;
 import com.liferay.expando.kernel.service.ExpandoRowLocalService;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
@@ -51,7 +52,7 @@ import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
@@ -65,9 +66,8 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
@@ -78,9 +78,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.TimeZone;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.model.CommerceShipment",
+	service = AopService.class
+)
 public class CommerceShipmentLocalServiceImpl
 	extends CommerceShipmentLocalServiceBaseImpl {
 
@@ -121,7 +128,7 @@ public class CommerceShipmentLocalServiceImpl
 		commerceShipment.setStatus(
 			CommerceShipmentConstants.SHIPMENT_STATUS_PROCESSING);
 
-		CommerceAddress commerceAddress = updateCommerceShipmentAddress(
+		CommerceAddress commerceAddress = _updateCommerceShipmentAddress(
 			commerceShipment, name, description, street1, street2, street3,
 			city, zip, regionId, countryId, phoneNumber, null);
 
@@ -285,7 +292,7 @@ public class CommerceShipmentLocalServiceImpl
 			boolean excludeShipmentStatus, int start, int end)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, groupIds, commerceAccountIds, keywords,
 			excludeShipmentStatus, shipmentStatuses, start, end);
 
@@ -334,7 +341,7 @@ public class CommerceShipmentLocalServiceImpl
 			boolean excludeShipmentStatus)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, groupIds, commerceAccountIds, keywords,
 			excludeShipmentStatus, shipmentStatuses, QueryUtil.ALL_POS,
 			QueryUtil.ALL_POS);
@@ -403,14 +410,13 @@ public class CommerceShipmentLocalServiceImpl
 			SearchContext searchContext)
 		throws PortalException {
 
-		Indexer<CommerceShipment> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(
-				CommerceShipment.class.getName());
+		Indexer<CommerceShipment> indexer = _indexerRegistry.nullSafeGetIndexer(
+			CommerceShipment.class.getName());
 
 		for (int i = 0; i < 10; i++) {
 			Hits hits = indexer.search(searchContext);
 
-			List<CommerceShipment> commerceShipments = getCommerceShipments(
+			List<CommerceShipment> commerceShipments = _getCommerceShipments(
 				hits);
 
 			if (commerceShipments != null) {
@@ -427,9 +433,8 @@ public class CommerceShipmentLocalServiceImpl
 	public long searchCommerceShipmentsCount(SearchContext searchContext)
 		throws PortalException {
 
-		Indexer<CommerceShipment> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(
-				CommerceShipment.class.getName());
+		Indexer<CommerceShipment> indexer = _indexerRegistry.nullSafeGetIndexer(
+			CommerceShipment.class.getName());
 
 		return indexer.searchCount(searchContext);
 	}
@@ -464,7 +469,7 @@ public class CommerceShipmentLocalServiceImpl
 		CommerceShipment commerceShipment =
 			commerceShipmentPersistence.findByPrimaryKey(commerceShipmentId);
 
-		CommerceAddress commerceAddress = updateCommerceShipmentAddress(
+		CommerceAddress commerceAddress = _updateCommerceShipmentAddress(
 			commerceShipment, name, description, street1, street2, street3,
 			city, zip, regionId, countryId, phoneNumber, serviceContext);
 
@@ -580,7 +585,7 @@ public class CommerceShipmentLocalServiceImpl
 			commerceShipment.setShippingOptionName(null);
 		}
 
-		CommerceAddress commerceAddress = updateCommerceShipmentAddress(
+		CommerceAddress commerceAddress = _updateCommerceShipmentAddress(
 			commerceShipment, name, description, street1, street2, street3,
 			city, zip, regionId, countryId, phoneNumber, serviceContext);
 
@@ -717,7 +722,62 @@ public class CommerceShipmentLocalServiceImpl
 		return commerceShipmentPersistence.update(commerceShipment);
 	}
 
-	protected SearchContext buildSearchContext(
+	@Transactional(
+		propagation = Propagation.REQUIRED, rollbackFor = Exception.class
+	)
+	protected void sendShipmentStatusMessage(
+		CommerceShipment commerceShipment) {
+
+		TransactionCommitCallbackUtil.registerCallback(
+			() -> {
+				Message message = new Message();
+
+				DTOConverter<?, ?> commerceShipmentDTOConverter =
+					_dtoConverterRegistry.getDTOConverter(
+						CommerceShipment.class.getName());
+
+				message.setPayload(
+					JSONUtil.put(
+						"classPK", commerceShipment.getCommerceShipmentId()
+					).put(
+						"commerceShipment",
+						() -> {
+							Object object = commerceShipmentDTOConverter.toDTO(
+								new DefaultDTOConverterContext(
+									_dtoConverterRegistry,
+									commerceShipment.getCommerceShipmentId(),
+									LocaleUtil.getSiteDefault(), null, null));
+
+							return _jsonFactory.createJSONObject(
+								_jsonFactory.looseSerializeDeep(object));
+						}
+					).put(
+						"commerceShipmentId",
+						commerceShipment.getCommerceShipmentId()
+					).put(
+						"model" + CommerceShipment.class.getName(),
+						commerceShipment.getModelAttributes()
+					).put(
+						"modelDTO" +
+							commerceShipmentDTOConverter.getContentType(),
+						_commerceModelAttributesProvider.getModelAttributes(
+							commerceShipment, commerceShipmentDTOConverter,
+							commerceShipment.getUserId())
+					));
+
+				MessageBusUtil.sendMessage(
+					DestinationNames.COMMERCE_SHIPMENT_STATUS, message);
+
+				return null;
+			});
+	}
+
+	protected int[] messageShipmentStatuses = {
+		CommerceShipmentConstants.SHIPMENT_STATUS_SHIPPED,
+		CommerceShipmentConstants.SHIPMENT_STATUS_DELIVERED
+	};
+
+	private SearchContext _buildSearchContext(
 			long companyId, long[] groupIds, long[] commerceAccountIds,
 			String keywords, boolean negated, int[] shipmentStatuses, int start,
 			int end)
@@ -749,7 +809,7 @@ public class CommerceShipmentLocalServiceImpl
 		return searchContext;
 	}
 
-	protected List<CommerceShipment> getCommerceShipments(Hits hits)
+	private List<CommerceShipment> _getCommerceShipments(Hits hits)
 		throws PortalException {
 
 		List<Document> documents = hits.toList();
@@ -767,8 +827,8 @@ public class CommerceShipmentLocalServiceImpl
 			if (commerceShipment == null) {
 				commerceShipments = null;
 
-				Indexer<CommerceShipment> indexer =
-					IndexerRegistryUtil.getIndexer(CommerceShipment.class);
+				Indexer<CommerceShipment> indexer = _indexerRegistry.getIndexer(
+					CommerceShipment.class);
 
 				long companyId = GetterUtil.getLong(
 					document.get(Field.COMPANY_ID));
@@ -783,46 +843,24 @@ public class CommerceShipmentLocalServiceImpl
 		return commerceShipments;
 	}
 
-	@Transactional(
-		propagation = Propagation.REQUIRED, rollbackFor = Exception.class
-	)
-	protected void sendShipmentStatusMessage(
-		CommerceShipment commerceShipment) {
+	private Date _getDate(
+			int dateMonth, int dateDay, int dateYear, int dateHour,
+			int dateMinute, TimeZone timeZone,
+			Class<? extends PortalException> clazz)
+		throws PortalException {
 
-		TransactionCommitCallbackUtil.registerCallback(
-			() -> {
-				Message message = new Message();
+		if ((dateMonth == 0) && (dateDay == 0) && (dateYear == 0) &&
+			(dateHour == 0) && (dateMinute == 0)) {
 
-				message.setPayload(
-					JSONUtil.put(
-						"commerceShipment",
-						() -> {
-							DTOConverter<?, ?> dtoConverter =
-								_dtoConverterRegistry.getDTOConverter(
-									CommerceShipment.class.getName());
+			return null;
+		}
 
-							Object object = dtoConverter.toDTO(
-								new DefaultDTOConverterContext(
-									_dtoConverterRegistry,
-									commerceShipment.getCommerceShipmentId(),
-									LocaleUtil.getSiteDefault(), null, null));
-
-							return JSONFactoryUtil.createJSONObject(
-								JSONFactoryUtil.looseSerializeDeep(object));
-						}
-					).put(
-						"commerceShipmentId",
-						commerceShipment.getCommerceShipmentId()
-					));
-
-				MessageBusUtil.sendMessage(
-					DestinationNames.COMMERCE_SHIPMENT_STATUS, message);
-
-				return null;
-			});
+		return _portal.getDate(
+			dateMonth, dateDay, dateYear, dateHour, dateMinute, timeZone,
+			clazz);
 	}
 
-	protected CommerceAddress updateCommerceShipmentAddress(
+	private CommerceAddress _updateCommerceShipmentAddress(
 			CommerceShipment commerceShipment, String name, String description,
 			String street1, String street2, String street3, String city,
 			String zip, long regionId, long countryId, String phoneNumber,
@@ -855,28 +893,6 @@ public class CommerceShipmentLocalServiceImpl
 			serviceContext);
 	}
 
-	protected int[] messageShipmentStatuses = {
-		CommerceShipmentConstants.SHIPMENT_STATUS_SHIPPED,
-		CommerceShipmentConstants.SHIPMENT_STATUS_DELIVERED
-	};
-
-	private Date _getDate(
-			int dateMonth, int dateDay, int dateYear, int dateHour,
-			int dateMinute, TimeZone timeZone,
-			Class<? extends PortalException> clazz)
-		throws PortalException {
-
-		if ((dateMonth == 0) && (dateDay == 0) && (dateYear == 0) &&
-			(dateHour == 0) && (dateMinute == 0)) {
-
-			return null;
-		}
-
-		return PortalUtil.getDate(
-			dateMonth, dateDay, dateYear, dateHour, dateMinute, timeZone,
-			clazz);
-	}
-
 	private void _validateExternalReferenceCode(
 			long commerceShipmentId, long companyId,
 			String externalReferenceCode)
@@ -887,8 +903,8 @@ public class CommerceShipmentLocalServiceImpl
 		}
 
 		CommerceShipment commerceShipment =
-			commerceShipmentPersistence.fetchByC_ERC(
-				companyId, externalReferenceCode);
+			commerceShipmentPersistence.fetchByERC_C(
+				externalReferenceCode, companyId);
 
 		if (commerceShipment == null) {
 			return;
@@ -909,29 +925,41 @@ public class CommerceShipmentLocalServiceImpl
 		}
 	}
 
-	@BeanReference(type = CommerceAddressLocalService.class)
+	@Reference
 	private CommerceAddressLocalService _commerceAddressLocalService;
 
-	@BeanReference(type = CommerceOrderItemLocalService.class)
+	@Reference
+	private CommerceModelAttributesProvider _commerceModelAttributesProvider;
+
+	@Reference
 	private CommerceOrderItemLocalService _commerceOrderItemLocalService;
 
-	@BeanReference(type = CommerceOrderLocalService.class)
+	@Reference
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
-	@BeanReference(type = CommerceShipmentItemLocalService.class)
+	@Reference
 	private CommerceShipmentItemLocalService _commerceShipmentItemLocalService;
 
-	@BeanReference(type = CommerceShippingMethodLocalService.class)
+	@Reference
 	private CommerceShippingMethodLocalService
 		_commerceShippingMethodLocalService;
 
-	@ServiceReference(type = DTOConverterRegistry.class)
+	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@ServiceReference(type = ExpandoRowLocalService.class)
+	@Reference
 	private ExpandoRowLocalService _expandoRowLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
+	private IndexerRegistry _indexerRegistry;
+
+	@Reference
+	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

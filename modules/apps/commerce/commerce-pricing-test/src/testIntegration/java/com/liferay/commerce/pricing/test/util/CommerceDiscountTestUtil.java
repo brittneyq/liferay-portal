@@ -15,11 +15,8 @@
 package com.liferay.commerce.pricing.test.util;
 
 import com.liferay.asset.kernel.model.AssetCategory;
-import com.liferay.commerce.account.model.CommerceAccountGroup;
 import com.liferay.commerce.discount.constants.CommerceDiscountConstants;
 import com.liferay.commerce.discount.model.CommerceDiscount;
-import com.liferay.commerce.discount.model.CommerceDiscountCommerceAccountGroupRel;
-import com.liferay.commerce.discount.service.CommerceDiscountCommerceAccountGroupRelLocalServiceUtil;
 import com.liferay.commerce.discount.service.CommerceDiscountLocalServiceUtil;
 import com.liferay.commerce.discount.service.CommerceDiscountRelLocalServiceUtil;
 import com.liferay.commerce.product.model.CPDefinition;
@@ -39,20 +36,6 @@ import java.util.Calendar;
  */
 public class CommerceDiscountTestUtil {
 
-	public static CommerceDiscountCommerceAccountGroupRel
-			addAccountGroupToDiscount(
-				long userId, CommerceDiscount commerceDiscount)
-		throws Exception {
-
-		CommerceAccountGroup commerceAccountGroup = null;
-
-		return CommerceDiscountCommerceAccountGroupRelLocalServiceUtil.
-			addCommerceDiscountCommerceAccountGroupRel(
-				userId, commerceDiscount.getCommerceDiscountId(),
-				commerceAccountGroup.getCommerceAccountGroupId(),
-				ServiceContextTestUtil.getServiceContext());
-	}
-
 	public static CommerceDiscount addCouponDiscount(
 			long groupId, double amount, String couponCode, String target,
 			long... targetIds)
@@ -71,23 +54,6 @@ public class CommerceDiscountTestUtil {
 			commerceDiscount);
 	}
 
-	public static CommerceDiscountCommerceAccountGroupRel
-			addDiscountCommerceAccountGroupRel(
-				CommerceDiscount commerceDiscount,
-				CommerceAccountGroup commerceAccountGroup)
-		throws Exception {
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext();
-
-		return CommerceDiscountCommerceAccountGroupRelLocalServiceUtil.
-			addCommerceDiscountCommerceAccountGroupRel(
-				serviceContext.getUserId(),
-				commerceDiscount.getCommerceDiscountId(),
-				commerceAccountGroup.getCommerceAccountGroupId(),
-				serviceContext);
-	}
-
 	public static CommerceDiscount addFixedCommerceDiscount(
 			long groupId, double amount, String target, long... targetIds)
 		throws Exception {
@@ -97,7 +63,7 @@ public class CommerceDiscountTestUtil {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(groupId);
 
-		User user = UserLocalServiceUtil.getDefaultUser(
+		User user = UserLocalServiceUtil.getGuestUser(
 			serviceContext.getCompanyId());
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(user.getTimeZone());
@@ -129,7 +95,7 @@ public class CommerceDiscountTestUtil {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(groupId);
 
-		User user = UserLocalServiceUtil.getDefaultUser(
+		User user = UserLocalServiceUtil.getGuestUser(
 			serviceContext.getCompanyId());
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(user.getTimeZone());
@@ -167,7 +133,7 @@ public class CommerceDiscountTestUtil {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(groupId);
 
-		User user = UserLocalServiceUtil.getDefaultUser(
+		User user = UserLocalServiceUtil.getGuestUser(
 			serviceContext.getCompanyId());
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(user.getTimeZone());

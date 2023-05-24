@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Rafael Praxedes
  */
-@Component(immediate = true, service = PortalInstanceLifecycleListener.class)
+@Component(service = PortalInstanceLifecycleListener.class)
 public class AddDefaultKaleoProcessStructuresPortalInstanceLifecycleListener
 	extends BasePortalInstanceLifecycleListener {
 
@@ -49,13 +49,13 @@ public class AddDefaultKaleoProcessStructuresPortalInstanceLifecycleListener
 
 		serviceContext.setScopeGroupId(group.getGroupId());
 
-		long defaultUserId = _userLocalService.getDefaultUserId(
+		long guestUserId = _userLocalService.getGuestUserId(
 			company.getCompanyId());
 
-		serviceContext.setUserId(defaultUserId);
+		serviceContext.setUserId(guestUserId);
 
 		_defaultDDMStructureHelper.addDDMStructures(
-			defaultUserId, group.getGroupId(),
+			guestUserId, group.getGroupId(),
 			_portal.getClassNameId(KaleoProcess.class),
 			AddDefaultKaleoProcessStructuresPortalInstanceLifecycleListener.
 				class.getClassLoader(),

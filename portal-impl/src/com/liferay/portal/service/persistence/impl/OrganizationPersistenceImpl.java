@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.exception.DuplicateOrganizationExternalReferenceCodeException;
 import com.liferay.portal.kernel.exception.NoSuchOrganizationException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -60,7 +61,6 @@ import com.liferay.portal.model.impl.OrganizationModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -204,7 +204,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -949,7 +949,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1181,7 +1182,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -1974,7 +1975,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2211,7 +2213,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -2908,7 +2910,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3102,7 +3105,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -3800,7 +3803,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4001,7 +4005,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -4752,7 +4756,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId, parentOrganizationId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4952,7 +4957,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -5752,7 +5757,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId, treePath};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -5961,7 +5967,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByC_N, finderArgs);
+				_finderPathFetchByC_N, finderArgs, this);
 		}
 
 		if (result instanceof Organization) {
@@ -6081,7 +6087,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId, name};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -6242,7 +6249,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -7038,7 +7045,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId, name};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -7274,7 +7282,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -7694,7 +7702,8 @@ public class OrganizationPersistenceImpl
 				organizationId, companyId, parentOrganizationId
 			};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -7919,7 +7928,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Organization organization : list) {
@@ -8764,7 +8773,8 @@ public class OrganizationPersistenceImpl
 
 			finderArgs = new Object[] {companyId, parentOrganizationId, name};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -8909,35 +8919,35 @@ public class OrganizationPersistenceImpl
 	private static final String _FINDER_COLUMN_C_P_LIKEN_NAME_3 =
 		"(organization.name IS NULL OR organization.name LIKE '')";
 
-	private FinderPath _finderPathFetchByC_ERC;
-	private FinderPath _finderPathCountByC_ERC;
+	private FinderPath _finderPathFetchByERC_C;
+	private FinderPath _finderPathCountByERC_C;
 
 	/**
-	 * Returns the organization where companyId = &#63; and externalReferenceCode = &#63; or throws a <code>NoSuchOrganizationException</code> if it could not be found.
+	 * Returns the organization where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchOrganizationException</code> if it could not be found.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
 	 * @return the matching organization
 	 * @throws NoSuchOrganizationException if a matching organization could not be found
 	 */
 	@Override
-	public Organization findByC_ERC(
-			long companyId, String externalReferenceCode)
+	public Organization findByERC_C(
+			String externalReferenceCode, long companyId)
 		throws NoSuchOrganizationException {
 
-		Organization organization = fetchByC_ERC(
-			companyId, externalReferenceCode);
+		Organization organization = fetchByERC_C(
+			externalReferenceCode, companyId);
 
 		if (organization == null) {
 			StringBundler sb = new StringBundler(6);
 
 			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			sb.append("companyId=");
-			sb.append(companyId);
-
-			sb.append(", externalReferenceCode=");
+			sb.append("externalReferenceCode=");
 			sb.append(externalReferenceCode);
+
+			sb.append(", companyId=");
+			sb.append(companyId);
 
 			sb.append("}");
 
@@ -8952,30 +8962,30 @@ public class OrganizationPersistenceImpl
 	}
 
 	/**
-	 * Returns the organization where companyId = &#63; and externalReferenceCode = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the organization where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
 	 * @return the matching organization, or <code>null</code> if a matching organization could not be found
 	 */
 	@Override
-	public Organization fetchByC_ERC(
-		long companyId, String externalReferenceCode) {
+	public Organization fetchByERC_C(
+		String externalReferenceCode, long companyId) {
 
-		return fetchByC_ERC(companyId, externalReferenceCode, true);
+		return fetchByERC_C(externalReferenceCode, companyId, true);
 	}
 
 	/**
-	 * Returns the organization where companyId = &#63; and externalReferenceCode = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the organization where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching organization, or <code>null</code> if a matching organization could not be found
 	 */
 	@Override
-	public Organization fetchByC_ERC(
-		long companyId, String externalReferenceCode, boolean useFinderCache) {
+	public Organization fetchByERC_C(
+		String externalReferenceCode, long companyId, boolean useFinderCache) {
 
 		externalReferenceCode = Objects.toString(externalReferenceCode, "");
 
@@ -8985,23 +8995,23 @@ public class OrganizationPersistenceImpl
 		Object[] finderArgs = null;
 
 		if (useFinderCache && productionMode) {
-			finderArgs = new Object[] {companyId, externalReferenceCode};
+			finderArgs = new Object[] {externalReferenceCode, companyId};
 		}
 
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByC_ERC, finderArgs);
+				_finderPathFetchByERC_C, finderArgs, this);
 		}
 
 		if (result instanceof Organization) {
 			Organization organization = (Organization)result;
 
-			if ((companyId != organization.getCompanyId()) ||
-				!Objects.equals(
+			if (!Objects.equals(
 					externalReferenceCode,
-					organization.getExternalReferenceCode())) {
+					organization.getExternalReferenceCode()) ||
+				(companyId != organization.getCompanyId())) {
 
 				result = null;
 			}
@@ -9012,18 +9022,18 @@ public class OrganizationPersistenceImpl
 
 			sb.append(_SQL_SELECT_ORGANIZATION_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_ERC_COMPANYID_2);
-
 			boolean bindExternalReferenceCode = false;
 
 			if (externalReferenceCode.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_ERC_EXTERNALREFERENCECODE_3);
+				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3);
 			}
 			else {
 				bindExternalReferenceCode = true;
 
-				sb.append(_FINDER_COLUMN_C_ERC_EXTERNALREFERENCECODE_2);
+				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2);
 			}
+
+			sb.append(_FINDER_COLUMN_ERC_C_COMPANYID_2);
 
 			String sql = sb.toString();
 
@@ -9036,18 +9046,18 @@ public class OrganizationPersistenceImpl
 
 				QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(companyId);
-
 				if (bindExternalReferenceCode) {
 					queryPos.add(externalReferenceCode);
 				}
+
+				queryPos.add(companyId);
 
 				List<Organization> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache && productionMode) {
 						FinderCacheUtil.putResult(
-							_finderPathFetchByC_ERC, finderArgs, list);
+							_finderPathFetchByERC_C, finderArgs, list);
 					}
 				}
 				else {
@@ -9075,32 +9085,32 @@ public class OrganizationPersistenceImpl
 	}
 
 	/**
-	 * Removes the organization where companyId = &#63; and externalReferenceCode = &#63; from the database.
+	 * Removes the organization where externalReferenceCode = &#63; and companyId = &#63; from the database.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
 	 * @return the organization that was removed
 	 */
 	@Override
-	public Organization removeByC_ERC(
-			long companyId, String externalReferenceCode)
+	public Organization removeByERC_C(
+			String externalReferenceCode, long companyId)
 		throws NoSuchOrganizationException {
 
-		Organization organization = findByC_ERC(
-			companyId, externalReferenceCode);
+		Organization organization = findByERC_C(
+			externalReferenceCode, companyId);
 
 		return remove(organization);
 	}
 
 	/**
-	 * Returns the number of organizations where companyId = &#63; and externalReferenceCode = &#63;.
+	 * Returns the number of organizations where externalReferenceCode = &#63; and companyId = &#63;.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param companyId the company ID
 	 * @return the number of matching organizations
 	 */
 	@Override
-	public int countByC_ERC(long companyId, String externalReferenceCode) {
+	public int countByERC_C(String externalReferenceCode, long companyId) {
 		externalReferenceCode = Objects.toString(externalReferenceCode, "");
 
 		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
@@ -9112,11 +9122,12 @@ public class OrganizationPersistenceImpl
 		Long count = null;
 
 		if (productionMode) {
-			finderPath = _finderPathCountByC_ERC;
+			finderPath = _finderPathCountByERC_C;
 
-			finderArgs = new Object[] {companyId, externalReferenceCode};
+			finderArgs = new Object[] {externalReferenceCode, companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -9124,18 +9135,18 @@ public class OrganizationPersistenceImpl
 
 			sb.append(_SQL_COUNT_ORGANIZATION_WHERE);
 
-			sb.append(_FINDER_COLUMN_C_ERC_COMPANYID_2);
-
 			boolean bindExternalReferenceCode = false;
 
 			if (externalReferenceCode.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_ERC_EXTERNALREFERENCECODE_3);
+				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3);
 			}
 			else {
 				bindExternalReferenceCode = true;
 
-				sb.append(_FINDER_COLUMN_C_ERC_EXTERNALREFERENCECODE_2);
+				sb.append(_FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2);
 			}
+
+			sb.append(_FINDER_COLUMN_ERC_C_COMPANYID_2);
 
 			String sql = sb.toString();
 
@@ -9148,11 +9159,11 @@ public class OrganizationPersistenceImpl
 
 				QueryPos queryPos = QueryPos.getInstance(query);
 
-				queryPos.add(companyId);
-
 				if (bindExternalReferenceCode) {
 					queryPos.add(externalReferenceCode);
 				}
+
+				queryPos.add(companyId);
 
 				count = (Long)query.uniqueResult();
 
@@ -9171,14 +9182,14 @@ public class OrganizationPersistenceImpl
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_C_ERC_COMPANYID_2 =
-		"organization.companyId = ? AND ";
+	private static final String _FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_2 =
+		"organization.externalReferenceCode = ? AND ";
 
-	private static final String _FINDER_COLUMN_C_ERC_EXTERNALREFERENCECODE_2 =
-		"organization.externalReferenceCode = ?";
+	private static final String _FINDER_COLUMN_ERC_C_EXTERNALREFERENCECODE_3 =
+		"(organization.externalReferenceCode IS NULL OR organization.externalReferenceCode = '') AND ";
 
-	private static final String _FINDER_COLUMN_C_ERC_EXTERNALREFERENCECODE_3 =
-		"(organization.externalReferenceCode IS NULL OR organization.externalReferenceCode = '')";
+	private static final String _FINDER_COLUMN_ERC_C_COMPANYID_2 =
+		"organization.companyId = ?";
 
 	public OrganizationPersistenceImpl() {
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
@@ -9217,10 +9228,10 @@ public class OrganizationPersistenceImpl
 			organization);
 
 		FinderCacheUtil.putResult(
-			_finderPathFetchByC_ERC,
+			_finderPathFetchByERC_C,
 			new Object[] {
-				organization.getCompanyId(),
-				organization.getExternalReferenceCode()
+				organization.getExternalReferenceCode(),
+				organization.getCompanyId()
 			},
 			organization);
 	}
@@ -9310,14 +9321,14 @@ public class OrganizationPersistenceImpl
 			_finderPathFetchByC_N, args, organizationModelImpl);
 
 		args = new Object[] {
-			organizationModelImpl.getCompanyId(),
-			organizationModelImpl.getExternalReferenceCode()
+			organizationModelImpl.getExternalReferenceCode(),
+			organizationModelImpl.getCompanyId()
 		};
 
 		FinderCacheUtil.putResult(
-			_finderPathCountByC_ERC, args, Long.valueOf(1));
+			_finderPathCountByERC_C, args, Long.valueOf(1));
 		FinderCacheUtil.putResult(
-			_finderPathFetchByC_ERC, args, organizationModelImpl);
+			_finderPathFetchByERC_C, args, organizationModelImpl);
 	}
 
 	/**
@@ -9467,6 +9478,31 @@ public class OrganizationPersistenceImpl
 
 		if (Validator.isNull(organization.getExternalReferenceCode())) {
 			organization.setExternalReferenceCode(organization.getUuid());
+		}
+		else {
+			Organization ercOrganization = fetchByERC_C(
+				organization.getExternalReferenceCode(),
+				organization.getCompanyId());
+
+			if (isNew) {
+				if (ercOrganization != null) {
+					throw new DuplicateOrganizationExternalReferenceCodeException(
+						"Duplicate organization with external reference code " +
+							organization.getExternalReferenceCode() +
+								" and company " + organization.getCompanyId());
+				}
+			}
+			else {
+				if ((ercOrganization != null) &&
+					(organization.getOrganizationId() !=
+						ercOrganization.getOrganizationId())) {
+
+					throw new DuplicateOrganizationExternalReferenceCodeException(
+						"Duplicate organization with external reference code " +
+							organization.getExternalReferenceCode() +
+								" and company " + organization.getCompanyId());
+				}
+			}
 		}
 
 		ServiceContext serviceContext =
@@ -9807,7 +9843,7 @@ public class OrganizationPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<Organization>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -9883,7 +9919,7 @@ public class OrganizationPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -10608,7 +10644,7 @@ public class OrganizationPersistenceImpl
 		ctStrictColumnNames.add("recursable");
 		ctStrictColumnNames.add("regionId");
 		ctStrictColumnNames.add("countryId");
-		ctStrictColumnNames.add("statusId");
+		ctStrictColumnNames.add("statusListTypeId");
 		ctStrictColumnNames.add("comments");
 		ctStrictColumnNames.add("logoId");
 		ctStrictColumnNames.add("groups_");
@@ -10629,7 +10665,7 @@ public class OrganizationPersistenceImpl
 		_uniqueIndexColumnNames.add(new String[] {"companyId", "name"});
 
 		_uniqueIndexColumnNames.add(
-			new String[] {"companyId", "externalReferenceCode"});
+			new String[] {"externalReferenceCode", "companyId"});
 	}
 
 	/**
@@ -10828,42 +10864,26 @@ public class OrganizationPersistenceImpl
 			},
 			new String[] {"companyId", "parentOrganizationId", "name"}, false);
 
-		_finderPathFetchByC_ERC = new FinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_ERC",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "externalReferenceCode"}, true);
+		_finderPathFetchByERC_C = new FinderPath(
+			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+			new String[] {String.class.getName(), Long.class.getName()},
+			new String[] {"externalReferenceCode", "companyId"}, true);
 
-		_finderPathCountByC_ERC = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_ERC",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "externalReferenceCode"}, false);
+		_finderPathCountByERC_C = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByERC_C",
+			new String[] {String.class.getName(), Long.class.getName()},
+			new String[] {"externalReferenceCode", "companyId"}, false);
 
-		_setOrganizationUtilPersistence(this);
+		OrganizationUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setOrganizationUtilPersistence(null);
+		OrganizationUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(OrganizationImpl.class.getName());
 
 		TableMapperFactory.removeTableMapper("Groups_Orgs");
 		TableMapperFactory.removeTableMapper("Users_Orgs");
-	}
-
-	private void _setOrganizationUtilPersistence(
-		OrganizationPersistence organizationPersistence) {
-
-		try {
-			Field field = OrganizationUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, organizationPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@BeanReference(type = GroupPersistence.class)

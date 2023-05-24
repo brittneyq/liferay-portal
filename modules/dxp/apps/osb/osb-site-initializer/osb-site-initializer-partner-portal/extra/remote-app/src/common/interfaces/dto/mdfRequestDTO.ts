@@ -11,6 +11,9 @@
 
 import AccountEntry from '../accountEntry';
 import MDFRequest from '../mdfRequest';
+import User from '../user';
+import MDFClaimDTO from './mdfClaimDTO';
+import MDFRequestActivityDTO from './mdfRequestActivityDTO';
 
 export default interface MDFRequestDTO
 	extends Omit<
@@ -21,12 +24,22 @@ export default interface MDFRequestDTO
 		| 'targetMarkets'
 		| 'company'
 	> {
+	companyName?: string;
+	emailAddress?: string;
+	externalReferenceCode?: string;
+	externalReferenceCodeSF?: string;
 	liferayBusinessSalesGoals?: string;
-	r_accountToMDFRequests_accountEntry?: AccountEntry;
-	r_accountToMDFRequests_accountEntryId?: number;
+	liferayBusinessSalesGoalsOther?: string;
+	liferaysUserIdSF?: number;
+	mdfReqToActs?: MDFRequestActivityDTO[];
+	mdfReqToMDFClms?: MDFClaimDTO[];
+	r_accToMDFReqs_accountEntry?: AccountEntry;
+	r_accToMDFReqs_accountEntryId?: number;
+	r_usrToMDFReqs_user?: User;
+	r_usrToMDFReqs_userId?: number;
 	targetAudienceRoles?: string;
 	targetMarkets?: string;
-	totalCostOfExpense?: number;
-	totalMDFRequestAmount?: number;
+	totalCostOfExpense: number;
+	totalMDFRequestAmount: number;
 	totalRequested?: number;
 }

@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		MFAFIDO2CredentialEntryModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.multi.factor.authentication.fido2.credential.model.impl.MFAFIDO2CredentialEntryImpl",
+		"table.name=MFAFIDO2CredentialEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class MFAFIDO2CredentialEntryModelArgumentsResolver
 	implements ArgumentsResolver {

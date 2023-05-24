@@ -394,29 +394,11 @@ public class CommerceOrderLocalServiceUtil {
 			commerceAccountId, groupId, userId, orderStatus);
 	}
 
-	/**
-	 * Returns the commerce order with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce order's external reference code
-	 * @return the matching commerce order, or <code>null</code> if a matching commerce order could not be found
-	 */
 	public static CommerceOrder fetchCommerceOrderByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
 		return getService().fetchCommerceOrderByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommerceOrderByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	public static CommerceOrder fetchCommerceOrderByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return getService().fetchCommerceOrderByReferenceCode(
-			companyId, externalReferenceCode);
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -451,20 +433,12 @@ public class CommerceOrderLocalServiceUtil {
 		return getService().getCommerceOrder(commerceOrderId);
 	}
 
-	/**
-	 * Returns the commerce order with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce order's external reference code
-	 * @return the matching commerce order
-	 * @throws PortalException if a matching commerce order could not be found
-	 */
 	public static CommerceOrder getCommerceOrderByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
 		return getService().getCommerceOrderByExternalReferenceCode(
-			companyId, externalReferenceCode);
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -535,6 +509,17 @@ public class CommerceOrderLocalServiceUtil {
 		return getService().getCommerceOrders(
 			companyId, groupId, commerceAccountIds, keywords, orderStatuses,
 			excludeOrderStatus, start, end);
+	}
+
+	public static List<CommerceOrder> getCommerceOrders(
+			long companyId, long groupId, long[] commerceAccountIds,
+			String keywords, int[] orderStatuses, boolean excludeOrderStatus,
+			int start, int end, com.liferay.portal.kernel.search.Sort sort)
+		throws PortalException {
+
+		return getService().getCommerceOrders(
+			companyId, groupId, commerceAccountIds, keywords, orderStatuses,
+			excludeOrderStatus, start, end, sort);
 	}
 
 	public static List<CommerceOrder> getCommerceOrders(
@@ -701,13 +686,13 @@ public class CommerceOrderLocalServiceUtil {
 	}
 
 	public static void mergeGuestCommerceOrder(
-			long guestCommerceOrderId, long userCommerceOrderId,
+			long userId, long guestCommerceOrderId, long userCommerceOrderId,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		getService().mergeGuestCommerceOrder(
-			guestCommerceOrderId, userCommerceOrderId, commerceContext,
+			userId, guestCommerceOrderId, userCommerceOrderId, commerceContext,
 			serviceContext);
 	}
 
@@ -1075,12 +1060,11 @@ public class CommerceOrderLocalServiceUtil {
 
 	public static CommerceOrder updateStatus(
 			long userId, long commerceOrderId, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext,
 			Map<String, Serializable> workflowContext)
 		throws PortalException {
 
 		return getService().updateStatus(
-			userId, commerceOrderId, status, serviceContext, workflowContext);
+			userId, commerceOrderId, status, workflowContext);
 	}
 
 	public static CommerceOrder updateTermsAndConditions(
@@ -1121,6 +1105,10 @@ public class CommerceOrderLocalServiceUtil {
 
 	public static CommerceOrderLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(CommerceOrderLocalService service) {
+		_service = service;
 	}
 
 	private static volatile CommerceOrderLocalService _service;

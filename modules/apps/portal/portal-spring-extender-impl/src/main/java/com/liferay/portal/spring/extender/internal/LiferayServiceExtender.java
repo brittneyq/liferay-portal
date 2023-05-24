@@ -22,15 +22,16 @@ import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.spring.extender.internal.jdbc.DataSourceUtil;
 import com.liferay.portal.spring.extender.internal.loader.ModuleAggregareClassLoader;
+import com.liferay.portal.spring.extender.internal.upgrade.InitialUpgradeStep;
 import com.liferay.portal.spring.hibernate.PortletHibernateConfiguration;
 import com.liferay.portal.spring.hibernate.PortletTransactionManager;
 import com.liferay.portal.spring.transaction.DefaultTransactionExecutor;
 import com.liferay.portal.spring.transaction.TransactionExecutor;
-import com.liferay.portal.spring.transaction.TransactionHandler;
 import com.liferay.portal.spring.transaction.TransactionManagerFactory;
 
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 /**
  * @author Preston Crary
  */
-@Component(immediate = true, service = {})
+@Component(service = {})
 public class LiferayServiceExtender
 	implements BundleTrackerCustomizer
 		<LiferayServiceExtender.LiferayServiceExtension> {
@@ -148,6 +149,14 @@ public class LiferayServiceExtender
 						"origin.bundle.symbolic.name",
 						_extendeeBundle.getSymbolicName())));
 
+			InitialUpgradeStep initialUpgradeStep = new InitialUpgradeStep(
+				_extendeeBundle, _dataSource);
+
+			_serviceRegistrations.add(
+				extendeeBundleContext.registerService(
+					UpgradeStep.class, initialUpgradeStep,
+					initialUpgradeStep.buildServiceProperties()));
+
 			ClassLoader classLoader = new ModuleAggregareClassLoader(
 				extendeeClassLoader, _extendeeBundle.getSymbolicName());
 
@@ -183,11 +192,7 @@ public class LiferayServiceExtender
 
 			_serviceRegistrations.add(
 				extendeeBundleContext.registerService(
-					new String[] {
-						TransactionExecutor.class.getName(),
-						TransactionHandler.class.getName()
-					},
-					defaultTransactionExecutor,
+					TransactionExecutor.class, defaultTransactionExecutor,
 					MapUtil.singletonDictionary(
 						"origin.bundle.symbolic.name",
 						_extendeeBundle.getSymbolicName())));
@@ -229,24 +234,16 @@ public class LiferayServiceExtender
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		_bundleTracker = new BundleTracker<>(
-			bundleContext, Bundle.ACTIVE | Bundle.STARTING, this);
+			bundleContext, Bundle.ACTIVE, this);
 
-		FutureTask<Void> futureTask = new FutureTask<>(
-			() -> {
-				_bundleTracker.open();
+		DependencyManagerSyncUtil.registerSyncFutureTask(
+			new FutureTask<>(
+				() -> {
+					_bundleTracker.open();
 
-				return null;
-			});
-
-		Thread bundleTrackerOpenerThread = new Thread(
-			futureTask,
+					return null;
+				}),
 			LiferayServiceExtender.class.getName() + "-BundleTrackerOpener");
-
-		bundleTrackerOpenerThread.setDaemon(true);
-
-		bundleTrackerOpenerThread.start();
-
-		DependencyManagerSyncUtil.registerSyncFuture(futureTask);
 	}
 
 	@Deactivate

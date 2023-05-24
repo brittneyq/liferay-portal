@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.product.definitions.web.internal.frontend.data.set.provider;
 
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
+import com.liferay.account.constants.AccountConstants;
 import com.liferay.commerce.frontend.model.ImageField;
 import com.liferay.commerce.frontend.model.LabelField;
 import com.liferay.commerce.media.CommerceMediaResolverUtil;
@@ -51,7 +51,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceProductFDSNames.PRODUCT_IMAGES,
 	service = FDSDataProvider.class
 )
@@ -116,7 +115,7 @@ public class CommerceProductImageFDSDataProvider
 					new ImageField(
 						title, "rounded", "lg",
 						CommerceMediaResolverUtil.getThumbnailURL(
-							CommerceAccountConstants.ACCOUNT_ID_ADMIN,
+							AccountConstants.ACCOUNT_ENTRY_ID_ADMIN,
 							cpAttachmentFileEntryId)),
 					title, extension, cpAttachmentFileEntry.getPriority(),
 					_language.format(

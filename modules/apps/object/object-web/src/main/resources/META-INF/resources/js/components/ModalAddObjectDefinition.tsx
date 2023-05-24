@@ -21,11 +21,13 @@ import {
 	API,
 	FormError,
 	Input,
+	REQUIRED_MSG,
 	Select,
 	useForm,
 } from '@liferay/object-js-components-web';
 import React, {useEffect, useState} from 'react';
 
+import {defaultLanguageId} from '../utils/constants';
 import {
 	firstLetterUppercase,
 	removeAllSpecialCharacters,
@@ -61,7 +63,6 @@ const ModalAddObjectDefinition: React.FC<IProps> = ({
 		pluralLabel,
 		storageType,
 	}: TInitialValues) => {
-		const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
 		const objectDefinition: ObjectDefinition = {
 			label: {
 				[defaultLanguageId]: label,
@@ -92,13 +93,13 @@ const ModalAddObjectDefinition: React.FC<IProps> = ({
 		const errors: FormError<TInitialValues> = {};
 
 		if (!values.label) {
-			errors.label = Liferay.Language.get('required');
+			errors.label = REQUIRED_MSG;
 		}
 		if (!(values.name ?? values.label)) {
-			errors.name = Liferay.Language.get('required');
+			errors.name = REQUIRED_MSG;
 		}
 		if (!values.pluralLabel) {
-			errors.pluralLabel = Liferay.Language.get('required');
+			errors.pluralLabel = REQUIRED_MSG;
 		}
 
 		return errors;
@@ -111,10 +112,8 @@ const ModalAddObjectDefinition: React.FC<IProps> = ({
 	});
 
 	const selectedStorageType = (storageType: string) => {
-		const selected = storageType.toLowerCase();
-
-		return storageTypes.findIndex(
-			(type) => type.toLowerCase() === selected
+		return storageTypes.find(
+			(item) => item?.toLowerCase() === storageType?.toLowerCase()
 		);
 	};
 
@@ -167,10 +166,14 @@ const ModalAddObjectDefinition: React.FC<IProps> = ({
 							onChange={({target: {value}}) => {
 								setValues({
 									...values,
-									storageType: storageTypes[Number(value)],
+									storageType: storageTypes.find(
+										(storageType) => storageType === value
+									),
 								});
 							}}
-							options={storageTypes}
+							options={storageTypes.map((storageType) => {
+								return {label: storageType};
+							})}
 							tooltip={Liferay.Language.get(
 								'object-definition-storage-type-tooltip'
 							)}

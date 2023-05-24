@@ -34,8 +34,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	configurationPid = "com.liferay.commerce.shop.by.diagram.configuration.CSDiagramCPTypeConfiguration",
-	enabled = false, immediate = true,
 	property = {
 		"commerce.product.type.display.order:Integer=20",
 		"commerce.product.type.name=" + CSDiagramCPTypeConstants.NAME

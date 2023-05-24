@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -292,51 +290,23 @@ public abstract class CommerceInventoryReplenishmentItemLocalServiceBaseImpl
 			fetchByUuid_C_First(uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the commerce inventory replenishment item with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce inventory replenishment item's external reference code
-	 * @return the matching commerce inventory replenishment item, or <code>null</code> if a matching commerce inventory replenishment item could not be found
-	 */
 	@Override
 	public CommerceInventoryReplenishmentItem
 		fetchCommerceInventoryReplenishmentItemByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long companyId) {
 
-		return commerceInventoryReplenishmentItemPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceInventoryReplenishmentItemPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommerceInventoryReplenishmentItemByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public CommerceInventoryReplenishmentItem
-		fetchCommerceInventoryReplenishmentItemByReferenceCode(
-			long companyId, String externalReferenceCode) {
-
-		return fetchCommerceInventoryReplenishmentItemByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the commerce inventory replenishment item with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce inventory replenishment item's external reference code
-	 * @return the matching commerce inventory replenishment item
-	 * @throws PortalException if a matching commerce inventory replenishment item could not be found
-	 */
 	@Override
 	public CommerceInventoryReplenishmentItem
 			getCommerceInventoryReplenishmentItemByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return commerceInventoryReplenishmentItemPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceInventoryReplenishmentItemPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -591,7 +561,7 @@ public abstract class CommerceInventoryReplenishmentItemLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommerceInventoryReplenishmentItemLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -607,7 +577,7 @@ public abstract class CommerceInventoryReplenishmentItemLocalServiceBaseImpl
 		commerceInventoryReplenishmentItemLocalService =
 			(CommerceInventoryReplenishmentItemLocalService)aopProxy;
 
-		_setLocalServiceUtilService(
+		CommerceInventoryReplenishmentItemLocalServiceUtil.setService(
 			commerceInventoryReplenishmentItemLocalService);
 	}
 
@@ -651,24 +621,6 @@ public abstract class CommerceInventoryReplenishmentItemLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		CommerceInventoryReplenishmentItemLocalService
-			commerceInventoryReplenishmentItemLocalService) {
-
-		try {
-			Field field =
-				CommerceInventoryReplenishmentItemLocalServiceUtil.class.
-					getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceInventoryReplenishmentItemLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

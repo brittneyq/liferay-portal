@@ -26,4 +26,21 @@ public class TLDSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test("IncorrectEmptyLines.testtld");
 	}
 
+	@Test
+	public void testMissingCDATA() throws Exception {
+		test(
+			SourceProcessorTestParameters.create(
+				"MissingCDATA.testtld"
+			).addExpectedMessage(
+				"Use CDATA to warp each '<code>' in the description", 14
+			).addExpectedMessage(
+				"Missing CDATA after 'replaced by' in the description", 19
+			));
+	}
+
+	@Test
+	public void testUnnecessaryCDATA() throws Exception {
+		test("UnnecessaryCDATA.testtld");
+	}
+
 }

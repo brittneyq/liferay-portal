@@ -17,16 +17,16 @@
 <%@ include file="/init.jsp" %>
 
 <%
-AccountEntryDisplay accountEntryDisplay = AccountEntryDisplay.of(ParamUtil.getLong(request, "accountEntryId"));
+AccountEntryDisplay accountEntryDisplay = AccountEntryDisplayFactoryUtil.create(ParamUtil.getLong(request, "accountEntryId"), request);
 
 long defaultAddressId = 0;
 
 String type = ParamUtil.getString(request, "type");
 
-if (Objects.equals("billing", type)) {
+if (Objects.equals(type, "billing")) {
 	defaultAddressId = accountEntryDisplay.getDefaultBillingAddressId();
 }
-else if (Objects.equals("shipping", type)) {
+else if (Objects.equals(type, "shipping")) {
 	defaultAddressId = accountEntryDisplay.getDefaultShippingAddressId();
 }
 

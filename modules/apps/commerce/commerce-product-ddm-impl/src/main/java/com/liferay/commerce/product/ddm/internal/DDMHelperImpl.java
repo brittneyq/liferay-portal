@@ -14,26 +14,15 @@
 
 package com.liferay.commerce.product.ddm.internal;
 
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.context.CommerceContext;
-import com.liferay.commerce.media.CommerceMediaResolver;
 import com.liferay.commerce.product.constants.CPConstants;
 import com.liferay.commerce.product.ddm.DDMHelper;
 import com.liferay.commerce.product.model.CPDefinitionOptionRel;
 import com.liferay.commerce.product.model.CPDefinitionOptionValueRel;
-import com.liferay.commerce.product.permission.CommerceProductViewPermission;
-import com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService;
-import com.liferay.commerce.product.service.CPDefinitionLocalService;
-import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPDefinitionOptionValueRelLocalService;
-import com.liferay.commerce.product.service.CPInstanceLocalService;
-import com.liferay.commerce.product.service.CPInstanceOptionValueRelLocalService;
-import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.DDMFormValuesHelper;
-import com.liferay.commerce.product.util.JsonHelper;
 import com.liferay.commerce.util.CommerceUtil;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -42,9 +31,10 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -57,8 +47,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -75,7 +63,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  * @author Igor Beslic
  */
-@Component(enabled = false, immediate = true, service = DDMHelper.class)
+@Component(service = DDMHelper.class)
 public class DDMHelperImpl implements DDMHelper {
 
 	@Override
@@ -125,19 +113,20 @@ public class DDMHelperImpl implements DDMHelper {
 	@Override
 	public String renderCPAttachmentFileEntryOptions(
 			long cpDefinitionId, String json, PageContext pageContext,
-			RenderRequest renderRequest, RenderResponse renderResponse,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
 			Map<CPDefinitionOptionRel, List<CPDefinitionOptionValueRel>>
 				cpDefinitionOptionRelCPDefinitionOptionValueRels)
 		throws PortalException {
 
-		Locale locale = _portal.getLocale(renderRequest);
+		Locale locale = _portal.getLocale(httpServletRequest);
 
 		DDMForm ddmForm = getCPAttachmentFileEntryDDMForm(
 			locale, cpDefinitionOptionRelCPDefinitionOptionValueRels);
 
 		return _render(
-			cpDefinitionId, locale, ddmForm, json, pageContext, renderRequest,
-			renderResponse);
+			cpDefinitionId, locale, ddmForm, json, pageContext,
+			httpServletRequest, httpServletResponse);
 	}
 
 	@Override
@@ -154,47 +143,50 @@ public class DDMHelperImpl implements DDMHelper {
 	@Override
 	public String renderCPInstanceOptions(
 			long cpDefinitionId, String json, boolean ignoreSKUCombinations,
-			RenderRequest renderRequest, RenderResponse renderResponse,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
 			Map<CPDefinitionOptionRel, List<CPDefinitionOptionValueRel>>
 				cpDefinitionOptionRelCPDefinitionOptionValueRels)
 		throws PortalException {
 
-		Locale locale = _portal.getLocale(renderRequest);
+		Locale locale = _portal.getLocale(httpServletRequest);
 
 		DDMForm ddmForm = getCPInstanceDDMForm(
 			locale, ignoreSKUCombinations,
 			cpDefinitionOptionRelCPDefinitionOptionValueRels);
 
 		return _render(
-			cpDefinitionId, locale, ddmForm, json, renderRequest,
-			renderResponse);
+			cpDefinitionId, locale, ddmForm, json, null, httpServletRequest,
+			httpServletResponse);
 	}
 
 	@Override
 	public String renderPublicStoreOptions(
 			long cpDefinitionId, String json, boolean ignoreSKUCombinations,
-			RenderRequest renderRequest, RenderResponse renderResponse,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
 			Map<CPDefinitionOptionRel, List<CPDefinitionOptionValueRel>>
 				cpDefinitionOptionRelCPDefinitionOptionValueRels)
 		throws PortalException {
 
-		Locale locale = _portal.getLocale(renderRequest);
+		Locale locale = _portal.getLocale(httpServletRequest);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		DDMForm ddmForm = getPublicStoreDDMForm(
-			_portal.getScopeGroupId(renderRequest),
+			_portal.getScopeGroupId(httpServletRequest),
 			CommerceUtil.getCommerceAccountId(
-				(CommerceContext)renderRequest.getAttribute(
+				(CommerceContext)httpServletRequest.getAttribute(
 					CommerceWebKeys.COMMERCE_CONTEXT)),
 			cpDefinitionId, locale, ignoreSKUCombinations,
 			cpDefinitionOptionRelCPDefinitionOptionValueRels,
 			themeDisplay.getCompanyId(), themeDisplay.getUserId());
 
 		return _render(
-			cpDefinitionId, locale, ddmForm, json, renderRequest,
-			renderResponse);
+			cpDefinitionId, locale, ddmForm, json, null, httpServletRequest,
+			httpServletResponse);
 	}
 
 	private DDMFormRule _createDDMFormRule(
@@ -223,12 +215,12 @@ public class DDMHelperImpl implements DDMHelper {
 		DDMForm ddmForm, long groupId, long commerceAccountId,
 		long cpDefinitionId, long companyId, long userId, Locale locale) {
 
-		return String.format(
-			"call('getCPInstanceOptionsValues', concat(%s), '%s')",
+		return StringBundler.concat(
+			"call('getCPInstanceOptionsValues', concat(",
 			_createDDMFormRuleInputMapping(
 				ddmForm, groupId, commerceAccountId, cpDefinitionId, companyId,
 				userId, locale),
-			_createDDMFormRuleOutputMapping(ddmForm));
+			"), '", _createDDMFormRuleOutputMapping(ddmForm), "')");
 	}
 
 	private String _createDDMFormRuleInputMapping(
@@ -241,51 +233,50 @@ public class DDMHelperImpl implements DDMHelper {
 
 		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
 
-		Stream<DDMFormField> stream = ddmFormFields.stream();
+		StringBundler sb = new StringBundler((ddmFormFields.size() * 5) + 13);
 
-		Stream<String> inputMappingStatementStream = stream.map(
-			field -> String.format(
-				"'%s=', getValue('%s')", field.getName(), field.getName()));
+		sb.append("'locale=");
+		sb.append(LocaleUtil.toLanguageId(locale));
+		sb.append("', ';','userId=");
+		sb.append(userId);
+		sb.append("', ';','commerceAccountId=");
+		sb.append(commerceAccountId);
+		sb.append("', ';','groupId=");
+		sb.append(groupId);
+		sb.append("', ';','cpDefinitionId=");
+		sb.append(cpDefinitionId);
+		sb.append("', ';','companyId=");
+		sb.append(companyId);
+		sb.append("'");
 
-		inputMappingStatementStream = Stream.concat(
-			Stream.of(String.format("'companyId=%s'", companyId)),
-			inputMappingStatementStream);
+		for (DDMFormField ddmFormField : ddmFormFields) {
+			sb.append(", ';','");
+			sb.append(ddmFormField.getName());
+			sb.append("=', getValue('");
+			sb.append(ddmFormField.getName());
+			sb.append("')");
+		}
 
-		inputMappingStatementStream = Stream.concat(
-			Stream.of(String.format("'cpDefinitionId=%s'", cpDefinitionId)),
-			inputMappingStatementStream);
-
-		inputMappingStatementStream = Stream.concat(
-			Stream.of(String.format("'groupId=%s'", groupId)),
-			inputMappingStatementStream);
-
-		inputMappingStatementStream = Stream.concat(
-			Stream.of(
-				String.format("'commerceAccountId=%s'", commerceAccountId)),
-			inputMappingStatementStream);
-
-		inputMappingStatementStream = Stream.concat(
-			Stream.of(String.format("'userId=%s'", userId)),
-			inputMappingStatementStream);
-
-		inputMappingStatementStream = Stream.concat(
-			Stream.of(
-				String.format("'locale=%s'", LocaleUtil.toLanguageId(locale))),
-			inputMappingStatementStream);
-
-		return inputMappingStatementStream.collect(
-			Collectors.joining(", ';',"));
+		return sb.toString();
 	}
 
 	private String _createDDMFormRuleOutputMapping(DDMForm ddmForm) {
 		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
 
-		Stream<DDMFormField> stream = ddmFormFields.stream();
+		StringBundler sb = new StringBundler(ddmFormFields.size() * 4);
 
-		Stream<String> stringStream = stream.map(
-			field -> String.format("%s=%s", field.getName(), field.getName()));
+		for (DDMFormField ddmFormField : ddmFormFields) {
+			sb.append(ddmFormField.getName());
+			sb.append(StringPool.EQUAL);
+			sb.append(ddmFormField.getName());
+			sb.append(StringPool.SEMICOLON);
+		}
 
-		return stringStream.collect(Collectors.joining(StringPool.SEMICOLON));
+		if (sb.index() > 0) {
+			sb.setIndex(sb.index() - 1);
+		}
+
+		return sb.toString();
 	}
 
 	private DDMForm _getDDMForm(
@@ -405,7 +396,7 @@ public class DDMHelperImpl implements DDMHelper {
 			if (arrayValueFieldType) {
 				localizedValue.addString(
 					curLocalizedValue.getDefaultLocale(),
-					String.format("[\"%s\"]", entry.getKey()));
+					"[\"" + entry.getKey() + "\"]");
 			}
 			else {
 				localizedValue.addString(
@@ -476,19 +467,13 @@ public class DDMHelperImpl implements DDMHelper {
 
 	private String _render(
 			long cpDefinitionId, Locale locale, DDMForm ddmForm, String json,
-			PageContext pageContext, RenderRequest renderRequest,
-			RenderResponse renderResponse)
+			PageContext pageContext, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws PortalException {
 
 		if (ddmForm == null) {
 			return StringPool.BLANK;
 		}
-
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			renderRequest);
-
-		HttpServletResponse httpServletResponse =
-			_portal.getHttpServletResponse(renderResponse);
 
 		if (pageContext != null) {
 			httpServletResponse =
@@ -504,8 +489,16 @@ public class DDMHelperImpl implements DDMHelper {
 		ddmFormRenderingContext.setHttpServletRequest(httpServletRequest);
 		ddmFormRenderingContext.setHttpServletResponse(httpServletResponse);
 		ddmFormRenderingContext.setLocale(locale);
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
 		ddmFormRenderingContext.setPortletNamespace(
-			renderResponse.getNamespace());
+			portletDisplay.getNamespace());
+
 		ddmFormRenderingContext.setShowRequiredFieldsWarning(false);
 
 		if (Validator.isNotNull(json)) {
@@ -518,16 +511,6 @@ public class DDMHelperImpl implements DDMHelper {
 		}
 
 		return _ddmFormRenderer.render(ddmForm, ddmFormRenderingContext);
-	}
-
-	private String _render(
-			long cpDefinitionId, Locale locale, DDMForm ddmForm, String json,
-			RenderRequest renderRequest, RenderResponse renderResponse)
-		throws PortalException {
-
-		return _render(
-			cpDefinitionId, locale, ddmForm, json, null, renderRequest,
-			renderResponse);
 	}
 
 	private void _setPredefinedValue(
@@ -562,53 +545,14 @@ public class DDMHelperImpl implements DDMHelper {
 	};
 
 	@Reference
-	private CommerceAccountHelper _commerceAccountHelper;
-
-	@Reference
-	private CommerceChannelLocalService _commerceChannelLocalService;
-
-	@Reference
-	private CommerceMediaResolver _commerceMediaResolver;
-
-	@Reference
-	private CommerceProductViewPermission _commerceProductViewPermission;
-
-	@Reference
-	private CPAttachmentFileEntryLocalService
-		_cpAttachmentFileEntryLocalService;
-
-	@Reference
-	private CPDefinitionLocalService _cpDefinitionLocalService;
-
-	@Reference
-	private CPDefinitionOptionRelLocalService
-		_cpDefinitionOptionRelLocalService;
-
-	@Reference
 	private CPDefinitionOptionValueRelLocalService
 		_cpDefinitionOptionValueRelLocalService;
-
-	@Reference
-	private CPInstanceLocalService _cpInstanceLocalService;
-
-	@Reference
-	private CPInstanceOptionValueRelLocalService
-		_cpInstanceOptionValueRelLocalService;
-
-	@Reference
-	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
 
 	@Reference
 	private DDMFormRenderer _ddmFormRenderer;
 
 	@Reference
 	private DDMFormValuesHelper _ddmFormValuesHelper;
-
-	@Reference
-	private JSONFactory _jsonFactory;
-
-	@Reference
-	private JsonHelper _jsonHelper;
 
 	@Reference
 	private Portal _portal;

@@ -19,7 +19,7 @@ import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import {debounce} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React, {useRef, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 
 import {useActiveItemId} from '../../../app/contexts/ControlsContext';
 import {
@@ -28,16 +28,14 @@ import {
 	useStyleErrors,
 } from '../../../app/contexts/StyleErrorsContext';
 import {getResetLabelByViewport} from '../../../app/utils/getResetLabelByViewport';
-import {useId} from '../../../core/hooks/useId';
-import {ConfigurationFieldPropTypes} from '../../../prop-types/index';
+import {ConfigurationFieldPropTypes} from '../../../prop_types/index';
+import {useId} from '../../hooks/useId';
 import {DropdownColorPicker} from './DropdownColorPicker';
 import {parseColorValue} from './parseColorValue';
 
 import './ColorPicker.scss';
 
-export const DEFAULT_TOKEN_LABEL = Liferay.FeatureFlags['LPS-143206']
-	? Liferay.Language.get('inherited')
-	: Liferay.Language.get('default');
+export const DEFAULT_TOKEN_LABEL = Liferay.Language.get('inherited');
 
 const debouncedOnValueSelect = debounce(
 	(onValueSelect, fieldName, value) => onValueSelect(fieldName, value),
@@ -82,7 +80,7 @@ export function ColorPicker({
 	const [activeColorPicker, setActiveColorPicker] = useState(false);
 	const [clearedValue, setClearedValue] = useState(false);
 	const [color, setColor] = usePropsFirst(
-		tokenValues[value]?.value || value,
+		tokenValues[value]?.value || value || defaultTokenValue,
 		{forceProp: clearedValue}
 	);
 	const colorButtonRef = useRef(null);
@@ -93,7 +91,9 @@ export function ColorPicker({
 	});
 	const inputRef = useRef(null);
 	const [tokenLabel, setTokenLabel] = usePropsFirst(
-		value ? tokenValues[value]?.label : defaultTokenLabel,
+		value
+			? tokenValues[value]?.label
+			: field.inherited && defaultTokenLabel,
 		{forceProp: clearedValue}
 	);
 
@@ -214,6 +214,14 @@ export function ColorPicker({
 		}
 	};
 
+	const resetButtonLabel = useMemo(
+		() =>
+			selectedViewportSize
+				? getResetLabelByViewport(selectedViewportSize)
+				: Liferay.Language.get('clear-selection'),
+		[selectedViewportSize]
+	);
+
 	return (
 		<ClayForm.Group small>
 			<label className={classNames({'sr-only': !showLabel})} id={labelId}>
@@ -233,6 +241,7 @@ export function ColorPicker({
 						active={activeDropdownColorPicker}
 						colors={colors}
 						fieldLabel={showLabel ? null : field.label}
+						inherited={!value && field.inherited}
 						label={tokenLabel}
 						onSetActive={setActiveDropdownColorPicker}
 						onValueChange={({label, name, value}) =>
@@ -293,7 +302,7 @@ export function ColorPicker({
 								sizing="sm"
 								value={
 									error.value ||
-									(color.startsWith('#')
+									(color?.startsWith('#')
 										? color.toUpperCase()
 										: color)
 								}
@@ -302,92 +311,83 @@ export function ColorPicker({
 					</ClayInput.Group>
 				)}
 
-				{value && (
-					<>
-						{tokenLabel ? (
-							canDetachTokenValues && (
-								<ClayButtonWithIcon
-									className="border-0 flex-shrink-0 mb-0 ml-2 page-editor__color-picker__action-button"
-									displayType="secondary"
-									onClick={() => {
-										setCustomColors([
-											tokenValues[value].value.replace(
-												'#',
-												''
-											),
-										]);
-
-										onSetValue(
-											tokenValues[value].value,
-											null
-										);
-									}}
-									small
-									symbol="chain-broken"
-									title={Liferay.Language.get('detach-token')}
-								/>
-							)
-						) : (
-							<DropdownColorPicker
-								active={activeDropdownColorPicker}
-								colors={colors}
-								fieldLabel={showLabel ? null : field.label}
-								onSetActive={setActiveDropdownColorPicker}
-								onValueChange={({label, name, value}) => {
-									onSetValue(value, label, name);
-
-									if (error.value) {
-										setError({
-											label: null,
-											value: null,
-										});
-										deleteStyleError(field.name);
-									}
-								}}
-								showSelector={false}
-								small
-								value={color}
-							/>
-						)}
-
+				{tokenLabel ? (
+					canDetachTokenValues && (
 						<ClayButtonWithIcon
-							className="border-0 flex-shrink-0 ml-2 page-editor__color-picker__action-button"
+							aria-label={Liferay.Language.get('detach-style')}
+							className="border-0 flex-shrink-0 mb-0 ml-2 page-editor__color-picker__action-button"
 							displayType="secondary"
 							onClick={() => {
-								if (
-									value.toLowerCase() ===
-										field.defaultValue?.toLowerCase() &&
-									!error.value
-								) {
-									return;
+								if (tokenValues[value]) {
+									setCustomColors([
+										tokenValues[value].value.replace(
+											'#',
+											''
+										),
+									]);
+
+									onSetValue(tokenValues[value].value, null);
 								}
+								else {
+									setCustomColors([defaultTokenValue]);
 
-								setError({label: null, value: null});
-
-								onSetValue(
-									field.defaultValue ?? null,
-									field.defaultValue
-										? null
-										: defaultTokenLabel
-								);
+									onSetValue(defaultTokenValue, null);
+								}
 							}}
-							small
-							symbol={
-								Liferay.FeatureFlags['LPS-143206']
-									? 'restore'
-									: 'times-circle'
-							}
-							title={
-								Liferay.FeatureFlags['LPS-143206'] &&
-								selectedViewportSize
-									? getResetLabelByViewport(
-											selectedViewportSize
-									  )
-									: Liferay.Language.get('clear-selection')
-							}
+							size="sm"
+							symbol="chain-broken"
+							title={Liferay.Language.get('detach-style')}
 						/>
-					</>
+					)
+				) : (
+					<DropdownColorPicker
+						active={activeDropdownColorPicker}
+						colors={colors}
+						fieldLabel={showLabel ? null : field.label}
+						onSetActive={setActiveDropdownColorPicker}
+						onValueChange={({label, name, value}) => {
+							onSetValue(value, label, name);
+
+							if (error.value) {
+								setError({
+									label: null,
+									value: null,
+								});
+								deleteStyleError(field.name);
+							}
+						}}
+						showSelector={false}
+						small
+						value={color}
+					/>
 				)}
+
+				{value ? (
+					<ClayButtonWithIcon
+						aria-label={resetButtonLabel}
+						className="border-0 flex-shrink-0 ml-2 page-editor__color-picker__action-button"
+						displayType="secondary"
+						onClick={() => {
+							if (
+								value.toLowerCase() ===
+									field.defaultValue?.toLowerCase() &&
+								!error.value
+							) {
+								return;
+							}
+
+							setError({label: null, value: null});
+
+							onSetValue(
+								field.defaultValue ?? null,
+								field.defaultValue ? null : defaultTokenValue
+							);
+						}}
+						size="sm"
+						symbol="restore"
+						title={resetButtonLabel}
+					/>
+				) : null}
 			</div>
 
 			{error.label ? (

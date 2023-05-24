@@ -153,7 +153,8 @@ public class PortalUpgradeProcessRegistryImpl
 			new Version(14, 0, 2), new UpgradeCountryCode());
 
 		upgradeVersionTreeMap.put(
-			new Version(15, 0, 0), new UpgradeOrgGroupRole());
+			new Version(15, 0, 0),
+			UpgradeProcessFactory.dropTables("OrgGroupRole"));
 
 		upgradeVersionTreeMap.put(
 			new Version(16, 0, 0), new DummyUpgradeProcess());
@@ -208,6 +209,100 @@ public class PortalUpgradeProcessRegistryImpl
 
 		upgradeVersionTreeMap.put(
 			new Version(18, 0, 1), new UpgradeVirtualHost());
+
+		upgradeVersionTreeMap.put(
+			new Version(19, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"Phone", "typeId", "listTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(20, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"EmailAddress", "typeId", "listTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(21, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"Website", "typeId", "listTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(22, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"Organization_", "statusId", "statusListTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(23, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"Contact_", "prefixId", "prefixListTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(24, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"Contact_", "suffixId", "suffixListTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 0, 0),
+			UpgradeProcessFactory.alterColumnName(
+				"OrgLabor", "typeId", "listTypeId LONG"));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 0, 1),
+			UpgradeProcessFactory.alterColumnType(
+				"Role_", "description", "TEXT null"));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 1, 0), new CTModelUpgradeProcess("EmailAddress"));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 1, 1),
+			UpgradeModulesFactory.create(
+				new String[] {"com.liferay.questions.web"}, null));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 1, 2), new DummyUpgradeProcess());
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 2, 0),
+			new CTModelUpgradeProcess("LayoutPrototype"));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 3, 0),
+			UpgradeProcessFactory.addColumns(
+				"DLFileVersion", "storeUUID VARCHAR(255) null"));
+
+		upgradeVersionTreeMap.put(
+			new Version(25, 3, 1),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupGroupRole", "userGroupGroupRoleId", "LONG not null"),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupGroupRole", "userGroupId", "LONG null"),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupGroupRole", "groupId", "LONG null"),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupGroupRole", "roleId", "LONG null"),
+			//
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupRole", "userGroupRoleId", "LONG not null"),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupRole", "userId", "LONG null"),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupRole", "groupId", "LONG null"),
+			UpgradeProcessFactory.alterColumnType(
+				"UserGroupRole", "roleId", "LONG null"),
+			//
+			new UpgradeUsersUserGroups());
+
+		upgradeVersionTreeMap.put(new Version(26, 0, 0), new UpgradeUserType());
+
+		upgradeVersionTreeMap.put(
+			new Version(26, 1, 0),
+			UpgradeProcessFactory.addColumns(
+				"Company", "indexNameCurrent VARCHAR(75)",
+				"indexNameNext VARCHAR(75)"));
+
+		upgradeVersionTreeMap.put(
+			new Version(26, 2, 0),
+			new CTModelUpgradeProcess("Address", "Phone"));
 	}
 
 }

@@ -33,8 +33,8 @@ public class MonthlyCPSubscriptionTypeDisplayContext {
 
 	public int getMonthDay() {
 		UnicodeProperties subscriptionTypeSettingsUnicodeProperties =
-			CommerceSubscriptionTypeUtil.getSubscriptionTypeSettingsProperties(
-				_object, _payment);
+			CommerceSubscriptionTypeUtil.
+				getSubscriptionTypeSettingsUnicodeProperties(_object, _payment);
 
 		if ((subscriptionTypeSettingsUnicodeProperties == null) ||
 			subscriptionTypeSettingsUnicodeProperties.isEmpty()) {
@@ -44,17 +44,18 @@ public class MonthlyCPSubscriptionTypeDisplayContext {
 
 		if (isPayment()) {
 			return GetterUtil.getInteger(
-				subscriptionTypeSettingsUnicodeProperties.get("monthDay"));
+				subscriptionTypeSettingsUnicodeProperties.get("monthDay"), 1);
 		}
 
 		return GetterUtil.getInteger(
-			subscriptionTypeSettingsUnicodeProperties.get("deliveryMonthDay"));
+			subscriptionTypeSettingsUnicodeProperties.get("deliveryMonthDay"),
+			1);
 	}
 
 	public int getSelectedMonthlyMode() {
 		UnicodeProperties subscriptionTypeSettingsUnicodeProperties =
-			CommerceSubscriptionTypeUtil.getSubscriptionTypeSettingsProperties(
-				_object, _payment);
+			CommerceSubscriptionTypeUtil.
+				getSubscriptionTypeSettingsUnicodeProperties(_object, _payment);
 
 		if (subscriptionTypeSettingsUnicodeProperties == null) {
 			return CPSubscriptionTypeConstants.MODE_ORDER_DATE;

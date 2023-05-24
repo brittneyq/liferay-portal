@@ -21,7 +21,6 @@ import com.liferay.client.extension.type.factory.CETFactory;
 import com.liferay.client.extension.web.internal.constants.ClientExtensionAdminPortletKeys;
 import com.liferay.client.extension.web.internal.constants.ClientExtensionAdminWebKeys;
 import com.liferay.client.extension.web.internal.display.context.EditClientExtensionEntryDisplayContext;
-import com.liferay.client.extension.web.internal.display.context.EditClientExtensionEntryPartDisplayContext;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -30,7 +29,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -48,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Bruno Basto
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ClientExtensionAdminPortletKeys.CLIENT_EXTENSION_ADMIN,
 		"mvc.command.name=/client_extension_admin/edit_client_extension_entry"
@@ -104,11 +102,6 @@ public class EditClientExtensionEntryMVCActionCommand
 					EDIT_CLIENT_EXTENSION_ENTRY_DISPLAY_CONTEXT,
 				new EditClientExtensionEntryDisplayContext(
 					cet, clientExtensionEntry, actionRequest));
-			actionRequest.setAttribute(
-				ClientExtensionAdminWebKeys.
-					EDIT_CLIENT_EXTENSION_ENTRY_PART_DISPLAY_CONTEXT,
-				new EditClientExtensionEntryPartDisplayContext(
-					cet, clientExtensionEntry, actionRequest));
 
 			actionResponse.setRenderParameter(
 				"mvcPath", "/admin/edit_client_extension_entry.jsp");
@@ -117,7 +110,7 @@ public class EditClientExtensionEntryMVCActionCommand
 
 	private void _add(ActionRequest actionRequest) throws PortalException {
 		String description = ParamUtil.getString(actionRequest, "description");
-		Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> nameMap = _localization.getLocalizationMap(
 			actionRequest, "name");
 		String sourceCodeURL = ParamUtil.getString(
 			actionRequest, "sourceCodeURL");
@@ -153,7 +146,7 @@ public class EditClientExtensionEntryMVCActionCommand
 			actionRequest);
 
 		String description = ParamUtil.getString(actionRequest, "description");
-		Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> nameMap = _localization.getLocalizationMap(
 			actionRequest, "name");
 		String properties = ParamUtil.getString(actionRequest, "properties");
 		String sourceCodeURL = ParamUtil.getString(
@@ -175,6 +168,9 @@ public class EditClientExtensionEntryMVCActionCommand
 
 	@Reference
 	private ClientExtensionEntryService _clientExtensionEntryService;
+
+	@Reference
+	private Localization _localization;
 
 	@Reference
 	private Portal _portal;

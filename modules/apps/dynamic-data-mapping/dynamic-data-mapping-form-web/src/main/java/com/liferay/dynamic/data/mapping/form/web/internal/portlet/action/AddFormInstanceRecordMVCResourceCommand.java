@@ -58,7 +58,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Harlan Bruno
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM,
 		"mvc.command.name=/dynamic_data_mapping_form/add_form_instance_record"
@@ -105,7 +104,7 @@ public class AddFormInstanceRecordMVCResourceCommand
 
 		User user = themeDisplay.getUser();
 
-		if (preview || user.isDefaultUser()) {
+		if (preview || user.isGuestUser()) {
 			return;
 		}
 

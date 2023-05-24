@@ -29,6 +29,8 @@ export default withRouter(
 	({
 		comments,
 		commentsChange,
+		companyName,
+		display,
 		editable = true,
 		entityId,
 		match: {
@@ -38,6 +40,8 @@ export default withRouter(
 		question,
 		showNewComment,
 		showNewCommentChange,
+		showSignature,
+		styledItems = false,
 	}) => {
 		const context = useContext(AppContext);
 
@@ -97,8 +101,13 @@ export default withRouter(
 					<Comment
 						comment={comment}
 						commentChange={_commentChange}
+						companyName={companyName}
+						display={display}
 						editable={editable}
+						hasCompanyMx={comment.hasCompanyMx}
 						key={comment.id}
+						showSignature={showSignature}
+						styledItems={styledItems}
 					/>
 				))}
 
@@ -127,7 +136,7 @@ export default withRouter(
 									{context.trustedUser
 										? Liferay.Language.get('add-comment')
 										: Liferay.Language.get(
-												'submit-for-publication'
+												'submit-for-workflow'
 										  )}
 								</ClayButton>
 

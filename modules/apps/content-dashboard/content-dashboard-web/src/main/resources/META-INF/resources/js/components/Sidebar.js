@@ -28,11 +28,11 @@ const SidebarBody = ({children, className}) => {
 	);
 };
 
-const SidebarHeader = ({children, title}) => {
+const SidebarHeader = ({actionsSlot, children, title}) => {
 	const {onClose} = useContext(SidebarContext);
 
 	return (
-		<section className="sidebar-header">
+		<section className="is-sticky sidebar-header">
 			<ClayLayout.ContentRow className="sidebar-section">
 				<ClayLayout.ContentCol
 					className="justify-content-center"
@@ -41,8 +41,8 @@ const SidebarHeader = ({children, title}) => {
 					<p className="font-weight-bold mb-0 pr-2">{title}</p>
 				</ClayLayout.ContentCol>
 
-				{children && (
-					<ClayLayout.ContentCol>{children}</ClayLayout.ContentCol>
+				{actionsSlot && (
+					<ClayLayout.ContentCol>{actionsSlot}</ClayLayout.ContentCol>
 				)}
 
 				<ClayLayout.ContentCol>
@@ -57,6 +57,8 @@ const SidebarHeader = ({children, title}) => {
 					/>
 				</ClayLayout.ContentCol>
 			</ClayLayout.ContentRow>
+
+			{children}
 		</section>
 	);
 };

@@ -26,7 +26,7 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.dispatch.constants.DispatchConstants" %><%@
+<%@ page import="com.liferay.dispatch.constants.DispatchScreenNavigationConstants" %><%@
 page import="com.liferay.dispatch.constants.DispatchWebKeys" %><%@
 page import="com.liferay.dispatch.exception.NoSuchLogException" %><%@
 page import="com.liferay.dispatch.exception.NoSuchTriggerException" %><%@
@@ -41,12 +41,12 @@ page import="com.liferay.dispatch.web.internal.display.context.DispatchTriggerDi
 page import="com.liferay.dispatch.web.internal.display.context.SchedulerResponseDisplayContext" %><%@
 page import="com.liferay.dispatch.web.internal.display.context.ViewDispatchLogManagementToolbarDisplayContext" %><%@
 page import="com.liferay.dispatch.web.internal.security.permisison.resource.DispatchTriggerPermission" %><%@
-page import="com.liferay.petra.portlet.url.builder.PortletURLBuilder" %><%@
 page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.cluster.ClusterExecutorUtil" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder" %><%@
 page import="com.liferay.portal.kernel.scheduler.TriggerState" %><%@
 page import="com.liferay.portal.kernel.scheduler.messaging.SchedulerResponse" %><%@
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@

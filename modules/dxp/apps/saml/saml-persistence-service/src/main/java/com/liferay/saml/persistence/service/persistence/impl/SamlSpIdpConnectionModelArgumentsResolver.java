@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		SamlSpIdpConnectionModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.saml.persistence.model.impl.SamlSpIdpConnectionImpl",
+		"table.name=SamlSpIdpConnection"
+	},
+	service = ArgumentsResolver.class
 )
 public class SamlSpIdpConnectionModelArgumentsResolver
 	implements ArgumentsResolver {

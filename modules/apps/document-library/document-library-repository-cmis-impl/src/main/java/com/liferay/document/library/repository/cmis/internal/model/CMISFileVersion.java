@@ -225,11 +225,15 @@ public class CMISFileVersion extends BaseCMISModel implements FileVersion {
 	public String getMimeType() {
 		String mimeType = _document.getContentStreamMimeType();
 
+		if (Validator.isNull(mimeType)) {
+			mimeType = MimeTypesUtil.getContentType(getTitle());
+		}
+
 		if (Validator.isNotNull(mimeType)) {
 			return mimeType;
 		}
 
-		return MimeTypesUtil.getContentType(getTitle());
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -317,7 +321,7 @@ public class CMISFileVersion extends BaseCMISModel implements FileVersion {
 	@Override
 	public long getUserId() {
 		try {
-			return UserLocalServiceUtil.getDefaultUserId(getCompanyId());
+			return UserLocalServiceUtil.getGuestUserId(getCompanyId());
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
@@ -336,7 +340,7 @@ public class CMISFileVersion extends BaseCMISModel implements FileVersion {
 	@Override
 	public String getUserUuid() {
 		try {
-			User user = UserLocalServiceUtil.getDefaultUser(getCompanyId());
+			User user = UserLocalServiceUtil.getGuestUser(getCompanyId());
 
 			return user.getUserUuid();
 		}

@@ -37,12 +37,12 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 		_buildNumber = buildNumber;
 	}
 
-	public List<UpgradeStep> getInitialDeploymentUpgradeSteps() {
-		return _initialDeploymentUpgradeSteps;
+	public List<UpgradeStep> getReleaseCreationUpgradeSteps() {
+		return _releaseCreationUpgradeSteps;
 	}
 
-	public List<UpgradeInfo> getUpgradeInfos() {
-		if (_initialization) {
+	public List<UpgradeInfo> getUpgradeInfos(boolean portalUpgraded) {
+		if (_initialization && portalUpgraded) {
 			if (_upgradeInfos.isEmpty()) {
 				return Arrays.asList(
 					new UpgradeInfo(
@@ -72,15 +72,15 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 	}
 
 	@Override
-	public void registerInitialDeploymentUpgradeSteps(
-		UpgradeStep... upgradeSteps) {
-
-		Collections.addAll(_initialDeploymentUpgradeSteps, upgradeSteps);
+	public void registerInitialization() {
+		_initialization = true;
 	}
 
 	@Override
-	public void registerInitialization() {
-		_initialization = true;
+	public void registerReleaseCreationUpgradeSteps(
+		UpgradeStep... upgradeSteps) {
+
+		Collections.addAll(_releaseCreationUpgradeSteps, upgradeSteps);
 	}
 
 	private void _createUpgradeInfos(
@@ -90,8 +90,6 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 		if (ArrayUtil.isEmpty(upgradeSteps)) {
 			return;
 		}
-
-		String upgradeInfoFromSchemaVersionString = fromSchemaVersionString;
 
 		List<UpgradeStep> upgradeStepsList = new ArrayList<>();
 
@@ -110,28 +108,22 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 			}
 		}
 
-		for (int i = 0; i < (upgradeStepsList.size() - 1); i++) {
-			UpgradeStep upgradeStep = upgradeStepsList.get(i);
-
-			String upgradeInfoToSchemaVersionString =
-				toSchemaVersionString + ".step" +
-					(i - upgradeStepsList.size() + 1);
-
-			UpgradeInfo upgradeInfo = new UpgradeInfo(
-				upgradeInfoFromSchemaVersionString,
-				upgradeInfoToSchemaVersionString, buildNumber, upgradeStep);
-
-			_upgradeInfos.add(upgradeInfo);
-
-			upgradeInfoFromSchemaVersionString =
-				upgradeInfoToSchemaVersionString;
+		if (upgradeStepsList.size() == 1) {
+			_upgradeInfos.add(
+				new UpgradeInfo(
+					fromSchemaVersionString, toSchemaVersionString, buildNumber,
+					upgradeStepsList.get(0)));
 		}
-
-		UpgradeInfo upgradeInfo = new UpgradeInfo(
-			upgradeInfoFromSchemaVersionString, toSchemaVersionString,
-			buildNumber, upgradeStepsList.get(upgradeStepsList.size() - 1));
-
-		_upgradeInfos.add(upgradeInfo);
+		else {
+			_upgradeInfos.add(
+				new UpgradeInfo(
+					fromSchemaVersionString, toSchemaVersionString, buildNumber,
+					() -> {
+						for (UpgradeStep upgradeStep : upgradeStepsList) {
+							upgradeStep.upgrade();
+						}
+					}));
+		}
 	}
 
 	private String _getFinalSchemaVersion(List<UpgradeInfo> upgradeInfos) {
@@ -157,9 +149,9 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 	}
 
 	private final int _buildNumber;
-	private final List<UpgradeStep> _initialDeploymentUpgradeSteps =
-		new ArrayList<>();
 	private boolean _initialization;
+	private final List<UpgradeStep> _releaseCreationUpgradeSteps =
+		new ArrayList<>();
 	private final List<UpgradeInfo> _upgradeInfos = new ArrayList<>();
 
 }

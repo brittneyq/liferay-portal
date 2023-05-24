@@ -50,7 +50,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
 	property = "factoryPid=com.liferay.portal.security.ldap.configuration.LDAPServerConfiguration",
 	service = ConfigurationProvider.class
 )
@@ -402,7 +401,7 @@ public class LDAPServerConfigurationProviderImpl
 			Configuration configuration = null;
 
 			if (objectValuePair == null) {
-				configuration = configurationAdmin.createFactoryConfiguration(
+				configuration = _configurationAdmin.createFactoryConfiguration(
 					getMetatypeId(), StringPool.QUESTION);
 			}
 			else {
@@ -417,16 +416,11 @@ public class LDAPServerConfigurationProviderImpl
 		}
 	}
 
-	@Override
-	@Reference(unbind = "-")
-	protected void setConfigurationAdmin(
-		ConfigurationAdmin configurationAdmin) {
-
-		super.configurationAdmin = configurationAdmin;
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		LDAPServerConfigurationProviderImpl.class);
+
+	@Reference
+	private ConfigurationAdmin _configurationAdmin;
 
 	private final Map
 		<Long,

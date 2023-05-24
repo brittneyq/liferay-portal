@@ -19,8 +19,8 @@ import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -87,11 +87,13 @@ public class KBArticleURLHelper {
 		return PortletURLBuilder.create(
 			_renderResponse.createRenderURL()
 		).setMVCRenderCommandName(
-			"/knowledge_base/view_article"
+			"/knowledge_base/view_kb_article"
 		).setParameter(
 			"resourceClassNameId", kbArticle.getClassNameId()
 		).setParameter(
 			"resourcePrimKey", kbArticle.getResourcePrimKey()
+		).setParameter(
+			"selectedItemId", kbArticle.getResourcePrimKey()
 		).buildPortletURL();
 	}
 
@@ -127,7 +129,7 @@ public class KBArticleURLHelper {
 		return PortletURLBuilder.create(
 			_renderResponse.createRenderURL()
 		).setMVCRenderCommandName(
-			"/knowledge_base/view_article"
+			"/knowledge_base/view_kb_article"
 		).setParameter(
 			"urlTitle", kbArticle.getUrlTitle()
 		).setParameter(

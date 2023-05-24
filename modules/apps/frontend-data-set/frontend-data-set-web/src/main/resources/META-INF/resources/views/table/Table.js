@@ -16,7 +16,7 @@ import ClayEmptyState from '@clayui/empty-state';
 import {ClayCheckbox, ClayRadio} from '@clayui/form';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React, {useContext, useRef} from 'react';
+import React, {useContext, useRef, useState} from 'react';
 
 import FrontendDataSetContext from '../../FrontendDataSetContext';
 import Actions from '../../actions/Actions';
@@ -54,6 +54,8 @@ function getItemFields(
 				valuePath={valuePath}
 				view={{
 					contentRenderer: field.contentRenderer,
+					contentRendererClientExtension:
+						field.contentRendererClientExtension,
 					contentRendererModuleURL: field.contentRendererModuleURL,
 				}}
 			/>
@@ -81,8 +83,6 @@ function Table({items, itemsActions, schema, style}) {
 		selectedItemsKey,
 		selectedItemsValue,
 		selectionType,
-		sorting,
-		updateSorting,
 	} = useContext(FrontendDataSetContext);
 	const [
 		{
@@ -99,9 +99,6 @@ function Table({items, itemsActions, schema, style}) {
 				items?.find((item) => item.actionDropdownItems?.length)
 		)
 	);
-
-	const SelectionComponent =
-		selectionType === 'multiple' ? ClayCheckbox : ClayRadio;
 
 	const columnNames = [];
 
@@ -136,8 +133,6 @@ function Table({items, itemsActions, schema, style}) {
 						selectedItemsKey={selectedItemsKey}
 						selectedItemsValue={selectedItemsValue}
 						selectionType={selectionType}
-						sorting={sorting}
-						updateSorting={updateSorting}
 					/>
 
 					<DndTable.Body>
@@ -158,55 +153,25 @@ function Table({items, itemsActions, schema, style}) {
 
 								return (
 									<React.Fragment key={itemId}>
-										<DndTable.Row
-											className={classNames({
-												active: highlightedItemsValue.includes(
-													itemId
-												),
-												selected: selectedItemsValue.includes(
-													itemId
-												),
-											})}
-										>
-											{selectable && (
-												<DndTable.Cell
-													className="item-selector"
-													columnName="item-selector"
-												>
-													<SelectionComponent
-														checked={
-															!!selectedItemsValue.find(
-																(element) =>
-																	String(
-																		element
-																	) ===
-																	String(
-																		itemId
-																	)
-															)
-														}
-														onChange={() =>
-															selectItems(itemId)
-														}
-														value={itemId}
-													/>
-												</DndTable.Cell>
+										<RowWithActions
+											active={highlightedItemsValue.includes(
+												itemId
 											)}
-
-											{getItemFields(
-												item,
-												visibleFields,
-												itemId,
-												itemsActions,
-												itemsChanges[itemId]
+											item={item}
+											itemId={itemId}
+											itemsActions={itemsActions}
+											itemsChanges={itemsChanges}
+											selectItems={selectItems}
+											selectable={selectable}
+											selected={selectedItemsValue.includes(
+												itemId
 											)}
-
-											<ActionsCell
-												item={item}
-												itemId={itemId}
-												itemsActions={itemsActions}
-											/>
-										</DndTable.Row>
+											selectedItemsValue={
+												selectedItemsValue
+											}
+											selectionType={selectionType}
+											visibleFields={visibleFields}
+										/>
 
 										{nestedItems &&
 											nestedItems.map((nestedItem, i) => (
@@ -265,18 +230,74 @@ function Table({items, itemsActions, schema, style}) {
 	);
 }
 
-const ActionsCell = ({item, itemId, itemsActions}) => {
+const RowWithActions = ({
+	active,
+	className,
+	item,
+	itemId,
+	itemsActions,
+	itemsChanges,
+	selectItems,
+	selectable,
+	selected,
+	selectedItemsValue,
+	selectionType,
+	visibleFields,
+	...props
+}) => {
+	const [menuActive, setMenuActive] = useState(false);
+
+	const SelectionComponent =
+		selectionType === 'multiple' ? ClayCheckbox : ClayRadio;
+
 	return (
-		<DndTable.Cell className="item-actions" columnName="item-actions">
-			{(itemsActions?.length > 0 ||
-				item.actionDropdownItems?.length > 0) && (
-				<Actions
-					actions={itemsActions || item.actionDropdownItems}
-					itemData={item}
-					itemId={itemId}
-				/>
+		<DndTable.Row
+			className={classNames(className, {
+				active,
+				'menu-active': menuActive,
+				selected,
+			})}
+			{...props}
+		>
+			{selectable && (
+				<DndTable.Cell
+					className="item-selector"
+					columnName="item-selector"
+				>
+					<SelectionComponent
+						checked={
+							!!selectedItemsValue.find(
+								(element) => String(element) === String(itemId)
+							)
+						}
+						onChange={() => selectItems(itemId)}
+						title={Liferay.Language.get('select-item')}
+						value={itemId}
+					/>
+				</DndTable.Cell>
 			)}
-		</DndTable.Cell>
+
+			{getItemFields(
+				item,
+				visibleFields,
+				itemId,
+				itemsActions,
+				itemsChanges[itemId]
+			)}
+
+			<DndTable.Cell className="item-actions" columnName="item-actions">
+				{(itemsActions?.length > 0 ||
+					item.actionDropdownItems?.length > 0) && (
+					<Actions
+						actions={itemsActions || item.actionDropdownItems}
+						itemData={item}
+						itemId={itemId}
+						menuActive={menuActive}
+						onMenuActiveChange={setMenuActive}
+					/>
+				)}{' '}
+			</DndTable.Cell>
+		</DndTable.Row>
 	);
 };
 

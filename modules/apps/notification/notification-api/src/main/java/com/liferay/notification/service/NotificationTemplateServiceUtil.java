@@ -17,9 +17,6 @@ package com.liferay.notification.service;
 import com.liferay.notification.model.NotificationTemplate;
 import com.liferay.portal.kernel.exception.PortalException;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Provides the remote service utility for NotificationTemplate. This utility wraps
  * <code>com.liferay.notification.service.impl.NotificationTemplateServiceImpl</code> and is an
@@ -40,18 +37,11 @@ public class NotificationTemplateServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.notification.service.impl.NotificationTemplateServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static NotificationTemplate addNotificationTemplate(
-			long userId, long objectDefinitionId, String bcc,
-			Map<java.util.Locale, String> bodyMap, String cc,
-			String description, String from,
-			Map<java.util.Locale, String> fromNameMap, String name,
-			Map<java.util.Locale, String> subjectMap,
-			Map<java.util.Locale, String> toMap,
-			List<Long> attachmentObjectFieldIds)
+			com.liferay.notification.context.NotificationContext
+				notificationContext)
 		throws PortalException {
 
-		return getService().addNotificationTemplate(
-			userId, objectDefinitionId, bcc, bodyMap, cc, description, from,
-			fromNameMap, name, subjectMap, toMap, attachmentObjectFieldIds);
+		return getService().addNotificationTemplate(notificationContext);
 	}
 
 	public static NotificationTemplate deleteNotificationTemplate(
@@ -66,6 +56,15 @@ public class NotificationTemplateServiceUtil {
 		throws PortalException {
 
 		return getService().deleteNotificationTemplate(notificationTemplate);
+	}
+
+	public static NotificationTemplate
+			fetchNotificationTemplateByExternalReferenceCode(
+				String externalReferenceCode, long companyId)
+		throws PortalException {
+
+		return getService().fetchNotificationTemplateByExternalReferenceCode(
+			externalReferenceCode, companyId);
 	}
 
 	public static NotificationTemplate getNotificationTemplate(
@@ -85,23 +84,19 @@ public class NotificationTemplateServiceUtil {
 	}
 
 	public static NotificationTemplate updateNotificationTemplate(
-			long notificationTemplateId, long objectDefinitionId, String bcc,
-			Map<java.util.Locale, String> bodyMap, String cc,
-			String description, String from,
-			Map<java.util.Locale, String> fromNameMap, String name,
-			Map<java.util.Locale, String> subjectMap,
-			Map<java.util.Locale, String> toMap,
-			List<Long> attachmentObjectFieldIds)
+			com.liferay.notification.context.NotificationContext
+				notificationContext)
 		throws PortalException {
 
-		return getService().updateNotificationTemplate(
-			notificationTemplateId, objectDefinitionId, bcc, bodyMap, cc,
-			description, from, fromNameMap, name, subjectMap, toMap,
-			attachmentObjectFieldIds);
+		return getService().updateNotificationTemplate(notificationContext);
 	}
 
 	public static NotificationTemplateService getService() {
 		return _service;
+	}
+
+	public static void setService(NotificationTemplateService service) {
+		_service = service;
 	}
 
 	private static volatile NotificationTemplateService _service;

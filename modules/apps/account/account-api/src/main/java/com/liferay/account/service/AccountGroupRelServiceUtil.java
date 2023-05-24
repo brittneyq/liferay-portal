@@ -51,12 +51,26 @@ public class AccountGroupRelServiceUtil {
 		getService().addAccountGroupRels(accountGroupId, className, classPKs);
 	}
 
+	public static AccountGroupRel deleteAccountGroupRel(long accountGroupRelId)
+		throws PortalException {
+
+		return getService().deleteAccountGroupRel(accountGroupRelId);
+	}
+
 	public static void deleteAccountGroupRels(
 			long accountGroupId, String className, long[] classPKs)
 		throws PortalException {
 
 		getService().deleteAccountGroupRels(
 			accountGroupId, className, classPKs);
+	}
+
+	public static AccountGroupRel fetchAccountGroupRel(
+			long accountGroupId, String className, long classPK)
+		throws PortalException {
+
+		return getService().fetchAccountGroupRel(
+			accountGroupId, className, classPK);
 	}
 
 	/**
@@ -70,6 +84,10 @@ public class AccountGroupRelServiceUtil {
 
 	public static AccountGroupRelService getService() {
 		return _service;
+	}
+
+	public static void setService(AccountGroupRelService service) {
+		_service = service;
 	}
 
 	private static volatile AccountGroupRelService _service;

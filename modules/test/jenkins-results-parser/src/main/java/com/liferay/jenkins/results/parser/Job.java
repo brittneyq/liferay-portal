@@ -32,15 +32,6 @@ import org.json.JSONObject;
  */
 public interface Job {
 
-	public Long getAverageBatchDuration(String batchName);
-
-	public Long getAverageBatchOverheadDuration(String batchName);
-
-	public Long getAverageTestDuration(String batchName, String testName);
-
-	public Long getAverageTestOverheadDuration(
-		String batchName, String testName);
-
 	public int getAxisCount();
 
 	public AxisTestClassGroup getAxisTestClassGroup(String axisName);
@@ -75,6 +66,8 @@ public interface Job {
 
 	public Set<String> getDistTypesExcludingTomcat();
 
+	public JobHistory getJobHistory();
+
 	public String getJobName();
 
 	public List<File> getJobPropertiesFiles();
@@ -91,11 +84,15 @@ public interface Job {
 
 	public String getTestPropertiesContent();
 
+	public int getTimeoutMinutes(JenkinsMaster jenkinsMaster);
+
 	public boolean isDownstreamEnabled();
 
 	public boolean isSegmentEnabled();
 
 	public boolean isValidationRequired();
+
+	public boolean testJaCoCoCodeCoverage();
 
 	public boolean testReleaseBundle();
 

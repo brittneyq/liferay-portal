@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.metrics.internal.background.task;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
@@ -31,6 +32,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.capabilities.SearchCapabilities;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.document.BulkDocumentRequest;
@@ -67,16 +69,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -85,7 +84,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Rafael Praxedes
  */
 @Component(
-	immediate = true,
 	property = "background.task.executor.class.name=com.liferay.portal.workflow.metrics.internal.background.task.WorkflowMetricsSLAProcessBackgroundTaskExecutor",
 	service = BackgroundTaskExecutor.class
 )
@@ -100,6 +98,10 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 	@Override
 	public BackgroundTaskResult execute(BackgroundTask backgroundTask)
 		throws Exception {
+
+		if (!_searchCapabilities.isWorkflowMetricsSupported()) {
+			return BackgroundTaskResult.SUCCESS;
+		}
 
 		long workflowMetricsSLADefinitionId = MapUtil.getLong(
 			backgroundTask.getTaskContextMap(),
@@ -305,28 +307,27 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 		searchSearchRequest.setSelectedFieldNames("nodeId");
 		searchSearchRequest.setSize(1);
 
-		return Stream.of(
-			_searchEngineAdapter.execute(searchSearchRequest)
-		).map(
-			SearchSearchResponse::getSearchHits
-		).map(
-			SearchHits::getSearchHits
-		).flatMap(
-			List::parallelStream
-		).map(
-			SearchHit::getDocument
-		).findFirst(
-		).map(
-			document -> document.getLong("nodeId")
-		).orElse(
-			0L
-		);
+		SearchSearchResponse searchSearchResponse =
+			_searchEngineAdapter.execute(searchSearchRequest);
+
+		SearchHits searchHits = searchSearchResponse.getSearchHits();
+
+		for (SearchHit searchHit : searchHits.getSearchHits()) {
+			Document document = searchHit.getDocument();
+
+			return GetterUtil.getLong(document.getLong("nodeId"));
+		}
+
+		return 0L;
 	}
 
 	private Map<Long, WorkflowMetricsSLAInstanceResult>
 		_getWorkflowMetricsSLAInstanceResults(
 			long companyId, long endInstanceId, long processId,
 			long slaDefinitionId, long startInstanceId) {
+
+		Map<Long, WorkflowMetricsSLAInstanceResult>
+			workflowMetricsSLAInstanceResults = new HashMap<>();
 
 		SearchSearchRequest searchSearchRequest = new SearchSearchRequest();
 
@@ -347,45 +348,45 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 			"overdueDate", "remainingTime", "status");
 		searchSearchRequest.setSize(10000);
 
-		return Stream.of(
-			_searchEngineAdapter.execute(searchSearchRequest)
-		).map(
-			SearchSearchResponse::getSearchHits
-		).map(
-			SearchHits::getSearchHits
-		).flatMap(
-			List::parallelStream
-		).map(
-			SearchHit::getDocument
-		).map(
-			document -> new WorkflowMetricsSLAInstanceResult() {
-				{
-					setCompanyId(companyId);
-					setElapsedTime(document.getLong("elapsedTime"));
-					setInstanceId(document.getLong("instanceId"));
-					setModifiedLocalDateTime(
-						LocalDateTime.parse(
-							document.getDate("modifiedDate"),
-							_dateTimeFormatter));
-					setOnTime(
-						GetterUtil.getBoolean(document.getValue("onTime")));
-					setOverdueLocalDateTime(
-						LocalDateTime.parse(
-							document.getString("overdueDate"),
-							_dateTimeFormatter));
-					setProcessId(processId);
-					setRemainingTime(document.getLong("remainingTime"));
-					setSLADefinitionId(slaDefinitionId);
-					setWorkflowMetricsSLAStatus(
-						WorkflowMetricsSLAStatus.valueOf(
-							document.getString("status")));
-				}
-			}
-		).collect(
-			Collectors.toMap(
-				WorkflowMetricsSLAInstanceResult::getInstanceId,
-				Function.identity())
-		);
+		SearchSearchResponse searchSearchResponse =
+			_searchEngineAdapter.execute(searchSearchRequest);
+
+		SearchHits searchHits = searchSearchResponse.getSearchHits();
+
+		for (SearchHit searchHit : searchHits.getSearchHits()) {
+			Document document = searchHit.getDocument();
+
+			WorkflowMetricsSLAInstanceResult workflowMetricsSLAInstanceResult =
+				new WorkflowMetricsSLAInstanceResult() {
+					{
+						setCompanyId(companyId);
+						setElapsedTime(document.getLong("elapsedTime"));
+						setInstanceId(document.getLong("instanceId"));
+						setModifiedLocalDateTime(
+							LocalDateTime.parse(
+								document.getDate("modifiedDate"),
+								_dateTimeFormatter));
+						setOnTime(
+							GetterUtil.getBoolean(document.getValue("onTime")));
+						setOverdueLocalDateTime(
+							LocalDateTime.parse(
+								document.getString("overdueDate"),
+								_dateTimeFormatter));
+						setProcessId(processId);
+						setRemainingTime(document.getLong("remainingTime"));
+						setSLADefinitionId(slaDefinitionId);
+						setWorkflowMetricsSLAStatus(
+							WorkflowMetricsSLAStatus.valueOf(
+								document.getString("status")));
+					}
+				};
+
+			workflowMetricsSLAInstanceResults.put(
+				workflowMetricsSLAInstanceResult.getInstanceId(),
+				workflowMetricsSLAInstanceResult);
+		}
+
+		return workflowMetricsSLAInstanceResults;
 	}
 
 	private long _populateTaskDocuments(
@@ -418,36 +419,31 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 
 		SearchHits searchHits = searchSearchResponse.getSearchHits();
 
-		long instanceId = Stream.of(
-			searchHits
-		).map(
-			SearchHits::getSearchHits
-		).flatMap(
-			List::stream
-		).map(
-			SearchHit::getDocument
-		).mapToLong(
-			taskDocument -> {
-				List<Document> documents = taskDocuments.computeIfAbsent(
-					taskDocument.getLong("instanceId"), k -> new ArrayList<>());
+		List<Long> instanceIds = TransformUtil.transform(
+			searchHits.getSearchHits(),
+			searchHit -> {
+				Document document = searchHit.getDocument();
 
-				documents.add(taskDocument);
+				List<Document> documents = taskDocuments.computeIfAbsent(
+					document.getLong("instanceId"), key -> new ArrayList<>());
+
+				documents.add(document);
 
 				documents.sort(
 					Comparator.comparing(
-						document -> LocalDateTime.parse(
-							document.getDate("createDate"),
+						curDocument -> LocalDateTime.parse(
+							curDocument.getDate("createDate"),
 							_dateTimeFormatter)));
 
-				return taskDocument.getLong("instanceId");
-			}
-		).max(
-		).orElse(
-			startInstanceId
-		);
+				return document.getLong("instanceId");
+			});
+
+		if (instanceIds.isEmpty()) {
+			return startInstanceId;
+		}
 
 		if (searchHits.getTotalHits() >= 10000) {
-			return instanceId;
+			return Collections.max(instanceIds);
 		}
 
 		return startInstanceId;
@@ -540,17 +536,8 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 
 		SearchHits searchHits = searchSearchResponse.getSearchHits();
 
-		List<Document> instanceDocuments = Stream.of(
-			searchHits
-		).map(
-			SearchHits::getSearchHits
-		).flatMap(
-			List::stream
-		).map(
-			SearchHit::getDocument
-		).collect(
-			Collectors.toList()
-		);
+		List<Document> instanceDocuments = TransformUtil.transform(
+			searchHits.getSearchHits(), SearchHit::getDocument);
 
 		if (instanceDocuments.isEmpty()) {
 			return instanceId;
@@ -594,83 +581,84 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 		List<Document> slaInstanceResultDocuments = new ArrayList<>();
 		List<Document> slaTaskResultDocuments = new ArrayList<>();
 
-		Stream.of(
-			instanceDocuments
-		).flatMap(
-			List::stream
-		).map(
-			document -> _workflowMetricsSLAProcessor.process(
-				_getCompletionLocalDateTime(document),
-				LocalDateTime.parse(
-					document.getDate("createDate"), _dateTimeFormatter),
-				taskDocuments.get(document.getLong("instanceId")),
-				document.getLong("instanceId"), nowLocalDateTime, startNodeId,
-				workflowMetricsSLADefinitionVersion,
-				workflowMetricsSLAInstanceResults.get(
-					document.getLong("instanceId")))
-		).filter(
-			Objects::nonNull
-		).forEach(
-			workflowMetricsSLAInstanceResult -> {
-				slaInstanceResultDocuments.add(
-					_slaInstanceResultWorkflowMetricsIndexer.createDocument(
-						workflowMetricsSLAInstanceResult));
+		for (Document document : instanceDocuments) {
+			WorkflowMetricsSLAInstanceResult workflowMetricsSLAInstanceResult =
+				_workflowMetricsSLAProcessor.process(
+					_getCompletionLocalDateTime(document),
+					LocalDateTime.parse(
+						document.getDate("createDate"), _dateTimeFormatter),
+					taskDocuments.get(document.getLong("instanceId")),
+					document.getLong("instanceId"), nowLocalDateTime,
+					startNodeId, workflowMetricsSLADefinitionVersion,
+					workflowMetricsSLAInstanceResults.get(
+						document.getLong("instanceId")));
 
-				for (WorkflowMetricsSLATaskResult workflowMetricsSLATaskResult :
-						workflowMetricsSLAInstanceResult.
-							getWorkflowMetricsSLATaskResults()) {
-
-					slaTaskResultDocuments.add(
-						_slaTaskResultWorkflowMetricsIndexer.createDocument(
-							workflowMetricsSLATaskResult));
-				}
-
-				ScriptBuilder scriptBuilder = _scripts.builder();
-				WorkflowMetricsSLAStatus workflowMetricsSLAStatus =
-					workflowMetricsSLAInstanceResult.
-						getWorkflowMetricsSLAStatus();
-
-				bulkDocumentRequest.addBulkableDocumentRequest(
-					new UpdateDocumentRequest(
-						_instanceWorkflowMetricsIndex.getIndexName(
-							workflowMetricsSLAInstanceResult.getCompanyId()),
-						WorkflowMetricsIndexerUtil.digest(
-							_instanceWorkflowMetricsIndex.getIndexType(),
-							workflowMetricsSLAInstanceResult.getCompanyId(),
-							workflowMetricsSLAInstanceResult.getInstanceId()),
-						scriptBuilder.idOrCode(
-							StringUtil.read(
-								getClass(),
-								"dependencies/workflow-metrics-update-sla-" +
-									"instance-script.painless")
-						).language(
-							"painless"
-						).putParameter(
-							"slaResult",
-							HashMapBuilder.<String, Object>put(
-								"onTime",
-								workflowMetricsSLAInstanceResult.isOnTime()
-							).put(
-								"overdueDate",
-								_dateTimeFormatter.format(
-									workflowMetricsSLAInstanceResult.
-										getOverdueLocalDateTime())
-							).put(
-								"remainingTime",
-								workflowMetricsSLAInstanceResult.
-									getRemainingTime()
-							).put(
-								"slaDefinitionId",
-								workflowMetricsSLAInstanceResult.
-									getSLADefinitionId()
-							).put(
-								"status", workflowMetricsSLAStatus.name()
-							).build()
-						).scriptType(
-							ScriptType.INLINE
-						).build()));
+			if (workflowMetricsSLAInstanceResult == null) {
+				continue;
 			}
-		);
+
+			slaInstanceResultDocuments.add(
+				_slaInstanceResultWorkflowMetricsIndexer.createDocument(
+					workflowMetricsSLAInstanceResult));
+
+			for (WorkflowMetricsSLATaskResult workflowMetricsSLATaskResult :
+					workflowMetricsSLAInstanceResult.
+						getWorkflowMetricsSLATaskResults()) {
+
+				slaTaskResultDocuments.add(
+					_slaTaskResultWorkflowMetricsIndexer.createDocument(
+						workflowMetricsSLATaskResult));
+			}
+
+			ScriptBuilder scriptBuilder = _scripts.builder();
+
+			bulkDocumentRequest.addBulkableDocumentRequest(
+				new UpdateDocumentRequest(
+					_instanceWorkflowMetricsIndex.getIndexName(
+						workflowMetricsSLAInstanceResult.getCompanyId()),
+					WorkflowMetricsIndexerUtil.digest(
+						_instanceWorkflowMetricsIndex.getIndexType(),
+						workflowMetricsSLAInstanceResult.getCompanyId(),
+						workflowMetricsSLAInstanceResult.getInstanceId()),
+					scriptBuilder.idOrCode(
+						StringUtil.read(
+							getClass(),
+							"dependencies/workflow-metrics-update-sla-" +
+								"instance-script.painless")
+					).language(
+						"painless"
+					).putParameter(
+						"slaResult",
+						HashMapBuilder.<String, Object>put(
+							"onTime",
+							workflowMetricsSLAInstanceResult.isOnTime()
+						).put(
+							"overdueDate",
+							_dateTimeFormatter.format(
+								workflowMetricsSLAInstanceResult.
+									getOverdueLocalDateTime())
+						).put(
+							"remainingTime",
+							workflowMetricsSLAInstanceResult.getRemainingTime()
+						).put(
+							"slaDefinitionId",
+							workflowMetricsSLAInstanceResult.
+								getSLADefinitionId()
+						).put(
+							"status",
+							() -> {
+								WorkflowMetricsSLAStatus
+									workflowMetricsSLAStatus =
+										workflowMetricsSLAInstanceResult.
+											getWorkflowMetricsSLAStatus();
+
+								return workflowMetricsSLAStatus.name();
+							}
+						).build()
+					).scriptType(
+						ScriptType.INLINE
+					).build()));
+		}
 
 		_slaInstanceResultWorkflowMetricsIndexer.addDocuments(
 			slaInstanceResultDocuments);
@@ -749,8 +737,11 @@ public class WorkflowMetricsSLAProcessBackgroundTaskExecutor
 	@Reference
 	private Scripts _scripts;
 
-	@Reference(target = "(search.engine.impl=Elasticsearch)")
-	private volatile SearchEngineAdapter _searchEngineAdapter;
+	@Reference
+	private SearchCapabilities _searchCapabilities;
+
+	@Reference
+	private SearchEngineAdapter _searchEngineAdapter;
 
 	@Reference
 	private SLAInstanceResultWorkflowMetricsIndexer

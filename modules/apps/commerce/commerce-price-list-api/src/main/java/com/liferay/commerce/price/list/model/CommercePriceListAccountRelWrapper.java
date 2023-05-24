@@ -155,11 +155,10 @@ public class CommercePriceListAccountRelWrapper
 	}
 
 	@Override
-	public com.liferay.commerce.account.model.CommerceAccount
-			getCommerceAccount()
+	public com.liferay.account.model.AccountEntry getAccountEntry()
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return model.getCommerceAccount();
+		return model.getAccountEntry();
 	}
 
 	/**
@@ -474,6 +473,11 @@ public class CommercePriceListAccountRelWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

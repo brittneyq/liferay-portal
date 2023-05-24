@@ -18,14 +18,16 @@ import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.service.ObjectDefinitionService;
-import com.liferay.object.system.SystemObjectDefinitionMetadata;
-import com.liferay.object.system.SystemObjectDefinitionMetadataTracker;
+import com.liferay.object.service.ObjectFieldService;
+import com.liferay.object.system.JaxRsApplicationDescriptor;
+import com.liferay.object.system.SystemObjectDefinitionManager;
+import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.object.web.internal.configuration.activator.FFOneToOneRelationshipConfigurationActivator;
 import com.liferay.object.web.internal.display.context.helper.ObjectRequestHelper;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -33,7 +35,9 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,8 +57,9 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 		ModelResourcePermission<ObjectDefinition>
 			objectDefinitionModelResourcePermission,
 		ObjectDefinitionService objectDefinitionService,
-		SystemObjectDefinitionMetadataTracker
-			systemObjectDefinitionMetadataTracker) {
+		ObjectFieldService objectFieldService,
+		SystemObjectDefinitionManagerRegistry
+			systemObjectDefinitionManagerRegistry) {
 
 		super(httpServletRequest, objectDefinitionModelResourcePermission);
 
@@ -63,8 +68,9 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 		_objectDefinitionModelResourcePermission =
 			objectDefinitionModelResourcePermission;
 		_objectDefinitionService = objectDefinitionService;
-		_systemObjectDefinitionMetadataTracker =
-			systemObjectDefinitionMetadataTracker;
+		_objectFieldService = objectFieldService;
+		_systemObjectDefinitionManagerRegistry =
+			systemObjectDefinitionManagerRegistry;
 
 		_objectRequestHelper = new ObjectRequestHelper(httpServletRequest);
 	}
@@ -127,6 +133,9 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 			ObjectRelationship objectRelationship)
 		throws PortalException {
 
+		ObjectDefinition objectDefinition1 =
+			_objectDefinitionService.getObjectDefinition(
+				objectRelationship.getObjectDefinitionId1());
 		ObjectDefinition objectDefinition2 =
 			_objectDefinitionService.getObjectDefinition(
 				objectRelationship.getObjectDefinitionId2());
@@ -137,6 +146,12 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 			"label", objectRelationship.getLabelMap()
 		).put(
 			"name", objectRelationship.getName()
+		).put(
+			"objectDefinitionExternalReferenceCode1",
+			objectDefinition1.getExternalReferenceCode()
+		).put(
+			"objectDefinitionExternalReferenceCode2",
+			objectDefinition2.getExternalReferenceCode()
 		).put(
 			"objectDefinitionId1",
 			Long.valueOf(objectRelationship.getObjectDefinitionId1())
@@ -152,6 +167,21 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 			"parameterObjectFieldId",
 			objectRelationship.getParameterObjectFieldId()
 		).put(
+			"parameterObjectFieldName",
+			() -> {
+				if (Validator.isNotNull(
+						objectRelationship.getParameterObjectFieldId())) {
+
+					ObjectField objectField =
+						_objectFieldService.getObjectField(
+							objectRelationship.getParameterObjectFieldId());
+
+					return objectField.getName();
+				}
+
+				return StringPool.BLANK;
+			}
+		).put(
 			"reverse", objectRelationship.isReverse()
 		).put(
 			"type", objectRelationship.getType()
@@ -159,19 +189,22 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 	}
 
 	public String getRESTContextPath(ObjectDefinition objectDefinition) {
-		if (!objectDefinition.isSystem()) {
+		if (!objectDefinition.isUnmodifiableSystemObject()) {
 			return objectDefinition.getRESTContextPath();
 		}
 
-		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata =
-			_systemObjectDefinitionMetadataTracker.
-				getSystemObjectDefinitionMetadata(objectDefinition.getName());
+		SystemObjectDefinitionManager systemObjectDefinitionManager =
+			_systemObjectDefinitionManagerRegistry.
+				getSystemObjectDefinitionManager(objectDefinition.getName());
 
-		if (systemObjectDefinitionMetadata == null) {
+		if (systemObjectDefinitionManager == null) {
 			return StringPool.BLANK;
 		}
 
-		return systemObjectDefinitionMetadata.getRESTContextPath();
+		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
+			systemObjectDefinitionManager.getJaxRsApplicationDescriptor();
+
+		return jaxRsApplicationDescriptor.getRESTContextPath();
 	}
 
 	public boolean isFFOneToOneRelationshipConfigurationEnabled() {
@@ -212,8 +245,9 @@ public class ObjectDefinitionsRelationshipsDisplayContext
 	private final ModelResourcePermission<ObjectDefinition>
 		_objectDefinitionModelResourcePermission;
 	private final ObjectDefinitionService _objectDefinitionService;
+	private final ObjectFieldService _objectFieldService;
 	private final ObjectRequestHelper _objectRequestHelper;
-	private final SystemObjectDefinitionMetadataTracker
-		_systemObjectDefinitionMetadataTracker;
+	private final SystemObjectDefinitionManagerRegistry
+		_systemObjectDefinitionManagerRegistry;
 
 }

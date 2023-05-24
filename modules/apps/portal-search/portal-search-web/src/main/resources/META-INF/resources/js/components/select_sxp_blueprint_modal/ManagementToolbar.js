@@ -17,6 +17,7 @@ import {ClayDropDownWithItems} from '@clayui/drop-down';
 import {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {ManagementToolbar as FrontendManagementToolbar} from 'frontend-js-components-web';
+import {sub} from 'frontend-js-web';
 import React, {useState} from 'react';
 
 const ManagementToolbar = ({
@@ -39,6 +40,9 @@ const ManagementToolbar = ({
 						items={filterItems}
 						trigger={
 							<ClayButton
+								aria-label={Liferay.Language.get(
+									'filter-and-order'
+								)}
 								className="nav-link"
 								disabled={loading}
 								displayType="unstyled"
@@ -65,6 +69,11 @@ const ManagementToolbar = ({
 
 					<FrontendManagementToolbar.Item>
 						<ClayButton
+							aria-label={
+								sortOrder === 'asc'
+									? Liferay.Language.get('ascending')
+									: Liferay.Language.get('descending')
+							}
 							className="nav-link nav-link-monospaced"
 							disabled={loading}
 							displayType="unstyled"
@@ -103,6 +112,7 @@ const ManagementToolbar = ({
 
 							<ClayInput.GroupInsetItem after tag="span">
 								<ClayButtonWithIcon
+									aria-label={Liferay.Language.get('clear')}
 									className="navbar-breakpoint-d-none"
 									displayType="unstyled"
 									onClick={() => setSearchMobile(false)}
@@ -110,6 +120,7 @@ const ManagementToolbar = ({
 								/>
 
 								<ClayButtonWithIcon
+									aria-label={Liferay.Language.get('search')}
 									disabled={loading}
 									displayType="unstyled"
 									onClick={() => onSearch(searchInputValue)}
@@ -123,6 +134,7 @@ const ManagementToolbar = ({
 				<FrontendManagementToolbar.ItemList>
 					<FrontendManagementToolbar.Item className="navbar-breakpoint-d-none">
 						<ClayButton
+							aria-label={Liferay.Language.get('search')}
 							className="nav-link nav-link-monospaced"
 							displayType="unstyled"
 							onClick={() => setSearchMobile(true)}
@@ -138,7 +150,7 @@ const ManagementToolbar = ({
 					<FrontendManagementToolbar.ResultsBarItem>
 						<span className="component-text text-truncate-inline">
 							<span className="text-truncate">
-								{Liferay.Util.sub(
+								{sub(
 									totalCount === 1
 										? Liferay.Language.get('x-result-for-x')
 										: Liferay.Language.get(

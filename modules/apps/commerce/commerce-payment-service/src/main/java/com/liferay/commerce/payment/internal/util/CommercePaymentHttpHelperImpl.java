@@ -40,9 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alec Sloan
  */
-@Component(
-	enabled = false, immediate = true, service = CommercePaymentHttpHelper.class
-)
+@Component(service = CommercePaymentHttpHelper.class)
 public class CommercePaymentHttpHelperImpl
 	implements CommercePaymentHttpHelper {
 
@@ -68,19 +66,19 @@ public class CommercePaymentHttpHelperImpl
 
 			Company company = _portal.getCompany(httpServletRequest);
 
-			User defaultUser = company.getDefaultUser();
+			User guestUser = company.getGuestUser();
 
 			String orderGuestToken = _getGuestToken(
 				company, commerceOrder.getCommerceOrderId());
 
 			if (!guestToken.equals(orderGuestToken)) {
 				throw new PrincipalException.MustHavePermission(
-					defaultUser.getUserId(), CommerceOrder.class.getName(),
+					guestUser.getUserId(), CommerceOrder.class.getName(),
 					commerceOrder.getCommerceOrderId(), ActionKeys.VIEW);
 			}
 
 			PermissionThreadLocal.setPermissionChecker(
-				PermissionCheckerFactoryUtil.create(defaultUser));
+				PermissionCheckerFactoryUtil.create(guestUser));
 		}
 		else {
 			PermissionThreadLocal.setPermissionChecker(

@@ -211,53 +211,70 @@ public class FinderWhereClauseEntryModelImpl
 	public Map<String, Function<FinderWhereClauseEntry, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<FinderWhereClauseEntry, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<FinderWhereClauseEntry, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<FinderWhereClauseEntry, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<FinderWhereClauseEntry, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<FinderWhereClauseEntry, Object>>();
-		Map<String, BiConsumer<FinderWhereClauseEntry, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String, BiConsumer<FinderWhereClauseEntry, ?>>();
+		private static final Map
+			<String, Function<FinderWhereClauseEntry, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"finderWhereClauseEntryId",
-			FinderWhereClauseEntry::getFinderWhereClauseEntryId);
-		attributeSetterBiConsumers.put(
-			"finderWhereClauseEntryId",
-			(BiConsumer<FinderWhereClauseEntry, Long>)
-				FinderWhereClauseEntry::setFinderWhereClauseEntryId);
-		attributeGetterFunctions.put("name", FinderWhereClauseEntry::getName);
-		attributeSetterBiConsumers.put(
-			"name",
-			(BiConsumer<FinderWhereClauseEntry, String>)
-				FinderWhereClauseEntry::setName);
-		attributeGetterFunctions.put(
-			"nickname", FinderWhereClauseEntry::getNickname);
-		attributeSetterBiConsumers.put(
-			"nickname",
-			(BiConsumer<FinderWhereClauseEntry, String>)
-				FinderWhereClauseEntry::setNickname);
+		static {
+			Map<String, Function<FinderWhereClauseEntry, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<FinderWhereClauseEntry, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"finderWhereClauseEntryId",
+				FinderWhereClauseEntry::getFinderWhereClauseEntryId);
+			attributeGetterFunctions.put(
+				"name", FinderWhereClauseEntry::getName);
+			attributeGetterFunctions.put(
+				"nickname", FinderWhereClauseEntry::getNickname);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<FinderWhereClauseEntry, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<FinderWhereClauseEntry, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<FinderWhereClauseEntry, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"finderWhereClauseEntryId",
+				(BiConsumer<FinderWhereClauseEntry, Long>)
+					FinderWhereClauseEntry::setFinderWhereClauseEntryId);
+			attributeSetterBiConsumers.put(
+				"name",
+				(BiConsumer<FinderWhereClauseEntry, String>)
+					FinderWhereClauseEntry::setName);
+			attributeSetterBiConsumers.put(
+				"nickname",
+				(BiConsumer<FinderWhereClauseEntry, String>)
+					FinderWhereClauseEntry::setNickname);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -548,38 +565,6 @@ public class FinderWhereClauseEntryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<FinderWhereClauseEntry, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<FinderWhereClauseEntry, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<FinderWhereClauseEntry, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply((FinderWhereClauseEntry)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, FinderWhereClauseEntry>
@@ -595,7 +580,8 @@ public class FinderWhereClauseEntryModelImpl
 
 	public <T> T getColumnValue(String columnName) {
 		Function<FinderWhereClauseEntry, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

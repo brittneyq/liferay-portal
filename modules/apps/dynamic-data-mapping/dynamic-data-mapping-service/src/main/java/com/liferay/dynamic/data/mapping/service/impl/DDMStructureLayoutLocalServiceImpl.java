@@ -46,7 +46,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -87,7 +86,7 @@ public class DDMStructureLayoutLocalServiceImpl
 
 		User user = _userLocalService.getUser(userId);
 
-		validate(ddmFormLayout);
+		_validate(ddmFormLayout);
 
 		long structureLayoutId = counterLocalService.increment();
 
@@ -101,13 +100,11 @@ public class DDMStructureLayoutLocalServiceImpl
 		structureLayout.setUserName(user.getFullName());
 		structureLayout.setClassNameId(classNameId);
 		structureLayout.setStructureLayoutKey(
-			Optional.ofNullable(
-				structureLayoutKey
-			).orElseGet(
-				() -> String.valueOf(counterLocalService.increment())
-			));
+			GetterUtil.getString(
+				structureLayoutKey,
+				String.valueOf(counterLocalService.increment())));
 		structureLayout.setStructureVersionId(structureVersionId);
-		structureLayout.setDefinition(serialize(ddmFormLayout));
+		structureLayout.setDefinition(_serialize(ddmFormLayout));
 
 		return ddmStructureLayoutPersistence.update(structureLayout);
 	}
@@ -137,11 +134,9 @@ public class DDMStructureLayoutLocalServiceImpl
 		structureLayout.setModifiedDate(new Date());
 		structureLayout.setClassNameId(classNameId);
 		structureLayout.setStructureLayoutKey(
-			Optional.ofNullable(
-				structureLayoutKey
-			).orElseGet(
-				() -> String.valueOf(counterLocalService.increment())
-			));
+			GetterUtil.getString(
+				structureLayoutKey,
+				String.valueOf(counterLocalService.increment())));
 		structureLayout.setStructureVersionId(structureVersionId);
 		structureLayout.setNameMap(name);
 		structureLayout.setDescriptionMap(description);
@@ -155,12 +150,11 @@ public class DDMStructureLayoutLocalServiceImpl
 			long classNameId, DDMStructureVersion ddmStructureVersion)
 		throws PortalException {
 
-		List<DDMStructureLayout> ddmStructureLayouts =
-			ddmStructureLayoutPersistence.findByG_C_SV(
-				ddmStructureVersion.getGroupId(), classNameId,
-				ddmStructureVersion.getStructureVersionId());
+		for (DDMStructureLayout ddmStructureLayout :
+				ddmStructureLayoutPersistence.findByG_C_SV(
+					ddmStructureVersion.getGroupId(), classNameId,
+					ddmStructureVersion.getStructureVersionId())) {
 
-		for (DDMStructureLayout ddmStructureLayout : ddmStructureLayouts) {
 			deleteDDMStructureLayout(ddmStructureLayout);
 		}
 	}
@@ -328,9 +322,9 @@ public class DDMStructureLayoutLocalServiceImpl
 		DDMStructureLayout structureLayout =
 			ddmStructureLayoutPersistence.findByPrimaryKey(structureLayoutId);
 
-		validate(ddmFormLayout);
+		_validate(ddmFormLayout);
 
-		structureLayout.setDefinition(serialize(ddmFormLayout));
+		structureLayout.setDefinition(_serialize(ddmFormLayout));
 
 		return ddmStructureLayoutPersistence.update(structureLayout);
 	}
@@ -355,7 +349,7 @@ public class DDMStructureLayoutLocalServiceImpl
 		return ddmStructureLayoutPersistence.update(structureLayout);
 	}
 
-	protected String serialize(DDMFormLayout ddmFormLayout) {
+	private String _serialize(DDMFormLayout ddmFormLayout) {
 		DDMFormLayoutSerializerSerializeRequest.Builder builder =
 			DDMFormLayoutSerializerSerializeRequest.Builder.newBuilder(
 				ddmFormLayout);
@@ -367,9 +361,7 @@ public class DDMStructureLayoutLocalServiceImpl
 		return ddmFormLayoutSerializerSerializeResponse.getContent();
 	}
 
-	protected void validate(DDMFormLayout ddmFormLayout)
-		throws PortalException {
-
+	private void _validate(DDMFormLayout ddmFormLayout) throws PortalException {
 		_ddmFormLayoutValidator.validate(ddmFormLayout);
 	}
 

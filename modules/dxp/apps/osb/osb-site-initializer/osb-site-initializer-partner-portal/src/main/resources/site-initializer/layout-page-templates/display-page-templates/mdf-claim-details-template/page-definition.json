@@ -24,8 +24,8 @@
 						{
 							"fragmentViewportStyle": {
 								"paddingBottom": "0",
-								"paddingLeft": "4",
-								"paddingRight": "4",
+								"paddingLeft": "0",
+								"paddingRight": "0",
 								"paddingTop": "0"
 							},
 							"id": "portraitMobile"
@@ -58,6 +58,81 @@
 					{
 						"definition": {
 							"fragmentStyle": {
+								"marginBottom": "3"
+							},
+							"indexed": true,
+							"layout": {
+								"borderWidth": 0,
+								"marginBottom": 1,
+								"marginLeft": 0,
+								"marginRight": 0,
+								"marginTop": 0,
+								"opacity": 100,
+								"paddingBottom": 0,
+								"paddingLeft": 0,
+								"paddingRight": 0,
+								"paddingTop": 0,
+								"widthType": "Fluid"
+							},
+							"name": "Back Container"
+						},
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-button"
+									},
+									"fragmentConfig": {
+										"buttonSize": "nm",
+										"buttonType": "secondary"
+									},
+									"fragmentFields": [
+										{
+											"id": "link",
+											"value": {
+												"fragmentLink": {
+													"value": {
+														"href": {
+															"mapping": {
+																"itemReference": {
+																	"className": "com.liferay.portal.kernel.model.Layout",
+																	"fields": [
+																		{
+																			"fieldName": "friendlyURL",
+																			"fieldValue": "/marketing/mdf-claims"
+																		},
+																		{
+																			"fieldName": "privatePage",
+																			"fieldValue": "false"
+																		},
+																		{
+																			"fieldName": "siteKey",
+																			"fieldValue": "[$GROUP_KEY$]"
+																		}
+																	]
+																}
+															}
+														}
+													}
+												},
+												"text": {
+													"value_i18n": {
+														"en_US": "← Back"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true
+								},
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
 								"backgroundColor": "colorNeutral0",
 								"borderRadius": "borderRadiusSm",
 								"borderWidth": "0",
@@ -87,20 +162,32 @@
 							{
 								"definition": {
 									"fragmentStyle": {
+										"borderRadius": "",
 										"borderWidth": "0",
-										"paddingBottom": "2",
+										"marginBottom": "2",
+										"shadow": "",
 										"textAlign": ""
 									},
+									"fragmentViewports": [
+										{
+											"fragmentViewportStyle": {
+												"paddingBottom": "0"
+											},
+											"id": "tablet"
+										}
+									],
 									"indexed": true,
 									"layout": {
 										"align": "Start",
 										"borderWidth": 0,
 										"contentDisplay": "FlexRow",
+										"flexWrap": "Wrap",
 										"justify": "SpaceBetween",
 										"marginBottom": 0,
 										"marginLeft": 0,
 										"marginRight": 0,
 										"marginTop": 0,
+										"opacity": 100,
 										"paddingBottom": 0,
 										"paddingLeft": 0,
 										"paddingRight": 0,
@@ -112,17 +199,22 @@
 									{
 										"definition": {
 											"fragmentStyle": {
+												"borderRadius": "",
 												"borderWidth": "0",
+												"shadow": "",
 												"textAlign": ""
 											},
 											"indexed": true,
 											"layout": {
+												"align": "Start",
 												"borderWidth": 0,
 												"contentDisplay": "FlexColumn",
+												"flexWrap": "Wrap",
 												"marginBottom": 0,
 												"marginLeft": 0,
 												"marginRight": 0,
 												"marginTop": 0,
+												"opacity": 100,
 												"paddingBottom": 0,
 												"paddingLeft": 0,
 												"paddingRight": 0,
@@ -137,7 +229,8 @@
 														"key": "DIALECT-dialect-text"
 													},
 													"fragmentConfig": {
-														"textType": "h1"
+														"textType": "h1",
+														"truncateText": false
 													},
 													"fragmentFields": [
 														{
@@ -166,8 +259,10 @@
 														}
 													],
 													"fragmentStyle": {
+														"borderRadius": "",
 														"fontWeight": "fontWeightBold",
 														"paddingBottom": "1",
+														"shadow": "",
 														"textAlign": "",
 														"textColor": "colorNeutral10"
 													},
@@ -178,17 +273,21 @@
 											{
 												"definition": {
 													"fragmentStyle": {
+														"borderRadius": "",
 														"borderWidth": "0",
+														"shadow": "",
 														"textAlign": ""
 													},
 													"indexed": true,
 													"layout": {
 														"borderWidth": 0,
 														"contentDisplay": "FlexRow",
+														"flexWrap": "Wrap",
 														"marginBottom": 0,
 														"marginLeft": 0,
 														"marginRight": 0,
 														"marginTop": 0,
+														"opacity": 100,
 														"paddingBottom": 0,
 														"paddingLeft": 0,
 														"paddingRight": 0,
@@ -203,7 +302,8 @@
 																"key": "DIALECT-dialect-text"
 															},
 															"fragmentConfig": {
-																"textType": "text-paragraph"
+																"textType": "text-paragraph",
+																"truncateText": false
 															},
 															"fragmentFields": [
 																{
@@ -232,7 +332,9 @@
 																}
 															],
 															"fragmentStyle": {
+																"borderRadius": "",
 																"paddingRight": "1",
+																"shadow": "",
 																"textAlign": "",
 																"textColor": "colorNeutral7"
 															},
@@ -246,7 +348,8 @@
 																"key": "DIALECT-dialect-text"
 															},
 															"fragmentConfig": {
-																"textType": "text-paragraph"
+																"textType": "text-paragraph",
+																"truncateText": false
 															},
 															"fragmentFields": [
 																{
@@ -266,7 +369,9 @@
 																}
 															],
 															"fragmentStyle": {
+																"borderRadius": "",
 																"paddingRight": "1",
+																"shadow": "",
 																"textAlign": "",
 																"textColor": "colorNeutral7"
 															},
@@ -280,7 +385,8 @@
 																"key": "DIALECT-dialect-text"
 															},
 															"fragmentConfig": {
-																"textType": "text-paragraph"
+																"textType": "text-paragraph",
+																"truncateText": false
 															},
 															"fragmentFields": [
 																{
@@ -290,26 +396,28 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"ar_SA": ",Last Modified:",
-																				"ca_ES": ",Last Modified:",
-																				"de_DE": ",Last Modified:",
-																				"en_US": ",Last Modified:",
-																				"es_ES": ",Last Modified:",
-																				"fi_FI": ",Last Modified:",
-																				"fr_FR": ",Last Modified:",
-																				"hu_HU": ",Last Modified:",
-																				"ja_JP": ",Last Modified:",
-																				"nl_NL": ",Last Modified:",
-																				"pt_BR": ",Last Modified:",
-																				"sv_SE": ",Last Modified:",
-																				"zh_CN": ",Last Modified:"
+																				"ar_SA": " Last Modified:",
+																				"ca_ES": " Last Modified:",
+																				"de_DE": " Last Modified:",
+																				"en_US": " Last Modified:",
+																				"es_ES": " Last Modified:",
+																				"fi_FI": " Last Modified:",
+																				"fr_FR": " Last Modified:",
+																				"hu_HU": " Last Modified:",
+																				"ja_JP": " Last Modified:",
+																				"nl_NL": " Last Modified:",
+																				"pt_BR": " Last Modified:",
+																				"sv_SE": " Last Modified:",
+																				"zh_CN": " Last Modified:"
 																			}
 																		}
 																	}
 																}
 															],
 															"fragmentStyle": {
+																"borderRadius": "",
 																"paddingRight": "1",
+																"shadow": "",
 																"textAlign": "",
 																"textColor": "colorNeutral7"
 															},
@@ -323,7 +431,8 @@
 																"key": "DIALECT-dialect-text"
 															},
 															"fragmentConfig": {
-																"textType": "text-paragraph"
+																"textType": "text-paragraph",
+																"truncateText": false
 															},
 															"fragmentFields": [
 																{
@@ -343,6 +452,8 @@
 																}
 															],
 															"fragmentStyle": {
+																"borderRadius": "",
+																"shadow": "",
 																"textAlign": "",
 																"textColor": "colorNeutral7"
 															},
@@ -355,6 +466,76 @@
 											}
 										],
 										"type": "Section"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"borderRadius": "",
+												"borderWidth": "0",
+												"shadow": "",
+												"textAlign": ""
+											},
+											"indexed": true,
+											"layout": {
+												"align": "Center",
+												"borderWidth": 0,
+												"contentDisplay": "FlexRow",
+												"flexWrap": "Wrap",
+												"justify": "End",
+												"marginBottom": 0,
+												"marginLeft": 0,
+												"marginRight": 0,
+												"marginTop": 0,
+												"opacity": 100,
+												"paddingBottom": 0,
+												"paddingLeft": 0,
+												"paddingRight": 0,
+												"paddingTop": 0,
+												"widthType": "Fluid"
+											}
+										},
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "delete-button-mdf-claim"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+													],
+													"indexed": true
+												},
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "edit-button-mdf-claim"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+													],
+													"indexed": true
+												},
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "cancel-button-mdf-claim"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+													],
+													"indexed": true
+												},
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
 									}
 								],
 								"type": "Section"
@@ -362,7 +543,7 @@
 							{
 								"definition": {
 									"fragment": {
-										"key": "mdf-claim-details-status-display"
+										"key": "mdf-claim-manager-status"
 									},
 									"fragmentConfig": {
 									},
@@ -370,44 +551,19 @@
 									],
 									"indexed": true
 								},
-								"type": "Fragment"
-							},
-							{
-								"definition": {
-									"fragmentStyle": {
-										"borderWidth": "0",
-										"textAlign": ""
-									},
-									"indexed": true,
-									"layout": {
-										"borderWidth": 0,
-										"marginBottom": 0,
-										"marginLeft": 0,
-										"marginRight": 0,
-										"marginTop": 0,
-										"paddingBottom": 0,
-										"paddingLeft": 0,
-										"paddingRight": 0,
-										"paddingTop": 0,
-										"widthType": "Fluid"
-									}
-								},
 								"pageElements": [
 									{
 										"definition": {
-											"fragment": {
-												"key": "mdf-claim-manager-status"
-											},
-											"fragmentConfig": {
-											},
-											"fragmentFields": [
-											],
-											"indexed": true
 										},
-										"type": "Fragment"
+										"type": "FragmentDropZone"
+									},
+									{
+										"definition": {
+										},
+										"type": "FragmentDropZone"
 									}
 								],
-								"type": "Section"
+								"type": "Fragment"
 							}
 						],
 						"type": "Section"
@@ -689,6 +845,32 @@
 															"indexed": true
 														},
 														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "claim-detail-document-list"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+															],
+															"indexed": true
+														},
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "claim-detail-activity-list"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+															],
+															"indexed": true
+														},
+														"type": "Fragment"
 													}
 												],
 												"type": "Section"
@@ -807,13 +989,33 @@
 													},
 													{
 														"definition": {
-															"widgetInstance": {
-																"widgetConfig": {
-																},
-																"widgetName": "com_liferay_comment_page_comments_web_portlet_PageCommentsPortlet"
-															}
+															"fragment": {
+																"key": "comments-container"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+															],
+															"indexed": true
 														},
-														"type": "Widget"
+														"pageElements": [
+															{
+																"pageElements": [
+																	{
+																		"definition": {
+																			"widgetInstance": {
+																				"widgetConfig": {
+																				},
+																				"widgetName": "com_liferay_comment_page_comments_web_portlet_PageCommentsPortlet"
+																			}
+																		},
+																		"type": "Widget"
+																	}
+																],
+																"type": "FragmentDropZone"
+															}
+														],
+														"type": "Fragment"
 													}
 												],
 												"type": "Section"

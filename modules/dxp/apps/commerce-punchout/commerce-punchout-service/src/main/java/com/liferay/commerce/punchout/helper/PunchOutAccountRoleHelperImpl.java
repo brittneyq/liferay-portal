@@ -14,8 +14,10 @@
 
 package com.liferay.commerce.punchout.helper;
 
-import com.liferay.commerce.account.model.CommerceAccountUserRel;
-import com.liferay.commerce.account.service.CommerceAccountUserRelLocalService;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.model.AccountEntryUserRel;
+import com.liferay.account.service.AccountEntryLocalService;
+import com.liferay.account.service.AccountEntryUserRelLocalService;
 import com.liferay.commerce.punchout.constants.PunchOutConstants;
 import com.liferay.commerce.punchout.service.PunchOutAccountRoleHelper;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -23,6 +25,7 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 
 import java.util.List;
@@ -33,21 +36,19 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Jaclyn Ong
  */
-@Component(
-	enabled = false, immediate = true, service = PunchOutAccountRoleHelper.class
-)
+@Component(service = PunchOutAccountRoleHelper.class)
 public class PunchOutAccountRoleHelperImpl
 	implements PunchOutAccountRoleHelper {
 
 	@Override
-	public boolean hasPunchOutRole(long userId, long commerceAccountId)
+	public boolean hasPunchOutRole(long userId, long accountEntryId)
 		throws PortalException {
 
-		List<CommerceAccountUserRel> commerceAccountUserRels =
-			_commerceAccountUserRelLocalService.getCommerceAccountUserRels(
-				commerceAccountId);
+		List<AccountEntryUserRel> accountEntryUserRels =
+			_accountEntryUserRelLocalService.
+				getAccountEntryUserRelsByAccountEntryId(accountEntryId);
 
-		if (commerceAccountUserRels.isEmpty()) {
+		if (accountEntryUserRels.isEmpty()) {
 			return false;
 		}
 
@@ -64,11 +65,14 @@ public class PunchOutAccountRoleHelperImpl
 			return false;
 		}
 
-		for (CommerceAccountUserRel commerceAccountUserRel :
-				commerceAccountUserRels) {
+		for (AccountEntryUserRel accountEntryUserRel : accountEntryUserRels) {
+			AccountEntry accountEntry =
+				_accountEntryLocalService.getAccountEntry(accountEntryId);
 
 			List<UserGroupRole> userGroupRoles =
-				commerceAccountUserRel.getUserGroupRoles();
+				_userGroupRoleLocalService.getUserGroupRoles(
+					accountEntryUserRel.getAccountUserId(),
+					accountEntry.getAccountEntryGroupId());
 
 			for (UserGroupRole userGroupRole : userGroupRoles) {
 				Role role = userGroupRole.getRole();
@@ -85,11 +89,16 @@ public class PunchOutAccountRoleHelperImpl
 	}
 
 	@Reference
-	private CommerceAccountUserRelLocalService
-		_commerceAccountUserRelLocalService;
+	private AccountEntryLocalService _accountEntryLocalService;
+
+	@Reference
+	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
 
 	@Reference
 	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private UserGroupRoleLocalService _userGroupRoleLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;

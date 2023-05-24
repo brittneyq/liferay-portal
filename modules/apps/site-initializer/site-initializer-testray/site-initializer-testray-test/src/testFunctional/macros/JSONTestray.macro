@@ -1,0 +1,249 @@
+definition {
+
+	@summary = "Get the Id of project, routine and product version to add a build."
+	macro addBuild {
+		Variables.assertDefined(parameterList = "${buildName},${projectName},${routineName},${productVersion}");
+
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+		var routineId = JSONTestraySetter.getRoutineId(routineName = ${routineName});
+		var productVersionId = JSONTestraySetter.getProductVersionId(productVersion = ${productVersion});
+
+		var buildId = JSONTestrayAPI.createBuildAPI(
+			buildName = ${buildName},
+			productVersionId = ${productVersionId},
+			projectId = ${projectId},
+			routineId = ${routineId});
+	}
+
+	@summary = "Get the Id of build, component, case and run to add a case result."
+	macro addCaseResult {
+		Variables.assertDefined(parameterList = "${buildName},${caseResultName},${componentName},${caseName},${runName}");
+
+		var buildId = JSONTestraySetter.getBuildId(buildName = ${buildName});
+		var componentId = JSONTestraySetter.getComponentId(componentName = ${componentName});
+		var casesId = JSONTestraySetter.getCaseId(caseName = ${caseName});
+		var runId = JSONTestraySetter.getRunId(runName = ${runName});
+
+		var caseResultId = JSONTestrayAPI.createCaseResultAPI(
+			buildId = ${buildId},
+			caseResultName = ${caseResultName},
+			casesId = ${casesId},
+			componentId = ${componentId},
+			messageError = ${messageError},
+			runId = ${runId});
+	}
+
+	@summary = "Get the Id of case result and subtask to add a case result for subtask."
+	macro addCaseResultForSubtask {
+		Variables.assertDefined(parameterList = "${caseResultForSubtask},${caseResultName},${subtaskName}");
+
+		var caseResultId = JSONTestraySetter.getCaseResultId(caseResultName = ${caseResultName});
+		var subtaskId = JSONTestraySetter.getSubtaskId(subtaskName = ${subtaskName});
+
+		var caseResultForSubtaskId = JSONTestrayAPI.createCaseResultsForSubtaskAPI(
+			caseResultForSubtask = ${caseResultForSubtask},
+			caseResultId = ${caseResultId},
+			subtaskId = ${subtaskId});
+	}
+
+	@summary = "Get the Id of case type, component and project to add a case."
+	macro addCases {
+		Variables.assertDefined(parameterList = "${caseName},${caseType},${projectName},${componentName}");
+
+		var caseTypeId = JSONTestraySetter.getCaseTypeId(caseType = ${caseType});
+		var componentId = JSONTestraySetter.getComponentId(componentName = ${componentName});
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+
+		var caseId = JSONTestrayAPI.createCasesAPI(
+			caseName = ${caseName},
+			caseTypeId = ${caseTypeId},
+			componentId = ${componentId},
+			description = ${description},
+			priority = ${priority},
+			projectId = ${projectId},
+			steps = ${steps});
+	}
+
+	@summary = "This macro add a case type via API."
+	macro addCaseType {
+		var caseTypeId = JSONTestrayAPI.createCaseTypeAPI(caseType = ${caseType});
+	}
+
+	@summary = "Get the Id of project and team to add a component."
+	macro addComponent {
+		Variables.assertDefined(parameterList = "${componentName},${projectName},${teamName}");
+
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+		var teamId = JSONTestraySetter.getTeamId(teamName = ${teamName});
+
+		var componentId = JSONTestrayAPI.createComponentAPI(
+			componentName = ${componentName},
+			projectId = ${projectId},
+			teamId = ${teamId});
+	}
+
+	@summary = "Get the Id of category, routine and option to add a environment factor."
+	macro addEnvironmentFactors {
+		Variables.assertDefined(parameterList = ${environmentFactorsName});
+
+		if (!(isSet(optionsName))) {
+			var optionsName = "Option 1";
+		}
+
+		if (!(isSet(categoryName))) {
+			var categoryName = "Category 1";
+		}
+
+		if (!(isSet(routineName))) {
+			var routineName = "Routine 1";
+		}
+
+		JSONTestray.addFactorCategory(categoryName = ${categoryName});
+
+		var factorCategoryId = JSONTestraySetter.getFactorCategoryId(categoryName = ${categoryName});
+
+		JSONTestray.addFactorOptions(
+			factorCategoryId = ${factorCategoryId},
+			optionsName = ${optionsName});
+
+		var factorOptionsId = JSONTestraySetter.getFactorOptionsId(optionsName = ${optionsName});
+		var routineId = JSONTestraySetter.getRoutineId(routineName = ${routineName});
+
+		var environmentFactorsId = JSONTestrayAPI.createEnvironmentFactorsAPI(
+			environmentFactorsName = ${environmentFactorsName},
+			factorCategoryId = ${factorCategoryId},
+			factorOptionsId = ${factorOptionsId},
+			routineId = ${routineId});
+	}
+
+	@summary = "Get the Id of category to add a factor category."
+	macro addFactorCategory {
+		Variables.assertDefined(parameterList = ${categoryName});
+
+		var factorCategoryId = JSONTestrayAPI.createFactorCategoriesAPI(categoryName = ${categoryName});
+	}
+
+	@summary = "Get the Id of category and option to add a factor option."
+	macro addFactorOptions {
+		Variables.assertDefined(parameterList = ${optionsName});
+
+		var factorOptionsId = JSONTestrayAPI.createFactorOptionsAPI(
+			factorCategoryId = ${factorCategoryId},
+			optionsName = ${optionsName});
+	}
+
+	@summary = "Get the Id of project to add a case."
+	macro addProductVersion {
+		Variables.assertDefined(parameterList = "${productVersion},${projectName}");
+
+		if (!(isSet(projectName))) {
+			var projectName = "Project 1";
+		}
+
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+
+		var productVersionId = JSONTestrayAPI.createProductVersionAPI(
+			productVersion = ${productVersion},
+			projectId = ${projectId});
+	}
+
+	@summary = "This macro add the project via API"
+	macro addProject {
+		Variables.assertDefined(parameterList = "${projectName},${projectDescription}");
+
+		var projectId = JSONTestrayAPI.createProjectAPI(
+			projectDescription = ${projectDescription},
+			projectName = ${projectName});
+	}
+
+	@summary = "Get the Id of component and project to add a requirement."
+	macro addRequirement {
+		Variables.assertDefined(parameterList = "${componentName},${linkTitle},${projectName},${requirementName}");
+
+		var componentId = JSONTestraySetter.getComponentId(componentName = ${componentName});
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+
+		var requirementId = JSONTestrayAPI.createRequirementAPI(
+			componentId = ${componentId},
+			linkTitle = ${linkTitle},
+			linkURL = ${linkURL},
+			projectId = ${projectId},
+			requirementName = ${requirementName});
+	}
+
+	@summary = "Get the Id of project to add a routine."
+	macro addRoutine {
+		Variables.assertDefined(parameterList = "${routineName},${projectName}");
+
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+
+		var routineId = JSONTestrayAPI.createRoutineAPI(
+			projectId = ${projectId},
+			routineName = ${routineName});
+	}
+
+	@summary = "Get the Id of build to add a run."
+	macro addRun {
+		Variables.assertDefined(parameterList = "${runName},${buildName}");
+
+		var buildId = JSONTestraySetter.getBuildId(buildName = ${buildName});
+
+		var runId = JSONTestrayAPI.createRunAPI(
+			buildId = ${buildId},
+			runName = ${runName});
+	}
+
+	@summary = "Get the Id of task to add a subtask."
+	macro addSubtask {
+		Variables.assertDefined(parameterList = "${subtaskName},${subtaskNumber},${taskName},${key},${score}");
+
+		var taskId = JSONTestraySetter.getTaskId(taskName = ${taskName});
+
+		var subtaskId = JSONTestrayAPI.createSubtaskAPI(
+			key = ${key},
+			messageError = ${messageError},
+			score = ${score},
+			statusSubtask = ${statusSubtask},
+			subtaskName = ${subtaskName},
+			subtaskNumber = ${subtaskNumber},
+			taskId = ${taskId});
+	}
+
+	@summary = "Get the Id of project to add a suite."
+	macro addSuite {
+		if (!(isSet(projectName))) {
+			var projectName = "Project 1";
+		}
+
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+
+		var suiteId = JSONTestrayAPI.createSuiteAPI(
+			projectId = ${projectId},
+			suiteName = ${suiteName});
+	}
+
+	@summary = "Get the Id of build to add a task."
+	macro addTask {
+		Variables.assertDefined(parameterList = "${taskName},${key},${statusTask},${buildName}");
+
+		var buildId = JSONTestraySetter.getBuildId(buildName = ${buildName});
+
+		var taskId = JSONTestrayAPI.createTaskAPI(
+			buildId = ${buildId},
+			key = ${key},
+			statusTask = ${statusTask},
+			taskName = ${taskName});
+	}
+
+	@summary = "Get the Id of project to add a team."
+	macro addTeam {
+		Variables.assertDefined(parameterList = "${teamName},${projectName}");
+
+		var projectId = JSONTestraySetter.getProjectId(projectName = ${projectName});
+
+		var teamId = JSONTestrayAPI.createTeamAPI(
+			projectId = ${projectId},
+			teamName = ${teamName});
+	}
+
+}

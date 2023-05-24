@@ -191,48 +191,66 @@ public class EagerBlobEntryModelImpl
 	public Map<String, Function<EagerBlobEntry, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<EagerBlobEntry, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<EagerBlobEntry, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<EagerBlobEntry, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<EagerBlobEntry, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<EagerBlobEntry, Object>>();
-		Map<String, BiConsumer<EagerBlobEntry, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<EagerBlobEntry, ?>>();
+		private static final Map<String, Function<EagerBlobEntry, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put("uuid", EagerBlobEntry::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid",
-			(BiConsumer<EagerBlobEntry, String>)EagerBlobEntry::setUuid);
-		attributeGetterFunctions.put(
-			"eagerBlobEntryId", EagerBlobEntry::getEagerBlobEntryId);
-		attributeSetterBiConsumers.put(
-			"eagerBlobEntryId",
-			(BiConsumer<EagerBlobEntry, Long>)
-				EagerBlobEntry::setEagerBlobEntryId);
-		attributeGetterFunctions.put("groupId", EagerBlobEntry::getGroupId);
-		attributeSetterBiConsumers.put(
-			"groupId",
-			(BiConsumer<EagerBlobEntry, Long>)EagerBlobEntry::setGroupId);
-		attributeGetterFunctions.put("blob", EagerBlobEntry::getBlob);
-		attributeSetterBiConsumers.put(
-			"blob", (BiConsumer<EagerBlobEntry, Blob>)EagerBlobEntry::setBlob);
+		static {
+			Map<String, Function<EagerBlobEntry, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<EagerBlobEntry, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put("uuid", EagerBlobEntry::getUuid);
+			attributeGetterFunctions.put(
+				"eagerBlobEntryId", EagerBlobEntry::getEagerBlobEntryId);
+			attributeGetterFunctions.put("groupId", EagerBlobEntry::getGroupId);
+			attributeGetterFunctions.put("blob", EagerBlobEntry::getBlob);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<EagerBlobEntry, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<EagerBlobEntry, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap<String, BiConsumer<EagerBlobEntry, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"uuid",
+				(BiConsumer<EagerBlobEntry, String>)EagerBlobEntry::setUuid);
+			attributeSetterBiConsumers.put(
+				"eagerBlobEntryId",
+				(BiConsumer<EagerBlobEntry, Long>)
+					EagerBlobEntry::setEagerBlobEntryId);
+			attributeSetterBiConsumers.put(
+				"groupId",
+				(BiConsumer<EagerBlobEntry, Long>)EagerBlobEntry::setGroupId);
+			attributeSetterBiConsumers.put(
+				"blob",
+				(BiConsumer<EagerBlobEntry, Blob>)EagerBlobEntry::setBlob);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -507,37 +525,6 @@ public class EagerBlobEntryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<EagerBlobEntry, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<EagerBlobEntry, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<EagerBlobEntry, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((EagerBlobEntry)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, EagerBlobEntry>
@@ -556,7 +543,8 @@ public class EagerBlobEntryModelImpl
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<EagerBlobEntry, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

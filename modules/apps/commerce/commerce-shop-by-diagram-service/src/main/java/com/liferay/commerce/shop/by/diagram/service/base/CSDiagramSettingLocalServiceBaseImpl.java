@@ -17,8 +17,6 @@ package com.liferay.commerce.shop.by.diagram.service.base;
 import com.liferay.commerce.shop.by.diagram.model.CSDiagramSetting;
 import com.liferay.commerce.shop.by.diagram.service.CSDiagramSettingLocalService;
 import com.liferay.commerce.shop.by.diagram.service.CSDiagramSettingLocalServiceUtil;
-import com.liferay.commerce.shop.by.diagram.service.persistence.CSDiagramEntryPersistence;
-import com.liferay.commerce.shop.by.diagram.service.persistence.CSDiagramPinPersistence;
 import com.liferay.commerce.shop.by.diagram.service.persistence.CSDiagramSettingPersistence;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -57,8 +55,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -507,7 +503,7 @@ public abstract class CSDiagramSettingLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CSDiagramSettingLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -522,7 +518,8 @@ public abstract class CSDiagramSettingLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		csDiagramSettingLocalService = (CSDiagramSettingLocalService)aopProxy;
 
-		_setLocalServiceUtilService(csDiagramSettingLocalService);
+		CSDiagramSettingLocalServiceUtil.setService(
+			csDiagramSettingLocalService);
 	}
 
 	/**
@@ -582,29 +579,6 @@ public abstract class CSDiagramSettingLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CSDiagramSettingLocalService csDiagramSettingLocalService) {
-
-		try {
-			Field field =
-				CSDiagramSettingLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, csDiagramSettingLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected CSDiagramEntryPersistence csDiagramEntryPersistence;
-
-	@Reference
-	protected CSDiagramPinPersistence csDiagramPinPersistence;
-
 	protected CSDiagramSettingLocalService csDiagramSettingLocalService;
 
 	@Reference
@@ -613,18 +587,6 @@ public abstract class CSDiagramSettingLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CSDiagramSettingLocalServiceBaseImpl.class);

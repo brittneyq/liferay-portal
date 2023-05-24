@@ -100,30 +100,10 @@ public class CommerceChannelServiceUtil {
 		return getService().getCommerceChannelByOrderGroupId(groupId);
 	}
 
-	public static List<CommerceChannel> getCommerceChannels(int start, int end)
-		throws PortalException {
-
-		return getService().getCommerceChannels(start, end);
-	}
-
 	public static List<CommerceChannel> getCommerceChannels(long companyId)
 		throws PortalException {
 
 		return getService().getCommerceChannels(companyId);
-	}
-
-	public static List<CommerceChannel> getCommerceChannels(
-			long companyId, String keywords, int start, int end)
-		throws PortalException {
-
-		return getService().getCommerceChannels(
-			companyId, keywords, start, end);
-	}
-
-	public static int getCommerceChannelsCount(long companyId, String keywords)
-		throws PortalException {
-
-		return getService().getCommerceChannelsCount(companyId, keywords);
 	}
 
 	/**
@@ -192,6 +172,10 @@ public class CommerceChannelServiceUtil {
 
 	public static CommerceChannelService getService() {
 		return _service;
+	}
+
+	public static void setService(CommerceChannelService service) {
+		_service = service;
 	}
 
 	private static volatile CommerceChannelService _service;

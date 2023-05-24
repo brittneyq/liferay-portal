@@ -14,20 +14,24 @@
 
 package com.liferay.frontend.data.set.taglib.servlet.taglib;
 
-import com.liferay.frontend.data.set.taglib.internal.js.loader.modules.extender.npm.NPMResolverProvider;
-import com.liferay.frontend.data.set.taglib.internal.util.ServicesProvider;
+import com.liferay.frontend.data.set.model.FDSPaginationEntry;
+import com.liferay.frontend.data.set.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolvedPackageNameUtil;
-import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
-import com.liferay.frontend.js.module.launcher.JSModuleResolver;
+import com.liferay.frontend.taglib.react.servlet.taglib.util.ServicesProvider;
+import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortalPreferences;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.template.react.renderer.ComponentDescriptor;
 import com.liferay.portal.template.react.renderer.ReactRenderer;
+import com.liferay.portal.util.PropsValues;
 import com.liferay.taglib.util.AttributesTagSupport;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -59,12 +63,39 @@ public class BaseDisplayTag extends AttributesTagSupport {
 		}
 	}
 
+	@Override
+	public int doStartTag() throws JspException {
+		try {
+			_fdsPaginationEntries = new ArrayList<>();
+
+			for (int curDelta :
+					PropsValues.SEARCH_CONTAINER_PAGE_DELTA_VALUES) {
+
+				if (curDelta > SearchContainer.MAX_DELTA) {
+					continue;
+				}
+
+				_fdsPaginationEntries.add(
+					new FDSPaginationEntry(null, curDelta));
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
+		return super.doStartTag();
+	}
+
 	public Map<String, Object> getAdditionalProps() {
 		return _additionalProps;
 	}
 
 	public String getId() {
 		return _id;
+	}
+
+	public int getItemsPerPage() {
+		return _itemsPerPage;
 	}
 
 	public String getNamespace() {
@@ -85,6 +116,10 @@ public class BaseDisplayTag extends AttributesTagSupport {
 		return _namespace;
 	}
 
+	public int getPageNumber() {
+		return _pageNumber;
+	}
+
 	public String getPropsTransformer() {
 		return _propsTransformer;
 	}
@@ -97,6 +132,10 @@ public class BaseDisplayTag extends AttributesTagSupport {
 		return _selectedItems;
 	}
 
+	public boolean getUniformActionsDisplay() {
+		return _uniformActionsDisplay;
+	}
+
 	public void setAdditionalProps(Map<String, Object> additionalProps) {
 		_additionalProps = additionalProps;
 	}
@@ -105,8 +144,16 @@ public class BaseDisplayTag extends AttributesTagSupport {
 		_id = id;
 	}
 
+	public void setItemsPerPage(int itemsPerPage) {
+		_itemsPerPage = itemsPerPage;
+	}
+
 	public void setNamespace(String namespace) {
 		_namespace = namespace;
+	}
+
+	public void setPageNumber(int pageNumber) {
+		_pageNumber = pageNumber;
 	}
 
 	/**
@@ -135,15 +182,23 @@ public class BaseDisplayTag extends AttributesTagSupport {
 		_selectedItems = selectedItems;
 	}
 
+	public void setUniformActionsDisplay(boolean uniformActionsDisplay) {
+		_uniformActionsDisplay = uniformActionsDisplay;
+	}
+
 	protected void cleanUp() {
 		_additionalProps = null;
+		_fdsPaginationEntries = null;
 		_id = null;
+		_itemsPerPage = 0;
 		_namespace = null;
+		_pageNumber = 0;
 		_portletURL = null;
 		_propsTransformer = null;
 		_propsTransformerServletContext = null;
 		_randomNamespace = null;
 		_selectedItems = null;
+		_uniformActionsDisplay = false;
 	}
 
 	protected void doClearTag() {
@@ -175,9 +230,22 @@ public class BaseDisplayTag extends AttributesTagSupport {
 				return null;
 			}
 		).put(
+			"customViews", _getCustomViews()
+		).put(
 			"namespace", getNamespace()
 		).put(
+			"pagination",
+			HashMapBuilder.<String, Object>put(
+				"deltas", _fdsPaginationEntries
+			).put(
+				"initialDelta", _itemsPerPage
+			).put(
+				"initialPageNumber", _pageNumber
+			).build()
+		).put(
 			"selectedItems", _selectedItems
+		).put(
+			"uniformActionsDisplay", getUniformActionsDisplay()
 		).build();
 	}
 
@@ -189,40 +257,24 @@ public class BaseDisplayTag extends AttributesTagSupport {
 		jspWriter.write("table-id\"><span aria-hidden=\"true\" class=\"");
 		jspWriter.write("loading-animation my-7\"></span>");
 
-		NPMResolver npmResolver = NPMResolverProvider.getNPMResolver();
-
-		String moduleName = npmResolver.resolveModuleName(
-			"@liferay/frontend-data-set-web/FrontendDataSet");
-
 		String propsTransformer = null;
 
 		if (Validator.isNotNull(_propsTransformer)) {
-			String resolvedPackageName = null;
-
-			try {
-				resolvedPackageName = NPMResolvedPackageNameUtil.get(
+			if (_propsTransformer.contains(" from ")) {
+				propsTransformer = _propsTransformer;
+			}
+			else {
+				String resolvedPackageName = NPMResolvedPackageNameUtil.get(
 					getPropsTransformerServletContext());
+
+				propsTransformer =
+					resolvedPackageName + "/" + _propsTransformer;
 			}
-			catch (UnsupportedOperationException
-						unsupportedOperationException) {
-
-				if (_log.isDebugEnabled()) {
-					_log.debug(unsupportedOperationException);
-				}
-
-				JSModuleResolver jsModuleResolver =
-					ServicesProvider.getJSModuleResolver();
-
-				resolvedPackageName = jsModuleResolver.resolveModule(
-					getPropsTransformerServletContext(), null);
-			}
-
-			propsTransformer = resolvedPackageName + "/" + _propsTransformer;
 		}
 
 		ComponentDescriptor componentDescriptor = new ComponentDescriptor(
-			moduleName, getId(), new LinkedHashSet<>(), false,
-			propsTransformer);
+			"{FrontendDataSet} from frontend-data-set-web", getId(),
+			new LinkedHashSet<>(), false, propsTransformer);
 
 		ReactRenderer reactRenderer = ServicesProvider.getReactRenderer();
 
@@ -238,15 +290,31 @@ public class BaseDisplayTag extends AttributesTagSupport {
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
 	}
 
+	private String _getCustomViews() {
+		HttpServletRequest httpServletRequest = getRequest();
+
+		PortalPreferences portalPreferences =
+			PortletPreferencesFactoryUtil.getPortalPreferences(
+				httpServletRequest);
+
+		return portalPreferences.getValue(
+			ServletContextUtil.getFDSSettingsNamespace(httpServletRequest, _id),
+			"customViews", "{}");
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(BaseDisplayTag.class);
 
 	private Map<String, Object> _additionalProps;
+	private List<FDSPaginationEntry> _fdsPaginationEntries;
 	private String _id;
+	private int _itemsPerPage;
 	private String _namespace;
+	private int _pageNumber;
 	private PortletURL _portletURL;
 	private String _propsTransformer;
 	private ServletContext _propsTransformerServletContext;
 	private String _randomNamespace;
 	private List<Object> _selectedItems;
+	private boolean _uniformActionsDisplay;
 
 }

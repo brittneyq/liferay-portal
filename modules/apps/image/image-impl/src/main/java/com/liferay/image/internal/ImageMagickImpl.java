@@ -14,6 +14,7 @@
 
 package com.liferay.image.internal;
 
+import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.image.ImageMagick;
@@ -22,9 +23,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.NamedThreadFactory;
 import com.liferay.portal.kernel.util.OSDetector;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.kernel.util.PrefsProps;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsUtil;
 
 import java.util.LinkedList;
@@ -40,12 +41,13 @@ import org.im4java.process.ProcessExecutor;
 import org.im4java.process.ProcessTask;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alexander Chow
  * @author Ivica Cardic
  */
-@Component(immediate = true, service = ImageMagick.class)
+@Component(service = ImageMagick.class)
 public class ImageMagickImpl implements ImageMagick {
 
 	@Override
@@ -59,7 +61,9 @@ public class ImageMagickImpl implements ImageMagick {
 			reset();
 		}
 
-		ProcessExecutor processExecutor = _getProcessExecutor();
+		ProcessExecutor processExecutor =
+			_processExecutorDCLSingleton.getSingleton(
+				ImageMagickImpl::_createProcessExecutor);
 
 		LiferayConvertCmd liferayConvertCmd = new LiferayConvertCmd();
 
@@ -73,20 +77,12 @@ public class ImageMagickImpl implements ImageMagick {
 
 	@Override
 	public void destroy() {
-		if (_processExecutor == null) {
-			return;
-		}
-
-		synchronized (ProcessExecutor.class) {
-			_processExecutor.shutdownNow();
-		}
-
-		_processExecutor = null;
+		_processExecutorDCLSingleton.destroy(ProcessExecutor::shutdownNow);
 	}
 
 	@Override
 	public String getGlobalSearchPath() throws Exception {
-		PortletPreferences preferences = PrefsPropsUtil.getPreferences(true);
+		PortletPreferences preferences = _prefsProps.getPreferences();
 
 		String globalSearchPath = preferences.getValue(
 			PropsKeys.IMAGEMAGICK_GLOBAL_SEARCH_PATH, null);
@@ -113,7 +109,7 @@ public class ImageMagickImpl implements ImageMagick {
 
 	@Override
 	public Properties getResourceLimitsProperties() throws Exception {
-		Properties resourceLimitsProperties = PrefsPropsUtil.getProperties(
+		Properties resourceLimitsProperties = _prefsProps.getProperties(
 			PropsKeys.IMAGEMAGICK_RESOURCE_LIMIT, true);
 
 		if (resourceLimitsProperties.isEmpty()) {
@@ -131,7 +127,9 @@ public class ImageMagickImpl implements ImageMagick {
 				"Cannot call \"identify\" when ImageMagick is disabled");
 		}
 
-		ProcessExecutor processExecutor = _getProcessExecutor();
+		ProcessExecutor processExecutor =
+			_processExecutorDCLSingleton.getSingleton(
+				ImageMagickImpl::_createProcessExecutor);
 
 		LiferayIdentifyCmd liferayIdentifyCmd = new LiferayIdentifyCmd();
 
@@ -161,7 +159,7 @@ public class ImageMagickImpl implements ImageMagick {
 		boolean enabled = false;
 
 		try {
-			enabled = PrefsPropsUtil.getBoolean(PropsKeys.IMAGEMAGICK_ENABLED);
+			enabled = _prefsProps.getBoolean(PropsKeys.IMAGEMAGICK_ENABLED);
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -224,30 +222,27 @@ public class ImageMagickImpl implements ImageMagick {
 		return resourceLimits;
 	}
 
-	private ProcessExecutor _getProcessExecutor() {
-		if (_processExecutor != null) {
-			return _processExecutor;
-		}
+	private static ProcessExecutor _createProcessExecutor() {
+		ProcessExecutor processExecutor = new ProcessExecutor();
 
-		synchronized (ProcessExecutor.class) {
-			if (_processExecutor == null) {
-				_processExecutor = new ProcessExecutor();
+		processExecutor.setThreadFactory(
+			new NamedThreadFactory(
+				ImageMagickImpl.class.getName(), Thread.MIN_PRIORITY,
+				PortalClassLoaderUtil.getClassLoader()));
 
-				_processExecutor.setThreadFactory(
-					new NamedThreadFactory(
-						ImageMagickImpl.class.getName(), Thread.MIN_PRIORITY,
-						PortalClassLoaderUtil.getClassLoader()));
-			}
-		}
-
-		return _processExecutor;
+		return processExecutor;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ImageMagickImpl.class);
 
 	private String _globalSearchPath;
-	private volatile ProcessExecutor _processExecutor;
+
+	@Reference
+	private PrefsProps _prefsProps;
+
+	private final DCLSingleton<ProcessExecutor> _processExecutorDCLSingleton =
+		new DCLSingleton<>();
 	private Properties _resourceLimitsProperties;
 	private boolean _warned;
 

@@ -50,6 +50,8 @@ public class OpenIdConnectSessionWrapper
 		attributes.put("userId", getUserId());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("accessToken", getAccessToken());
+		attributes.put(
+			"accessTokenExpirationDate", getAccessTokenExpirationDate());
 		attributes.put("authServerWellKnownURI", getAuthServerWellKnownURI());
 		attributes.put("clientId", getClientId());
 		attributes.put("idToken", getIdToken());
@@ -97,6 +99,13 @@ public class OpenIdConnectSessionWrapper
 			setAccessToken(accessToken);
 		}
 
+		Date accessTokenExpirationDate = (Date)attributes.get(
+			"accessTokenExpirationDate");
+
+		if (accessTokenExpirationDate != null) {
+			setAccessTokenExpirationDate(accessTokenExpirationDate);
+		}
+
 		String authServerWellKnownURI = (String)attributes.get(
 			"authServerWellKnownURI");
 
@@ -136,6 +145,16 @@ public class OpenIdConnectSessionWrapper
 	@Override
 	public String getAccessToken() {
 		return model.getAccessToken();
+	}
+
+	/**
+	 * Returns the access token expiration date of this open ID connect session.
+	 *
+	 * @return the access token expiration date of this open ID connect session
+	 */
+	@Override
+	public Date getAccessTokenExpirationDate() {
+		return model.getAccessTokenExpirationDate();
 	}
 
 	/**
@@ -264,6 +283,16 @@ public class OpenIdConnectSessionWrapper
 	}
 
 	/**
+	 * Sets the access token expiration date of this open ID connect session.
+	 *
+	 * @param accessTokenExpirationDate the access token expiration date of this open ID connect session
+	 */
+	@Override
+	public void setAccessTokenExpirationDate(Date accessTokenExpirationDate) {
+		model.setAccessTokenExpirationDate(accessTokenExpirationDate);
+	}
+
+	/**
 	 * Sets the auth server well known uri of this open ID connect session.
 	 *
 	 * @param authServerWellKnownURI the auth server well known uri of this open ID connect session
@@ -371,6 +400,11 @@ public class OpenIdConnectSessionWrapper
 	@Override
 	public void setUserUuid(String userUuid) {
 		model.setUserUuid(userUuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

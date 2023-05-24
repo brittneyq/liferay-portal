@@ -15,8 +15,11 @@
 package com.liferay.portal.k8s.agent.internal.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.osgi.util.StringPlus;
+import com.liferay.osgi.util.configuration.ConfigurationFactoryUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.k8s.agent.PortalK8sConfigMapModifier;
 import com.liferay.portal.k8s.agent.configuration.PortalK8sAgentConfiguration;
 import com.liferay.portal.kernel.log.Log;
@@ -28,11 +31,6 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.test.function.AwaitingConfigurationHolder;
-import com.liferay.portal.test.function.CloseableHolder;
-import com.liferay.portal.test.function.ConfigurationHolder;
-import com.liferay.portal.test.function.CreatingConfigurationHolder;
-import com.liferay.portal.test.function.ThreadContextClassLoaderCloseableHolder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
@@ -50,12 +48,19 @@ import io.fabric8.mockwebserver.ServerResponse;
 
 import java.net.InetAddress;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+
+import javax.sql.DataSource;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -71,7 +76,9 @@ import org.junit.runner.RunWith;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -105,15 +112,22 @@ public class PortalK8sAgentImplTest {
 				public MockResponse dispatch(RecordedRequest request)
 					throws InterruptedException {
 
-					try (ThreadContextClassLoaderCloseableHolder
-							threadContextClassLoaderCloseableHolder =
-								new ThreadContextClassLoaderCloseableHolder(
-									DefaultKubernetesClient.class)) {
+					Thread thread = Thread.currentThread();
 
+					ClassLoader contextClassLoader =
+						thread.getContextClassLoader();
+
+					thread.setContextClassLoader(
+						DefaultKubernetesClient.class.getClassLoader());
+
+					try {
 						return super.dispatch(request);
 					}
 					catch (Exception exception) {
 						_log.error(exception);
+					}
+					finally {
+						thread.setContextClassLoader(contextClassLoader);
 					}
 
 					return null;
@@ -126,12 +140,16 @@ public class PortalK8sAgentImplTest {
 
 		_kubernetesMockClient = _kubernetesMockServer.createClient();
 
-		_agentConfigurationHolder = new CreatingConfigurationHolder(
-			_configurationAdmin, PortalK8sAgentConfiguration.class.getName());
-		_portalK8sConfigMapModifierCloseableHolder =
-			new PortalK8sConfigMapModifierCloseableHolder(_bundleContext);
+		_agentConfiguration = _configurationAdmin.getConfiguration(
+			PortalK8sAgentConfiguration.class.getName(), StringPool.QUESTION);
 
-		_agentConfigurationHolder.update(
+		_serviceTracker = new ServiceTracker<>(
+			_bundleContext, PortalK8sConfigMapModifier.class, null);
+
+		_serviceTracker.open();
+
+		ConfigurationTestUtil.saveConfiguration(
+			_agentConfiguration,
 			HashMapDictionaryBuilder.<String, Object>put(
 				"apiServerHost", _kubernetesMockServer.getHostName()
 			).put(
@@ -148,21 +166,20 @@ public class PortalK8sAgentImplTest {
 				"saToken", "saToken"
 			).build());
 
-		_portalK8sConfigMapModifier =
-			_portalK8sConfigMapModifierCloseableHolder.waitForService(2000);
+		_portalK8sConfigMapModifier = _serviceTracker.waitForService(2000);
 
 		Assert.assertNotNull(_portalK8sConfigMapModifier);
 	}
 
 	@AfterClass
 	public static void tearDownClass() throws Exception {
-		_agentConfigurationHolder.close();
+		ConfigurationTestUtil.deleteConfiguration(_agentConfiguration);
 
 		_kubernetesMockClient.close();
 
 		_kubernetesMockServer.destroy();
 
-		_portalK8sConfigMapModifierCloseableHolder.close();
+		_serviceTracker.close();
 	}
 
 	@Test
@@ -256,47 +273,52 @@ public class PortalK8sAgentImplTest {
 
 	@Test
 	public void testListenForExtProvisionMetadata() throws Exception {
-		ConfigMapBuilder configMapBuilder = new ConfigMapBuilder();
-
 		String serviceId = RandomTestUtil.randomString();
 
 		String mainDomain = serviceId.concat("-extproject.lfr.sh");
 
-		_kubernetesMockClient.configMaps(
-		).createOrReplace(
-			configMapBuilder.withNewMetadata(
-			).withName(
-				StringBundler.concat(
-					serviceId, "-", TestPropsValues.COMPANY_WEB_ID,
-					"-lxc-ext-provision-metadata")
-			).addToLabels(
-				"dxp.lxc.liferay.com/virtualInstanceId",
-				TestPropsValues.COMPANY_WEB_ID
-			).addToAnnotations(
-				"ext.lxc.liferay.com/domains",
-				serviceId.concat("-extproject.lfr.sh")
-			).addToAnnotations(
-				"ext.lxc.liferay.com/mainDomain", mainDomain
-			).addToLabels(
-				"ext.lxc.liferay.com/projectId", RandomTestUtil.randomString()
-			).addToLabels(
-				"ext.lxc.liferay.com/serviceId", serviceId
-			).addToLabels(
-				"lxc.liferay.com/metadataType", "ext-provision"
-			).endMetadata(
-			).addToData(
-				"foo.client-extension-config.json",
-				"{\"test.pid\": {\"test.key\": \"test.value\"}}"
-			).build()
-		);
+		Configuration configuration = ConfigurationTestUtil.updateConfiguration(
+			"test.pid",
+			() -> {
+				ConfigMapBuilder configMapBuilder = new ConfigMapBuilder();
 
-		try (ConfigurationHolder configurationHolder =
-				new AwaitingConfigurationHolder(
-					_bundleContext, _configurationAdmin, "test.pid", 10000,
-					TimeUnit.MILLISECONDS)) {
+				_kubernetesMockClient.configMaps(
+				).createOrReplace(
+					configMapBuilder.withNewMetadata(
+					).withName(
+						StringBundler.concat(
+							serviceId, "-", TestPropsValues.COMPANY_WEB_ID,
+							"-lxc-ext-provision-metadata")
+					).addToLabels(
+						"dxp.lxc.liferay.com/virtualInstanceId",
+						TestPropsValues.COMPANY_WEB_ID
+					).addToAnnotations(
+						"ext.lxc.liferay.com/domains",
+						serviceId.concat("-extproject.lfr.sh")
+					).addToAnnotations(
+						"ext.lxc.liferay.com/mainDomain", mainDomain
+					).addToLabels(
+						"ext.lxc.liferay.com/projectId",
+						RandomTestUtil.randomString()
+					).addToLabels(
+						"ext.lxc.liferay.com/serviceId", serviceId
+					).addToLabels(
+						"lxc.liferay.com/metadataType", "ext-provision"
+					).endMetadata(
+					).addToData(
+						"foo.client-extension-config.json",
+						"{\"test.pid\": {\"test.key\": \"test.value\"}}"
+					).build()
+				);
+			});
+
+		Assert.assertNotNull(configuration);
+
+		try {
+			_assertNotInDatabase(configuration.getPid());
 
 			Dictionary<String, Object> properties =
-				configurationHolder.getProperties();
+				configuration.getProcessedProperties(null);
 
 			Assert.assertEquals(
 				Http.HTTPS_WITH_SLASH.concat(mainDomain),
@@ -305,6 +327,84 @@ public class PortalK8sAgentImplTest {
 				TestPropsValues.getCompanyId(),
 				(long)properties.get("companyId"));
 			Assert.assertEquals("test.value", properties.get("test.key"));
+		}
+		finally {
+			ConfigurationTestUtil.deleteConfiguration(configuration);
+		}
+	}
+
+	@Test
+	public void testListenForExtProvisionMetadataWithFactoryPid()
+		throws Exception {
+
+		String serviceId = RandomTestUtil.randomString();
+
+		String mainDomain = serviceId.concat("-extproject.lfr.sh");
+
+		Configuration configuration =
+			ConfigurationTestUtil.updateFactoryConfiguration(
+				"test.pid~foo/" + TestPropsValues.COMPANY_WEB_ID,
+				() -> {
+					ConfigMapBuilder configMapBuilder = new ConfigMapBuilder();
+
+					_kubernetesMockClient.configMaps(
+					).createOrReplace(
+						configMapBuilder.withNewMetadata(
+						).withName(
+							StringBundler.concat(
+								serviceId, "-", TestPropsValues.COMPANY_WEB_ID,
+								"-lxc-ext-provision-metadata")
+						).addToLabels(
+							"dxp.lxc.liferay.com/virtualInstanceId",
+							TestPropsValues.COMPANY_WEB_ID
+						).addToAnnotations(
+							"ext.lxc.liferay.com/domains",
+							serviceId.concat("-extproject.lfr.sh")
+						).addToAnnotations(
+							"ext.lxc.liferay.com/mainDomain", mainDomain
+						).addToLabels(
+							"ext.lxc.liferay.com/projectId",
+							RandomTestUtil.randomString()
+						).addToLabels(
+							"ext.lxc.liferay.com/serviceId", serviceId
+						).addToLabels(
+							"lxc.liferay.com/metadataType", "ext-provision"
+						).endMetadata(
+						).addToData(
+							"foo.client-extension-config.json",
+							"{\"test.pid~foo\": {\"test.key\": \"test.value\"}}"
+						).build()
+					);
+				});
+
+		Assert.assertNotNull(configuration);
+
+		try {
+			_assertNotInDatabase(configuration.getPid());
+
+			Dictionary<String, Object> properties =
+				configuration.getProcessedProperties(null);
+
+			Assert.assertEquals(
+				Http.HTTPS_WITH_SLASH.concat(mainDomain),
+				properties.get("baseURL"));
+			Assert.assertEquals(
+				TestPropsValues.getCompanyId(),
+				(long)properties.get("companyId"));
+			Assert.assertEquals("test.value", properties.get("test.key"));
+
+			String factoryPid = (String)properties.get("service.factoryPid");
+
+			List<String> servicePids = StringPlus.asList(
+				properties.get(Constants.SERVICE_PID));
+
+			Assert.assertEquals(
+				"foo",
+				ConfigurationFactoryUtil.getExternalReferenceCode(
+					factoryPid, servicePids));
+		}
+		finally {
+			ConfigurationTestUtil.deleteConfiguration(configuration);
 		}
 	}
 
@@ -330,48 +430,39 @@ public class PortalK8sAgentImplTest {
 		catch (NullPointerException nullPointerException) {
 			Assert.assertNotNull(nullPointerException);
 		}
+
+		PortalK8sConfigMapModifier.Result result =
+			_portalK8sConfigMapModifier.modifyConfigMap(
+				configMapModel -> {
+				},
+				StringBundler.concat(
+					RandomTestUtil.randomString(), StringPool.DASH,
+					TestPropsValues.COMPANY_WEB_ID, "-lxc-ext-init-metadata"));
+
+		Assert.assertEquals(
+			PortalK8sConfigMapModifier.Result.UNCHANGED, result);
 	}
 
-	public static class PortalK8sConfigMapModifierCloseableHolder
-		extends CloseableHolder
-			<ServiceTracker
-				<PortalK8sConfigMapModifier, PortalK8sConfigMapModifier>> {
+	private void _assertNotInDatabase(String pid) throws Exception {
+		try (Connection connection = _dataSource.getConnection();
+			PreparedStatement preparedStatement = connection.prepareStatement(
+				"select configurationId, dictionary from Configuration_ " +
+					"where configurationId = ?")) {
 
-		public PortalK8sConfigMapModifierCloseableHolder(
-				BundleContext bundleContext)
-			throws Exception {
+			preparedStatement.setString(1, pid);
 
-			super(
-				serviceTracker -> serviceTracker.close(),
-				() -> {
-					ServiceTracker
-						<PortalK8sConfigMapModifier, PortalK8sConfigMapModifier>
-							serviceTracker = new ServiceTracker<>(
-								bundleContext, PortalK8sConfigMapModifier.class,
-								null);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				boolean stored = resultSet.next();
 
-					serviceTracker.open();
-
-					return serviceTracker;
-				});
+				Assert.assertFalse(stored);
+			}
 		}
-
-		public PortalK8sConfigMapModifier waitForService(long timeout)
-			throws Exception {
-
-			ServiceTracker
-				<PortalK8sConfigMapModifier, PortalK8sConfigMapModifier>
-					serviceTracker = get();
-
-			return serviceTracker.waitForService(timeout);
-		}
-
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortalK8sAgentImplTest.class);
 
-	private static ConfigurationHolder _agentConfigurationHolder;
+	private static Configuration _agentConfiguration;
 	private static Bundle _bundle;
 	private static BundleContext _bundleContext;
 
@@ -381,10 +472,14 @@ public class PortalK8sAgentImplTest {
 	@Inject
 	private static ConfigurationAdmin _configurationAdmin;
 
+	@Inject
+	private static DataSource _dataSource;
+
 	private static NamespacedKubernetesClient _kubernetesMockClient;
 	private static KubernetesMockServer _kubernetesMockServer;
 	private static PortalK8sConfigMapModifier _portalK8sConfigMapModifier;
-	private static PortalK8sConfigMapModifierCloseableHolder
-		_portalK8sConfigMapModifierCloseableHolder;
+	private static ServiceTracker
+		<PortalK8sConfigMapModifier, PortalK8sConfigMapModifier>
+			_serviceTracker;
 
 }

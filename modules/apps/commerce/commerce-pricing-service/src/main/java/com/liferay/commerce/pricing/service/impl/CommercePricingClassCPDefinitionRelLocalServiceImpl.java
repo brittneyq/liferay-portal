@@ -36,7 +36,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Riccardo Alberti
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.pricing.model.CommercePricingClassCPDefinitionRel",
 	service = AopService.class
 )
@@ -54,7 +53,7 @@ public class CommercePricingClassCPDefinitionRelLocalServiceImpl
 
 		User user = _userLocalService.getUser(serviceContext.getUserId());
 
-		validate(commercePricingClassId, cpDefinitionId);
+		_validate(commercePricingClassId, cpDefinitionId);
 
 		long commercePricingClassCPDefinitionRelId =
 			counterLocalService.increment();
@@ -196,7 +195,7 @@ public class CommercePricingClassCPDefinitionRelLocalServiceImpl
 				commercePricingClassId, name, languageId, start, end);
 	}
 
-	protected void validate(long commercePricingClassId, long cpDefinitionId)
+	private void _validate(long commercePricingClassId, long cpDefinitionId)
 		throws PortalException {
 
 		CommercePricingClassCPDefinitionRel

@@ -33,9 +33,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Tina Tian
  */
 @Component(
-	configurationPid = "com.liferay.portal.cache.cluster.configuration.PortalCacheClusterConfiguration",
-	enabled = false, immediate = true,
-	service = ClusterLinkMessagingConfigurator.class
+	configurationPid = "com.liferay.portal.cache.multiple.configuration.PortalCacheClusterConfiguration",
+	enabled = false, service = {}
 )
 public class ClusterLinkMessagingConfigurator {
 
@@ -74,15 +73,11 @@ public class ClusterLinkMessagingConfigurator {
 		_bundleContext = null;
 	}
 
-	@Reference(unbind = "-")
-	protected void setDestinationFactory(
-		DestinationFactory destinationFactory) {
-
-		_destinationFactory = destinationFactory;
-	}
-
 	private volatile BundleContext _bundleContext;
+
+	@Reference
 	private DestinationFactory _destinationFactory;
+
 	private ServiceRegistration<Destination> _serviceRegistration;
 
 }

@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		SXPBlueprintModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.search.experiences.model.impl.SXPBlueprintImpl",
+		"table.name=SXPBlueprint"
+	},
+	service = ArgumentsResolver.class
 )
 public class SXPBlueprintModelArgumentsResolver implements ArgumentsResolver {
 

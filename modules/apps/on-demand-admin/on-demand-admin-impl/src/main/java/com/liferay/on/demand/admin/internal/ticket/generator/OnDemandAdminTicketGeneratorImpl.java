@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.Ticket;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.RoleLocalService;
@@ -46,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Pei-Jung Lan
  */
-@Component(immediate = true, service = OnDemandAdminTicketGenerator.class)
+@Component(service = OnDemandAdminTicketGenerator.class)
 public class OnDemandAdminTicketGeneratorImpl
 	implements OnDemandAdminTicketGenerator {
 
@@ -66,7 +67,13 @@ public class OnDemandAdminTicketGeneratorImpl
 			User.class.getName(), requestorUserId, null);
 
 		auditMessage.setAdditionalInfo(
-			JSONUtil.put("justification", justification));
+			JSONUtil.put(
+				"justification", justification
+			).put(
+				"requestedCompanyId", company.getCompanyId()
+			).put(
+				"requestedCompanyWebId", company.getWebId()
+			));
 
 		_auditRouter.route(auditMessage);
 
@@ -102,8 +109,8 @@ public class OnDemandAdminTicketGeneratorImpl
 			requestorUser.getLocale(), requestorUser.getFirstName(),
 			requestorUser.getMiddleName(), requestorUser.getLastName(), 0, 0,
 			requestorUser.getMale(), date.getMonth(), date.getDay(),
-			date.getYear(), null, null, null, new long[] {role.getRoleId()},
-			null, false, new ServiceContext());
+			date.getYear(), null, UserConstants.TYPE_REGULAR, null, null,
+			new long[] {role.getRoleId()}, null, false, new ServiceContext());
 
 		String screenName = _getScreenName(
 			requestorUser.getUserId(), user.getUserId());

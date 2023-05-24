@@ -43,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Pavel Savinov
  */
-@Component(immediate = true, service = InfoCollectionProvider.class)
+@Component(service = InfoCollectionProvider.class)
 public class RecentContentInfoCollectionProvider
 	extends BaseAssetsInfoCollectionProvider
 	implements InfoCollectionProvider<AssetEntry> {
@@ -52,8 +52,13 @@ public class RecentContentInfoCollectionProvider
 	public InfoPage<AssetEntry> getCollectionInfoPage(
 		CollectionQuery collectionQuery) {
 
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
 		AssetEntryQuery assetEntryQuery = getAssetEntryQuery(
-			Field.MODIFIED_DATE, "DESC", collectionQuery.getPagination());
+			serviceContext.getCompanyId(), serviceContext.getScopeGroupId(),
+			collectionQuery.getPagination(),
+			new com.liferay.info.sort.Sort(Field.MODIFIED_DATE, true), null);
 
 		try {
 			SearchContext searchContext = _getSearchContext();
@@ -62,12 +67,12 @@ public class RecentContentInfoCollectionProvider
 				searchContext, assetEntryQuery, assetEntryQuery.getStart(),
 				assetEntryQuery.getEnd());
 
-			Long count = _assetHelper.searchCount(
+			long count = _assetHelper.searchCount(
 				searchContext, assetEntryQuery);
 
 			return InfoPage.of(
 				_assetHelper.getAssetEntries(hits),
-				collectionQuery.getPagination(), count.intValue());
+				collectionQuery.getPagination(), (int)count);
 		}
 		catch (Exception exception) {
 			_log.error("Unable to get asset entries", exception);

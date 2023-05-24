@@ -13,21 +13,24 @@
  */
 
 import ClayLabel from '@clayui/label';
+import {
+	Panel,
+	PanelSimpleBody,
+	getLocalizableLabel,
+} from '@liferay/object-js-components-web';
 import React from 'react';
 
-import Panel from '../../Panel/Panel';
 import {useLayoutContext} from '../objectLayoutContext';
 
-interface IObjectLayoutRelationshipProps
+interface ObjectLayoutRelationshipProps
 	extends React.HTMLAttributes<HTMLElement> {
 	objectRelationshipId: number;
 }
-const defaultLanguageId = Liferay.ThemeDisplay.getDefaultLanguageId();
 
-const ObjectLayoutRelationship: React.FC<IObjectLayoutRelationshipProps> = ({
+export function ObjectLayoutRelationship({
 	objectRelationshipId,
-}) => {
-	const [{objectRelationships}] = useLayoutContext();
+}: ObjectLayoutRelationshipProps) {
+	const [{creationLanguageId, objectRelationships}] = useLayoutContext();
 
 	const objectRelationship = objectRelationships.find(
 		({id}) => id === objectRelationshipId
@@ -36,8 +39,12 @@ const ObjectLayoutRelationship: React.FC<IObjectLayoutRelationshipProps> = ({
 	return (
 		<>
 			<Panel key={`field_${objectRelationshipId}`}>
-				<Panel.SimpleBody
-					title={objectRelationship?.label[defaultLanguageId]!}
+				<PanelSimpleBody
+					title={getLocalizableLabel(
+						creationLanguageId,
+						objectRelationship.label,
+						objectRelationship.name
+					)}
 				>
 					<small className="text-secondary">
 						{Liferay.Language.get('relationship')} |{' '}
@@ -45,23 +52,15 @@ const ObjectLayoutRelationship: React.FC<IObjectLayoutRelationshipProps> = ({
 
 					<ClayLabel
 						displayType={
-							Liferay.FeatureFlags['LPS-158478']
-								? objectRelationship.reverse
-									? 'info'
-									: 'success'
-								: 'secondary'
+							objectRelationship.reverse ? 'info' : 'success'
 						}
 					>
-						{Liferay.FeatureFlags['LPS-158478']
-							? objectRelationship.reverse
-								? Liferay.Language.get('child')
-								: Liferay.Language.get('parent')
-							: objectRelationship?.type}
+						{objectRelationship.reverse
+							? Liferay.Language.get('child')
+							: Liferay.Language.get('parent')}
 					</ClayLabel>
-				</Panel.SimpleBody>
+				</PanelSimpleBody>
 			</Panel>
 		</>
 	);
-};
-
-export default ObjectLayoutRelationship;
+}

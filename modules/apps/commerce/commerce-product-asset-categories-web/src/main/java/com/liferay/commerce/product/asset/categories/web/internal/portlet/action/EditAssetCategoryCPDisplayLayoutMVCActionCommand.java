@@ -21,7 +21,7 @@ import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.commerce.product.constants.CPConstants;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.exception.CPDisplayLayoutEntryException;
-import com.liferay.commerce.product.exception.CPDisplayLayoutLayoutUuidException;
+import com.liferay.commerce.product.exception.CPDisplayLayoutEntryUuidException;
 import com.liferay.commerce.product.exception.NoSuchCPDisplayLayoutException;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPDisplayLayoutService;
@@ -55,7 +55,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CPPortletKeys.COMMERCE_CHANNELS,
 		"mvc.command.name=/commerce_channels/edit_asset_category_cp_display_layout"
@@ -93,7 +92,7 @@ public class EditAssetCategoryCPDisplayLayoutMVCActionCommand
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
 			else if (exception instanceof CPDisplayLayoutEntryException ||
-					 exception instanceof CPDisplayLayoutLayoutUuidException) {
+					 exception instanceof CPDisplayLayoutEntryUuidException) {
 
 				SessionErrors.add(actionRequest, exception.getClass());
 
@@ -183,11 +182,14 @@ public class EditAssetCategoryCPDisplayLayoutMVCActionCommand
 			}
 		}
 
+		String layoutPageTemplateEntryUuid = ParamUtil.getString(
+			actionRequest, "layoutPageTemplateEntryUuid");
 		String layoutUuid = ParamUtil.getString(actionRequest, "layoutUuid");
 
 		if (cpDisplayLayoutId > 0) {
 			_cpDisplayLayoutService.updateCPDisplayLayout(
-				cpDisplayLayoutId, classPK, layoutUuid);
+				cpDisplayLayoutId, classPK, layoutPageTemplateEntryUuid,
+				layoutUuid);
 		}
 		else {
 			if (classPKs.isEmpty()) {
@@ -203,7 +205,7 @@ public class EditAssetCategoryCPDisplayLayoutMVCActionCommand
 			for (long curClassPK : classPKs) {
 				_cpDisplayLayoutService.addCPDisplayLayout(
 					commerceChannel.getSiteGroupId(), AssetCategory.class,
-					curClassPK, layoutUuid);
+					curClassPK, layoutPageTemplateEntryUuid, layoutUuid);
 			}
 		}
 	}

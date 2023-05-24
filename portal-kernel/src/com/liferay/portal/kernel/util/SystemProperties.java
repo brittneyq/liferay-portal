@@ -28,11 +28,13 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -72,15 +74,11 @@ public class SystemProperties {
 			value = System.getProperty(key, defaultValue);
 		}
 
-		return value;
+		return _resolveReference(value);
 	}
 
 	public static String[] getArray(String key) {
 		return StringUtil.split(get(key));
-	}
-
-	public static Properties getProperties() {
-		return PropertiesUtil.fromMap(_properties);
 	}
 
 	public static Map<String, String> getProperties(
@@ -96,11 +94,15 @@ public class SystemProperties {
 					key = key.substring(prefix.length());
 				}
 
-				properties.put(key, entry.getValue());
+				properties.put(key, _resolveReference(entry.getValue()));
 			}
 		}
 
 		return properties;
+	}
+
+	public static Set<String> getPropertyNames() {
+		return Collections.unmodifiableSet(_properties.keySet());
 	}
 
 	public static void load(ClassLoader classLoader) {
@@ -248,6 +250,56 @@ public class SystemProperties {
 				}
 			}
 		}
+	}
+
+	private static String _resolveReference(String value) {
+		if (value == null) {
+			return null;
+		}
+
+		StringBundler sb = new StringBundler();
+
+		int startIndex = 0;
+
+		while ((startIndex = value.indexOf(
+					StringPool.DOLLAR_AND_OPEN_CURLY_BRACE)) != -1) {
+
+			int endIndex = value.indexOf(
+				StringPool.CLOSE_CURLY_BRACE, startIndex);
+
+			if (endIndex == -1) {
+				break;
+			}
+
+			String placeholderKey = value.substring(
+				startIndex + StringPool.DOLLAR_AND_OPEN_CURLY_BRACE.length(),
+				endIndex);
+
+			if (StringPool.BLANK.equals(placeholderKey)) {
+				sb.append(value.substring(0, endIndex + 1));
+			}
+			else {
+				String placeholderValue = get(placeholderKey);
+
+				if (placeholderValue == null) {
+					sb.append(value.substring(0, endIndex + 1));
+				}
+				else {
+					sb.append(value.substring(0, startIndex));
+					sb.append(placeholderValue);
+				}
+			}
+
+			value = value.substring(endIndex + 1);
+		}
+
+		if (sb.index() > 0) {
+			sb.append(value);
+
+			return sb.toString();
+		}
+
+		return value;
 	}
 
 	private static final Map<String, String> _properties =

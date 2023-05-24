@@ -29,7 +29,6 @@ import com.liferay.commerce.order.importer.type.CommerceOrderImporterTypeRegistr
 import com.liferay.commerce.product.exception.NoSuchCPInstanceException;
 import com.liferay.commerce.service.CommerceOrderItemService;
 import com.liferay.commerce.service.CommerceOrderService;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
@@ -37,6 +36,7 @@ import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.IndexStatusManagerThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -62,7 +62,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_OPEN_ORDER_CONTENT,
 		"mvc.command.name=/commerce_open_order_content/import_commerce_order_items"
@@ -198,7 +197,7 @@ public class ImportCommerceOrderItemsMVCActionCommand
 
 		List<CommerceOrderImporterItem> commerceOrderImporterItems =
 			commerceOrderImporterType.getCommerceOrderImporterItems(
-				commerceOrder,
+				commerceOrder, null,
 				commerceOrderImporterType.getCommerceOrderImporterItem(
 					_portal.getHttpServletRequest(actionRequest)));
 
@@ -217,7 +216,7 @@ public class ImportCommerceOrderItemsMVCActionCommand
 						commerceOrder.getCommerceOrderId(),
 						commerceOrderImporterItem.getCPInstanceId(),
 						commerceOrderImporterItem.getJSON(),
-						commerceOrderImporterItem.getQuantity(), 0,
+						commerceOrderImporterItem.getQuantity(), 0, 0,
 						(CommerceContext)actionRequest.getAttribute(
 							CommerceWebKeys.COMMERCE_CONTEXT),
 						ServiceContextFactory.getInstance(

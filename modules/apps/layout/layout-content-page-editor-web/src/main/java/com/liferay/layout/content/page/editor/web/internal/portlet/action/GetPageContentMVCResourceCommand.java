@@ -15,7 +15,7 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
-import com.liferay.layout.content.page.editor.web.internal.util.ContentUtil;
+import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
@@ -35,7 +35,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Víctor Galán
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/layout_content_page_editor/get_page_content"
@@ -64,11 +63,14 @@ public class GetPageContentMVCResourceCommand extends BaseMVCResourceCommand {
 		long segmentsExperienceId = ParamUtil.getLong(
 			resourceRequest, "segmentsExperienceId");
 
-		return ContentUtil.getPageContentsJSONArray(
+		return _contentManager.getPageContentsJSONArray(
 			_portal.getHttpServletRequest(resourceRequest),
 			_portal.getHttpServletResponse(resourceResponse),
 			themeDisplay.getPlid(), segmentsExperienceId);
 	}
+
+	@Reference
+	private ContentManager _contentManager;
 
 	@Reference
 	private Portal _portal;

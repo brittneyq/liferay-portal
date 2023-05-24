@@ -17,15 +17,16 @@ package com.liferay.dynamic.data.mapping.internal.info.display.field;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.info.display.field.DDMFormValuesInfoDisplayFieldProvider;
-import com.liferay.dynamic.data.mapping.kernel.DDMForm;
-import com.liferay.dynamic.data.mapping.kernel.DDMFormField;
-import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
-import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
-import com.liferay.dynamic.data.mapping.kernel.Value;
+import com.liferay.dynamic.data.mapping.model.DDMForm;
+import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -51,8 +52,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -122,9 +121,8 @@ public class DDMFormValuesInfoDisplayFieldProviderImpl<T extends GroupedModel>
 			fieldValue = _sanitizeFieldValue(t, ddmFormFieldValue, locale);
 		}
 		else {
-			Stream<DDMFormFieldValue> stream = ddmFormFieldValues.stream();
-
-			fieldValue = stream.map(
+			fieldValue = TransformUtil.transform(
+				ddmFormFieldValues,
 				ddmFormFieldValue -> {
 					try {
 						_addNestedFields(
@@ -141,12 +139,7 @@ public class DDMFormValuesInfoDisplayFieldProviderImpl<T extends GroupedModel>
 
 						return null;
 					}
-				}
-			).filter(
-				value -> value != null
-			).collect(
-				Collectors.toList()
-			);
+				});
 		}
 
 		if (classTypeValues.containsKey(key)) {
@@ -238,8 +231,7 @@ public class DDMFormValuesInfoDisplayFieldProviderImpl<T extends GroupedModel>
 					ddmFormFieldValue.getType(), DDMFormFieldType.IMAGE) ||
 				 Objects.equals(ddmFormFieldValue.getType(), "image")) {
 
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-				valueString);
+			JSONObject jsonObject = _jsonFactory.createJSONObject(valueString);
 
 			jsonObject.put("url", _transformFileEntryURL(valueString));
 
@@ -254,7 +246,7 @@ public class DDMFormValuesInfoDisplayFieldProviderImpl<T extends GroupedModel>
 
 	private String _transformFileEntryURL(String data) {
 		try {
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(data);
+			JSONObject jsonObject = _jsonFactory.createJSONObject(data);
 
 			String uuid = jsonObject.getString("uuid");
 			long groupId = jsonObject.getLong("groupId");
@@ -286,5 +278,8 @@ public class DDMFormValuesInfoDisplayFieldProviderImpl<T extends GroupedModel>
 
 	@Reference
 	private DLURLHelper _dlURLHelper;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }

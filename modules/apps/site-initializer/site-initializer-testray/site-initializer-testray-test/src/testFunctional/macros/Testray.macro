@@ -1,5 +1,6 @@
 definition {
 
+	@summary = "This macro add a component."
 	macro addNewComponent {
 		SelectFrame(locator1 = "Testray#MODAL_BODY");
 
@@ -7,135 +8,21 @@ definition {
 
 		Type(
 			locator1 = "TestrayManage#NEW_OPTION_NAME",
-			value1 = "${componentName}");
+			value1 = ${componentName});
 
 		if (isSet(teamName)) {
 			Select(
 				key_fieldLabel = "Team",
 				locator1 = "Select#GENERIC_SELECT_FIELD",
-				value1 = "${teamName}");
+				value1 = ${teamName});
 		}
 
 		Button.clickSave();
 	}
 
-	macro addNewTeam {
-		SelectFrame(locator1 = "Testray#MODAL_BODY");
-
-		for (var teamName : list "${teamName}") {
-			Click(locator1 = "TestrayManage#ADD_PROJECT_ON_MODAL");
-
-			SelectFrame(locator1 = "Testray#MODAL_BODY");
-
-			Type(
-				locator1 = "TestrayManage#NEW_OPTION_NAME",
-				value1 = "${teamName}");
-
-			Button.clickSave();
-		}
-	}
-
-	macro assertItemName {
-		AssertElementPresent(
-			key_projectName = "${key_name}",
-			locator1 = "Testray#ITEM_NAME");
-	}
-
-	macro assertItemNotPresent {
-		AssertElementNotPresent(
-			key_projectName = "${key_name}",
-			locator1 = "Testray#ITEM_NAME");
-	}
-
-	macro assertItemsPerPageValue {
-		AssertElementPresent(
-			key_value = "${itemValue}",
-			locator1 = "Testray#ITEMS_PER_PAGE_VALUE_BUTTON");
-	}
-
-	macro assertNameTitle {
-		AssertElementPresent(
-			key_title = "${key_name}",
-			locator1 = "Testray#NAME_TITLE");
-	}
-
-	macro assertPageNumber {
-		AssertElementPresent(
-			key_pageNumber = "${pageNumber}",
-			locator1 = "Testray#NUMBER_PAGE_BUTTON");
-	}
-
-	macro assertProjectDescription {
-		AssertElementPresent(
-			key_value = "${value}",
-			locator1 = "Testray#DESCRIPTION_PROJECT");
-	}
-
-	macro assertProjectTitleHeader {
-		AssertElementPresent(
-			key_projectName = "${projectName}",
-			locator1 = "Testray#PROJECT_NAME_HEADER");
-	}
-
-	macro assertShowedItems {
-		AssertElementPresent(
-			key_text = "${itemsText}",
-			locator1 = "Testray#ITEMS_PER_PAGE_DESCRIPTION");
-	}
-
-	macro changePagination {
-		Click(
-			key_numberItems = "${numberItems}",
-			locator1 = "Testray#ITEMS_PER_PAGE_BUTTON");
-
-		Click(
-			key_value = "${valuePagination}",
-			locator1 = "Testray#ITEMS_PER_PAGE_SELECT");
-	}
-
-	macro changePaginationInModal {
-		Click(
-			key_numberItems = "${numberItems}",
-			locator1 = "Testray#ITEMS_PER_PAGE_BUTTON_MODAL");
-
-		Click(
-			key_value = "${valuePagination}",
-			locator1 = "Testray#ITEMS_PER_PAGE_SELECT");
-	}
-
-	macro clickOnPageNumber {
-		Click(
-			key_pageNumber = "${pageNumber}",
-			locator1 = "Testray#NUMBER_PAGE_BUTTON");
-	}
-
-	macro clickOnPageNumberModal {
-		Click(
-			key_pageDirection = "${pageNumber}",
-			locator1 = "Testray#NUMBER_PAGE_BUTTON_MODAL");
-	}
-
-	macro createProjectTestray {
-		Click(locator1 = "Testray#ADD_PROJECT");
-
-		SelectFrame(locator1 = "Testray#MODAL_BODY");
-
-		Type(
-			locator1 = "TestrayManage#NEW_OPTION_NAME",
-			value1 = "${key_name}");
-
-		Type(
-			locator1 = "Testray#NEW_DESCRIPTION_PROJECT",
-			value1 = "${description}");
-
-		Click(locator1 = "TestrayManage#SAVE_BUTTON");
-	}
-
-	macro createTestraySite {
-		ApplicationsMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+	@summary = "This macro add Testray Site."
+	macro addTestraySite {
+		Site.openSitesAdmin();
 
 		LexiconEntry.gotoAdd();
 
@@ -145,48 +32,190 @@ definition {
 			key_title = "Add Site",
 			locator1 = "IFrame#MODAL_ANY");
 
-		PortletEntry.inputName(name = "${siteName}");
+		PortletEntry.inputName(name = ${siteName});
 
-		Click(locator1 = "Button#ADD");
+		Button.click(button = "Add");
 
-		Alert.viewSuccessMessage();
+		Site.openSitesAdmin();
+
+		while (IsElementNotPresent(key_siteName = ${siteName}, locator1 = "Sites#SITE_TABLE_NAME")) {
+			Refresh();
+
+			WaitForPageLoad();
+		}
 	}
 
-	macro createTestrayTasks {
-		ApplicationsMenu.gotoPortlet(
-			category = "Object",
-			panel = "Control Panel",
-			portlet = "Testray Tasks");
+	@summary = "This macro add TR2 Site."
+	macro addTR2Site {
+		Site.openSitesAdmin();
 
-		LexiconEntry.gotoAdd();
-
-		Type(
-			locator1 = "TestrayTestflow#STATUS_EDIT",
-			value1 = "${value}");
-
-		Type(
-			locator1 = "TestrayTestflow#ADD_NAME_TASKS",
-			value1 = "Hotfix Tester - liferay-hotfix-1987-2008 - 7.4.10.7");
-
-		Type(
-			locator1 = "TestrayTestflow#ADD_BUILD_TASKS",
-			value1 = "43015");
-
-		Type(
-			locator1 = "ObjectPortlet#VIEW_EMPTY_LABEL_IN_DATE_ENTRY",
-			value1 = "04/01/2022");
-
-		Click(locator1 = "Button#SAVE");
+		Site.addSiteTemplateCP(
+			siteName = ${siteName},
+			siteTemplateName = "Liferay Site Initializer Testray");
 	}
 
+	@summary = "This macro assert that the name is present in the page."
+	macro assertItemName {
+		var key_name = ${text};
+
+		AssertElementPresent(
+			key_projectName = ${key_name},
+			locator1 = "Testray#ITEM_NAME");
+	}
+
+	@summary = "This macro assert that the name is not present in the page."
+	macro assertItemNotPresent {
+		var key_name = ${text};
+
+		AssertElementNotPresent(
+			key_projectName = ${key_name},
+			locator1 = "Testray#ITEM_NAME");
+	}
+
+	@summary = "This macro assert items per page."
+	macro assertItemsPerPageValue {
+		AssertElementPresent(
+			key_value = ${itemValue},
+			locator1 = "Testray#ITEMS_PER_PAGE_VALUE_BUTTON");
+	}
+
+	@summary = "This macro assert the name title."
+	macro assertNameTitle {
+		AssertElementPresent(
+			key_title = ${key_name},
+			locator1 = "Testray#NAME_TITLE");
+	}
+
+	@summary = "This macro assert the page number."
+	macro assertPageNumber {
+		AssertElementPresent(
+			key_pageNumber = ${pageNumber},
+			locator1 = "Testray#NUMBER_PAGE_BUTTON");
+	}
+
+	@summary = "This macro assert the project description."
+	macro assertProjectDescription {
+		AssertElementPresent(
+			key_value = ${value},
+			locator1 = "Testray#DESCRIPTION_PROJECT");
+	}
+
+	@summary = "This macro assert the page header."
+	macro assertProjectTitleHeader {
+		AssertElementPresent(
+			key_projectName = ${projectName},
+			locator1 = "Testray#PROJECT_NAME_HEADER");
+	}
+
+	@summary = "This macro assert showed items in the page."
+	macro assertShowedItems {
+		AssertElementPresent(
+			key_text = ${itemsText},
+			locator1 = "Testray#ITEMS_PER_PAGE_DESCRIPTION");
+	}
+
+	@summary = "This macro change the pagination."
+	macro changePagination {
+		Click(
+			key_numberItems = ${numberItems},
+			locator1 = "Testray#ITEMS_PER_PAGE_BUTTON");
+
+		Click(
+			key_value = ${valuePagination},
+			locator1 = "Testray#ITEMS_PER_PAGE_SELECT");
+	}
+
+	@summary = "This macro change the pagination in modal."
+	macro changePaginationInModal {
+		Click(
+			key_numberItems = ${numberItems},
+			locator1 = "Testray#ITEMS_PER_PAGE_BUTTON_MODAL");
+
+		Click(
+			key_value = ${valuePagination},
+			locator1 = "Testray#ITEMS_PER_PAGE_SELECT");
+	}
+
+	@summary = "This macro change team to component."
+	macro changeTeamToComponent {
+		TestrayContextMenu.clickContextMenuProjects(name = ${currentTeam});
+
+		TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Edit");
+
+		Select(
+			key_fieldLabel = "Team",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = ${newTeamName});
+
+		Button.clickSave();
+	}
+
+	@summary = "This macro close the alert of success."
+	macro checkSuccessAlertAppearsAndDisappears {
+		WaitForElementPresent(locator1 = "Message#SUCCESS");
+
+		Alert.closeMessage(messageType = "SUCCESS");
+
+		WaitForElementNotPresent(locator1 = "Message#SUCCESS");
+	}
+
+	@summary = "This macro click in the page number."
+	macro clickOnPageNumber {
+		Click(
+			key_pageNumber = ${pageNumber},
+			locator1 = "Testray#NUMBER_PAGE_BUTTON");
+	}
+
+	@summary = "This macro click in the page number in modal."
+	macro clickOnPageNumberModal {
+		Click(
+			key_pageDirection = ${pageNumber},
+			locator1 = "Testray#NUMBER_PAGE_BUTTON_MODAL");
+	}
+
+	@summary = "This macro adds a project by dropdown in the sidebar."
+	macro createProjectByDropdown {
+		TestrayLayout.clickManageOnSidebar();
+
+		TestrayManage.selectOptionsManage(itemValue = "Add Project");
+
+		Type(
+			locator1 = "TestrayManage#NEW_OPTION_NAME",
+			value1 = ${key_name});
+
+		Type(
+			locator1 = "Testray#NEW_DESCRIPTION_PROJECT",
+			value1 = ${description});
+
+		Click(locator1 = "TestrayManage#SAVE_BUTTON");
+	}
+
+	@summary = "This macro add a project via UI."
+	macro createProjectTestray {
+		Click(locator1 = "Button#PLUS");
+
+		SelectFrame(locator1 = "Testray#MODAL_BODY");
+
+		Type(
+			locator1 = "TestrayManage#NEW_OPTION_NAME",
+			value1 = ${key_name});
+
+		Type(
+			locator1 = "Testray#NEW_DESCRIPTION_PROJECT",
+			value1 = ${description});
+
+		Click(locator1 = "TestrayManage#SAVE_BUTTON");
+	}
+
+	@summary = "This macro delete all projects."
 	macro deleteAllProjects {
 		TestrayLayout.clickResultsOnSidebar();
 
 		Refresh();
 
 		Testray.changePagination(
-			numberItems = "20",
-			valuePagination = "150");
+			numberItems = 20,
+			valuePagination = 150);
 
 		while (IsElementPresent(key_projectName = "Projects_", locator1 = "Testray#ITEM_NAME")) {
 			TestrayContextMenu.clickContextMenuProjects(name = "Projects_");
@@ -197,9 +226,10 @@ definition {
 		}
 	}
 
+	@summary = "This macro delete a component."
 	macro deleteComponent {
 		RightClick.rightClick(
-			key_projectName = "${itemName}",
+			key_projectName = ${itemName},
 			locator1 = "Testray#ITEM_NAME");
 
 		TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Delete");
@@ -209,121 +239,117 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
+	@summary = "This macro delete a project."
 	macro deleteProject {
 		TestrayLayout.clickResultsOnSidebar();
 
 		Testray.changePagination(
-			numberItems = "20",
-			valuePagination = "150");
+			numberItems = 20,
+			valuePagination = 150);
 
-		TestrayContextMenu.clickContextMenuProjects(name = "${nameProject}");
+		TestrayContextMenu.clickContextMenuProjects(name = ${projectName});
 
 		TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Delete");
-
-		Alert.viewSuccessMessage();
 	}
 
+	@summary = "This macro edit a component."
 	macro editComponent {
-		TestrayContextMenu.clickContextMenuProjects(name = "${componentName}");
+		TestrayContextMenu.clickContextMenuProjects(name = ${componentName});
 
 		TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Edit");
 
-		Type(
-			locator1 = "TestrayManage#NEW_OPTION_NAME",
-			value1 = "${newComponentName}");
+		if (isSet(newComponentName)) {
+			Type(
+				locator1 = "TestrayManage#NEW_OPTION_NAME",
+				value1 = ${newComponentName});
+		}
 
 		if (isSet(newTeamName)) {
 			Select(
 				key_fieldLabel = "Team",
 				locator1 = "Select#GENERIC_SELECT_FIELD",
-				value1 = "${newTeamName}");
+				value1 = ${newTeamName});
 		}
 
 		Button.clickSave();
 	}
 
+	@summary = "This macro edit a project."
 	macro editProjectTestray {
 		SelectFrame(locator1 = "Testray#MODAL_BODY");
 
 		Type(
 			locator1 = "TestrayManage#NEW_OPTION_NAME",
-			value1 = "${name}");
+			value1 = ${name});
 
 		Type(
 			locator1 = "Testray#NEW_DESCRIPTION_PROJECT",
-			value1 = "${description}");
+			value1 = ${description});
 
 		Click(locator1 = "TestrayManage#SAVE_BUTTON");
 	}
 
-	macro enableTestrayTasksInPortlet {
-		Refresh();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Object",
-			panel = "Control Panel",
-			portlet = "Objects");
-
-		Click(
-			key_pageNumber = "2",
-			locator1 = "Pagination#ANY_PAGE");
-
-		ObjectPortlet.selectCustomObject(label = "Testray Task");
-
-		CreateObject.selectPanelCategoryKey(panelCategoryKey = "Control Panel > Object");
-
-		CreateObject.saveObject();
-	}
-
+	@summary = "This macro click plus button."
 	macro gotoAddProject {
 		Click(locator1 = "Testray#ADD_PROJECT");
 	}
 
+	@summary = "This macro go to next and previous page."
 	macro goToNextAndPreviousPage {
 		Click(
-			key_pageDirection = "${pageDirection}",
+			key_pageDirection = ${pageDirection},
 			locator1 = "Testray#NEXT_AND_PREVIOUS_PAGE_BUTTON");
 	}
 
+	@summary = "This macro go to project."
 	macro goToProjectPage {
 		Click(
-			key_projectName = "${projectName}",
+			key_projectName = ${projectName},
 			locator1 = "Testray#ITEM_NAME");
 	}
 
+	@summary = "This macro go to TestFlow."
 	macro goToTestflow {
 		Click(locator1 = "Testray#TESTFLOW_SIDEBAR");
 	}
 
+	@summary = "This macro select a option in the kebab."
+	macro kebabMenuOption {
+		Click(locator1 = "ObjectAdmin#KEBAB_MENU");
+
+		Click(
+			key_kebabOption = ${kebabOption},
+			locator1 = "ObjectAdmin#KEBAB_MENU_OPTION");
+	}
+
+	@summary = "This macro tab navigator."
 	macro projectTabNavigator {
 		Click(
-			key_navTabName = "${navTabName}",
+			key_navTabName = ${navTabName},
 			locator1 = "Testray#PROJECT_NAVIGATOR_TAB_BUTTON");
 	}
 
+	@summary = "This macro select the users."
+	macro selectUsers {
+		Button.click(button = "Assign Users");
+
+		for (var userName : list ${listUserName}) {
+			Click.clickAtNotVisible(
+				key_checkboxOption = ${userName},
+				locator1 = "Checkbox#SPECIFIC_CHECKBOX_IN_TABLE");
+		}
+
+		Button.click(button = "Select Users");
+	}
+
+	@summary = "This macro click in sign out Testray."
 	macro signOutTestray {
 		Click(locator1 = "TestrayUser#USER_ICON_SIDEBAR");
 
 		Click(locator1 = "TestrayUser#SIGN_OUT");
 	}
 
-	macro statusChangeTestray {
-		ApplicationsMenu.gotoPortlet(
-			category = "Object",
-			panel = "Control Panel",
-			portlet = "Testray Tasks");
-
-		Click(locator1 = "CommerceEntry#DROPDOWN");
-
-		MenuItem.click(menuItem = "View");
-
-		Type(
-			locator1 = "TestrayTestflow#STATUS_EDIT",
-			value1 = "${value}");
-
-		Click(locator1 = "Button#SAVE");
-	}
-
+	@summary = "This macro delete The Testray Site."
 	macro tearDownCP {
 		Refresh();
 
@@ -336,39 +362,56 @@ definition {
 
 		PortletEntry.selectAll();
 
-		Click(locator1 = "Icon#SITES_VERTICAL_ELLIPSIS");
-
-		MenuItem.clickNoError(menuItem = "Delete");
+		ClickNoError(locator1 = "Icon#DELETE");
 
 		Click(locator1 = "Button#MODAL_DELETE");
 
 		Alert.viewSuccessMessage();
 	}
 
+	@summary = "This macro delete the Testray Site, client extension and all custom object."
+	macro testrayApisTearDown {
+		Testray.tearDownCP();
+
+		ClientExtensionGeneral.goToRemoteAppsPortlet();
+
+		ClientExtensionGeneral.deleteRemoteApp(tableEntry = "Testray");
+	}
+
+	@summary = "This macro writes to the field in project."
 	macro typeProjectsField {
 		SelectFrame(locator1 = "Testray#MODAL_BODY");
 
 		Type(
 			locator1 = "TestrayManage#NEW_OPTION_NAME",
-			value1 = "${projectName}");
+			value1 = ${projectName});
 
 		Type(
 			locator1 = "Testray#NEW_DESCRIPTION_PROJECT",
-			value1 = "${description}");
+			value1 = ${description});
 
 		Click(locator1 = "TestrayManage#SAVE_BUTTON");
 	}
 
+	@summary = "This macro assert alert notifications."
+	macro viewAlert {
+		var key_alertText = ${alertText};
+
+		AssertVisible(locator1 = "CustomerPortalSite#ALERT_NOTIFICATIONS");
+	}
+
+	@summary = "This macro assert error message."
 	macro viewErrorMessage {
 		AssertElementPresent(
-			key_fieldLabel = "${fieldLabel}",
-			key_warningMessage = "${warningMessage}",
+			key_fieldLabel = ${fieldLabel},
+			key_warningMessage = ${warningMessage},
 			locator1 = "Testray#FIELD_REQUIRED_MESSAGE");
 	}
 
+	@summary = "This macro assert overview layout tab."
 	macro viewOverviewTab {
 		AssertElementPresent(
-			key_rowValue = "${rowValue}",
+			key_rowValue = ${rowValue},
 			locator1 = "Testray#OVERVIEW_LAYOUT_VALUES");
 	}
 

@@ -47,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.notification.model.CommerceNotificationTemplate",
 	service = AopService.class
 )
@@ -67,7 +66,7 @@ public class CommerceNotificationTemplateLocalServiceImpl
 
 		User user = _userLocalService.getUser(userId);
 
-		validate(name, from, type);
+		_validate(name, from, type);
 
 		long commerceNotificationTemplateId = counterLocalService.increment();
 
@@ -245,7 +244,7 @@ public class CommerceNotificationTemplateLocalServiceImpl
 			commerceNotificationTemplatePersistence.findByPrimaryKey(
 				commerceNotificationTemplateId);
 
-		validate(name, from, type);
+		_validate(name, from, type);
 
 		commerceNotificationTemplate.setName(name);
 		commerceNotificationTemplate.setDescription(description);
@@ -264,7 +263,7 @@ public class CommerceNotificationTemplateLocalServiceImpl
 			commerceNotificationTemplate);
 	}
 
-	protected void validate(String name, String from, String type)
+	private void _validate(String name, String from, String type)
 		throws PortalException {
 
 		if (Validator.isNull(name)) {

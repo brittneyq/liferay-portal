@@ -15,7 +15,7 @@
 package com.liferay.portal.cache.ehcache.internal;
 
 import com.liferay.portal.cache.ehcache.internal.event.PortalCacheCacheEventListener;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.db.partition.DBPartitionUtil;
 
 import java.io.Serializable;
 
@@ -36,18 +36,20 @@ public class ShardedEhcachePortalCache<K extends Serializable, V>
 	extends BaseEhcachePortalCache<K, V> {
 
 	public ShardedEhcachePortalCache(
-		EhcachePortalCacheManager<K, V> ehcachePortalCacheManager,
+		BaseEhcachePortalCacheManager<K, V> baseEhcachePortalCacheManager,
 		EhcachePortalCacheConfiguration ehcachePortalCacheConfiguration) {
 
-		super(ehcachePortalCacheManager, ehcachePortalCacheConfiguration);
+		super(baseEhcachePortalCacheManager, ehcachePortalCacheConfiguration);
 
-		_cacheManager = ehcachePortalCacheManager.getEhcacheManager();
+		_cacheManager = baseEhcachePortalCacheManager.getEhcacheManager();
 	}
 
 	@Override
 	public Ehcache getEhcache() {
+		long companyId = DBPartitionUtil.getCurrentCompanyId();
+
 		return _ehcaches.computeIfAbsent(
-			CompanyThreadLocal.getCompanyId(),
+			companyId,
 			key -> {
 				String shardedPortalCacheName =
 					getPortalCacheName() + _SHARDED_SEPARATOR + key;

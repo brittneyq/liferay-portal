@@ -16,6 +16,7 @@
 
 import './BuilderScreen.scss';
 export declare function BuilderScreen({
+	creationLanguageId,
 	defaultSort,
 	disableEdit,
 	emptyState,
@@ -33,9 +34,6 @@ export declare function BuilderScreen({
 	thirdColumnHeader,
 	title,
 }: IProps): JSX.Element;
-declare type TName = {
-	[key: string]: string;
-};
 declare type TLabelValueObject = {
 	label: string;
 	value: string;
@@ -45,7 +43,7 @@ declare type TBuilderScreenColumn = {
 	disableEdit?: boolean;
 	fieldLabel?: string;
 	filterBy?: string;
-	label: TName;
+	label: LocalizedValue<string>;
 	objectFieldBusinessType?: string;
 	objectFieldName: string;
 	priority?: number;
@@ -55,6 +53,7 @@ declare type TBuilderScreenColumn = {
 	valueList?: TLabelValueObject[];
 };
 interface IProps {
+	creationLanguageId?: Liferay.Language.Locale;
 	defaultSort?: boolean;
 	disableEdit?: boolean;
 	emptyState: {

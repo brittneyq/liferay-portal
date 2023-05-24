@@ -14,20 +14,20 @@
 
 package com.liferay.commerce.product.definitions.web.internal.frontend.data.set.provider;
 
-import com.liferay.commerce.account.model.CommerceAccountGroupRel;
-import com.liferay.commerce.account.service.CommerceAccountGroupRelService;
+import com.liferay.account.model.AccountGroupRel;
+import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.definitions.web.internal.constants.CommerceProductFDSNames;
-import com.liferay.commerce.product.definitions.web.internal.model.AccountGroup;
+import com.liferay.commerce.product.definitions.web.internal.model.CProductAccountGroup;
 import com.liferay.commerce.product.definitions.web.internal.security.permission.resource.CommerceCatalogPermission;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPDefinitionService;
 import com.liferay.frontend.data.set.provider.FDSActionProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -47,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceProductFDSNames.PRODUCT_ACCOUNT_GROUPS,
 	service = FDSActionProvider.class
 )
@@ -59,14 +58,14 @@ public class CommerceProductAccountGroupFDSActionProvider
 			long groupId, HttpServletRequest httpServletRequest, Object model)
 		throws PortalException {
 
-		AccountGroup accountGroup = (AccountGroup)model;
+		CProductAccountGroup cProductAccountGroup = (CProductAccountGroup)model;
 
-		CommerceAccountGroupRel commerceAccountGroupRel =
-			_commerceAccountGroupRelService.getCommerceAccountGroupRel(
-				accountGroup.getCommerceAccountGroupRelId());
+		AccountGroupRel accountGroupRel =
+			_accountGroupRelLocalService.getAccountGroupRel(
+				cProductAccountGroup.getAccountGroupRelId());
 
 		CPDefinition cpDefinition = _cpDefinitionService.getCPDefinition(
-			commerceAccountGroupRel.getClassPK());
+			accountGroupRel.getClassPK());
 
 		return DropdownItemListBuilder.add(
 			() -> CommerceCatalogPermission.contains(
@@ -74,7 +73,7 @@ public class CommerceProductAccountGroupFDSActionProvider
 				ActionKeys.UPDATE),
 			dropdownItem -> {
 				PortletURL deleteURL = _getAccountGroupDeleteURL(
-					commerceAccountGroupRel, httpServletRequest);
+					accountGroupRel, httpServletRequest);
 
 				dropdownItem.setHref(deleteURL.toString());
 
@@ -85,7 +84,7 @@ public class CommerceProductAccountGroupFDSActionProvider
 	}
 
 	private PortletURL _getAccountGroupDeleteURL(
-		CommerceAccountGroupRel commerceAccountGroupRel,
+		AccountGroupRel accountGroupRel,
 		HttpServletRequest httpServletRequest) {
 
 		return PortletURLBuilder.create(
@@ -101,15 +100,14 @@ public class CommerceProductAccountGroupFDSActionProvider
 				httpServletRequest, "currentUrl",
 				_portal.getCurrentURL(httpServletRequest))
 		).setParameter(
-			"commerceAccountGroupRelId",
-			commerceAccountGroupRel.getCommerceAccountGroupRelId()
+			"commerceAccountGroupRelId", accountGroupRel.getAccountGroupRelId()
 		).setParameter(
-			"cpDefinitionId", commerceAccountGroupRel.getClassPK()
+			"cpDefinitionId", accountGroupRel.getClassPK()
 		).buildPortletURL();
 	}
 
 	@Reference
-	private CommerceAccountGroupRelService _commerceAccountGroupRelService;
+	private AccountGroupRelLocalService _accountGroupRelLocalService;
 
 	@Reference
 	private CPDefinitionService _cpDefinitionService;

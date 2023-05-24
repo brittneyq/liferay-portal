@@ -42,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"commerce.health.status.display.order:Integer=50",
 		"commerce.health.status.key=" + CommerceHealthStatusConstants.SAP_COMMERCE_HEALTH_STATUS_KEY
@@ -60,7 +59,7 @@ public class ServiceAccessPolicyCommerceHealthHttpStatus
 
 		_commerceSAPHelper.removeCommerceDefaultSAPEntries(companyId);
 
-		User user = _userLocalService.getDefaultUser(companyId);
+		User user = _userLocalService.getGuestUser(companyId);
 
 		_commerceSAPHelper.addCommerceDefaultSAPEntries(
 			companyId, user.getUserId());

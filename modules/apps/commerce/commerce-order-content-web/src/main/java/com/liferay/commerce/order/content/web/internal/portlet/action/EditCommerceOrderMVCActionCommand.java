@@ -14,10 +14,8 @@
 
 package com.liferay.commerce.order.content.web.internal.portlet.action;
 
+import com.liferay.account.exception.NoSuchEntryException;
 import com.liferay.account.model.AccountEntry;
-import com.liferay.commerce.account.exception.NoSuchAccountException;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.constants.CommerceAddressConstants;
 import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.constants.CommercePortletKeys;
@@ -29,23 +27,25 @@ import com.liferay.commerce.exception.CommerceOrderValidatorException;
 import com.liferay.commerce.exception.NoSuchOrderException;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.model.CommerceOrderNote;
 import com.liferay.commerce.model.CommerceOrderType;
 import com.liferay.commerce.order.CommerceOrderHttpHelper;
 import com.liferay.commerce.order.engine.CommerceOrderEngine;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceAddressService;
+import com.liferay.commerce.service.CommerceOrderNoteLocalService;
 import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.service.CommerceOrderTypeService;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
-import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -56,6 +56,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Calendar;
@@ -75,9 +76,9 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Di Giorgi
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_CART_CONTENT_MINI,
+		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_CART_CONTENT_TOTAL,
 		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_OPEN_ORDER_CONTENT,
 		"javax.portlet.name=" + CommercePortletKeys.COMMERCE_ORDER_CONTENT,
 		"mvc.command.name=/commerce_open_order_content/edit_commerce_order"
@@ -132,6 +133,9 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 			else if (cmd.equals("reorder")) {
 				_reorderCommerceOrder(actionRequest);
 			}
+			else if (cmd.equals("requestQuote")) {
+				_requestQuote(actionRequest);
+			}
 			else if (cmd.equals("selectBillingAddress")) {
 				_selectBillingAddress(actionRequest);
 			}
@@ -154,9 +158,7 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 							PortletProvider.Action.EDIT)
 					).setMVCRenderCommandName(
 						"/commerce_open_order_content/edit_commerce_order"
-					).setParameter(
-						PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE +
-							"backURL",
+					).setBackURL(
 						ParamUtil.getString(actionRequest, "redirect")
 					).setParameter(
 						"commerceOrderId", commerceOrderId
@@ -173,7 +175,7 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 		catch (Exception exception) {
-			if (exception instanceof NoSuchAccountException ||
+			if (exception instanceof NoSuchEntryException ||
 				exception instanceof NoSuchOrderException ||
 				exception instanceof PrincipalException) {
 
@@ -210,9 +212,17 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, long commerceOrderId)
 		throws Exception {
 
-		_commerceOrderHttpHelper.setCurrentCommerceOrder(
-			_portal.getHttpServletRequest(actionRequest),
-			_commerceOrderService.getCommerceOrder(commerceOrderId));
+		CommerceOrder currentCommerceOrder =
+			_commerceOrderHttpHelper.getCurrentCommerceOrder(
+				_portal.getHttpServletRequest(actionRequest));
+
+		if ((currentCommerceOrder == null) ||
+			(commerceOrderId != currentCommerceOrder.getCommerceOrderId())) {
+
+			_commerceOrderHttpHelper.setCurrentCommerceOrder(
+				_portal.getHttpServletRequest(actionRequest),
+				_commerceOrderService.getCommerceOrder(commerceOrderId));
+		}
 	}
 
 	private void _addBillingAddress(ActionRequest actionRequest)
@@ -258,10 +268,10 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 			(CommerceContext)actionRequest.getAttribute(
 				CommerceWebKeys.COMMERCE_CONTEXT);
 
-		CommerceAccount commerceAccount = commerceContext.getCommerceAccount();
+		AccountEntry accountEntry = commerceContext.getAccountEntry();
 
-		if (commerceAccount == null) {
-			throw new NoSuchAccountException();
+		if (accountEntry == null) {
+			throw new NoSuchEntryException();
 		}
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
@@ -304,7 +314,7 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 
 		try {
 			return _commerceOrderService.addCommerceOrder(
-				commerceChannelGroupId, commerceAccount.getCommerceAccountId(),
+				commerceChannelGroupId, accountEntry.getAccountEntryId(),
 				commerceCurrencyId, commerceOrderTypeId);
 		}
 		catch (Exception exception) {
@@ -540,6 +550,27 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 		_checkoutOrSubmitCommerceOrder(actionRequest, commerceOrder);
 	}
 
+	private void _requestQuote(ActionRequest actionRequest) throws Exception {
+		_updateCommerceOrderNote(actionRequest);
+
+		long commerceOrderId = ParamUtil.getLong(
+			actionRequest, "commerceOrderId");
+
+		CommerceOrder commerceOrder = _commerceOrderService.getCommerceOrder(
+			commerceOrderId);
+
+		_commerceOrderEngine.transitionCommerceOrder(
+			commerceOrder, CommerceOrderConstants.ORDER_STATUS_QUOTE_REQUESTED,
+			_portal.getUserId(actionRequest));
+
+		actionRequest.setAttribute(
+			WebKeys.REDIRECT,
+			PortletURLBuilder.create(
+				_commerceOrderHttpHelper.getCommerceCartPortletURL(
+					_portal.getHttpServletRequest(actionRequest), commerceOrder)
+			).buildString());
+	}
+
 	private void _selectBillingAddress(ActionRequest actionRequest)
 		throws PortalException {
 
@@ -615,6 +646,26 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 			commerceOrder.getShippingAmount(),
 			commerceOrder.getShippingOptionName(), commerceOrder.getSubtotal(),
 			commerceOrder.getTotal(), commerceContext);
+	}
+
+	private void _updateCommerceOrderNote(ActionRequest actionRequest)
+		throws Exception {
+
+		String content = ParamUtil.getString(actionRequest, "content");
+
+		if (Validator.isNotNull(content)) {
+			boolean restricted = ParamUtil.getBoolean(
+				actionRequest, "restricted");
+
+			long commerceOrderId = ParamUtil.getLong(
+				actionRequest, "commerceOrderId");
+
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(
+				CommerceOrderNote.class.getName(), actionRequest);
+
+			_commerceOrderNoteLocalService.addCommerceOrderNote(
+				commerceOrderId, content, restricted, serviceContext);
+		}
 	}
 
 	private void _updatePurchaseOrderNumber(ActionRequest actionRequest)
@@ -704,6 +755,9 @@ public class EditCommerceOrderMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private CommerceOrderHttpHelper _commerceOrderHttpHelper;
+
+	@Reference
+	private CommerceOrderNoteLocalService _commerceOrderNoteLocalService;
 
 	@Reference
 	private CommerceOrderService _commerceOrderService;

@@ -43,17 +43,6 @@ public abstract class BaseDownstreamBuildReport
 	}
 
 	@Override
-	public long getOverheadDuration() {
-		long overheadDuration = getDuration() - getTestExecutionDuration();
-
-		if (overheadDuration <= 0L) {
-			return 0L;
-		}
-
-		return overheadDuration;
-	}
-
-	@Override
 	public List<TestClassReport> getTestClassReports() {
 		if (_testClassReportsMap != null) {
 			return new ArrayList<>(_testClassReportsMap.values());
@@ -95,39 +84,6 @@ public abstract class BaseDownstreamBuildReport
 	}
 
 	@Override
-	public long getTestExecutionDuration() {
-		StopWatchRecordsGroup stopWatchRecordsGroup =
-			getStopWatchRecordsGroup();
-
-		if (stopWatchRecordsGroup != null) {
-			StopWatchRecord stopWatchRecord = stopWatchRecordsGroup.get(
-				"test.execution.duration");
-
-			if (stopWatchRecord != null) {
-				long duration = stopWatchRecord.getDuration();
-
-				if (duration > 0L) {
-					return duration;
-				}
-			}
-		}
-
-		long testExecutionDuration = 0L;
-
-		for (TestReport testReport : getTestReports()) {
-			long testDuration = testReport.getDuration();
-
-			if (testDuration < 0L) {
-				continue;
-			}
-
-			testExecutionDuration += testDuration;
-		}
-
-		return testExecutionDuration;
-	}
-
-	@Override
 	public List<TestReport> getTestReports() {
 		List<TestReport> testReports = new ArrayList<>();
 
@@ -165,7 +121,7 @@ public abstract class BaseDownstreamBuildReport
 	}
 
 	private static final Pattern _jUnitTestNamePattern = Pattern.compile(
-		"(?<testClassName>.*Test)\\.(?<testName>test.*)");
+		"(?<testClassName>.*Test)\\.(?<testName>[^\\.]+)");
 
 	private final String _batchName;
 	private Map<String, TestClassReport> _testClassReportsMap;

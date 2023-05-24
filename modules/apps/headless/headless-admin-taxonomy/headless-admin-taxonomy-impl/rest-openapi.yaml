@@ -207,7 +207,6 @@ components:
                             type: integer
                         name:
                             type: string
-                    readOnly: true
                     type: object
                 parentTaxonomyVocabulary:
                     description:
@@ -363,7 +362,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.admin.taxonomy.client', and version '4.0.17'."
+        'com.liferay.headless.admin.taxonomy.client', and version '4.0.22'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -389,10 +388,6 @@ paths:
                       type: array
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -475,10 +470,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -525,10 +516,6 @@ paths:
                       type: array
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -642,10 +629,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -710,10 +693,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -748,10 +727,6 @@ paths:
             parameters:
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -820,10 +795,6 @@ paths:
                       type: integer
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -925,10 +896,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -1010,10 +977,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -1062,10 +1025,6 @@ paths:
                       type: array
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -1181,10 +1140,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -1249,10 +1204,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -1287,10 +1238,6 @@ paths:
             parameters:
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -1344,10 +1291,6 @@ paths:
                       type: array
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -1532,10 +1475,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -1594,10 +1533,6 @@ paths:
                       type: integer
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query
@@ -1688,10 +1623,6 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
-                  schema:
-                      type: string
-                - in: query
                   name: restrictFields
                   schema:
                       type: string
@@ -1743,9 +1674,9 @@ paths:
                   schema:
                       type: string
                 - in: query
-                  name: nestedFields
+                  name: flatten
                   schema:
-                      type: string
+                      type: boolean
                 - in: query
                   name: restrictFields
                   schema:
@@ -1856,10 +1787,6 @@ paths:
                       type: string
                 - in: query
                   name: fields
-                  schema:
-                      type: string
-                - in: query
-                  name: nestedFields
                   schema:
                       type: string
                 - in: query

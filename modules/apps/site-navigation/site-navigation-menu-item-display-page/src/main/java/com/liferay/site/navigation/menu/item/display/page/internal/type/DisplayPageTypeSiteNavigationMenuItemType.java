@@ -23,7 +23,6 @@ import com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType;
 import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
 import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -33,6 +32,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -54,7 +54,6 @@ import java.io.IOException;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
@@ -133,16 +132,12 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 	public String getAddTitle(Locale locale) {
 		String label = _displayPageTypeContext.getLabel(locale);
 
-		Optional<LayoutDisplayPageMultiSelectionProvider<?>>
-			layoutDisplayPageMultiSelectionProviderOptional =
+		LayoutDisplayPageMultiSelectionProvider<?>
+			layoutDisplayPageMultiSelectionProvider =
 				_displayPageTypeContext.
-					getLayoutDisplayPageMultiSelectionProviderOptional();
+					getLayoutDisplayPageMultiSelectionProvider();
 
-		if (layoutDisplayPageMultiSelectionProviderOptional.isPresent()) {
-			LayoutDisplayPageMultiSelectionProvider<?>
-				layoutDisplayPageMultiSelectionProvider =
-					layoutDisplayPageMultiSelectionProviderOptional.get();
-
+		if (layoutDisplayPageMultiSelectionProvider != null) {
 			label = layoutDisplayPageMultiSelectionProvider.getPluralLabel(
 				locale);
 		}
@@ -197,8 +192,6 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 				RequestBackedPortletURLFactoryUtil.create(httpServletRequest),
 				renderResponse.getNamespace() + "selectItem",
 				itemSelectorCriterion)
-		).setParameter(
-			"multipleSelection", isMultiSelection()
 		).buildString();
 	}
 
@@ -403,12 +396,12 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 
 	@Override
 	public boolean isMultiSelection() {
-		Optional<LayoutDisplayPageMultiSelectionProvider<?>>
-			layoutDisplayPageMultiSelectionProviderOptional =
+		LayoutDisplayPageMultiSelectionProvider<?>
+			layoutDisplayPageMultiSelectionProvider =
 				_displayPageTypeContext.
-					getLayoutDisplayPageMultiSelectionProviderOptional();
+					getLayoutDisplayPageMultiSelectionProvider();
 
-		if (layoutDisplayPageMultiSelectionProviderOptional.isPresent()) {
+		if (layoutDisplayPageMultiSelectionProvider != null) {
 			return true;
 		}
 

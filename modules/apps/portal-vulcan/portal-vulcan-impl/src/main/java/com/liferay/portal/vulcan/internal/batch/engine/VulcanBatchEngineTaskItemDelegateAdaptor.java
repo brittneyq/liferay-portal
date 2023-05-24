@@ -37,6 +37,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.ws.rs.core.UriInfo;
 
 /**
  * @author Preston Crary
@@ -53,6 +56,9 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 		_depotEntryLocalService = depotEntryLocalService;
 		_groupLocalService = groupLocalService;
 		_vulcanBatchEngineTaskItemDelegate = vulcanBatchEngineTaskItemDelegate;
+
+		vulcanBatchEngineTaskItemDelegate.setGroupLocalService(
+			groupLocalService);
 	}
 
 	@Override
@@ -71,6 +77,18 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 
 		_vulcanBatchEngineTaskItemDelegate.delete(
 			items, _applyParamConverters(parameters));
+	}
+
+	@Override
+	public Set<String> getAvailableCreateStrategies() {
+		return _vulcanBatchEngineTaskItemDelegate.
+			getAvailableCreateStrategies();
+	}
+
+	@Override
+	public Set<String> getAvailableUpdateStrategies() {
+		return _vulcanBatchEngineTaskItemDelegate.
+			getAvailableUpdateStrategies();
 	}
 
 	@Override
@@ -97,6 +115,22 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 		}
 
 		return itemClass;
+	}
+
+	@Override
+	public boolean hasCreateStrategy(String createStrategy) {
+		Set<String> createStrategies =
+			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies();
+
+		return createStrategies.contains(createStrategy);
+	}
+
+	@Override
+	public boolean hasUpdateStrategy(String updateStrategy) {
+		Set<String> updateStrategies =
+			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies();
+
+		return updateStrategies.contains(updateStrategy);
 	}
 
 	@Override
@@ -127,6 +161,11 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 	public void setContextCompany(Company contextCompany) {
 		_company = contextCompany;
 		_vulcanBatchEngineTaskItemDelegate.setContextCompany(contextCompany);
+	}
+
+	@Override
+	public void setContextUriInfo(UriInfo uriInfo) {
+		_vulcanBatchEngineTaskItemDelegate.setContextUriInfo(uriInfo);
 	}
 
 	@Override

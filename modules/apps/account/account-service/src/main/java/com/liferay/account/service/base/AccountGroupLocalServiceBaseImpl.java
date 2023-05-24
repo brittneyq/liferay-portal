@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -270,48 +268,21 @@ public abstract class AccountGroupLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the account group with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the account group's external reference code
-	 * @return the matching account group, or <code>null</code> if a matching account group could not be found
-	 */
 	@Override
 	public AccountGroup fetchAccountGroupByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return accountGroupPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return accountGroupPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchAccountGroupByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public AccountGroup fetchAccountGroupByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchAccountGroupByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the account group with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the account group's external reference code
-	 * @return the matching account group
-	 * @throws PortalException if a matching account group could not be found
-	 */
 	@Override
 	public AccountGroup getAccountGroupByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return accountGroupPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return accountGroupPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -539,7 +510,7 @@ public abstract class AccountGroupLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		AccountGroupLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -554,7 +525,7 @@ public abstract class AccountGroupLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		accountGroupLocalService = (AccountGroupLocalService)aopProxy;
 
-		_setLocalServiceUtilService(accountGroupLocalService);
+		AccountGroupLocalServiceUtil.setService(accountGroupLocalService);
 	}
 
 	/**
@@ -596,22 +567,6 @@ public abstract class AccountGroupLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		AccountGroupLocalService accountGroupLocalService) {
-
-		try {
-			Field field = AccountGroupLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, accountGroupLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

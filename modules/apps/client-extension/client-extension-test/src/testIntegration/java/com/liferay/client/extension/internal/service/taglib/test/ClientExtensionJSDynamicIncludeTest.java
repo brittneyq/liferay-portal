@@ -178,12 +178,13 @@ public class ClientExtensionJSDynamicIncludeTest {
 			).build();
 
 		_clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
-			TestPropsValues.getUserId(),
+			TestPropsValues.getUserId(), _group.getGroupId(),
 			_portal.getClassNameId(LayoutSet.class),
 			publicLayoutSet.getLayoutSetId(),
 			layoutSetGlobalJSClientExtensionEntry.getExternalReferenceCode(),
 			ClientExtensionEntryConstants.TYPE_GLOBAL_JS,
-			typeSettingsUnicodeProperties.toString());
+			typeSettingsUnicodeProperties.toString(),
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		String masterLayoutGlobalJSURL = _getRandomURL();
 
@@ -199,11 +200,13 @@ public class ClientExtensionJSDynamicIncludeTest {
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		_clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
-			TestPropsValues.getUserId(), _portal.getClassNameId(Layout.class),
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			_portal.getClassNameId(Layout.class),
 			masterLayoutPageTemplateEntry.getPlid(),
 			masterLayoutGlobalJSClientExtensionEntry.getExternalReferenceCode(),
 			ClientExtensionEntryConstants.TYPE_GLOBAL_JS,
-			typeSettingsUnicodeProperties.toString());
+			typeSettingsUnicodeProperties.toString(),
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		String layoutGlobalJSURL = _getRandomURL();
 
@@ -217,11 +220,12 @@ public class ClientExtensionJSDynamicIncludeTest {
 		_layoutLocalService.updateLayout(layout);
 
 		_clientExtensionEntryRelLocalService.addClientExtensionEntryRel(
-			TestPropsValues.getUserId(), _portal.getClassNameId(Layout.class),
-			layout.getPlid(),
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			_portal.getClassNameId(Layout.class), layout.getPlid(),
 			layoutGlobalJSClientExtensionEntry.getExternalReferenceCode(),
 			ClientExtensionEntryConstants.TYPE_GLOBAL_JS,
-			typeSettingsUnicodeProperties.toString());
+			typeSettingsUnicodeProperties.toString(),
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();

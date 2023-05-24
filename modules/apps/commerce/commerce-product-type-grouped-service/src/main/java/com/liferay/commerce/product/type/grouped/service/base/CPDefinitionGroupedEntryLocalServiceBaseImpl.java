@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -561,7 +559,7 @@ public abstract class CPDefinitionGroupedEntryLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CPDefinitionGroupedEntryLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -577,7 +575,8 @@ public abstract class CPDefinitionGroupedEntryLocalServiceBaseImpl
 		cpDefinitionGroupedEntryLocalService =
 			(CPDefinitionGroupedEntryLocalService)aopProxy;
 
-		_setLocalServiceUtilService(cpDefinitionGroupedEntryLocalService);
+		CPDefinitionGroupedEntryLocalServiceUtil.setService(
+			cpDefinitionGroupedEntryLocalService);
 	}
 
 	/**
@@ -623,24 +622,6 @@ public abstract class CPDefinitionGroupedEntryLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CPDefinitionGroupedEntryLocalService
-			cpDefinitionGroupedEntryLocalService) {
-
-		try {
-			Field field =
-				CPDefinitionGroupedEntryLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpDefinitionGroupedEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected CPDefinitionGroupedEntryLocalService
 		cpDefinitionGroupedEntryLocalService;
 
@@ -651,18 +632,6 @@ public abstract class CPDefinitionGroupedEntryLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPDefinitionGroupedEntryLocalServiceBaseImpl.class);

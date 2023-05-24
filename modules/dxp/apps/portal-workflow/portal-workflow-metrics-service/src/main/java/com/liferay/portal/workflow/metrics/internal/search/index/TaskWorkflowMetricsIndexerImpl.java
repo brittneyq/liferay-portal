@@ -17,7 +17,6 @@ package com.liferay.portal.workflow.metrics.internal.search.index;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
@@ -52,13 +51,17 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Inácio Nery
  */
-@Component(immediate = true, service = TaskWorkflowMetricsIndexer.class)
+@Component(service = TaskWorkflowMetricsIndexer.class)
 public class TaskWorkflowMetricsIndexerImpl
 	extends BaseWorkflowMetricsIndexer implements TaskWorkflowMetricsIndexer {
 
 	@Override
 	public Document addTask(AddTaskRequest addTaskRequest) {
 		DocumentBuilder documentBuilder = documentBuilderFactory.builder();
+
+		if (!searchCapabilities.isWorkflowMetricsSupported()) {
+			return documentBuilder.build();
+		}
 
 		documentBuilder.setValue("active", Boolean.TRUE);
 
@@ -301,6 +304,10 @@ public class TaskWorkflowMetricsIndexerImpl
 	public Document updateTask(UpdateTaskRequest updateTaskRequest) {
 		DocumentBuilder documentBuilder = documentBuilderFactory.builder();
 
+		if (!searchCapabilities.isWorkflowMetricsSupported()) {
+			return documentBuilder.build();
+		}
+
 		List<Long> assignmentGroupIds = new ArrayList<>();
 		List<Long> assignmentIds = new ArrayList<>();
 
@@ -408,6 +415,10 @@ public class TaskWorkflowMetricsIndexerImpl
 	}
 
 	private void _deleteTask(long companyId, long taskId) {
+		if (!searchCapabilities.isWorkflowMetricsSupported()) {
+			return;
+		}
+
 		ScriptBuilder scriptBuilder = scripts.builder();
 
 		searchEngineAdapter.execute(
@@ -494,8 +505,5 @@ public class TaskWorkflowMetricsIndexerImpl
 
 	@Reference(target = "(workflow.metrics.index.entity.name=task)")
 	private WorkflowMetricsIndex _taskWorkflowMetricsIndex;
-
-	@Reference
-	private UserLocalService _userLocalService;
 
 }

@@ -17,126 +17,84 @@
 <%@ include file="/admin/init.jsp" %>
 
 <%
-KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayContext = new KBTemplatesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse);
+ViewKBTemplatesDisplayContext viewKBTemplatesDisplayContext = (ViewKBTemplatesDisplayContext)request.getAttribute(ViewKBTemplatesDisplayContext.class.getName());
 %>
 
-<c:choose>
-	<c:when test='<%= GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-156421")) %>'>
-		<liferay-util:include page="/admin/common/vertical_menu.jsp" servletContext="<%= application %>" />
+<liferay-util:include page="/admin/common/vertical_menu.jsp" servletContext="<%= application %>" />
 
-		<div class="knowledge-base-admin-content">
-	</c:when>
-	<c:otherwise>
-		<liferay-util:include page="/admin/common/top_tabs.jsp" servletContext="<%= application %>" />
-	</c:otherwise>
-</c:choose>
+<div class="knowledge-base-admin-content">
+	<clay:management-toolbar
+		managementToolbarDisplayContext="<%= viewKBTemplatesDisplayContext.getManagementToolbarDisplayContext() %>"
+		propsTransformer="admin/js/TemplatesManagementToolbarPropsTransformer"
+		searchContainerId="kbTemplates"
+	/>
 
-<liferay-portlet:actionURL name="/knowledge_base/delete_kb_templates" var="deleteKBTemplatesURL">
-	<portlet:param name="redirect" value="<%= currentURL %>" />
-</liferay-portlet:actionURL>
+	<clay:container-fluid>
+		<aui:form action="<%= viewKBTemplatesDisplayContext.getSearchURL() %>" method="get" name="fm">
+			<aui:input name="kbTemplateIds" type="hidden" />
 
-<clay:management-toolbar
-	actionDropdownItems="<%= kbTemplatesManagementToolbarDisplayContext.getActionDropdownItems() %>"
-	additionalProps='<%=
-		HashMapBuilder.<String, Object>put(
-			"deleteKBTemplatesURL", deleteKBTemplatesURL.toString()
-		).build()
-	%>'
-	clearResultsURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSearchURL()) %>"
-	creationMenu="<%= kbTemplatesManagementToolbarDisplayContext.getCreationMenu() %>"
-	disabled="<%= kbTemplatesManagementToolbarDisplayContext.isDisabled() %>"
-	filterDropdownItems="<%= kbTemplatesManagementToolbarDisplayContext.getFilterDropdownItems() %>"
-	itemsTotal="<%= kbTemplatesManagementToolbarDisplayContext.getTotal() %>"
-	propsTransformer="admin/js/TemplatesManagementToolbarPropsTransformer"
-	searchActionURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSearchURL()) %>"
-	searchContainerId="kbTemplates"
-	selectable="<%= true %>"
-	sortingOrder="<%= kbTemplatesManagementToolbarDisplayContext.getOrderByType() %>"
-	sortingURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSortingURL()) %>"
-/>
-
-<clay:container-fluid>
-	<liferay-portlet:renderURL varImpl="searchURL">
-		<portlet:param name="mvcPath" value="/admin/view_kb_templates.jsp" />
-	</liferay-portlet:renderURL>
-
-	<aui:form action="<%= searchURL %>" method="get" name="fm">
-		<liferay-portlet:renderURLParams varImpl="searchURL" />
-		<aui:input name="kbTemplateIds" type="hidden" />
-
-		<aui:fieldset>
-			<liferay-ui:search-container
-				id="kbTemplates"
-				rowChecker="<%= AdminPermission.contains(permissionChecker, scopeGroupId, KBActionKeys.DELETE_KB_TEMPLATES) ? new RowChecker(renderResponse) : null %>"
-				searchContainer="<%= kbTemplatesManagementToolbarDisplayContext.getSearchContainer() %>"
-			>
-				<liferay-ui:search-container-row
-					className="com.liferay.knowledge.base.model.KBTemplate"
-					keyProperty="kbTemplateId"
-					modelVar="kbTemplate"
-				>
-
-					<%
-					row.setData(
-						HashMapBuilder.<String, Object>put(
-							"actions", StringUtil.merge(kbTemplatesManagementToolbarDisplayContext.getAvailableActions(kbTemplate))
-						).build());
-					%>
-
-					<liferay-ui:search-container-column-user
-						showDetails="<%= false %>"
-						userId="<%= kbTemplate.getUserId() %>"
-					/>
-
-					<liferay-ui:search-container-column-text
-						colspan="<%= 2 %>"
+			<c:choose>
+				<c:when test="<%= viewKBTemplatesDisplayContext.hasKBTemplates() %>">
+					<liferay-ui:search-container
+						id="kbTemplates"
+						searchContainer="<%= viewKBTemplatesDisplayContext.getSearchContainer() %>"
 					>
+						<liferay-ui:search-container-row
+							className="com.liferay.knowledge.base.model.KBTemplate"
+							keyProperty="kbTemplateId"
+							modelVar="kbTemplate"
+						>
 
-						<%
-						Date modifiedDate = kbTemplate.getModifiedDate();
+							<%
+							row.setData(
+								HashMapBuilder.<String, Object>put(
+									"actions", StringUtil.merge(viewKBTemplatesDisplayContext.getAvailableActions(kbTemplate))
+								).build());
+							%>
 
-						String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
-						%>
+							<liferay-ui:search-container-column-user
+								showDetails="<%= false %>"
+								userId="<%= kbTemplate.getUserId() %>"
+							/>
 
-						<span class="text-default">
-							<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbTemplate.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
-						</span>
+							<liferay-ui:search-container-column-text
+								colspan="<%= 2 %>"
+							>
+								<h2 class="h5">
+									<aui:a href="<%= viewKBTemplatesDisplayContext.getEditKBTemplateURL(kbTemplate) %>">
+										<%= HtmlUtil.escape(kbTemplate.getTitle()) %>
+									</aui:a>
+								</h2>
 
-						<liferay-portlet:renderURL var="editURL">
-							<portlet:param name="mvcPath" value="/admin/common/edit_kb_template.jsp" />
-							<portlet:param name="redirect" value="<%= currentURL %>" />
-							<portlet:param name="kbTemplateId" value="<%= String.valueOf(kbTemplate.getKbTemplateId()) %>" />
-						</liferay-portlet:renderURL>
+								<span class="text-default">
+									<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbTemplate.getUserName()), viewKBTemplatesDisplayContext.getKBTemplateModifiedDateDescription(kbTemplate)} %>" key="x-modified-x-ago" />
+								</span>
+							</liferay-ui:search-container-column-text>
 
-						<h2 class="h5">
-							<aui:a href="<%= editURL.toString() %>">
-								<%= HtmlUtil.escape(kbTemplate.getTitle()) %>
-							</aui:a>
-						</h2>
-					</liferay-ui:search-container-column-text>
+							<liferay-ui:search-container-column-text>
+								<clay:dropdown-actions
+									aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
+									dropdownItems="<%= viewKBTemplatesDisplayContext.getKBTemplateDropdownItems(kbTemplate) %>"
+									propsTransformer="admin/js/KBDropdownPropsTransformer"
+								/>
+							</liferay-ui:search-container-column-text>
+						</liferay-ui:search-container-row>
 
-					<liferay-ui:search-container-column-text>
-
-						<%
-						KBDropdownItemsProvider kbDropdownItemsProvider = new KBDropdownItemsProvider(liferayPortletRequest, liferayPortletResponse);
-						%>
-
-						<clay:dropdown-actions
-							dropdownItems="<%= kbDropdownItemsProvider.getKBTemplateDropdownItems(kbTemplate) %>"
-							propsTransformer="admin/js/KBDropdownPropsTransformer"
+						<liferay-ui:search-iterator
+							displayStyle="descriptive"
+							markupView="lexicon"
 						/>
-					</liferay-ui:search-container-column-text>
-				</liferay-ui:search-container-row>
-
-				<liferay-ui:search-iterator
-					displayStyle="descriptive"
-					markupView="lexicon"
-				/>
-			</liferay-ui:search-container>
-		</aui:fieldset>
-	</aui:form>
-</clay:container-fluid>
-
-<c:if test='<%= GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-156421")) %>'>
-	</div>
-</c:if>
+					</liferay-ui:search-container>
+				</c:when>
+				<c:otherwise>
+					<liferay-frontend:empty-result-message
+						actionDropdownItems="<%= viewKBTemplatesDisplayContext.getEmptyStateActionDropdownItems() %>"
+						animationType="<%= EmptyResultMessageKeys.AnimationType.EMPTY %>"
+						buttonCssClass="secondary"
+						title='<%= LanguageUtil.get(request, "there-are-no-article-templates") %>'
+					/>
+				</c:otherwise>
+			</c:choose>
+		</aui:form>
+	</clay:container-fluid>
+</div>

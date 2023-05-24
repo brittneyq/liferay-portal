@@ -28,11 +28,11 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.file.criterion.FileItemSelectorCriterion;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.ParamUtil;
 
@@ -64,7 +64,7 @@ public class CommerceVirtualOrderItemEditDisplayContext {
 			renderRequest, "commerceOrderId");
 
 		if (commerceOrderId > 0) {
-			_commerceOrder = _commerceOrderService.getCommerceOrder(
+			_commerceOrder = commerceOrderService.getCommerceOrder(
 				commerceOrderId);
 		}
 		else {

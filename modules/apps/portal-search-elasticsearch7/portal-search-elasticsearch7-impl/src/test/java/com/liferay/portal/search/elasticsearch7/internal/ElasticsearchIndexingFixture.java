@@ -18,6 +18,7 @@ import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.IndexWriter;
 import com.liferay.portal.kernel.search.suggest.QuerySuggester;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Props;
@@ -29,23 +30,16 @@ import com.liferay.portal.search.elasticsearch7.internal.connection.Elasticsearc
 import com.liferay.portal.search.elasticsearch7.internal.connection.IndexCreator;
 import com.liferay.portal.search.elasticsearch7.internal.connection.IndexName;
 import com.liferay.portal.search.elasticsearch7.internal.connection.helper.IndexCreationHelper;
-import com.liferay.portal.search.elasticsearch7.internal.facet.CompositeFacetProcessor;
-import com.liferay.portal.search.elasticsearch7.internal.facet.DefaultFacetProcessor;
 import com.liferay.portal.search.elasticsearch7.internal.facet.FacetProcessor;
-import com.liferay.portal.search.elasticsearch7.internal.facet.ModifiedFacetProcessor;
-import com.liferay.portal.search.elasticsearch7.internal.facet.NestedFacetProcessor;
 import com.liferay.portal.search.elasticsearch7.internal.search.engine.adapter.ElasticsearchEngineAdapterFixture;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.index.IndexNameBuilder;
-import com.liferay.portal.search.internal.facet.ModifiedFacetImpl;
-import com.liferay.portal.search.internal.facet.NestedFacetImpl;
 import com.liferay.portal.search.internal.legacy.searcher.SearchRequestBuilderFactoryImpl;
 import com.liferay.portal.search.internal.legacy.searcher.SearchResponseBuilderFactoryImpl;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
 import com.liferay.portal.util.DigesterImpl;
 import com.liferay.portal.util.LocalizationImpl;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -102,7 +96,7 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 
 		ElasticsearchEngineAdapterFixture elasticsearchEngineAdapterFixture =
 			_createElasticsearchEngineAdapterFixture(
-				_elasticsearchFixture, _getFacetProcessor());
+				_elasticsearchFixture, _facetProcessor);
 
 		elasticsearchEngineAdapterFixture.setUp();
 
@@ -182,13 +176,20 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 		SearchEngineAdapter searchEngineAdapter,
 		IndexNameBuilder indexNameBuilder, Localization localization) {
 
-		return new ElasticsearchQuerySuggester() {
-			{
-				setIndexNameBuilder(indexNameBuilder);
-				setLocalization(localization);
-				setSearchEngineAdapter(searchEngineAdapter);
-			}
-		};
+		ElasticsearchQuerySuggester elasticsearchQuerySuggester =
+			new ElasticsearchQuerySuggester() {
+				{
+					setLocalization(localization);
+				}
+			};
+
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchQuerySuggester, "_indexNameBuilder", indexNameBuilder);
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchQuerySuggester, "_searchEngineAdapter",
+			searchEngineAdapter);
+
+		return elasticsearchQuerySuggester;
 	}
 
 	private ElasticsearchSpellCheckIndexWriter
@@ -196,15 +197,23 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 			SearchEngineAdapter searchEngineAdapter,
 			IndexNameBuilder indexNameBuilder, Localization localization) {
 
-		return new ElasticsearchSpellCheckIndexWriter() {
-			{
-				digester = new DigesterImpl();
+		ElasticsearchSpellCheckIndexWriter elasticsearchSpellCheckIndexWriter =
+			new ElasticsearchSpellCheckIndexWriter() {
+				{
+					digester = new DigesterImpl();
 
-				setIndexNameBuilder(indexNameBuilder);
-				setLocalization(localization);
-				setSearchEngineAdapter(searchEngineAdapter);
-			}
-		};
+					setLocalization(localization);
+				}
+			};
+
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchSpellCheckIndexWriter, "_indexNameBuilder",
+			indexNameBuilder);
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchSpellCheckIndexWriter, "_searchEngineAdapter",
+			searchEngineAdapter);
+
+		return elasticsearchSpellCheckIndexWriter;
 	}
 
 	private void _createIndex(IndexNameBuilder indexNameBuilder) {
@@ -225,24 +234,33 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 		SearchEngineAdapter searchEngineAdapter,
 		IndexNameBuilder indexNameBuilder, Localization localization) {
 
-		return new ElasticsearchIndexSearcher() {
-			{
-				setElasticsearchConfigurationWrapper(
-					createElasticsearchConfigurationWrapper(
-						elasticsearchFixture.
-							getElasticsearchConfigurationProperties()));
-				setIndexNameBuilder(indexNameBuilder);
-				setProps(_createProps());
-				setQuerySuggester(
-					_createElasticsearchQuerySuggester(
-						searchEngineAdapter, indexNameBuilder, localization));
-				setSearchEngineAdapter(searchEngineAdapter);
-				setSearchRequestBuilderFactory(
-					new SearchRequestBuilderFactoryImpl());
-				setSearchResponseBuilderFactory(
-					new SearchResponseBuilderFactoryImpl());
-			}
-		};
+		ElasticsearchIndexSearcher elasticsearchIndexSearcher =
+			new ElasticsearchIndexSearcher();
+
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_elasticsearchConfigurationWrapper",
+			createElasticsearchConfigurationWrapper(
+				elasticsearchFixture.
+					getElasticsearchConfigurationProperties()));
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_indexNameBuilder", indexNameBuilder);
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_props", _createProps());
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_querySuggester",
+			_createElasticsearchQuerySuggester(
+				searchEngineAdapter, indexNameBuilder, localization));
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_searchEngineAdapter",
+			searchEngineAdapter);
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_searchRequestBuilderFactory",
+			new SearchRequestBuilderFactoryImpl());
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexSearcher, "_searchResponseBuilderFactory",
+			new SearchResponseBuilderFactoryImpl());
+
+		return elasticsearchIndexSearcher;
 	}
 
 	private IndexWriter _createIndexWriter(
@@ -250,19 +268,25 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 		SearchEngineAdapter searchEngineAdapter,
 		IndexNameBuilder indexNameBuilder, Localization localization) {
 
-		return new ElasticsearchIndexWriter() {
-			{
-				setElasticsearchConfigurationWrapper(
-					createElasticsearchConfigurationWrapper(
-						elasticsearchFixture.
-							getElasticsearchConfigurationProperties()));
-				setIndexNameBuilder(indexNameBuilder);
-				setSearchEngineAdapter(searchEngineAdapter);
-				setSpellCheckIndexWriter(
-					_createElasticsearchSpellCheckIndexWriter(
-						searchEngineAdapter, indexNameBuilder, localization));
-			}
-		};
+		ElasticsearchIndexWriter elasticsearchIndexWriter =
+			new ElasticsearchIndexWriter();
+
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexWriter, "_elasticsearchConfigurationWrapper",
+			createElasticsearchConfigurationWrapper(
+				elasticsearchFixture.
+					getElasticsearchConfigurationProperties()));
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexWriter, "_indexNameBuilder", indexNameBuilder);
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexWriter, "_searchEngineAdapter",
+			searchEngineAdapter);
+		ReflectionTestUtil.setFieldValue(
+			elasticsearchIndexWriter, "_spellCheckIndexWriter",
+			_createElasticsearchSpellCheckIndexWriter(
+				searchEngineAdapter, indexNameBuilder, localization));
+
+		return elasticsearchIndexWriter;
 	}
 
 	private Props _createProps() {
@@ -277,27 +301,6 @@ public class ElasticsearchIndexingFixture implements IndexingFixture {
 		);
 
 		return props;
-	}
-
-	private FacetProcessor<SearchRequestBuilder> _getFacetProcessor() {
-		if (_facetProcessor != null) {
-			return _facetProcessor;
-		}
-
-		return new CompositeFacetProcessor() {
-			{
-				defaultFacetProcessor = new DefaultFacetProcessor();
-
-				setFacetProcessor(
-					new ModifiedFacetProcessor(),
-					Collections.singletonMap(
-						"class.name", ModifiedFacetImpl.class.getName()));
-				setFacetProcessor(
-					new NestedFacetProcessor(),
-					Collections.singletonMap(
-						"class.name", NestedFacetImpl.class.getName()));
-			}
-		};
 	}
 
 	private final long _companyId;

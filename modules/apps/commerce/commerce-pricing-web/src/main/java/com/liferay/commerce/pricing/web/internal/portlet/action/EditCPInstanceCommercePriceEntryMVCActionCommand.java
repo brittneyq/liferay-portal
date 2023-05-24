@@ -45,7 +45,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CPPortletKeys.CP_DEFINITIONS,
 		"mvc.command.name=/cp_definitions/edit_cp_instance_commerce_price_entry"
@@ -80,8 +79,9 @@ public class EditCPInstanceCommercePriceEntryMVCActionCommand
 
 		for (long addCommercePriceListId : addCommercePriceListIds) {
 			_commercePriceEntryService.addCommercePriceEntry(
-				cpInstanceId, addCommercePriceListId, cpInstance.getPrice(),
-				cpInstance.getPromoPrice(), serviceContext);
+				null, cpInstanceId, addCommercePriceListId,
+				cpInstance.getPrice(), cpInstance.getPromoPrice(),
+				serviceContext);
 		}
 	}
 

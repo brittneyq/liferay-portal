@@ -26,7 +26,6 @@ import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
 import com.liferay.knowledge.base.web.internal.configuration.KBSectionPortletInstanceConfiguration;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
 import com.liferay.knowledge.base.web.internal.util.AdminUtil;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
@@ -38,6 +37,7 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
@@ -55,6 +55,8 @@ import java.util.Map;
 
 import javax.portlet.PortletConfig;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Adolfo Pérez
  */
@@ -71,14 +73,15 @@ public class EditKBArticleDisplayContext {
 		_liferayPortletResponse = liferayPortletResponse;
 		_portletConfig = portletConfig;
 
+		_httpServletRequest = PortalUtil.getHttpServletRequest(
+			liferayPortletRequest);
 		_redirect = PortalUtil.escapeRedirect(
 			ParamUtil.getString(
-				_liferayPortletRequest.getHttpServletRequest(), "redirect",
+				liferayPortletRequest.getHttpServletRequest(), "redirect",
 				String.valueOf(
 					PortletURLUtil.getCurrent(
-						_liferayPortletRequest, _liferayPortletResponse))));
-
-		_themeDisplay = (ThemeDisplay)_liferayPortletRequest.getAttribute(
+						liferayPortletRequest, liferayPortletResponse))));
+		_themeDisplay = (ThemeDisplay)liferayPortletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
 
@@ -151,6 +154,16 @@ public class EditKBArticleDisplayContext {
 		return kbArticle.getClassPK();
 	}
 
+	public String getKBArticleDescription() {
+		KBArticle kbArticle = getKBArticle();
+
+		if (kbArticle == null) {
+			return StringPool.BLANK;
+		}
+
+		return kbArticle.getDescription();
+	}
+
 	public long getKBArticleId() {
 		KBArticle kbArticle = getKBArticle();
 
@@ -159,6 +172,16 @@ public class EditKBArticleDisplayContext {
 		}
 
 		return kbArticle.getKbArticleId();
+	}
+
+	public String getKBArticleSourceURL() {
+		KBArticle kbArticle = getKBArticle();
+
+		if (kbArticle == null) {
+			return StringPool.BLANK;
+		}
+
+		return kbArticle.getSourceURL();
 	}
 
 	public int getKBArticleStatus() {
@@ -213,7 +236,7 @@ public class EditKBArticleDisplayContext {
 				_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId(),
 				KBArticle.class.getName())) {
 
-			return "submit-for-publication";
+			return "submit-for-workflow";
 		}
 
 		return "publish";
@@ -337,12 +360,6 @@ public class EditKBArticleDisplayContext {
 		return false;
 	}
 
-	public boolean isKBArticleDescriptionEnabled() {
-		return GetterUtil.getBoolean(
-			_liferayPortletRequest.getAttribute(
-				"init.jsp-enableKBArticleDescription"));
-	}
-
 	public boolean isKBArticleSectionSelected(String section)
 		throws ConfigurationException {
 
@@ -359,6 +376,40 @@ public class EditKBArticleDisplayContext {
 		}
 
 		return false;
+	}
+
+	public boolean isNeverExpire() {
+		if (_neverExpire != null) {
+			return _neverExpire;
+		}
+
+		_neverExpire = ParamUtil.getBoolean(
+			_httpServletRequest, "neverExpire", true);
+
+		KBArticle kbArticle = getKBArticle();
+
+		if ((kbArticle != null) && (kbArticle.getExpirationDate() != null)) {
+			_neverExpire = false;
+		}
+
+		return _neverExpire;
+	}
+
+	public boolean isNeverReview() {
+		if (_neverReview != null) {
+			return _neverReview;
+		}
+
+		_neverReview = ParamUtil.getBoolean(
+			_httpServletRequest, "neverReview", true);
+
+		KBArticle kbArticle = getKBArticle();
+
+		if ((kbArticle != null) && (kbArticle.getReviewDate() != null)) {
+			_neverReview = false;
+		}
+
+		return _neverReview;
 	}
 
 	public boolean isPending() {
@@ -445,6 +496,7 @@ public class EditKBArticleDisplayContext {
 		return _kbTemplate;
 	}
 
+	private final HttpServletRequest _httpServletRequest;
 	private KBArticle _kbArticle;
 	private final KBGroupServiceConfiguration _kbGroupServiceConfiguration;
 	private KBSectionPortletInstanceConfiguration
@@ -452,6 +504,8 @@ public class EditKBArticleDisplayContext {
 	private KBTemplate _kbTemplate;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
+	private Boolean _neverExpire;
+	private Boolean _neverReview;
 	private Long _parentResourceClassNameId;
 	private Long _parentResourcePrimKey;
 	private final PortletConfig _portletConfig;

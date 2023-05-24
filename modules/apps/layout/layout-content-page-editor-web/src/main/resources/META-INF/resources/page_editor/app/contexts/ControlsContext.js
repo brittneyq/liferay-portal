@@ -14,7 +14,7 @@
 
 import React, {useCallback, useContext, useReducer} from 'react';
 
-import {fromControlsId} from '../components/layout-data-items/Collection';
+import {fromControlsId} from '../components/layout_data_items/Collection';
 import {ITEM_ACTIVATION_ORIGINS} from '../config/constants/itemActivationOrigins';
 import {ITEM_TYPES} from '../config/constants/itemTypes';
 import switchSidebarPanel from '../thunks/switchSidebarPanel';
@@ -188,7 +188,8 @@ const useSelectItem = () => {
 
 			if (
 				itemId &&
-				!['browser', 'comments', 'page-content'].includes(
+				sidebarPanelId &&
+				!['browser', 'comments', 'page_content'].includes(
 					sidebarPanelId
 				)
 			) {

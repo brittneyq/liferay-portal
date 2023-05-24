@@ -30,10 +30,11 @@ import com.liferay.commerce.currency.util.ExchangeRateProviderRegistry;
 import com.liferay.commerce.currency.util.comparator.CommerceCurrencyPriorityComparator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.instance.lifecycle.PortalInstanceLifecycleListener;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -42,6 +43,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.SystemSettingsLocator;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
@@ -51,7 +53,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -64,12 +65,19 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Andrea Di Giorgi
  * @author Marco Leo
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.currency.model.CommerceCurrency",
+	service = AopService.class
+)
 public class CommerceCurrencyLocalServiceImpl
 	extends CommerceCurrencyLocalServiceBaseImpl {
 
@@ -82,13 +90,13 @@ public class CommerceCurrencyLocalServiceImpl
 			double priority, boolean active)
 		throws PortalException {
 
-		User user = userLocalService.getUser(userId);
+		User user = _userLocalService.getUser(userId);
 
 		if (primary) {
 			rate = BigDecimal.ONE;
 		}
 
-		validate(0, user.getCompanyId(), code, nameMap, primary);
+		_validate(0, user.getCompanyId(), code, nameMap, primary);
 
 		if (formatPatternMap.isEmpty()) {
 			formatPatternMap.put(
@@ -133,21 +141,6 @@ public class CommerceCurrencyLocalServiceImpl
 	}
 
 	@Override
-	public void afterPropertiesSet() {
-		super.afterPropertiesSet();
-
-		Bundle bundle = FrameworkUtil.getBundle(getClass());
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		_serviceRegistration = bundleContext.registerService(
-			PortalInstanceLifecycleListener.class,
-			new PortalInstanceLifecycleListenerImpl(
-				commerceCurrencyLocalService),
-			null);
-	}
-
-	@Override
 	public void deleteCommerceCurrencies(long companyId) {
 		commerceCurrencyPersistence.removeByCompanyId(companyId);
 	}
@@ -169,13 +162,6 @@ public class CommerceCurrencyLocalServiceImpl
 
 		return commerceCurrencyLocalService.deleteCommerceCurrency(
 			commerceCurrency);
-	}
-
-	@Override
-	public void destroy() {
-		super.destroy();
-
-		_serviceRegistration.unregister();
 	}
 
 	@Override
@@ -227,7 +213,8 @@ public class CommerceCurrencyLocalServiceImpl
 	}
 
 	@Override
-	public void importDefaultValues(ServiceContext serviceContext)
+	public void importDefaultValues(
+			boolean updateExchangeRate, ServiceContext serviceContext)
 		throws Exception {
 
 		Class<?> clazz = getClass();
@@ -239,7 +226,7 @@ public class CommerceCurrencyLocalServiceImpl
 		String countriesJSON = StringUtil.read(
 			clazz.getClassLoader(), currenciesPath, false);
 
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray(countriesJSON);
+		JSONArray jsonArray = _jsonFactory.createJSONArray(countriesJSON);
 
 		for (int i = 0; i < jsonArray.length(); i++) {
 			JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -253,6 +240,7 @@ public class CommerceCurrencyLocalServiceImpl
 			if (commerceCurrency == null) {
 				boolean primary = jsonObject.getBoolean("primary");
 				double priority = jsonObject.getDouble("priority");
+				double rate = jsonObject.getDouble("rate");
 				String symbol = jsonObject.getString("symbol");
 
 				RoundingTypeConfiguration roundingTypeConfiguration =
@@ -277,20 +265,23 @@ public class CommerceCurrencyLocalServiceImpl
 
 				commerceCurrencyLocalService.addCommerceCurrency(
 					serviceContext.getUserId(), code, nameMap, symbol,
-					BigDecimal.ONE, formatPatternMap,
+					BigDecimal.valueOf(rate), formatPatternMap,
 					roundingTypeConfiguration.maximumFractionDigits(),
 					roundingTypeConfiguration.minimumFractionDigits(),
 					roundingMode.name(), primary, priority, true);
 			}
 		}
 
-		for (String exchangeRateProviderKey :
-				_exchangeRateProviderRegistry.getExchangeRateProviderKeys()) {
+		if (updateExchangeRate) {
+			for (String exchangeRateProviderKey :
+					_exchangeRateProviderRegistry.
+						getExchangeRateProviderKeys()) {
 
-			_updateExchangeRates(
-				serviceContext.getCompanyId(), exchangeRateProviderKey);
+				_updateExchangeRates(
+					serviceContext.getCompanyId(), exchangeRateProviderKey);
 
-			break;
+				break;
+			}
 		}
 	}
 
@@ -307,13 +298,28 @@ public class CommerceCurrencyLocalServiceImpl
 	}
 
 	@Override
+	public void setAopProxy(Object aopProxy) {
+		super.setAopProxy(aopProxy);
+
+		Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		_serviceRegistration = bundleContext.registerService(
+			PortalInstanceLifecycleListener.class,
+			new PortalInstanceLifecycleListenerImpl(
+				commerceCurrencyLocalService),
+			null);
+	}
+
+	@Override
 	public CommerceCurrency setPrimary(long commerceCurrencyId, boolean primary)
 		throws PortalException {
 
 		CommerceCurrency commerceCurrency =
 			commerceCurrencyPersistence.findByPrimaryKey(commerceCurrencyId);
 
-		validate(
+		_validate(
 			commerceCurrencyId, commerceCurrency.getCompanyId(),
 			commerceCurrency.getCode(), commerceCurrency.getNameMap(), primary);
 
@@ -324,11 +330,11 @@ public class CommerceCurrencyLocalServiceImpl
 
 	@Override
 	public CommerceCurrency updateCommerceCurrency(
-			long commerceCurrencyId, String code, Map<Locale, String> nameMap,
-			String symbol, BigDecimal rate,
-			Map<Locale, String> formatPatternMap, int maxFractionDigits,
-			int minFractionDigits, String roundingMode, boolean primary,
-			double priority, boolean active, ServiceContext serviceContext)
+			long commerceCurrencyId, Map<Locale, String> nameMap, String symbol,
+			BigDecimal rate, Map<Locale, String> formatPatternMap,
+			int maxFractionDigits, int minFractionDigits, String roundingMode,
+			boolean primary, double priority, boolean active,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		CommerceCurrency commerceCurrency =
@@ -338,9 +344,10 @@ public class CommerceCurrencyLocalServiceImpl
 			rate = BigDecimal.ONE;
 		}
 
-		validate(
+		_validate(
 			commerceCurrency.getCommerceCurrencyId(),
-			serviceContext.getCompanyId(), code, nameMap, primary);
+			serviceContext.getCompanyId(), commerceCurrency.getCode(), nameMap,
+			primary);
 
 		if (formatPatternMap.isEmpty()) {
 			formatPatternMap.put(
@@ -361,7 +368,6 @@ public class CommerceCurrencyLocalServiceImpl
 			roundingMode = roundingModeEnum.name();
 		}
 
-		commerceCurrency.setCode(code);
 		commerceCurrency.setNameMap(nameMap);
 		commerceCurrency.setSymbol(symbol);
 		commerceCurrency.setRate(rate);
@@ -456,7 +462,31 @@ public class CommerceCurrencyLocalServiceImpl
 			ArrayUtil.toLongArray(commerceCurrencyFinder.getCompanyIds()));
 	}
 
-	protected void validate(
+	@Deactivate
+	@Override
+	protected void deactivate() {
+		super.deactivate();
+
+		if (_serviceRegistration != null) {
+			_serviceRegistration.unregister();
+		}
+	}
+
+	private void _updateExchangeRates(
+			long companyId, String exchangeRateProviderKey)
+		throws PortalException {
+
+		List<CommerceCurrency> commerceCurrencies =
+			commerceCurrencyLocalService.getCommerceCurrencies(companyId, true);
+
+		for (CommerceCurrency commerceCurrency : commerceCurrencies) {
+			commerceCurrencyLocalService.updateExchangeRate(
+				commerceCurrency.getCommerceCurrencyId(),
+				exchangeRateProviderKey);
+		}
+	}
+
+	private void _validate(
 			long commerceCurrencyId, long companyId, String code,
 			Map<Locale, String> nameMap, boolean primary)
 		throws PortalException {
@@ -487,32 +517,24 @@ public class CommerceCurrencyLocalServiceImpl
 		}
 	}
 
-	private void _updateExchangeRates(
-			long companyId, String exchangeRateProviderKey)
-		throws PortalException {
-
-		List<CommerceCurrency> commerceCurrencies =
-			commerceCurrencyLocalService.getCommerceCurrencies(companyId, true);
-
-		for (CommerceCurrency commerceCurrency : commerceCurrencies) {
-			commerceCurrencyLocalService.updateExchangeRate(
-				commerceCurrency.getCommerceCurrencyId(),
-				exchangeRateProviderKey);
-		}
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceCurrencyLocalServiceImpl.class);
 
-	@ServiceReference(type = CompanyLocalService.class)
+	@Reference
 	private CompanyLocalService _companyLocalService;
 
-	@ServiceReference(type = ConfigurationProvider.class)
+	@Reference
 	private ConfigurationProvider _configurationProvider;
 
-	@ServiceReference(type = ExchangeRateProviderRegistry.class)
+	@Reference
 	private ExchangeRateProviderRegistry _exchangeRateProviderRegistry;
 
+	@Reference
+	private JSONFactory _jsonFactory;
+
 	private ServiceRegistration<?> _serviceRegistration;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

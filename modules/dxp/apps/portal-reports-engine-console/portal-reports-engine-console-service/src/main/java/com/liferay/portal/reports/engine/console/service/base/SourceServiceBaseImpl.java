@@ -28,14 +28,8 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.reports.engine.console.model.Source;
 import com.liferay.portal.reports.engine.console.service.SourceService;
 import com.liferay.portal.reports.engine.console.service.SourceServiceUtil;
-import com.liferay.portal.reports.engine.console.service.persistence.DefinitionFinder;
-import com.liferay.portal.reports.engine.console.service.persistence.DefinitionPersistence;
-import com.liferay.portal.reports.engine.console.service.persistence.EntryFinder;
-import com.liferay.portal.reports.engine.console.service.persistence.EntryPersistence;
 import com.liferay.portal.reports.engine.console.service.persistence.SourceFinder;
 import com.liferay.portal.reports.engine.console.service.persistence.SourcePersistence;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
 
@@ -64,7 +58,7 @@ public abstract class SourceServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		SourceServiceUtil.setService(null);
 	}
 
 	@Override
@@ -78,7 +72,7 @@ public abstract class SourceServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		sourceService = (SourceService)aopProxy;
 
-		_setServiceUtilService(sourceService);
+		SourceServiceUtil.setService(sourceService);
 	}
 
 	/**
@@ -123,31 +117,6 @@ public abstract class SourceServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(SourceService sourceService) {
-		try {
-			Field field = SourceServiceUtil.class.getDeclaredField("_service");
-
-			field.setAccessible(true);
-
-			field.set(null, sourceService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected DefinitionPersistence definitionPersistence;
-
-	@Reference
-	protected DefinitionFinder definitionFinder;
-
-	@Reference
-	protected EntryPersistence entryPersistence;
-
-	@Reference
-	protected EntryFinder entryFinder;
-
 	@Reference
 	protected
 		com.liferay.portal.reports.engine.console.service.SourceLocalService
@@ -164,25 +133,6 @@ public abstract class SourceServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SourceServiceBaseImpl.class);

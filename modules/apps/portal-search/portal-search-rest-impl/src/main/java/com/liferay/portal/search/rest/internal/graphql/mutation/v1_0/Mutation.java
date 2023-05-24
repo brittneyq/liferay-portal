@@ -19,13 +19,17 @@ import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.search.rest.dto.v1_0.SearchRequestBody;
+import com.liferay.portal.search.rest.dto.v1_0.SearchResponse;
 import com.liferay.portal.search.rest.dto.v1_0.SuggestionsContributorConfiguration;
 import com.liferay.portal.search.rest.dto.v1_0.SuggestionsContributorResults;
+import com.liferay.portal.search.rest.resource.v1_0.SearchResponseResource;
 import com.liferay.portal.search.rest.resource.v1_0.SuggestionResource;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
 
 import java.util.function.BiFunction;
 
@@ -45,12 +49,55 @@ import org.osgi.service.component.ComponentServiceObjects;
 @Generated("")
 public class Mutation {
 
+	public static void setSearchResponseResourceComponentServiceObjects(
+		ComponentServiceObjects<SearchResponseResource>
+			searchResponseResourceComponentServiceObjects) {
+
+		_searchResponseResourceComponentServiceObjects =
+			searchResponseResourceComponentServiceObjects;
+	}
+
 	public static void setSuggestionResourceComponentServiceObjects(
 		ComponentServiceObjects<SuggestionResource>
 			suggestionResourceComponentServiceObjects) {
 
 		_suggestionResourceComponentServiceObjects =
 			suggestionResourceComponentServiceObjects;
+	}
+
+	@GraphQLField(
+		description = "Search the company index for matching content. Using this endpoint requires a dev feature flag: set feature.flag.LPS-179669 to true."
+	)
+	public SearchResponse createSearch(
+			@GraphQLName("basicFacetSelection") Boolean basicFacetSelection,
+			@GraphQLName("entryClassNames") String[] entryClassNames,
+			@GraphQLName("explain") Boolean explain,
+			@GraphQLName("groupIds") Long[] groupIds,
+			@GraphQLName("includeAssetSearchSummary") Boolean
+				includeAssetSearchSummary,
+			@GraphQLName("includeAssetTitle") Boolean includeAssetTitle,
+			@GraphQLName("includeRequest") Boolean includeRequest,
+			@GraphQLName("includeResponse") Boolean includeResponse,
+			@GraphQLName("keywords") String keywords,
+			@GraphQLName("resultFields") String[] resultFields,
+			@GraphQLName("scopeGroupId") Long scopeGroupId,
+			@GraphQLName("pageSize") int pageSize,
+			@GraphQLName("page") int page,
+			@GraphQLName("sort") String sortsString,
+			@GraphQLName("searchRequestBody") SearchRequestBody
+				searchRequestBody)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_searchResponseResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			searchResponseResource -> searchResponseResource.postSearch(
+				basicFacetSelection, entryClassNames, explain, groupIds,
+				includeAssetSearchSummary, includeAssetTitle, includeRequest,
+				includeResponse, keywords, resultFields, scopeGroupId,
+				Pagination.of(page, pageSize),
+				_sortsBiFunction.apply(searchResponseResource, sortsString),
+				searchRequestBody));
 	}
 
 	@GraphQLField
@@ -60,6 +107,8 @@ public class Mutation {
 				@GraphQLName("destinationFriendlyURL") String
 					destinationFriendlyURL,
 				@GraphQLName("groupId") Long groupId,
+				@GraphQLName("keywordsParameterName") String
+					keywordsParameterName,
 				@GraphQLName("plid") Long plid,
 				@GraphQLName("scope") String scope,
 				@GraphQLName("search") String search,
@@ -73,8 +122,9 @@ public class Mutation {
 			this::_populateResourceContext,
 			suggestionResource -> {
 				Page paginationPage = suggestionResource.postSuggestionsPage(
-					currentURL, destinationFriendlyURL, groupId, plid, scope,
-					search, suggestionsContributorConfigurations);
+					currentURL, destinationFriendlyURL, groupId,
+					keywordsParameterName, plid, scope, search,
+					suggestionsContributorConfigurations);
 
 				return paginationPage.getItems();
 			});
@@ -118,6 +168,22 @@ public class Mutation {
 		}
 	}
 
+	private void _populateResourceContext(
+			SearchResponseResource searchResponseResource)
+		throws Exception {
+
+		searchResponseResource.setContextAcceptLanguage(_acceptLanguage);
+		searchResponseResource.setContextCompany(_company);
+		searchResponseResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		searchResponseResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		searchResponseResource.setContextUriInfo(_uriInfo);
+		searchResponseResource.setContextUser(_user);
+		searchResponseResource.setGroupLocalService(_groupLocalService);
+		searchResponseResource.setRoleLocalService(_roleLocalService);
+	}
+
 	private void _populateResourceContext(SuggestionResource suggestionResource)
 		throws Exception {
 
@@ -131,6 +197,8 @@ public class Mutation {
 		suggestionResource.setRoleLocalService(_roleLocalService);
 	}
 
+	private static ComponentServiceObjects<SearchResponseResource>
+		_searchResponseResourceComponentServiceObjects;
 	private static ComponentServiceObjects<SuggestionResource>
 		_suggestionResourceComponentServiceObjects;
 

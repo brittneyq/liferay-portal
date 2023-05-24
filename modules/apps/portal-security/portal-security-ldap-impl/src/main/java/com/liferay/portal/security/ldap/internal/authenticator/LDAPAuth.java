@@ -77,10 +77,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
  * @author Scott Lee
  * @author Josef Sustacek
  */
-@Component(
-	immediate = true, property = "key=auth.pipeline.pre",
-	service = Authenticator.class
-)
+@Component(property = "key=auth.pipeline.pre", service = Authenticator.class)
 public class LDAPAuth implements Authenticator {
 
 	public static final String RESULT_PASSWORD_EXP_WARNING =
@@ -427,6 +424,19 @@ public class LDAPAuth implements Authenticator {
 							" on LDAP server ", ldapServerId, ", company ",
 							companyId, ", and LDAP context ", safeLdapContext,
 							": ", errorMessage));
+				}
+
+				return FAILURE;
+			}
+
+			if (user == null) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Rejecting authenticated user ", fullUserDN,
+							" because of failed import from LDAP server ",
+							ldapServerId, ", company ", companyId,
+							", and LDAP context ", safeLdapContext));
 				}
 
 				return FAILURE;

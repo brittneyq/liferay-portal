@@ -29,19 +29,19 @@ const HEADERS = new Headers({
 });
 
 function handleOverrideExistingRecordsCheckbox(namespace) {
-	const overrideExistingRecordsCheckbox = document.querySelector(
-		`#${namespace}allowUpdate`
+	const createStrategySelect = document.querySelector(
+		`#${namespace}createStrategy`
 	);
 
-	const ignoreBlankFieldCheckbox = document.querySelector(
-		`#${namespace}onUpdateDoPatch`
-	);
+	if (createStrategySelect) {
+		const updateStrategySelect = document.querySelector(
+			`#${namespace}updateStrategy`
+		);
 
-	overrideExistingRecordsCheckbox.addEventListener('change', ({target}) => {
-		ignoreBlankFieldCheckbox.disabled = !target.checked;
-
-		ignoreBlankFieldCheckbox.checked = false;
-	});
+		createStrategySelect.addEventListener('change', ({target}) => {
+			updateStrategySelect.disabled = target.value === 'INSERT';
+		});
+	}
 }
 
 function trimPackage(name) {
@@ -63,26 +63,34 @@ export default function ({
 	const internalClassNameSelect = document.querySelector(
 		`#${namespace}internalClassName`
 	);
-	const taskItemDelegateNameInput = document.querySelector(
-		`#${namespace}taskItemDelegateName`
-	);
 	const externalTypeInput = document.querySelector(
 		`#${namespace}externalType`
 	);
 
 	if (isExport) {
-		const containsHeadersCheckboxWrapper = document
-			.getElementById(`${namespace}containsHeaders`)
-			.closest('.contains-headers-wrapper');
+		if (Liferay.FeatureFlags['LPS-173135']) {
+			const containsHeadersInput = document.querySelector(
+				`#${namespace}containsHeaders`
+			);
+			const containsHeadersCheckboxWrapper = document
+				.getElementById(`${namespace}containsHeaders`)
+				.closest('.contains-headers-wrapper');
 
-		externalTypeInput.addEventListener('change', ({target}) => {
-			if (target.value === 'CSV') {
-				containsHeadersCheckboxWrapper.classList.remove('d-none');
-			}
-			else {
-				containsHeadersCheckboxWrapper.classList.add('d-none');
-			}
-		});
+			externalTypeInput.addEventListener('change', ({target}) => {
+				if (target.value === 'CSV') {
+					containsHeadersInput.disabled = false;
+
+					containsHeadersCheckboxWrapper.classList.remove('d-none');
+				}
+				else {
+					containsHeadersInput.disabled = true;
+
+					containsHeadersCheckboxWrapper.classList.add('d-none');
+				}
+			});
+
+			externalTypeInput.dispatchEvent(new Event('change'));
+		}
 	}
 	else {
 		handleOverrideExistingRecordsCheckbox(namespace);
@@ -94,10 +102,11 @@ export default function ({
 				externalTypeInput.value = template.externalType;
 			}
 
-			const internalClassTemplateOption = internalClassNameSelect.querySelector(
-				`option[value='${template.internalClassName}']`
-			);
+			const selectedClassNameValue = template.internalClassName;
 
+			const internalClassTemplateOption = internalClassNameSelect.querySelector(
+				`option[value='${selectedClassNameValue}']`
+			);
 			internalClassTemplateOption.selected = true;
 
 			await handleClassNameSelectChange();
@@ -114,13 +123,7 @@ export default function ({
 				internalClassNameSelect.selectedIndex
 			];
 
-		const schemaName = selectedOption.getAttribute('schemaName');
-
-		taskItemDelegateNameInput.value = schemaName || 'DEFAULT';
-
-		const internalClassNameValue = trimPackage(
-			schemaName || selectedOption.value
-		);
+		const internalClassNameValue = trimPackage(selectedOption.value);
 
 		if (!internalClassNameValue) {
 			Liferay.fire(SCHEMA_SELECTED_EVENT, {

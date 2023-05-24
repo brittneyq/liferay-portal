@@ -321,6 +321,15 @@ public class FriendlyURLEntryLocalServiceUtil {
 
 	public static com.liferay.friendly.url.model.FriendlyURLEntryLocalization
 		fetchFriendlyURLEntryLocalization(
+			long groupId, long classNameId, String languageId,
+			String urlTitle) {
+
+		return getService().fetchFriendlyURLEntryLocalization(
+			groupId, classNameId, languageId, urlTitle);
+	}
+
+	public static com.liferay.friendly.url.model.FriendlyURLEntryLocalization
+		fetchFriendlyURLEntryLocalization(
 			long friendlyURLEntryId, String languageId) {
 
 		return getService().fetchFriendlyURLEntryLocalization(
@@ -453,6 +462,17 @@ public class FriendlyURLEntryLocalServiceUtil {
 
 	public static com.liferay.friendly.url.model.FriendlyURLEntryLocalization
 			getFriendlyURLEntryLocalization(
+				long groupId, long classNameId, String languageId,
+				String urlTitle)
+		throws com.liferay.friendly.url.exception.
+			NoSuchFriendlyURLEntryLocalizationException {
+
+		return getService().getFriendlyURLEntryLocalization(
+			groupId, classNameId, languageId, urlTitle);
+	}
+
+	public static com.liferay.friendly.url.model.FriendlyURLEntryLocalization
+			getFriendlyURLEntryLocalization(
 				long friendlyURLEntryId, String languageId)
 		throws PortalException {
 
@@ -519,18 +539,6 @@ public class FriendlyURLEntryLocalServiceUtil {
 		throws PortalException {
 
 		return getService().getPersistedModel(primaryKeyObj);
-	}
-
-	/**
-	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 #getUniqueUrlTitle(long, long, long, String, String)}
-	 */
-	@Deprecated
-	public static String getUniqueUrlTitle(
-		long groupId, long classNameId, long classPK, String urlTitle) {
-
-		return getService().getUniqueUrlTitle(
-			groupId, classNameId, classPK, urlTitle);
 	}
 
 	public static String getUniqueUrlTitle(
@@ -627,6 +635,15 @@ public class FriendlyURLEntryLocalServiceUtil {
 		getService().validate(groupId, classNameId, classPK, urlTitle);
 	}
 
+	public static void validate(
+			long groupId, long classNameId, long classPK, String languageId,
+			String urlTitle)
+		throws PortalException {
+
+		getService().validate(
+			groupId, classNameId, classPK, languageId, urlTitle);
+	}
+
 	public static void validate(long groupId, long classNameId, String urlTitle)
 		throws PortalException {
 
@@ -635,6 +652,10 @@ public class FriendlyURLEntryLocalServiceUtil {
 
 	public static FriendlyURLEntryLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(FriendlyURLEntryLocalService service) {
+		_service = service;
 	}
 
 	private static volatile FriendlyURLEntryLocalService _service;

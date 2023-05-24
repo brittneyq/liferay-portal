@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.MapUtil;
 
 import java.util.HashMap;
@@ -40,7 +40,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.friendly.url.model.FriendlyURLEntry",
 	service = StagedModelRepository.class
 )
@@ -151,7 +150,7 @@ public class FriendlyURLEntryStagedModelRepository
 					friendlyURLEntry.getGroupId(),
 					friendlyURLEntry.getClassNameId(),
 					friendlyURLEntry.getClassPK(),
-					friendlyURLEntryLocalization.getUrlTitle()));
+					friendlyURLEntryLocalization.getUrlTitle(), null));
 
 			_friendlyURLEntryLocalService.updateFriendlyURLLocalization(
 				friendlyURLEntryLocalization);
@@ -182,7 +181,7 @@ public class FriendlyURLEntryStagedModelRepository
 			portletDataContext, friendlyURLEntry);
 
 		Map<Locale, String> localeLocalizationMap =
-			LocalizationUtil.getLocalizationMap(
+			_localization.getLocalizationMap(
 				portletDataContext.getZipEntryAsString(modelPath));
 
 		Map<String, String> languageIdLocalizationMap = new HashMap<>();
@@ -201,7 +200,7 @@ public class FriendlyURLEntryStagedModelRepository
 				urlTitle = _friendlyURLEntryLocalService.getUniqueUrlTitle(
 					friendlyURLEntry.getGroupId(),
 					friendlyURLEntry.getClassNameId(),
-					friendlyURLEntry.getClassPK(), urlTitle);
+					friendlyURLEntry.getClassPK(), urlTitle, null);
 			}
 
 			languageIdLocalizationMap.put(
@@ -216,6 +215,9 @@ public class FriendlyURLEntryStagedModelRepository
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private Localization _localization;
 
 	@Reference
 	private StagedModelRepositoryHelper _stagedModelRepositoryHelper;

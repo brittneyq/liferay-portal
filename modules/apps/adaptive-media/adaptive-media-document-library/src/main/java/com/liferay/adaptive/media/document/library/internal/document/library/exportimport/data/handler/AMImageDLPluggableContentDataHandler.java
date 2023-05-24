@@ -39,10 +39,8 @@ import com.liferay.portal.kernel.xml.Element;
 import java.io.InputStream;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -51,7 +49,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.portal.kernel.repository.model.FileEntry",
 	service = DLPluggableContentDataHandler.class
 )
@@ -118,14 +115,11 @@ public class AMImageDLPluggableContentDataHandler
 
 		FileVersion fileVersion = fileEntry.getFileVersion();
 
-		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
-			_amImageFinder.getAdaptiveMediaStream(
+		List<AdaptiveMedia<AMImageProcessor>> adaptiveMedias =
+			_amImageFinder.getAdaptiveMedias(
 				amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
 					fileVersion
 				).done());
-
-		List<AdaptiveMedia<AMImageProcessor>> adaptiveMedias =
-			adaptiveMediaStream.collect(Collectors.toList());
 
 		for (AdaptiveMedia<AMImageProcessor> adaptiveMedia : adaptiveMedias) {
 			_exportMedia(portletDataContext, fileEntry, adaptiveMedia);
@@ -137,16 +131,14 @@ public class AMImageDLPluggableContentDataHandler
 			AdaptiveMedia<AMImageProcessor> adaptiveMedia)
 		throws Exception {
 
-		Optional<String> configurationUuidOptional =
-			adaptiveMedia.getValueOptional(
-				AMAttribute.getConfigurationUuidAMAttribute());
+		String configurationUuid = adaptiveMedia.getValue(
+			AMAttribute.getConfigurationUuidAMAttribute());
 
-		if (!configurationUuidOptional.isPresent()) {
+		if (configurationUuid == null) {
 			return;
 		}
 
-		String basePath = _getAMBasePath(
-			fileEntry, configurationUuidOptional.get());
+		String basePath = _getAMBasePath(fileEntry, configurationUuid);
 
 		if (!portletDataContext.isPerformDirectBinaryImport()) {
 			try (InputStream inputStream = adaptiveMedia.getInputStream()) {
@@ -158,7 +150,7 @@ public class AMImageDLPluggableContentDataHandler
 						StringBundler.concat(
 							"Unable to find adaptive media for file entry ",
 							fileEntry.getFileEntryId(), " and configuration ",
-							configurationUuidOptional.get()),
+							configurationUuid),
 						exception);
 				}
 
@@ -170,14 +162,14 @@ public class AMImageDLPluggableContentDataHandler
 			basePath + ".json", _amImageSerializer.serialize(adaptiveMedia));
 	}
 
-	private Stream<AdaptiveMedia<AMImageProcessor>> _getAdaptiveMediaStream(
+	private List<AdaptiveMedia<AMImageProcessor>> _getAdaptiveMedias(
 		FileEntry fileEntry,
 		AMImageConfigurationEntry amImageConfigurationEntry) {
 
 		try {
 			FileVersion fileVersion = fileEntry.getFileVersion();
 
-			return _amImageFinder.getAdaptiveMediaStream(
+			return _amImageFinder.getAdaptiveMedias(
 				amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
 					fileVersion
 				).forConfiguration(
@@ -193,7 +185,7 @@ public class AMImageDLPluggableContentDataHandler
 				portalException);
 		}
 
-		return Stream.empty();
+		return Collections.emptyList();
 	}
 
 	private String _getAMBasePath(FileEntry fileEntry, String uuid) {
@@ -230,18 +222,17 @@ public class AMImageDLPluggableContentDataHandler
 					basePath + ".bin"));
 		}
 
-		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
-			_getAdaptiveMediaStream(fileEntry, amImageConfigurationEntry);
+		List<AdaptiveMedia<AMImageProcessor>> adaptiveMedias =
+			_getAdaptiveMedias(fileEntry, amImageConfigurationEntry);
 
-		Optional<AdaptiveMedia<AMImageProcessor>> firstAdaptiveMediaOptional =
-			adaptiveMediaStream.findFirst();
+		if (adaptiveMedias.isEmpty()) {
+			return null;
+		}
 
-		return firstAdaptiveMediaOptional.map(
-			adaptiveMedia -> _amImageSerializer.deserialize(
-				serializedAdaptiveMedia, adaptiveMedia::getInputStream)
-		).orElse(
-			null
-		);
+		AdaptiveMedia<AMImageProcessor> adaptiveMedia = adaptiveMedias.get(0);
+
+		return _amImageSerializer.deserialize(
+			serializedAdaptiveMedia, adaptiveMedia::getInputStream);
 	}
 
 	private void _importGeneratedMedia(
@@ -273,18 +264,16 @@ public class AMImageDLPluggableContentDataHandler
 			return;
 		}
 
-		Optional<Long> contentLengthOptional = adaptiveMedia.getValueOptional(
+		Long contentLength = adaptiveMedia.getValue(
 			AMAttribute.getContentLengthAMAttribute());
 
-		Optional<Integer> widthOptional = adaptiveMedia.getValueOptional(
+		Integer width = adaptiveMedia.getValue(
 			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH);
 
-		Optional<Integer> heightOptional = adaptiveMedia.getValueOptional(
+		Integer height = adaptiveMedia.getValue(
 			AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT);
 
-		if (!contentLengthOptional.isPresent() || !widthOptional.isPresent() ||
-			!heightOptional.isPresent()) {
-
+		if ((contentLength == null) || (width == null) || (height == null)) {
 			return;
 		}
 
@@ -302,9 +291,8 @@ public class AMImageDLPluggableContentDataHandler
 
 		try (InputStream inputStream = adaptiveMedia.getInputStream()) {
 			_amImageEntryLocalService.addAMImageEntry(
-				amImageConfigurationEntry, importedFileVersion,
-				heightOptional.get(), widthOptional.get(), inputStream,
-				contentLengthOptional.get());
+				amImageConfigurationEntry, importedFileVersion, height, width,
+				inputStream, contentLength);
 		}
 	}
 

@@ -18,12 +18,15 @@ import com.liferay.account.model.AccountEntryUserRel;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
+import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.osgi.annotation.versioning.ProviderType;
@@ -54,8 +57,9 @@ public interface AccountEntryUserRelService extends BaseService {
 	public AccountEntryUserRel addAccountEntryUserRel(
 			long accountEntryId, long creatorUserId, String screenName,
 			String emailAddress, Locale locale, String firstName,
-			String middleName, String lastName, long prefixId, long suffixId,
-			String jobTitle, ServiceContext serviceContext)
+			String middleName, String lastName, long prefixListTypeId,
+			long suffixListTypeId, String jobTitle,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	public AccountEntryUserRel addAccountEntryUserRelByEmailAddress(
@@ -70,8 +74,9 @@ public interface AccountEntryUserRelService extends BaseService {
 	public AccountEntryUserRel addPersonTypeAccountEntryUserRel(
 			long accountEntryId, long creatorUserId, String screenName,
 			String emailAddress, Locale locale, String firstName,
-			String middleName, String lastName, long prefixId, long suffixId,
-			String jobTitle, ServiceContext serviceContext)
+			String middleName, String lastName, long prefixListTypeId,
+			long suffixListTypeId, String jobTitle,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	public void deleteAccountEntryUserRelByEmailAddress(
@@ -82,12 +87,52 @@ public interface AccountEntryUserRelService extends BaseService {
 			long accountEntryId, long[] accountUserIds)
 		throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public AccountEntryUserRel fetchAccountEntryUserRel(
+			long accountEntryUserRelId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public AccountEntryUserRel fetchAccountEntryUserRel(
+			long accountEntryId, long accountUserId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public AccountEntryUserRel getAccountEntryUserRel(
+			long accountEntryId, long accountUserId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<AccountEntryUserRel> getAccountEntryUserRelsByAccountEntryId(
+			long accountEntryId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<AccountEntryUserRel> getAccountEntryUserRelsByAccountEntryId(
+			long accountEntryId, int start, int end)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<AccountEntryUserRel> getAccountEntryUserRelsByAccountUserId(
+			long accountUserId)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long getAccountEntryUserRelsCountByAccountEntryId(
+			long accountEntryId)
+		throws PortalException;
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
 	 * @return the OSGi service identifier
 	 */
 	public String getOSGiServiceIdentifier();
+
+	public void inviteUser(
+			long accountEntryId, long[] accountRoleIds, String emailAddress,
+			User inviter, ServiceContext serviceContext)
+		throws PortalException;
 
 	public void setPersonTypeAccountEntryUser(long accountEntryId, long userId)
 		throws PortalException;

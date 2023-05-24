@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -48,7 +47,6 @@ import com.liferay.saml.persistence.service.persistence.impl.constants.SamlPersi
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -75,9 +73,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Mika Koivisto
  * @generated
  */
-@Component(
-	service = {SamlIdpSpConnectionPersistence.class, BasePersistence.class}
-)
+@Component(service = SamlIdpSpConnectionPersistence.class)
 public class SamlIdpSpConnectionPersistenceImpl
 	extends BasePersistenceImpl<SamlIdpSpConnection>
 	implements SamlIdpSpConnectionPersistence {
@@ -197,7 +193,7 @@ public class SamlIdpSpConnectionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<SamlIdpSpConnection>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (SamlIdpSpConnection samlIdpSpConnection : list) {
@@ -565,7 +561,7 @@ public class SamlIdpSpConnectionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -685,7 +681,7 @@ public class SamlIdpSpConnectionPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByC_SSEI, finderArgs);
+				_finderPathFetchByC_SSEI, finderArgs, this);
 		}
 
 		if (result instanceof SamlIdpSpConnection) {
@@ -817,7 +813,7 @@ public class SamlIdpSpConnectionPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId, samlSpEntityId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1319,7 +1315,7 @@ public class SamlIdpSpConnectionPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<SamlIdpSpConnection>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1389,7 +1385,7 @@ public class SamlIdpSpConnectionPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1484,30 +1480,14 @@ public class SamlIdpSpConnectionPersistenceImpl
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"companyId", "samlSpEntityId"}, false);
 
-		_setSamlIdpSpConnectionUtilPersistence(this);
+		SamlIdpSpConnectionUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setSamlIdpSpConnectionUtilPersistence(null);
+		SamlIdpSpConnectionUtil.setPersistence(null);
 
 		entityCache.removeCache(SamlIdpSpConnectionImpl.class.getName());
-	}
-
-	private void _setSamlIdpSpConnectionUtilPersistence(
-		SamlIdpSpConnectionPersistence samlIdpSpConnectionPersistence) {
-
-		try {
-			Field field = SamlIdpSpConnectionUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, samlIdpSpConnectionPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -1569,9 +1549,5 @@ public class SamlIdpSpConnectionPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private SamlIdpSpConnectionModelArgumentsResolver
-		_samlIdpSpConnectionModelArgumentsResolver;
 
 }

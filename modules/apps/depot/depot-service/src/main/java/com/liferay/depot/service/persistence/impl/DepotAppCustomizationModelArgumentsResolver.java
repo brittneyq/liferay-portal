@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		DepotAppCustomizationModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.depot.model.impl.DepotAppCustomizationImpl",
+		"table.name=DepotAppCustomization"
+	},
+	service = ArgumentsResolver.class
 )
 public class DepotAppCustomizationModelArgumentsResolver
 	implements ArgumentsResolver {

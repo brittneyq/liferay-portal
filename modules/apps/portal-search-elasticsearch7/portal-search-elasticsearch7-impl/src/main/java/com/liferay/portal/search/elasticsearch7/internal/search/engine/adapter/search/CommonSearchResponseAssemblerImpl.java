@@ -66,6 +66,8 @@ public class CommonSearchResponseAssemblerImpl
 
 		_setExecutionProfile(searchResponse, baseSearchResponse);
 		_setExecutionTime(searchResponse, baseSearchResponse);
+		_setPointInTimeId(searchResponse, baseSearchResponse);
+		_setScrollId(searchResponse, baseSearchResponse);
 		_setSearchRequestString(searchSourceBuilder, baseSearchResponse);
 		setSearchResponseString(
 			searchResponse, baseSearchRequest, baseSearchResponse);
@@ -85,11 +87,6 @@ public class CommonSearchResponseAssemblerImpl
 			baseSearchResponse.setSearchResponseString(
 				searchResponse.toString());
 		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setStatsTranslator(StatsTranslator statsTranslator) {
-		_statsTranslator = statsTranslator;
 	}
 
 	protected String toString(SearchSourceBuilder searchSourceBuilder) {
@@ -202,6 +199,22 @@ public class CommonSearchResponseAssemblerImpl
 		baseSearchResponse.setExecutionTime(tookTimeValue.getMillis());
 	}
 
+	private void _setPointInTimeId(
+		SearchResponse searchResponse, BaseSearchResponse baseSearchResponse) {
+
+		if (searchResponse.pointInTimeId() != null) {
+			baseSearchResponse.setPointInTimeId(searchResponse.pointInTimeId());
+		}
+	}
+
+	private void _setScrollId(
+		SearchResponse searchResponse, BaseSearchResponse baseSearchResponse) {
+
+		if (searchResponse.getScrollId() != null) {
+			baseSearchResponse.setScrollId(searchResponse.getScrollId());
+		}
+	}
+
 	private void _setSearchRequestString(
 		SearchSourceBuilder searchSourceBuilder,
 		BaseSearchResponse baseSearchResponse) {
@@ -262,6 +275,7 @@ public class CommonSearchResponseAssemblerImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommonSearchResponseAssemblerImpl.class);
 
+	@Reference
 	private StatsTranslator _statsTranslator;
 
 }

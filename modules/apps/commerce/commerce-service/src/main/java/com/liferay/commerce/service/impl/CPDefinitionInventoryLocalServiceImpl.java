@@ -14,23 +14,33 @@
 
 package com.liferay.commerce.service.impl;
 
+import com.liferay.commerce.exception.CPDefinitionInventoryMaxOrderQuantityException;
+import com.liferay.commerce.exception.CPDefinitionInventoryMinOrderQuantityException;
+import com.liferay.commerce.exception.CPDefinitionInventoryMultipleOrderQuantityException;
 import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.service.base.CPDefinitionInventoryLocalServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
-import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
+import com.liferay.portal.kernel.uuid.PortalUUID;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alessio Antonio Rendina
  * @author Alec Sloan
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.model.CPDefinitionInventory",
+	service = AopService.class
+)
 public class CPDefinitionInventoryLocalServiceImpl
 	extends CPDefinitionInventoryLocalServiceBaseImpl {
 
@@ -43,6 +53,9 @@ public class CPDefinitionInventoryLocalServiceImpl
 			int maxOrderQuantity, String allowedOrderQuantities,
 			int multipleOrderQuantity)
 		throws PortalException {
+
+		_validateOrderQuantity(
+			minOrderQuantity, maxOrderQuantity, multipleOrderQuantity);
 
 		User user = _userLocalService.getUser(userId);
 
@@ -92,7 +105,7 @@ public class CPDefinitionInventoryLocalServiceImpl
 			CPDefinitionInventory newCPDefinitionInventory =
 				(CPDefinitionInventory)cpDefinitionInventory.clone();
 
-			newCPDefinitionInventory.setUuid(PortalUUIDUtil.generate());
+			newCPDefinitionInventory.setUuid(_portalUUID.generate());
 			newCPDefinitionInventory.setCPDefinitionInventoryId(
 				counterLocalService.increment());
 			newCPDefinitionInventory.setCPDefinitionId(newCPDefinitionId);
@@ -171,6 +184,9 @@ public class CPDefinitionInventoryLocalServiceImpl
 			String allowedOrderQuantities, int multipleOrderQuantity)
 		throws PortalException {
 
+		_validateOrderQuantity(
+			minOrderQuantity, maxOrderQuantity, multipleOrderQuantity);
+
 		CPDefinitionInventory cpDefinitionInventory =
 			cpDefinitionInventoryPersistence.findByPrimaryKey(
 				cpDefinitionInventoryId);
@@ -202,10 +218,36 @@ public class CPDefinitionInventoryLocalServiceImpl
 		return cpDefinitionInventoryPersistence.update(cpDefinitionInventory);
 	}
 
-	@ServiceReference(type = CPDefinitionLocalService.class)
+	private void _validateOrderQuantity(
+			int minOrderQuantity, int maxOrderQuantity,
+			int multipleOrderQuantity)
+		throws CPDefinitionInventoryMaxOrderQuantityException,
+			   CPDefinitionInventoryMinOrderQuantityException,
+			   CPDefinitionInventoryMultipleOrderQuantityException {
+
+		if (minOrderQuantity < 1) {
+			throw new CPDefinitionInventoryMinOrderQuantityException(
+				"Minimum order quantity must be greater than or equal to 1");
+		}
+
+		if (maxOrderQuantity < 1) {
+			throw new CPDefinitionInventoryMaxOrderQuantityException(
+				"Maximum order quantity must be greater than or equal to 1");
+		}
+
+		if (multipleOrderQuantity < 1) {
+			throw new CPDefinitionInventoryMultipleOrderQuantityException(
+				"Multiple order quantity must be greater than or equal to 1");
+		}
+	}
+
+	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
+	private PortalUUID _portalUUID;
+
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

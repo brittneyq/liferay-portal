@@ -14,16 +14,11 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.Junction;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -43,9 +38,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.definition.LogType;
-import com.liferay.portal.workflow.kaleo.definition.util.KaleoLogUtil;
 import com.liferay.portal.workflow.kaleo.exception.NoSuchLogException;
 import com.liferay.portal.workflow.kaleo.model.KaleoAction;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstance;
@@ -64,9 +57,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -88,7 +78,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.ACTION_EXECUTION, serviceContext);
 
 		kaleoLog.setKaleoClassName(kaleoAction.getKaleoClassName());
@@ -112,7 +102,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			KaleoNode targetKaleoNode, ServiceContext serviceContext)
 		throws PortalException {
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.NODE_ENTRY, serviceContext);
 
 		kaleoLog.setKaleoClassName(KaleoNode.class.getName());
@@ -140,7 +130,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.NODE_EXIT, serviceContext);
 
 		kaleoLog.setKaleoClassName(KaleoNode.class.getName());
@@ -153,7 +143,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		kaleoLog.setEndDate(kaleoLog.getCreateDate());
 
 		try {
-			KaleoLog previousKaleoLog = getPreviousLog(
+			KaleoLog previousKaleoLog = _getPreviousLog(
 				kaleoLog.getKaleoInstanceTokenId(), kaleoLog.getKaleoClassPK(),
 				LogType.WORKFLOW_INSTANCE_START);
 
@@ -186,7 +176,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		KaleoInstanceToken kaleoInstanceToken =
 			kaleoTaskInstanceToken.getKaleoInstanceToken();
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.TASK_ASSIGNMENT, serviceContext);
 
 		kaleoLog.setKaleoTaskInstanceTokenId(
@@ -299,7 +289,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		KaleoInstanceToken kaleoInstanceToken =
 			kaleoTaskInstanceToken.getKaleoInstanceToken();
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.TASK_COMPLETION, serviceContext);
 
 		kaleoLog.setKaleoTaskInstanceTokenId(
@@ -342,7 +332,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoTaskInstanceToken.getKaleoInstanceToken(), LogType.TASK_UPDATE,
 			serviceContext);
 
@@ -376,13 +366,13 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.WORKFLOW_INSTANCE_END, serviceContext);
 
 		kaleoLog.setEndDate(kaleoLog.getCreateDate());
 
 		try {
-			KaleoLog previousKaleoLog = getPreviousLog(
+			KaleoLog previousKaleoLog = _getPreviousLog(
 				kaleoLog.getKaleoInstanceTokenId(), 0,
 				LogType.WORKFLOW_INSTANCE_START);
 
@@ -408,7 +398,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		KaleoLog kaleoLog = createKaleoLog(
+		KaleoLog kaleoLog = _createKaleoLog(
 			kaleoInstanceToken, LogType.WORKFLOW_INSTANCE_START,
 			serviceContext);
 
@@ -456,7 +446,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		long companyId, long kaleoInstanceId, List<Integer> logTypes, int start,
 		int end, OrderByComparator<KaleoLog> orderByComparator) {
 
-		return doSearch(
+		return _search(
 			companyId,
 			HashMapBuilder.<String, Serializable>put(
 				"kaleoInstanceId", kaleoInstanceId
@@ -470,7 +460,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 	public int getKaleoInstanceKaleoLogsCount(
 		long companyId, long kaleoInstanceId, List<Integer> logTypes) {
 
-		return doSearchCount(
+		return _searchCount(
 			companyId,
 			HashMapBuilder.put(
 				"kaleoInstanceId", (Serializable)kaleoInstanceId
@@ -484,7 +474,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		long companyId, long kaleoTaskInstanceTokenId, List<Integer> logTypes,
 		int start, int end, OrderByComparator<KaleoLog> orderByComparator) {
 
-		return doSearch(
+		return _search(
 			companyId,
 			HashMapBuilder.put(
 				"kaleoTaskInstanceTokenId",
@@ -499,7 +489,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 	public int getKaleoTaskInstanceTokenKaleoLogsCount(
 		long companyId, long kaleoTaskInstanceTokenId, List<Integer> logTypes) {
 
-		return doSearchCount(
+		return _searchCount(
 			companyId,
 			HashMapBuilder.put(
 				"kaleoTaskInstanceTokenId",
@@ -509,58 +499,12 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 			).build());
 	}
 
-	protected void addLogTypesJunction(
-		DynamicQuery dynamicQuery, List<Integer> logTypes) {
-
-		Junction junction = RestrictionsFactoryUtil.disjunction();
-
-		for (Integer logType : logTypes) {
-			String logTypeString = KaleoLogUtil.convert(logType);
-
-			if (Validator.isNull(logTypeString)) {
-				continue;
-			}
-
-			Property property = PropertyFactoryUtil.forName("type");
-
-			junction.add(property.eq(logTypeString));
-		}
-
-		dynamicQuery.add(junction);
+	private static String _getSortableFieldName(String name, String type) {
+		return Field.getSortableFieldName(
+			StringBundler.concat(name, StringPool.UNDERLINE, type));
 	}
 
-	protected DynamicQuery buildKaleoInstanceDynamicQuery(
-		long kaleoInstanceId, List<Integer> logTypes) {
-
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			KaleoLog.class, getClassLoader());
-
-		Property property = PropertyFactoryUtil.forName("kaleoInstanceId");
-
-		dynamicQuery.add(property.eq(kaleoInstanceId));
-
-		addLogTypesJunction(dynamicQuery, logTypes);
-
-		return dynamicQuery;
-	}
-
-	protected DynamicQuery buildKaleoTaskInstanceTokenDynamicQuery(
-		long kaleoTaskId, List<Integer> logTypes) {
-
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
-			KaleoLog.class, getClassLoader());
-
-		Property property = PropertyFactoryUtil.forName(
-			"kaleoTaskInstanceTokenId");
-
-		dynamicQuery.add(property.eq(kaleoTaskId));
-
-		addLogTypesJunction(dynamicQuery, logTypes);
-
-		return dynamicQuery;
-	}
-
-	protected SearchContext buildSearchContext(
+	private SearchContext _buildSearchContext(
 		long companyId, Map<String, Serializable> searchAttributes, int start,
 		int end, OrderByComparator<KaleoLog> orderByComparator) {
 
@@ -573,13 +517,13 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		searchContext.setStart(start);
 
 		if (orderByComparator != null) {
-			searchContext.setSorts(getSortsFromComparator(orderByComparator));
+			searchContext.setSorts(_getSortsFromComparator(orderByComparator));
 		}
 
 		return searchContext;
 	}
 
-	protected KaleoLog createKaleoLog(
+	private KaleoLog _createKaleoLog(
 			KaleoInstanceToken kaleoInstanceToken, LogType logType,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -609,63 +553,7 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		return kaleoLog;
 	}
 
-	protected List<KaleoLog> doSearch(
-		long companyId, Map<String, Serializable> searchAttributes, int start,
-		int end, OrderByComparator<KaleoLog> orderByComparator) {
-
-		try {
-			Indexer<KaleoLog> indexer = IndexerRegistryUtil.getIndexer(
-				KaleoLog.class.getName());
-
-			Hits hits = indexer.search(
-				buildSearchContext(
-					companyId, searchAttributes, start, end,
-					orderByComparator));
-
-			return Stream.of(
-				hits.getDocs()
-			).map(
-				document -> GetterUtil.getLong(
-					document.get(Field.ENTRY_CLASS_PK))
-			).map(
-				kaleoLogPersistence::fetchByPrimaryKey
-			).filter(
-				Objects::nonNull
-			).collect(
-				Collectors.toList()
-			);
-		}
-		catch (PortalException portalException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
-			}
-		}
-
-		return Collections.emptyList();
-	}
-
-	protected int doSearchCount(
-		long companyId, Map<String, Serializable> searchAttributes) {
-
-		try {
-			Indexer<KaleoLog> indexer = IndexerRegistryUtil.getIndexer(
-				KaleoLog.class.getName());
-
-			return (int)indexer.searchCount(
-				buildSearchContext(
-					companyId, searchAttributes, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null));
-		}
-		catch (PortalException portalException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
-			}
-		}
-
-		return 0;
-	}
-
-	protected KaleoLog getPreviousLog(
+	private KaleoLog _getPreviousLog(
 			long kaleoInstanceTokenId, long kaleoNodeId, LogType logType)
 		throws PortalException {
 
@@ -688,16 +576,15 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 		throw new NoSuchLogException();
 	}
 
-	protected Sort[] getSortsFromComparator(
+	private Sort[] _getSortsFromComparator(
 		OrderByComparator<KaleoLog> orderByComparator) {
 
 		if (orderByComparator == null) {
 			return null;
 		}
 
-		return Stream.of(
-			orderByComparator.getOrderByFields()
-		).map(
+		return TransformUtil.transform(
+			orderByComparator.getOrderByFields(),
 			orderByFieldName -> {
 				String fieldName = _fieldNameOrderByCols.getOrDefault(
 					orderByFieldName, orderByFieldName);
@@ -707,15 +594,56 @@ public class KaleoLogLocalServiceImpl extends KaleoLogLocalServiceBaseImpl {
 					_fieldNameSortTypes.getOrDefault(
 						fieldName, Sort.STRING_TYPE),
 					!orderByComparator.isAscending());
-			}
-		).toArray(
-			Sort[]::new
-		);
+			},
+			Sort.class);
 	}
 
-	private static String _getSortableFieldName(String name, String type) {
-		return Field.getSortableFieldName(
-			StringBundler.concat(name, StringPool.UNDERLINE, type));
+	private List<KaleoLog> _search(
+		long companyId, Map<String, Serializable> searchAttributes, int start,
+		int end, OrderByComparator<KaleoLog> orderByComparator) {
+
+		try {
+			Indexer<KaleoLog> indexer = IndexerRegistryUtil.getIndexer(
+				KaleoLog.class.getName());
+
+			Hits hits = indexer.search(
+				_buildSearchContext(
+					companyId, searchAttributes, start, end,
+					orderByComparator));
+
+			return TransformUtil.transformToList(
+				hits.getDocs(),
+				document -> kaleoLogPersistence.fetchByPrimaryKey(
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
+		return Collections.emptyList();
+	}
+
+	private int _searchCount(
+		long companyId, Map<String, Serializable> searchAttributes) {
+
+		try {
+			Indexer<KaleoLog> indexer = IndexerRegistryUtil.getIndexer(
+				KaleoLog.class.getName());
+
+			return (int)indexer.searchCount(
+				_buildSearchContext(
+					companyId, searchAttributes, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
+		return 0;
 	}
 
 	private BaseMapBuilder.UnsafeSupplier<Serializable, Exception>

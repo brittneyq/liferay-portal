@@ -16,20 +16,20 @@ package com.liferay.translation.web.internal.helper;
 
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemReference;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author Adolfo Pérez
@@ -37,15 +37,13 @@ import java.util.Optional;
 public class InfoItemHelper {
 
 	public InfoItemHelper(
-		String className, InfoItemServiceTracker infoItemServiceTracker) {
+		String className, InfoItemServiceRegistry infoItemServiceRegistry) {
 
 		_className = className;
-		_infoItemServiceTracker = infoItemServiceTracker;
+		_infoItemServiceRegistry = infoItemServiceRegistry;
 	}
 
-	public Optional<String> getInfoItemTitleOptional(
-		long classPK, Locale locale) {
-
+	public String getInfoItemTitle(long classPK, Locale locale) {
 		try {
 			ObjectValuePair<InfoItemReference, String>
 				infoItemReferenceSuffixObjectValuePair =
@@ -56,24 +54,24 @@ public class InfoItemHelper {
 				infoItemReferenceSuffixObjectValuePair.getKey();
 
 			InfoItemObjectProvider<Object> infoItemObjectProvider =
-				_infoItemServiceTracker.getFirstInfoItemService(
+				_infoItemServiceRegistry.getFirstInfoItemService(
 					InfoItemObjectProvider.class,
 					infoItemReference.getClassName());
 
 			Object object = infoItemObjectProvider.getInfoItem(
 				infoItemReference.getClassPK());
 
-			return _getTitleOptional(
-				infoItemReference.getClassName(), object, locale
-			).map(
-				title ->
-					title + infoItemReferenceSuffixObjectValuePair.getValue()
-			);
+			if (object == null) {
+				return null;
+			}
+
+			return _getTitle(infoItemReference.getClassName(), object, locale) +
+				infoItemReferenceSuffixObjectValuePair.getValue();
 		}
 		catch (Exception exception) {
 			_log.error(exception);
 
-			return Optional.empty();
+			return null;
 		}
 	}
 
@@ -96,38 +94,34 @@ public class InfoItemHelper {
 
 		return new ObjectValuePair<>(
 			new InfoItemReference(
-				segmentsExperience.getClassName(),
-				segmentsExperience.getClassPK()),
+				Layout.class.getName(), segmentsExperience.getPlid()),
 			StringBundler.concat(
 				StringPool.SPACE, StringPool.OPEN_PARENTHESIS,
 				segmentsExperience.getName(locale),
 				StringPool.CLOSE_PARENTHESIS));
 	}
 
-	private Optional<String> _getTitleOptional(
-		String className, Object object, Locale locale) {
-
+	private String _getTitle(String className, Object object, Locale locale) {
 		InfoItemFieldValuesProvider<Object> infoItemFieldValuesProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
+			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemFieldValuesProvider.class, className);
 
 		InfoFieldValue<Object> titleInfoFieldValue =
 			infoItemFieldValuesProvider.getInfoFieldValue(object, "title");
 
 		if (titleInfoFieldValue != null) {
-			return Optional.ofNullable(
-				(String)titleInfoFieldValue.getValue(locale));
+			return (String)titleInfoFieldValue.getValue(locale);
 		}
 
 		InfoFieldValue<Object> nameInfoFieldValue =
 			infoItemFieldValuesProvider.getInfoFieldValue(object, "name");
 
-		return Optional.ofNullable((String)nameInfoFieldValue.getValue(locale));
+		return (String)nameInfoFieldValue.getValue(locale);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(InfoItemHelper.class);
 
 	private final String _className;
-	private final InfoItemServiceTracker _infoItemServiceTracker;
+	private final InfoItemServiceRegistry _infoItemServiceRegistry;
 
 }

@@ -67,7 +67,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Jorge Ferrer
  * @author Michael C. Han
  */
-@Component(immediate = true, service = MessageListener.class)
+@Component(service = MessageListener.class)
 public class MessageListenerImpl implements MessageListener {
 
 	@Override
@@ -137,9 +137,9 @@ public class MessageListenerImpl implements MessageListener {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringBundler.concat(
-							"Cannot deliver message ", message.toString(),
+							"Cannot deliver message ", message,
 							", none of the recipients contain a message ID: ",
-							recipients.toString()));
+							recipients));
 				}
 
 				return;

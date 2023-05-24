@@ -16,10 +16,37 @@ import {config} from '../config/index';
 import serviceFetch from './serviceFetch';
 
 export default {
+
+	/**
+	 * Get a collection's configuration
+	 * @param {object} options
+	 * @param {object} options.collection
+	 */
 	getCollectionConfiguration(collection) {
 		return serviceFetch(config.getCollectionConfigurationURL, {
 			body: {
 				collectionKey: collection.key,
+			},
+		});
+	},
+
+	/**
+	 * Get the URL to edit configuration of a collection
+	 * @param {object} options
+	 * @param {string} options.collectionKey
+	 * @param {string} options.itemId
+	 * @param {string} options.segmentsExperienceId
+	 */
+	getCollectionEditConfigurationUrl({
+		collectionKey,
+		itemId,
+		segmentsExperienceId,
+	}) {
+		return serviceFetch(config.getEditCollectionConfigurationURL, {
+			body: {
+				collectionKey,
+				itemId,
+				segmentsExperienceId,
 			},
 		});
 	},
@@ -46,6 +73,7 @@ export default {
 		numberOfPages,
 		onNetworkStatus,
 		paginationType,
+		segmentsExperienceId,
 		showAllItems,
 		templateKey,
 	}) {
@@ -66,6 +94,7 @@ export default {
 					numberOfItemsPerPage,
 					numberOfPages,
 					paginationType,
+					segmentsExperienceId,
 					showAllItems,
 					templateKey,
 				},
@@ -78,11 +107,26 @@ export default {
 		return serviceFetch(config.getCollectionFiltersURL, {}, () => {});
 	},
 
-	getCollectionItemCount({collection, onNetworkStatus}) {
+	/**
+	 * Get a collection item's count
+	 * @param {object} options
+	 * @param {string} options.classNameId
+	 * @param {string} options.classPK
+	 * @param {object} options.collection
+	 * @param {function} options.onNetworkStatus
+	 */
+	getCollectionItemCount({
+		classNameId,
+		classPK,
+		collection,
+		onNetworkStatus,
+	}) {
 		return serviceFetch(
 			config.getCollectionItemCountURL,
 			{
 				body: {
+					classNameId,
+					classPK,
 					layoutObjectReference: JSON.stringify(collection),
 				},
 			},
@@ -119,6 +163,18 @@ export default {
 		return serviceFetch(
 			config.getCollectionSupportedFiltersURL,
 			{body: {collections: JSON.stringify(collections)}},
+			() => {}
+		);
+	},
+
+	/**
+	 * @param {string} classPK
+	 * @returns {Promise<string[]>}
+	 */
+	getCollectionVariations(classPK) {
+		return serviceFetch(
+			config.getCollectionVariationsURL,
+			{body: {classPK}},
 			() => {}
 		);
 	},

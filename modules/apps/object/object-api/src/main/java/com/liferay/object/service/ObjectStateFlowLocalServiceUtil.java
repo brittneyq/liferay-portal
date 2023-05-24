@@ -51,6 +51,15 @@ public class ObjectStateFlowLocalServiceUtil {
 		return getService().addDefaultObjectStateFlow(objectField);
 	}
 
+	public static ObjectStateFlow addObjectStateFlow(
+			long userId, long objectFieldId,
+			List<com.liferay.object.model.ObjectState> objectStates)
+		throws PortalException {
+
+		return getService().addObjectStateFlow(
+			userId, objectFieldId, objectStates);
+	}
+
 	/**
 	 * Adds the object state flow to the database. Also notifies the appropriate model listeners.
 	 *
@@ -368,6 +377,10 @@ public class ObjectStateFlowLocalServiceUtil {
 
 	public static ObjectStateFlowLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(ObjectStateFlowLocalService service) {
+		_service = service;
 	}
 
 	private static volatile ObjectStateFlowLocalService _service;

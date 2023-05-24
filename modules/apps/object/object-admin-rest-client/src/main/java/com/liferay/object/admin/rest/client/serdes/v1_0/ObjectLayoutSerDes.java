@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -133,6 +132,22 @@ public class ObjectLayoutSerDes {
 			sb.append(_toJSON(objectLayout.getName()));
 		}
 
+		if (objectLayout.getObjectDefinitionExternalReferenceCode() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"objectDefinitionExternalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(
+				_escape(
+					objectLayout.getObjectDefinitionExternalReferenceCode()));
+
+			sb.append("\"");
+		}
+
 		if (objectLayout.getObjectDefinitionId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -236,6 +251,16 @@ public class ObjectLayoutSerDes {
 			map.put("name", String.valueOf(objectLayout.getName()));
 		}
 
+		if (objectLayout.getObjectDefinitionExternalReferenceCode() == null) {
+			map.put("objectDefinitionExternalReferenceCode", null);
+		}
+		else {
+			map.put(
+				"objectDefinitionExternalReferenceCode",
+				String.valueOf(
+					objectLayout.getObjectDefinitionExternalReferenceCode()));
+		}
+
 		if (objectLayout.getObjectDefinitionId() == null) {
 			map.put("objectDefinitionId", null);
 		}
@@ -316,6 +341,15 @@ public class ObjectLayoutSerDes {
 				}
 			}
 			else if (Objects.equals(
+						jsonParserFieldName,
+						"objectDefinitionExternalReferenceCode")) {
+
+				if (jsonParserFieldValue != null) {
+					objectLayout.setObjectDefinitionExternalReferenceCode(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
 						jsonParserFieldName, "objectDefinitionId")) {
 
 				if (jsonParserFieldValue != null) {
@@ -325,15 +359,18 @@ public class ObjectLayoutSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "objectLayoutTabs")) {
 				if (jsonParserFieldValue != null) {
-					objectLayout.setObjectLayoutTabs(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> ObjectLayoutTabSerDes.toDTO(
-								(String)object)
-						).toArray(
-							size -> new ObjectLayoutTab[size]
-						));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					ObjectLayoutTab[] objectLayoutTabsArray =
+						new ObjectLayoutTab[jsonParserFieldValues.length];
+
+					for (int i = 0; i < objectLayoutTabsArray.length; i++) {
+						objectLayoutTabsArray[i] = ObjectLayoutTabSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					objectLayout.setObjectLayoutTabs(objectLayoutTabsArray);
 				}
 			}
 		}

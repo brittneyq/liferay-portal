@@ -22,8 +22,6 @@ import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
-import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil;
@@ -35,6 +33,7 @@ import com.liferay.portal.templateparser.Transformer;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import com.liferay.portlet.display.template.constants.PortletDisplayTemplateConstants;
 import com.liferay.template.model.TemplateEntry;
+import com.liferay.template.transformer.TemplateNodeFactory;
 
 import java.util.Map;
 
@@ -52,16 +51,7 @@ public class TemplateDisplayTemplateTransformer {
 		_templateNodeFactory = templateNodeFactory;
 	}
 
-	public String transform() throws Exception {
-		ServiceContext serviceContext =
-			ServiceContextThreadLocal.getServiceContext();
-
-		if (serviceContext == null) {
-			return StringPool.BLANK;
-		}
-
-		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
-
+	public String transform(ThemeDisplay themeDisplay) throws Exception {
 		if (themeDisplay == null) {
 			return StringPool.BLANK;
 		}

@@ -28,7 +28,6 @@ import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -36,13 +35,14 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.constants.FriendlyURLResolverConstants;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -380,23 +380,22 @@ public class DLURLHelperImpl implements DLURLHelper {
 	protected void activate(
 		BundleContext bundleContext, Map<String, Object> properties) {
 
-		_dlFileVersionURLProviders =
-			ServiceTrackerMapFactory.openSingleValueMap(
-				bundleContext, DLFileVersionURLProvider.class, null,
-				(serviceReference, emitter) -> {
-					DLFileVersionURLProvider dlFileVersionURLProvider =
-						bundleContext.getService(serviceReference);
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, DLFileVersionURLProvider.class, null,
+			(serviceReference, emitter) -> {
+				DLFileVersionURLProvider dlFileVersionURLProvider =
+					bundleContext.getService(serviceReference);
 
-					List<DLFileVersionURLProvider.Type> types =
-						dlFileVersionURLProvider.getTypes();
+				List<DLFileVersionURLProvider.Type> types =
+					dlFileVersionURLProvider.getTypes();
 
-					types.forEach(emitter::emit);
-				});
+				types.forEach(emitter::emit);
+			});
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_dlFileVersionURLProviders.close();
+		_serviceTrackerMap.close();
 	}
 
 	private String _getDLFileVersionURLProviderURL(
@@ -404,7 +403,7 @@ public class DLURLHelperImpl implements DLURLHelper {
 		DLFileVersionURLProvider.Type type) {
 
 		DLFileVersionURLProvider dlFileVersionURLProvider =
-			_dlFileVersionURLProviders.getService(type);
+			_serviceTrackerMap.getService(type);
 
 		if (dlFileVersionURLProvider != null) {
 			String url = dlFileVersionURLProvider.getURL(
@@ -518,7 +517,7 @@ public class DLURLHelperImpl implements DLURLHelper {
 			fileName = _trashHelper.getOriginalTitle(fileEntry.getFileName());
 		}
 
-		sb.append(URLCodec.encodeURL(HtmlUtil.unescape(fileName)));
+		sb.append(URLCodec.encodeURL(_html.unescape(fileName), true));
 
 		sb.append(StringPool.SLASH);
 		sb.append(URLCodec.encodeURL(fileEntry.getUuid()));
@@ -547,10 +546,6 @@ public class DLURLHelperImpl implements DLURLHelper {
 	@Reference
 	private DLFileVersionPreviewLocalService _dlFileVersionPreviewLocalService;
 
-	private ServiceTrackerMap
-		<DLFileVersionURLProvider.Type, DLFileVersionURLProvider>
-			_dlFileVersionURLProviders;
-
 	@Reference
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
 
@@ -558,7 +553,14 @@ public class DLURLHelperImpl implements DLURLHelper {
 	private GroupLocalService _groupLocalService;
 
 	@Reference
+	private Html _html;
+
+	@Reference
 	private Portal _portal;
+
+	private ServiceTrackerMap
+		<DLFileVersionURLProvider.Type, DLFileVersionURLProvider>
+			_serviceTrackerMap;
 
 	@Reference
 	private TrashHelper _trashHelper;

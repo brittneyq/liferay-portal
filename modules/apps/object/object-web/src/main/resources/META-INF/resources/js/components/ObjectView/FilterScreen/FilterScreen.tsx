@@ -13,7 +13,7 @@
  */
 
 import {useModal} from '@clayui/modal';
-import {BuilderScreen} from '@liferay/object-js-components-web';
+import {BuilderScreen, REQUIRED_MSG} from '@liferay/object-js-components-web';
 import React, {useState} from 'react';
 
 import {
@@ -23,11 +23,15 @@ import {
 } from '../../ModalAddFilter';
 import {TYPES, useViewContext} from '../objectViewContext';
 
-const REQUIRED_MSG = Liferay.Language.get('required');
-
 export function FilterScreen() {
 	const [
-		{filterOperators, objectFields, objectView, workflowStatusJSONArray},
+		{
+			creationLanguageId,
+			filterOperators,
+			objectFields,
+			objectView,
+			workflowStatusJSONArray,
+		},
 		dispatch,
 	] = useViewContext();
 
@@ -73,6 +77,7 @@ export function FilterScreen() {
 		else {
 			dispatch({
 				payload: {
+					creationLanguageId,
 					filterType,
 					objectFieldName,
 					valueList,
@@ -108,7 +113,8 @@ export function FilterScreen() {
 		if (
 			selectedFilterType &&
 			(selectedFilterBy?.name === 'status' ||
-				selectedFilterBy?.businessType === 'Picklist') &&
+				selectedFilterBy?.businessType === 'Picklist' ||
+				selectedFilterBy?.businessType === 'Relationship') &&
 			!checkedItems.length
 		) {
 			currentErrors.items = REQUIRED_MSG;
@@ -122,6 +128,7 @@ export function FilterScreen() {
 	return (
 		<>
 			<BuilderScreen
+				creationLanguageId={creationLanguageId}
 				emptyState={{
 					buttonText: Liferay.Language.get('new-filter'),
 					description: Liferay.Language.get(
@@ -159,6 +166,7 @@ export function FilterScreen() {
 
 			{visibleModal && (
 				<ModalAddFilter
+					creationLanguageId={creationLanguageId}
 					currentFilters={objectViewFilterColumns}
 					disableDateValues
 					editingFilter={editingFilter}
@@ -173,11 +181,10 @@ export function FilterScreen() {
 										if (
 											objectField.businessType ===
 												'Picklist' ||
-											(Liferay.FeatureFlags[
-												'LPS-152650'
-											] &&
-												objectField.businessType ===
-													'Relationship') ||
+											objectField.businessType ===
+												'MultiselectPicklist' ||
+											objectField.businessType ===
+												'Relationship' ||
 											objectField.name === 'createDate' ||
 											objectField.name ===
 												'modifiedDate' ||

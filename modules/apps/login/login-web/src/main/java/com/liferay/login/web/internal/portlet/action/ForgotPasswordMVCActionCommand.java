@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PrefsProps;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -92,7 +93,11 @@ public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		try {
-			if (PropsValues.USERS_REMINDER_QUERIES_ENABLED) {
+			if (_prefsProps.getBoolean(
+					company.getCompanyId(),
+					PropsKeys.USERS_REMINDER_QUERIES_ENABLED,
+					PropsValues.USERS_REMINDER_QUERIES_ENABLED)) {
+
 				_checkReminderQueries(actionRequest, actionResponse);
 			}
 			else {
@@ -148,11 +153,6 @@ public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 		catch (Exception exception) {
 			throw new CaptchaConfigurationException(exception);
 		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setUserLocalService(UserLocalService userLocalService) {
-		_userLocalService = userLocalService;
 	}
 
 	private void _checkCaptcha(ActionRequest actionRequest)
@@ -284,26 +284,25 @@ public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		User defaultUser = _userLocalService.getDefaultUser(
+		User guestUser = _userLocalService.getGuestUser(
 			themeDisplay.getCompanyId());
 
 		Set<String> reminderQueryQuestions =
-			defaultUser.getReminderQueryQuestions();
+			guestUser.getReminderQueryQuestions();
 
 		if (!reminderQueryQuestions.isEmpty()) {
 			Iterator<String> iterator = reminderQueryQuestions.iterator();
 
-			defaultUser.setReminderQueryQuestion(iterator.next());
+			guestUser.setReminderQueryQuestion(iterator.next());
 		}
 		else {
-			defaultUser.setReminderQueryQuestion(
+			guestUser.setReminderQueryQuestion(
 				"what-is-your-library-card-number");
 		}
 
-		defaultUser.setReminderQueryAnswer(
-			defaultUser.getReminderQueryQuestion());
+		guestUser.setReminderQueryAnswer(guestUser.getReminderQueryQuestion());
 
-		return defaultUser;
+		return guestUser;
 	}
 
 	private void _sendPassword(
@@ -312,13 +311,19 @@ public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 
 		User user = _getUser(actionRequest);
 
-		if (PropsValues.USERS_REMINDER_QUERIES_ENABLED) {
-			if (user.isDefaultUser()) {
+		if (_prefsProps.getBoolean(
+				user.getCompanyId(), PropsKeys.USERS_REMINDER_QUERIES_ENABLED,
+				PropsValues.USERS_REMINDER_QUERIES_ENABLED)) {
+
+			if (user.isGuestUser()) {
 				throw new UserReminderQueryException(
 					"Reminder query answer does not match answer");
 			}
 
-			if (PropsValues.USERS_REMINDER_QUERIES_REQUIRED &&
+			if (_prefsProps.getBoolean(
+					user.getCompanyId(),
+					PropsKeys.USERS_REMINDER_QUERIES_REQUIRED,
+					PropsValues.USERS_REMINDER_QUERIES_REQUIRED) &&
 				!user.hasReminderQuery()) {
 
 				throw new RequiredReminderQueryException(
@@ -336,7 +341,7 @@ public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 
-		if (user.isDefaultUser()) {
+		if (user.isGuestUser()) {
 			SessionMessages.add(
 				_portal.getHttpServletRequest(actionRequest),
 				"forgotPasswordSent");
@@ -392,6 +397,10 @@ public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 	@Reference
 	private Portal _portal;
 
+	@Reference
+	private PrefsProps _prefsProps;
+
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

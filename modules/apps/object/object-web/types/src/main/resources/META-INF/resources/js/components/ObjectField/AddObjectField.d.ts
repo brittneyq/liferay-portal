@@ -14,15 +14,18 @@
 
 /// <reference types="react" />
 
+import './AddObjectField.scss';
 interface IProps {
 	apiURL: string;
-	objectDefinitionId: number;
+	creationLanguageId: Liferay.Language.Locale;
+	objectDefinitionExternalReferenceCode: string;
 	objectFieldTypes: ObjectFieldType[];
 	objectName: string;
 }
 export default function AddObjectField({
 	apiURL,
-	objectDefinitionId,
+	creationLanguageId,
+	objectDefinitionExternalReferenceCode,
 	objectFieldTypes,
 	objectName,
 }: IProps): JSX.Element;

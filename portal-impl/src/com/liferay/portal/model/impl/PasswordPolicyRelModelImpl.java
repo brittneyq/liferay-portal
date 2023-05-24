@@ -225,68 +225,86 @@ public class PasswordPolicyRelModelImpl
 	public Map<String, Function<PasswordPolicyRel, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<PasswordPolicyRel, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<PasswordPolicyRel, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<PasswordPolicyRel, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<PasswordPolicyRel, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<PasswordPolicyRel, Object>>();
-		Map<String, BiConsumer<PasswordPolicyRel, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap<String, BiConsumer<PasswordPolicyRel, ?>>();
+		private static final Map<String, Function<PasswordPolicyRel, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", PasswordPolicyRel::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<PasswordPolicyRel, Long>)
-				PasswordPolicyRel::setMvccVersion);
-		attributeGetterFunctions.put(
-			"passwordPolicyRelId", PasswordPolicyRel::getPasswordPolicyRelId);
-		attributeSetterBiConsumers.put(
-			"passwordPolicyRelId",
-			(BiConsumer<PasswordPolicyRel, Long>)
-				PasswordPolicyRel::setPasswordPolicyRelId);
-		attributeGetterFunctions.put(
-			"companyId", PasswordPolicyRel::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<PasswordPolicyRel, Long>)
-				PasswordPolicyRel::setCompanyId);
-		attributeGetterFunctions.put(
-			"passwordPolicyId", PasswordPolicyRel::getPasswordPolicyId);
-		attributeSetterBiConsumers.put(
-			"passwordPolicyId",
-			(BiConsumer<PasswordPolicyRel, Long>)
-				PasswordPolicyRel::setPasswordPolicyId);
-		attributeGetterFunctions.put(
-			"classNameId", PasswordPolicyRel::getClassNameId);
-		attributeSetterBiConsumers.put(
-			"classNameId",
-			(BiConsumer<PasswordPolicyRel, Long>)
-				PasswordPolicyRel::setClassNameId);
-		attributeGetterFunctions.put("classPK", PasswordPolicyRel::getClassPK);
-		attributeSetterBiConsumers.put(
-			"classPK",
-			(BiConsumer<PasswordPolicyRel, Long>)PasswordPolicyRel::setClassPK);
+		static {
+			Map<String, Function<PasswordPolicyRel, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<PasswordPolicyRel, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", PasswordPolicyRel::getMvccVersion);
+			attributeGetterFunctions.put(
+				"passwordPolicyRelId",
+				PasswordPolicyRel::getPasswordPolicyRelId);
+			attributeGetterFunctions.put(
+				"companyId", PasswordPolicyRel::getCompanyId);
+			attributeGetterFunctions.put(
+				"passwordPolicyId", PasswordPolicyRel::getPasswordPolicyId);
+			attributeGetterFunctions.put(
+				"classNameId", PasswordPolicyRel::getClassNameId);
+			attributeGetterFunctions.put(
+				"classPK", PasswordPolicyRel::getClassPK);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<PasswordPolicyRel, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<PasswordPolicyRel, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<PasswordPolicyRel, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<PasswordPolicyRel, Long>)
+					PasswordPolicyRel::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"passwordPolicyRelId",
+				(BiConsumer<PasswordPolicyRel, Long>)
+					PasswordPolicyRel::setPasswordPolicyRelId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<PasswordPolicyRel, Long>)
+					PasswordPolicyRel::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"passwordPolicyId",
+				(BiConsumer<PasswordPolicyRel, Long>)
+					PasswordPolicyRel::setPasswordPolicyId);
+			attributeSetterBiConsumers.put(
+				"classNameId",
+				(BiConsumer<PasswordPolicyRel, Long>)
+					PasswordPolicyRel::setClassNameId);
+			attributeSetterBiConsumers.put(
+				"classPK",
+				(BiConsumer<PasswordPolicyRel, Long>)
+					PasswordPolicyRel::setClassPK);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -650,37 +668,6 @@ public class PasswordPolicyRelModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<PasswordPolicyRel, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<PasswordPolicyRel, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<PasswordPolicyRel, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((PasswordPolicyRel)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, PasswordPolicyRel>
@@ -699,7 +686,8 @@ public class PasswordPolicyRelModelImpl
 
 	public <T> T getColumnValue(String columnName) {
 		Function<PasswordPolicyRel, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

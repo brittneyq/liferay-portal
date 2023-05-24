@@ -19,9 +19,9 @@ import com.liferay.asset.list.constants.AssetListPortletKeys;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.asset.list.service.AssetListEntryService;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eduardo García
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AssetListPortletKeys.ASSET_LIST,
 		"mvc.command.name=/asset_list/add_asset_list_entry_variation"
@@ -92,17 +91,21 @@ public class AddAssetListEntryVariationMVCActionCommand
 
 		sendRedirect(
 			actionRequest, actionResponse,
-			getRedirectURL(actionResponse, assetListEntryId, segmentsEntryId));
+			getRedirectURL(
+				actionRequest, actionResponse, assetListEntryId,
+				segmentsEntryId));
 	}
 
 	protected String getRedirectURL(
-		ActionResponse actionResponse, long assetListEntryId,
-		long segmentsEntryId) {
+		ActionRequest actionRequest, ActionResponse actionResponse,
+		long assetListEntryId, long segmentsEntryId) {
 
 		return PortletURLBuilder.createRenderURL(
 			_portal.getLiferayPortletResponse(actionResponse)
 		).setMVCPath(
 			"/edit_asset_list_entry.jsp"
+		).setBackURL(
+			ParamUtil.getString(actionRequest, "backURL")
 		).setParameter(
 			"assetListEntryId", assetListEntryId
 		).setParameter(

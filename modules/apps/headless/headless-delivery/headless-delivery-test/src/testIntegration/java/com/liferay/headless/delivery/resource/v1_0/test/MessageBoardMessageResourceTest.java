@@ -57,12 +57,41 @@ public class MessageBoardMessageResourceTest
 
 	@Override
 	@Test
+	public void testDeleteMessageBoardMessageMyRating() throws Exception {
+		super.testDeleteMessageBoardMessageMyRating();
+
+		MessageBoardMessage messageBoardMessage =
+			testDeleteMessageBoardMessageMyRating_addMessageBoardMessage();
+
+		assertHttpResponseStatusCode(
+			204,
+			messageBoardMessageResource.
+				deleteMessageBoardMessageMyRatingHttpResponse(
+					messageBoardMessage.getId()));
+		assertHttpResponseStatusCode(
+			404,
+			messageBoardMessageResource.
+				deleteMessageBoardMessageMyRatingHttpResponse(
+					messageBoardMessage.getId()));
+
+		MessageBoardMessage irrelevantMessageBoardMessage =
+			randomIrrelevantMessageBoardMessage();
+
+		assertHttpResponseStatusCode(
+			404,
+			messageBoardMessageResource.
+				deleteMessageBoardMessageMyRatingHttpResponse(
+					irrelevantMessageBoardMessage.getId()));
+	}
+
+	@Override
+	@Test
 	public void testGetMessageBoardMessageMessageBoardMessagesPage()
 		throws Exception {
 
 		super.testGetMessageBoardMessageMessageBoardMessagesPage();
 
-		// Message board messages in a tree hiearchy
+		// Message board messages in a tree hierarchy
 
 		Long parentMessageBoardMessageId =
 			testGetMessageBoardMessageMessageBoardMessagesPage_getParentMessageBoardMessageId();
@@ -138,8 +167,10 @@ public class MessageBoardMessageResourceTest
 	@Override
 	protected String[] getIgnoredEntityFieldNames() {
 		return new String[] {
-			"creatorId", "dateCreated", "dateModified", "messageBoardSectionId",
-			"messageBoardThreadId", "parentMessageBoardMessageId", "ratingValue"
+			"childMessagesCount", "creatorId", "dateCreated", "dateModified",
+			"lastPostDate", "messageBoardSectionId", "messageBoardThreadId",
+			"modified", "parentMessageBoardMessageId", "ratingsStatTotalScore",
+			"ratingValue", "viewCount"
 		};
 	}
 
@@ -166,7 +197,12 @@ public class MessageBoardMessageResourceTest
 			testDeleteMessageBoardMessageMyRating_addMessageBoardMessage()
 		throws Exception {
 
-		return _addMessageBoardMessage();
+		MessageBoardMessage messageBoardMessage = _addMessageBoardMessage();
+
+		messageBoardMessageResource.putMessageBoardMessageMyRating(
+			messageBoardMessage.getId(), randomRating());
+
+		return messageBoardMessage;
 	}
 
 	@Override
@@ -333,7 +369,7 @@ public class MessageBoardMessageResourceTest
 
 		MBMessage mbMessage = MBTestUtil.addMessage(
 			siteId,
-			UserLocalServiceUtil.getDefaultUserId(testGroup.getCompanyId()),
+			UserLocalServiceUtil.getGuestUserId(testGroup.getCompanyId()),
 			subject, body);
 
 		_mbThread = mbMessage.getThread();

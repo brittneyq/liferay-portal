@@ -37,10 +37,11 @@ public class KBArticleNavigationFragmentDisplayContext {
 
 	public KBArticleNavigationFragmentDisplayContext(
 		InfoItemFriendlyURLProvider<KBArticle> infoItemFriendlyURLProvider,
-		KBArticle kbArticle) {
+		KBArticle kbArticle, int maxNestingLevel) {
 
 		_infoItemFriendlyURLProvider = infoItemFriendlyURLProvider;
 		_kbArticle = kbArticle;
+		_maxNestingLevel = maxNestingLevel;
 	}
 
 	public String getKBArticleCssClass(KBArticle kbArticle, int level)
@@ -73,10 +74,10 @@ public class KBArticleNavigationFragmentDisplayContext {
 		throws PortalException {
 
 		if (level == 0) {
-			return Collections.singletonList(
-				KBArticleServiceUtil.getLatestKBArticle(
-					getKBArticleRootResourcePrimKey(),
-					WorkflowConstants.STATUS_APPROVED));
+			return KBArticleServiceUtil.getKBArticles(
+				_kbArticle.getGroupId(), _kbArticle.getKbFolderId(),
+				WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, new KBArticlePriorityComparator(true));
 		}
 
 		if (_isMaxNestingLevelReached(level)) {
@@ -152,18 +153,17 @@ public class KBArticleNavigationFragmentDisplayContext {
 	}
 
 	private boolean _isMaxNestingLevelReached(int level) {
-		if ((_MAX_NESTING_LEVEL - level) <= 1) {
+		if ((_maxNestingLevel - level) < 1) {
 			return true;
 		}
 
 		return false;
 	}
 
-	private static final int _MAX_NESTING_LEVEL = 3;
-
 	private final InfoItemFriendlyURLProvider<KBArticle>
 		_infoItemFriendlyURLProvider;
 	private final KBArticle _kbArticle;
 	private List<Long> _kbArticleAncestorResourcePrimKeys;
+	private final int _maxNestingLevel;
 
 }

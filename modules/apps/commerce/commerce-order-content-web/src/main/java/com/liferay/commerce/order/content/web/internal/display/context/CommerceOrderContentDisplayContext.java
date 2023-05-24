@@ -15,14 +15,12 @@
 package com.liferay.commerce.order.content.web.internal.display.context;
 
 import com.liferay.account.model.AccountEntry;
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
-import com.liferay.commerce.account.model.CommerceAccount;
 import com.liferay.commerce.configuration.CommerceOrderFieldsConfiguration;
 import com.liferay.commerce.constants.CommerceConstants;
 import com.liferay.commerce.constants.CommerceOrderActionKeys;
 import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.constants.CommerceOrderPaymentConstants;
-import com.liferay.commerce.constants.CommercePaymentConstants;
+import com.liferay.commerce.constants.CommercePaymentMethodConstants;
 import com.liferay.commerce.constants.CommercePortletKeys;
 import com.liferay.commerce.constants.CommerceShipmentConstants;
 import com.liferay.commerce.constants.CommerceWebKeys;
@@ -32,6 +30,7 @@ import com.liferay.commerce.frontend.model.HeaderActionModel;
 import com.liferay.commerce.frontend.model.StepModel;
 import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceOrderNote;
 import com.liferay.commerce.model.CommerceOrderType;
 import com.liferay.commerce.model.CommerceShipmentItem;
@@ -50,6 +49,7 @@ import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelLocalSe
 import com.liferay.commerce.percentage.PercentageFormatter;
 import com.liferay.commerce.price.CommerceOrderPrice;
 import com.liferay.commerce.price.CommerceOrderPriceCalculation;
+import com.liferay.commerce.product.constants.CommerceChannelConstants;
 import com.liferay.commerce.product.display.context.helper.CPRequestHelper;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
@@ -67,21 +67,23 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemBuilder;
 import com.liferay.item.selector.ItemSelector;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -143,6 +145,7 @@ public class CommerceOrderContentDisplayContext {
 			CommercePaymentMethodRegistry commercePaymentMethodRegistry,
 			CommerceShipmentItemService commerceShipmentItemService,
 			CommerceTermEntryService commerceTermEntryService,
+			ConfigurationProvider configurationProvider,
 			DLAppLocalService dlAppLocalService,
 			HttpServletRequest httpServletRequest, ItemSelector itemSelector,
 			ModelResourcePermission<CommerceOrder> modelResourcePermission,
@@ -165,6 +168,7 @@ public class CommerceOrderContentDisplayContext {
 		_commercePaymentMethodRegistry = commercePaymentMethodRegistry;
 		_commerceShipmentItemService = commerceShipmentItemService;
 		_commerceTermEntryService = commerceTermEntryService;
+		_configurationProvider = configurationProvider;
 		_dlAppLocalService = dlAppLocalService;
 		_httpServletRequest = httpServletRequest;
 		_itemSelector = itemSelector;
@@ -185,13 +189,13 @@ public class CommerceOrderContentDisplayContext {
 			DateFormat.MEDIUM, themeDisplay.getLocale(),
 			themeDisplay.getTimeZone());
 
-		_commerceContext = (CommerceContext)_httpServletRequest.getAttribute(
+		_commerceContext = (CommerceContext)httpServletRequest.getAttribute(
 			CommerceWebKeys.COMMERCE_CONTEXT);
 
-		_commerceAccount = _commerceContext.getCommerceAccount();
+		_accountEntry = _commerceContext.getAccountEntry();
 
 		_commerceOrderNoteId = ParamUtil.getLong(
-			_httpServletRequest, "commerceOrderNoteId");
+			httpServletRequest, "commerceOrderNoteId");
 	}
 
 	public CommerceChannel fetchCommerceChannel() {
@@ -207,26 +211,28 @@ public class CommerceOrderContentDisplayContext {
 		return _commerceOrderDateFormatDate.format(date);
 	}
 
+	public AccountEntry getAccountEntry() {
+		return _accountEntry;
+	}
+
 	public List<CommerceAddress> getBillingCommerceAddresses(
-			long commerceAccountId, long companyId)
+			long commerceAccountId)
 		throws PortalException {
 
 		return _commerceAddressService.getBillingCommerceAddresses(
-			companyId, AccountEntry.class.getName(), commerceAccountId);
-	}
-
-	public CommerceAccount getCommerceAccount() {
-		return _commerceAccount;
+			_commerceContext.getCommerceChannelId(),
+			AccountEntry.class.getName(), commerceAccountId, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
 	}
 
 	public long getCommerceAccountId() {
-		long commerceAccountId = 0;
+		long accountEntryId = 0;
 
-		if (_commerceAccount != null) {
-			commerceAccountId = _commerceAccount.getCommerceAccountId();
+		if (_accountEntry != null) {
+			accountEntryId = _accountEntry.getAccountEntryId();
 		}
 
-		return commerceAccountId;
+		return accountEntryId;
 	}
 
 	public String getCommerceAccountThumbnailURL() throws PortalException {
@@ -236,7 +242,7 @@ public class CommerceOrderContentDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		CommerceAccount commerceAccount = commerceOrder.getCommerceAccount();
+		AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
 		ThemeDisplay themeDisplay = _cpRequestHelper.getThemeDisplay();
 
@@ -244,13 +250,12 @@ public class CommerceOrderContentDisplayContext {
 
 		sb.append(themeDisplay.getPathImage());
 		sb.append("/organization_logo?img_id=");
-		sb.append(commerceAccount.getLogoId());
+		sb.append(accountEntry.getLogoId());
 
-		if (commerceAccount.getLogoId() > 0) {
+		if (accountEntry.getLogoId() > 0) {
 			sb.append("&t=");
 			sb.append(
-				WebServerServletTokenUtil.getToken(
-					commerceAccount.getLogoId()));
+				WebServerServletTokenUtil.getToken(accountEntry.getLogoId()));
 		}
 
 		return sb.toString();
@@ -845,7 +850,8 @@ public class CommerceOrderContentDisplayContext {
 		}
 
 		List<CommerceOrderStatus> commerceOrderStatuses =
-			_commerceOrderStatusRegistry.getCommerceOrderStatuses();
+			_commerceOrderStatusRegistry.getCommerceOrderStatuses(
+				commerceOrder);
 
 		for (CommerceOrderStatus commerceOrderStatus : commerceOrderStatuses) {
 			if (((commerceOrderStatus.getKey() ==
@@ -968,11 +974,13 @@ public class CommerceOrderContentDisplayContext {
 	}
 
 	public List<CommerceAddress> getShippingCommerceAddresses(
-			long commerceAccountId, long companyId)
+			long commerceAccountId)
 		throws PortalException {
 
 		return _commerceAddressService.getShippingCommerceAddresses(
-			companyId, AccountEntry.class.getName(), commerceAccountId);
+			_commerceContext.getCommerceChannelId(),
+			AccountEntry.class.getName(), commerceAccountId, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
 	}
 
 	public PortletURL getTransitionOrderPortletURL() throws PortalException {
@@ -1020,6 +1028,18 @@ public class CommerceOrderContentDisplayContext {
 			_cpRequestHelper.getPermissionChecker(), commerceOrderId, actionId);
 	}
 
+	public boolean hasPermission(AccountEntry accountEntry, String actionId)
+		throws PortalException {
+
+		if (accountEntry == null) {
+			return false;
+		}
+
+		return _portletResourcePermission.contains(
+			_cpRequestHelper.getPermissionChecker(),
+			_accountEntry.getAccountEntryGroupId(), actionId);
+	}
+
 	public boolean hasPermission(String actionId) {
 		return _portletResourcePermission.contains(
 			_cpRequestHelper.getPermissionChecker(),
@@ -1027,15 +1047,12 @@ public class CommerceOrderContentDisplayContext {
 	}
 
 	public boolean hasViewBillingAddressPermission(
-			PermissionChecker permissionChecker,
-			CommerceAccount commerceAccount)
+			PermissionChecker permissionChecker, AccountEntry accountEntry)
 		throws PortalException {
 
-		if ((commerceAccount.getType() ==
-				CommerceAccountConstants.ACCOUNT_TYPE_GUEST) ||
-			commerceAccount.isPersonalAccount() ||
+		if (accountEntry.isGuestAccount() || accountEntry.isPersonalAccount() ||
 			_portletResourcePermission.contains(
-				permissionChecker, commerceAccount.getCommerceAccountGroup(),
+				permissionChecker, accountEntry.getAccountEntryGroup(),
 				CommerceOrderActionKeys.VIEW_BILLING_ADDRESS)) {
 
 			return true;
@@ -1046,7 +1063,7 @@ public class CommerceOrderContentDisplayContext {
 
 	public boolean isCommerceSiteTypeB2C() {
 		if (_commerceContext.getCommerceSiteType() ==
-				CommerceAccountConstants.SITE_TYPE_B2C) {
+				CommerceChannelConstants.SITE_TYPE_B2C) {
 
 			return true;
 		}
@@ -1059,6 +1076,21 @@ public class CommerceOrderContentDisplayContext {
 
 		return portletName.equals(
 			CommercePortletKeys.COMMERCE_OPEN_ORDER_CONTENT);
+	}
+
+	public boolean isRequestQuoteEnabled() throws PortalException {
+		if (!FeatureFlagManagerUtil.isEnabled("COMMERCE-11028")) {
+			return false;
+		}
+
+		CommerceOrderFieldsConfiguration commerceOrderFieldsConfiguration =
+			_getCommerceOrderFieldsConfiguration();
+
+		if (commerceOrderFieldsConfiguration == null) {
+			return false;
+		}
+
+		return commerceOrderFieldsConfiguration.requestQuoteEnabled();
 	}
 
 	public boolean isShowCommerceOrderCreateTime() throws PortalException {
@@ -1104,6 +1136,47 @@ public class CommerceOrderContentDisplayContext {
 		}
 
 		return false;
+	}
+
+	public boolean isValidCommerceOrder() throws PortalException {
+		CommerceOrder commerceOrder = getCommerceOrder();
+
+		if (commerceOrder == null) {
+			return false;
+		}
+
+		List<CommerceOrderItem> commerceOrderItems =
+			commerceOrder.getCommerceOrderItems();
+
+		if (commerceOrderItems.isEmpty()) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private CommerceOrderFieldsConfiguration
+			_getCommerceOrderFieldsConfiguration()
+		throws PortalException {
+
+		if (_commerceOrderFieldsConfiguration != null) {
+			return _commerceOrderFieldsConfiguration;
+		}
+
+		CommerceChannel commerceChannel = fetchCommerceChannel();
+
+		if (commerceChannel == null) {
+			return null;
+		}
+
+		_commerceOrderFieldsConfiguration =
+			_configurationProvider.getConfiguration(
+				CommerceOrderFieldsConfiguration.class,
+				new GroupServiceSettingsLocator(
+					commerceChannel.getGroupId(),
+					CommerceConstants.SERVICE_NAME_COMMERCE_ORDER_FIELDS));
+
+		return _commerceOrderFieldsConfiguration;
 	}
 
 	private List<StepModel> _getWorkflowSteps(CommerceOrder commerceOrder) {
@@ -1175,20 +1248,21 @@ public class CommerceOrderContentDisplayContext {
 				commercePaymentMethodKey);
 
 		return ArrayUtil.contains(
-			CommercePaymentConstants.COMMERCE_PAYMENT_METHOD_TYPES_ONLINE,
+			CommercePaymentMethodConstants.TYPES_ONLINE,
 			commercePaymentMethod.getPaymentType());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceOrderContentDisplayContext.class);
 
-	private final CommerceAccount _commerceAccount;
+	private final AccountEntry _accountEntry;
 	private final CommerceAddressService _commerceAddressService;
 	private final CommerceChannelLocalService _commerceChannelLocalService;
 	private final CommerceContext _commerceContext;
 	private final Format _commerceOrderDateFormatDate;
 	private final Format _commerceOrderDateFormatTime;
 	private final CommerceOrderEngine _commerceOrderEngine;
+	private CommerceOrderFieldsConfiguration _commerceOrderFieldsConfiguration;
 	private final CommerceOrderHttpHelper _commerceOrderHttpHelper;
 	private final CommerceOrderImporterTypeRegistry
 		_commerceOrderImporterTypeRegistry;
@@ -1204,6 +1278,7 @@ public class CommerceOrderContentDisplayContext {
 	private final CommercePaymentMethodRegistry _commercePaymentMethodRegistry;
 	private final CommerceShipmentItemService _commerceShipmentItemService;
 	private final CommerceTermEntryService _commerceTermEntryService;
+	private final ConfigurationProvider _configurationProvider;
 	private final CPRequestHelper _cpRequestHelper;
 	private final DLAppLocalService _dlAppLocalService;
 	private final HttpServletRequest _httpServletRequest;

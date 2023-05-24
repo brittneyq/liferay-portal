@@ -74,10 +74,10 @@ public class CommerceTierPriceEntryLocalServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		User defaultUser = _company.getDefaultUser();
+		User guestUser = _company.getGuestUser();
 
 		_group = GroupTestUtil.addGroup(
-			_company.getCompanyId(), defaultUser.getUserId(), 0);
+			_company.getCompanyId(), guestUser.getUserId(), 0);
 	}
 
 	@After
@@ -394,7 +394,7 @@ public class CommerceTierPriceEntryLocalServiceTest {
 
 		CommercePriceEntry actualCommercePriceEntry =
 			_commercePriceEntryLocalService.fetchByExternalReferenceCode(
-				_group.getCompanyId(), priceEntryExternalReferenceCode);
+				priceEntryExternalReferenceCode, _group.getCompanyId());
 
 		Assert.assertThat(
 			actualCommercePriceEntry.isHasTierPrice(),

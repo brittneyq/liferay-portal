@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		LayoutSEOSiteModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.layout.seo.model.impl.LayoutSEOSiteImpl",
+		"table.name=LayoutSEOSite"
+	},
+	service = ArgumentsResolver.class
 )
 public class LayoutSEOSiteModelArgumentsResolver implements ArgumentsResolver {
 

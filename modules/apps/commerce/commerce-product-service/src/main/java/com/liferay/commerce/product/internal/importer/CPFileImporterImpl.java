@@ -41,7 +41,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -73,7 +72,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizer;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -108,7 +106,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Marco Leo
  */
-@Component(enabled = false, immediate = true, service = CPFileImporter.class)
+@Component(service = CPFileImporter.class)
 public class CPFileImporterImpl implements CPFileImporter {
 
 	public static final String GROUP_ID_PLACEHOLDER = "[$GROUP_ID$]";
@@ -372,10 +370,11 @@ public class CPFileImporterImpl implements CPFileImporter {
 			null, serviceContext.getUserId(), serviceContext.getScopeGroupId(),
 			0L, JournalArticleConstants.CLASS_NAME_ID_DEFAULT, 0L, articleId,
 			false, 1, titleMap, descriptionMap, titleMap, content,
-			ddmStructureKey, ddmTemplateKey, StringPool.BLANK, displayDateMonth,
-			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
-			0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false,
-			StringPool.BLANK, null, null, StringPool.BLANK, serviceContext);
+			ddmStructure.getStructureId(), ddmTemplateKey, StringPool.BLANK,
+			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
+			displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true,
+			false, StringPool.BLANK, null, null, StringPool.BLANK,
+			serviceContext);
 
 		JSONArray permissionsJSONArray = jsonObject.getJSONArray("permissions");
 
@@ -437,7 +436,7 @@ public class CPFileImporterImpl implements CPFileImporter {
 
 			InputStream inputStream = classLoader.getResourceAsStream(filePath);
 
-			byte[] byteArray = FileUtil.getBytes(inputStream);
+			byte[] byteArray = _file.getBytes(inputStream);
 
 			layout = _layoutLocalService.updateIconImage(
 				layout.getPlid(), byteArray);
@@ -611,7 +610,7 @@ public class CPFileImporterImpl implements CPFileImporter {
 
 		String mimeType = MimeTypesUtil.getContentType(fileName);
 
-		byte[] byteArray = FileUtil.getBytes(inputStream);
+		byte[] byteArray = _file.getBytes(inputStream);
 
 		return _dlAppLocalService.addFileEntry(
 			null, serviceContext.getUserId(), serviceContext.getScopeGroupId(),
@@ -970,7 +969,7 @@ public class CPFileImporterImpl implements CPFileImporter {
 		throws Exception {
 
 		if (jsonArray == null) {
-			jsonArray = JSONFactoryUtil.createJSONArray(
+			jsonArray = _jsonFactory.createJSONArray(
 				"[{\"actionIds\": [\"VIEW\"], \"roleName\": \"Site Member\"," +
 					"\"scope\": 4}]");
 		}
@@ -1025,6 +1024,9 @@ public class CPFileImporterImpl implements CPFileImporter {
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private com.liferay.portal.kernel.util.File _file;
 
 	@Reference
 	private FriendlyURLNormalizer _friendlyURLNormalizer;

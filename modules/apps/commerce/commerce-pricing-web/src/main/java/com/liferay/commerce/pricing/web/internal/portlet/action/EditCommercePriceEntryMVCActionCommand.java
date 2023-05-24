@@ -48,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CommercePricingPortletKeys.COMMERCE_PRICE_LIST,
 		"javax.portlet.name=" + CommercePricingPortletKeys.COMMERCE_PROMOTION,
@@ -85,8 +84,9 @@ public class EditCommercePriceEntryMVCActionCommand
 				addCPInstanceId);
 
 			_commercePriceEntryService.addCommercePriceEntry(
-				addCPInstanceId, commercePriceListId, cpInstance.getPrice(),
-				cpInstance.getPromoPrice(), serviceContext);
+				null, addCPInstanceId, commercePriceListId,
+				cpInstance.getPrice(), cpInstance.getPromoPrice(),
+				serviceContext);
 		}
 	}
 
@@ -226,12 +226,12 @@ public class EditCommercePriceEntryMVCActionCommand
 			CommercePriceEntry.class.getName(), actionRequest);
 
 		return _commercePriceEntryService.updateCommercePriceEntry(
-			commercePriceEntryId, price, !overrideDiscount, discountLevel1,
-			discountLevel2, discountLevel3, discountLevel4, bulkPricing,
+			commercePriceEntryId, bulkPricing, !overrideDiscount,
+			discountLevel1, discountLevel2, discountLevel3, discountLevel4,
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, expirationDateMonth, expirationDateDay,
 			expirationDateYear, expirationDateHour, expirationDateMinute,
-			neverExpire, serviceContext);
+			neverExpire, price, false, serviceContext);
 	}
 
 	@Reference

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.model.ListTypeConstants;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
@@ -380,12 +381,19 @@ public class UserSearchFixture {
 
 		_permissionChecker = PermissionThreadLocal.getPermissionChecker();
 
+		User user = TestPropsValues.getUser();
+
 		PermissionThreadLocal.setPermissionChecker(
 			new DummyPermissionChecker() {
 
 				@Override
 				public long getCompanyId() {
 					return _companyId;
+				}
+
+				@Override
+				public User getUser() {
+					return user;
 				}
 
 				@Override
@@ -526,10 +534,10 @@ public class UserSearchFixture {
 				userBlueprint.getPrefixId(), userBlueprint.getSuffixId(),
 				userBlueprint.isMale(), userBlueprint.getBirthdayMonth(),
 				userBlueprint.getBirthdayDay(), userBlueprint.getBirthdayYear(),
-				userBlueprint.getJobTitle(), userBlueprint.getGroupIds(),
-				userBlueprint.getOrganizationIds(), userBlueprint.getRoleIds(),
-				userBlueprint.getUserGroupIds(), userBlueprint.isSendMail(),
-				userBlueprint.getServiceContext());
+				userBlueprint.getJobTitle(), UserConstants.TYPE_REGULAR,
+				userBlueprint.getGroupIds(), userBlueprint.getOrganizationIds(),
+				userBlueprint.getRoleIds(), userBlueprint.getUserGroupIds(),
+				userBlueprint.isSendMail(), userBlueprint.getServiceContext());
 		}
 		catch (PortalException portalException) {
 			throw new RuntimeException(portalException);

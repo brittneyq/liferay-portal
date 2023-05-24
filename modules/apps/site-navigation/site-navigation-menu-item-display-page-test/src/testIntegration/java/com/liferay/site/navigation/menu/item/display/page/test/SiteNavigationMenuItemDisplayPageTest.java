@@ -24,10 +24,10 @@ import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemFieldValues;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.layout.display.page.LayoutDisplayPageInfoItemFieldValuesProvider;
-import com.liferay.layout.display.page.LayoutDisplayPageInfoItemFieldValuesProviderTracker;
+import com.liferay.layout.display.page.LayoutDisplayPageInfoItemFieldValuesProviderRegistry;
 import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProvider;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.info.item.capability.DisplayPageInfoItemCapability;
@@ -69,8 +69,6 @@ import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -175,7 +173,7 @@ public class SiteNavigationMenuItemDisplayPageTest {
 
 		LayoutDisplayPageInfoItemFieldValuesProvider
 			assetCategoryLayoutDisplayPageInfoItemFieldValuesProvider =
-				_layoutDisplayPageInfoItemFieldValuesProviderTracker.
+				_layoutDisplayPageInfoItemFieldValuesProviderRegistry.
 					getLayoutDisplayPageInfoItemFieldValuesProvider(
 						AssetCategory.class.getName());
 
@@ -217,7 +215,7 @@ public class SiteNavigationMenuItemDisplayPageTest {
 	@Test
 	public void testSiteNavigationMenuItemDisplayPageTypes() {
 		for (InfoItemClassDetails infoItemClassDetails :
-				_infoItemServiceTracker.getInfoItemClassDetails(
+				_infoItemServiceRegistry.getInfoItemClassDetails(
 					DisplayPageInfoItemCapability.KEY)) {
 
 			Assert.assertNotNull(
@@ -355,16 +353,15 @@ public class SiteNavigationMenuItemDisplayPageTest {
 		Locale defaultLocale = _portal.getSiteDefaultLocale(
 			_group.getGroupId());
 
-		Set<Locale> locales = LanguageUtil.getAvailableLocales();
+		Locale nondefaultLocale = null;
 
-		Stream<Locale> stream = locales.stream();
+		for (Locale locale : LanguageUtil.getAvailableLocales()) {
+			if (!Objects.equals(defaultLocale, locale)) {
+				nondefaultLocale = locale;
 
-		Locale nondefaultLocale = stream.filter(
-			locale -> !Objects.equals(defaultLocale, locale)
-		).findFirst(
-		).orElse(
-			null
-		);
+				break;
+			}
+		}
 
 		Assert.assertNotNull(nondefaultLocale);
 
@@ -396,16 +393,15 @@ public class SiteNavigationMenuItemDisplayPageTest {
 		Locale defaultLocale = _portal.getSiteDefaultLocale(
 			_group.getGroupId());
 
-		Set<Locale> locales = LanguageUtil.getAvailableLocales();
+		Locale nontranslatedLocale = null;
 
-		Stream<Locale> stream = locales.stream();
+		for (Locale locale : LanguageUtil.getAvailableLocales()) {
+			if (!Objects.equals(defaultLocale, locale)) {
+				nontranslatedLocale = locale;
 
-		Locale nontranslatedLocale = stream.filter(
-			locale -> !Objects.equals(defaultLocale, locale)
-		).findFirst(
-		).orElse(
-			null
-		);
+				break;
+			}
+		}
 
 		Assert.assertNotNull(nontranslatedLocale);
 
@@ -509,7 +505,7 @@ public class SiteNavigationMenuItemDisplayPageTest {
 					defaultLocale, AssetCategory.class.getName())
 			).put(
 				"useCustomName",
-				String.valueOf(!Objects.equals("{}", localizedNames))
+				String.valueOf(!Objects.equals(localizedNames, "{}"))
 			).buildString(),
 			_serviceContext);
 	}
@@ -548,11 +544,11 @@ public class SiteNavigationMenuItemDisplayPageTest {
 	private Group _group;
 
 	@Inject
-	private InfoItemServiceTracker _infoItemServiceTracker;
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Inject
-	private LayoutDisplayPageInfoItemFieldValuesProviderTracker
-		_layoutDisplayPageInfoItemFieldValuesProviderTracker;
+	private LayoutDisplayPageInfoItemFieldValuesProviderRegistry
+		_layoutDisplayPageInfoItemFieldValuesProviderRegistry;
 
 	@Inject
 	private LayoutPageTemplateEntryLocalService

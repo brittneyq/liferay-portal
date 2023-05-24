@@ -36,7 +36,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,6 +71,7 @@ public class TestrayAttachmentRecorder {
 				_recordJenkinsReport();
 			}
 			else {
+				_recordFailureMessages();
 				_recordLiferayLogs();
 				_recordLiferayOSGiLogs();
 				_recordPoshiReportFiles();
@@ -92,10 +95,9 @@ public class TestrayAttachmentRecorder {
 
 		_build = build;
 
-		BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase(
-			_build);
+		BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase(build);
 
-		String jobVariant = _build.getParameterValue("JOB_VARIANT");
+		String jobVariant = build.getParameterValue("JOB_VARIANT");
 
 		if (jobVariant == null) {
 			jobVariant = "";
@@ -368,6 +370,126 @@ public class TestrayAttachmentRecorder {
 		}
 	}
 
+	private void _recordFailureMessages() {
+		String batchName = null;
+
+		if (_build instanceof AxisBuild) {
+			AxisBuild axisBuild = (AxisBuild)_build;
+
+			batchName = axisBuild.getBatchName();
+		}
+		else if (_build instanceof DownstreamBuild) {
+			DownstreamBuild downstreamBuild = (DownstreamBuild)_build;
+
+			batchName = downstreamBuild.getBatchName();
+		}
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(batchName)) {
+			return;
+		}
+
+		if (!batchName.startsWith("integration-") &&
+			!batchName.startsWith("modules-integration-") &&
+			!batchName.startsWith("modules-unit-") &&
+			!batchName.startsWith("unit-")) {
+
+			return;
+		}
+
+		File testResultsFile = new File(
+			System.getenv("WORKSPACE"), "test-results/TESTS-TestSuites.xml");
+
+		if (!testResultsFile.exists()) {
+			return;
+		}
+
+		try {
+			Document document = Dom4JUtil.parse(
+				JenkinsResultsParserUtil.read(testResultsFile));
+
+			Element rootElement = document.getRootElement();
+
+			Map<String, List<Element>> testcaseElementsMap = new TreeMap<>();
+
+			for (Element testsuiteElement : rootElement.elements("testsuite")) {
+				for (Element testcaseElement :
+						testsuiteElement.elements("testcase")) {
+
+					if (testcaseElement.element("failure") == null) {
+						continue;
+					}
+
+					String testClassName = testcaseElement.attributeValue(
+						"classname");
+
+					if (testClassName.contains("$")) {
+						testClassName = testClassName.substring(
+							0, testClassName.indexOf("$"));
+					}
+
+					List<Element> testcaseElements = testcaseElementsMap.get(
+						testClassName);
+
+					if (testcaseElements == null) {
+						testcaseElements = new ArrayList<>();
+
+						testcaseElementsMap.put(
+							testClassName, testcaseElements);
+					}
+
+					testcaseElements.add(testcaseElement);
+				}
+			}
+
+			for (Map.Entry<String, List<Element>> testcaseElementsEntry :
+					testcaseElementsMap.entrySet()) {
+
+				StringBuilder sb = new StringBuilder();
+
+				List<Element> testcaseElements =
+					testcaseElementsEntry.getValue();
+
+				for (Element testcaseElement : testcaseElements) {
+					sb.append("##\n## ");
+					sb.append(testcaseElement.attributeValue("classname"));
+					sb.append(" > ");
+					sb.append(testcaseElement.attributeValue("name"));
+					sb.append("\n##\n\n");
+
+					Element failureElement = testcaseElement.element("failure");
+
+					if (failureElement == null) {
+						sb.append("\tFailed for unknown reason\n\n");
+
+						continue;
+					}
+
+					String failedElementText = failureElement.getText();
+
+					for (String line : failedElementText.split("\n")) {
+						sb.append("\t");
+						sb.append(line);
+						sb.append("\n");
+					}
+
+					sb.append("\n\n");
+				}
+
+				if (sb.length() <= 0) {
+					continue;
+				}
+
+				JenkinsResultsParserUtil.write(
+					new File(
+						_getRecordedFilesBuildDir(),
+						testcaseElementsEntry.getKey() + ".txt"),
+					sb.toString());
+			}
+		}
+		catch (DocumentException | IOException exception) {
+		}
+	}
+
 	private void _recordJenkinsConsole() {
 		File jenkinsConsoleFile = new File(
 			_getRecordedFilesBuildDir(), "jenkins-console.txt");
@@ -554,6 +676,16 @@ public class TestrayAttachmentRecorder {
 
 			if (testResultsDir.exists()) {
 				testResultsDirs.add(testResultsDir);
+			}
+
+			File workspaceTestResultsDir = new File(
+				portalGitWorkingDirectory.getWorkingDirectory(),
+				JenkinsResultsParserUtil.combine(
+					"workspaces/", System.getenv("TEST_WORKSPACE_NAME"),
+					"/poshi/test-results"));
+
+			if (workspaceTestResultsDir.exists()) {
+				testResultsDirs.add(workspaceTestResultsDir);
 			}
 		}
 

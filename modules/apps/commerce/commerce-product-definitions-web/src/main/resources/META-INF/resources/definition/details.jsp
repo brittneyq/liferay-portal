@@ -91,7 +91,7 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 					</c:otherwise>
 				</c:choose>
 
-				<aui:input autoFocus="<%= true %>" defaultLanguageId="<%= defaultLanguageId %>" label="name" localized="<%= true %>" name="nameMapAsXML" type="text">
+				<aui:input defaultLanguageId="<%= defaultLanguageId %>" label="name" localized="<%= true %>" name="nameMapAsXML" type="text">
 					<aui:validator name="required" />
 				</aui:input>
 
@@ -129,9 +129,7 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 						defaultLanguageId="<%= defaultLanguageId %>"
 						inputAddon="<%= StringUtil.shorten(friendlyURLBase, 40) %>"
 						name="urlTitleMapAsXML"
-						xml="<%=
-							HttpComponentsUtil.decodeURL(cpDefinitionsDisplayContext.getUrlTitleMapAsXML())
-						%>"
+						xml="<%= HttpComponentsUtil.decodeURL(cpDefinitionsDisplayContext.getUrlTitleMapAsXML()) %>"
 					/>
 				</div>
 
@@ -302,7 +300,7 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 								fieldName: 'key',
 							},
 						],
-						spritemap: '<%= FrontendIconsUtil.getSpritemap(themeDisplay) %>',
+						spritemap: '<%= themeDisplay.getPathThemeSpritemap() %>',
 						titleLabel:
 							'<%= LanguageUtil.get(request, "add-existing-specification") %>',
 					});
@@ -334,7 +332,9 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 </aui:form>
 
 <c:if test="<%= cpDefinition == null %>">
-	<aui:script require="frontend-js-web/liferay/debounce/debounce.es as debounce, commerce-frontend-js/utilities/slugify as slugify">
+	<aui:script require="frontend-js-web/index as frontendJsWeb, commerce-frontend-js/utilities/slugify as slugify">
+		var {debounce} = frontendJsWeb;
+
 		var form = document.getElementById('<portlet:namespace />fm');
 
 		var nameInput = form.querySelector('#<portlet:namespace />nameMapAsXML');
@@ -350,7 +350,7 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 			urlTitleInputLocalized.updateInputLanguage(slug);
 		};
 
-		nameInput.addEventListener('input', debounce.default(handleOnNameInput, 200));
+		nameInput.addEventListener('input', debounce(handleOnNameInput, 200));
 	</aui:script>
 
 	<aui:script>

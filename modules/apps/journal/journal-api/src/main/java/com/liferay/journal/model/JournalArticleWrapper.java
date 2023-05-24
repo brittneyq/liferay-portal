@@ -64,7 +64,7 @@ public class JournalArticleWrapper
 		attributes.put("articleId", getArticleId());
 		attributes.put("version", getVersion());
 		attributes.put("urlTitle", getUrlTitle());
-		attributes.put("DDMStructureKey", getDDMStructureKey());
+		attributes.put("DDMStructureId", getDDMStructureId());
 		attributes.put("DDMTemplateKey", getDDMTemplateKey());
 		attributes.put("defaultLanguageId", getDefaultLanguageId());
 		attributes.put("layoutUuid", getLayoutUuid());
@@ -201,10 +201,10 @@ public class JournalArticleWrapper
 			setUrlTitle(urlTitle);
 		}
 
-		String DDMStructureKey = (String)attributes.get("DDMStructureKey");
+		Long DDMStructureId = (Long)attributes.get("DDMStructureId");
 
-		if (DDMStructureKey != null) {
-			setDDMStructureKey(DDMStructureKey);
+		if (DDMStructureId != null) {
+			setDDMStructureId(DDMStructureId);
 		}
 
 		String DDMTemplateKey = (String)attributes.get("DDMTemplateKey");
@@ -429,6 +429,13 @@ public class JournalArticleWrapper
 	}
 
 	@Override
+	public com.liferay.dynamic.data.mapping.storage.DDMFormValues
+		getDDMFormValues() {
+
+		return model.getDDMFormValues();
+	}
+
+	@Override
 	public com.liferay.dynamic.data.mapping.model.DDMStructure
 		getDDMStructure() {
 
@@ -436,13 +443,13 @@ public class JournalArticleWrapper
 	}
 
 	/**
-	 * Returns the ddm structure key of this journal article.
+	 * Returns the ddm structure ID of this journal article.
 	 *
-	 * @return the ddm structure key of this journal article
+	 * @return the ddm structure ID of this journal article
 	 */
 	@Override
-	public String getDDMStructureKey() {
-		return model.getDDMStructureKey();
+	public long getDDMStructureId() {
+		return model.getDDMStructureId();
 	}
 
 	@Override
@@ -523,6 +530,13 @@ public class JournalArticleWrapper
 	@Override
 	public com.liferay.portal.kernel.xml.Document getDocument() {
 		return model.getDocument();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.xml.Document getDocumentByLocale(
+		String languageId) {
+
+		return model.getDocumentByLocale(languageId);
 	}
 
 	/**
@@ -849,18 +863,6 @@ public class JournalArticleWrapper
 	}
 
 	/**
-	 * Returns the trash entry created when this journal article was moved to the Recycle Bin. The trash entry may belong to one of the ancestors of this journal article.
-	 *
-	 * @return the trash entry created when this journal article was moved to the Recycle Bin
-	 */
-	@Override
-	public com.liferay.trash.kernel.model.TrashEntry getTrashEntry()
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return model.getTrashEntry();
-	}
-
-	/**
 	 * Returns the class primary key of the trash entry for this journal article.
 	 *
 	 * @return the class primary key of the trash entry for this journal article
@@ -1033,26 +1035,6 @@ public class JournalArticleWrapper
 	}
 
 	/**
-	 * Returns <code>true</code> if the parent of this journal article is in the Recycle Bin.
-	 *
-	 * @return <code>true</code> if the parent of this journal article is in the Recycle Bin; <code>false</code> otherwise
-	 */
-	@Override
-	public boolean isInTrashContainer() {
-		return model.isInTrashContainer();
-	}
-
-	@Override
-	public boolean isInTrashExplicitly() {
-		return model.isInTrashExplicitly();
-	}
-
-	@Override
-	public boolean isInTrashImplicitly() {
-		return model.isInTrashImplicitly();
-	}
-
-	/**
 	 * Returns <code>true</code> if this journal article is pending.
 	 *
 	 * @return <code>true</code> if this journal article is pending; <code>false</code> otherwise
@@ -1158,13 +1140,13 @@ public class JournalArticleWrapper
 	}
 
 	/**
-	 * Sets the ddm structure key of this journal article.
+	 * Sets the ddm structure ID of this journal article.
 	 *
-	 * @param DDMStructureKey the ddm structure key of this journal article
+	 * @param DDMStructureId the ddm structure ID of this journal article
 	 */
 	@Override
-	public void setDDMStructureKey(String DDMStructureKey) {
-		model.setDDMStructureKey(DDMStructureKey);
+	public void setDDMStructureId(long DDMStructureId) {
+		model.setDDMStructureId(DDMStructureId);
 	}
 
 	/**
@@ -1502,6 +1484,11 @@ public class JournalArticleWrapper
 	@Override
 	public void setVersion(double version) {
 		model.setVersion(version);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

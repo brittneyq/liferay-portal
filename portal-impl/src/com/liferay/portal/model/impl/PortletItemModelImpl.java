@@ -242,76 +242,96 @@ public class PortletItemModelImpl
 	public Map<String, Function<PortletItem, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<PortletItem, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<PortletItem, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<PortletItem, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<PortletItem, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<PortletItem, Object>>();
-		Map<String, BiConsumer<PortletItem, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<PortletItem, ?>>();
+		private static final Map<String, Function<PortletItem, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", PortletItem::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<PortletItem, Long>)PortletItem::setMvccVersion);
-		attributeGetterFunctions.put(
-			"portletItemId", PortletItem::getPortletItemId);
-		attributeSetterBiConsumers.put(
-			"portletItemId",
-			(BiConsumer<PortletItem, Long>)PortletItem::setPortletItemId);
-		attributeGetterFunctions.put("groupId", PortletItem::getGroupId);
-		attributeSetterBiConsumers.put(
-			"groupId", (BiConsumer<PortletItem, Long>)PortletItem::setGroupId);
-		attributeGetterFunctions.put("companyId", PortletItem::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<PortletItem, Long>)PortletItem::setCompanyId);
-		attributeGetterFunctions.put("userId", PortletItem::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId", (BiConsumer<PortletItem, Long>)PortletItem::setUserId);
-		attributeGetterFunctions.put("userName", PortletItem::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<PortletItem, String>)PortletItem::setUserName);
-		attributeGetterFunctions.put("createDate", PortletItem::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<PortletItem, Date>)PortletItem::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate", PortletItem::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<PortletItem, Date>)PortletItem::setModifiedDate);
-		attributeGetterFunctions.put("name", PortletItem::getName);
-		attributeSetterBiConsumers.put(
-			"name", (BiConsumer<PortletItem, String>)PortletItem::setName);
-		attributeGetterFunctions.put("portletId", PortletItem::getPortletId);
-		attributeSetterBiConsumers.put(
-			"portletId",
-			(BiConsumer<PortletItem, String>)PortletItem::setPortletId);
-		attributeGetterFunctions.put(
-			"classNameId", PortletItem::getClassNameId);
-		attributeSetterBiConsumers.put(
-			"classNameId",
-			(BiConsumer<PortletItem, Long>)PortletItem::setClassNameId);
+		static {
+			Map<String, Function<PortletItem, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap<String, Function<PortletItem, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", PortletItem::getMvccVersion);
+			attributeGetterFunctions.put(
+				"portletItemId", PortletItem::getPortletItemId);
+			attributeGetterFunctions.put("groupId", PortletItem::getGroupId);
+			attributeGetterFunctions.put(
+				"companyId", PortletItem::getCompanyId);
+			attributeGetterFunctions.put("userId", PortletItem::getUserId);
+			attributeGetterFunctions.put("userName", PortletItem::getUserName);
+			attributeGetterFunctions.put(
+				"createDate", PortletItem::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", PortletItem::getModifiedDate);
+			attributeGetterFunctions.put("name", PortletItem::getName);
+			attributeGetterFunctions.put(
+				"portletId", PortletItem::getPortletId);
+			attributeGetterFunctions.put(
+				"classNameId", PortletItem::getClassNameId);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<PortletItem, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<PortletItem, ?>> attributeSetterBiConsumers =
+				new LinkedHashMap<String, BiConsumer<PortletItem, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<PortletItem, Long>)PortletItem::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"portletItemId",
+				(BiConsumer<PortletItem, Long>)PortletItem::setPortletItemId);
+			attributeSetterBiConsumers.put(
+				"groupId",
+				(BiConsumer<PortletItem, Long>)PortletItem::setGroupId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<PortletItem, Long>)PortletItem::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<PortletItem, Long>)PortletItem::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<PortletItem, String>)PortletItem::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<PortletItem, Date>)PortletItem::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<PortletItem, Date>)PortletItem::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"name", (BiConsumer<PortletItem, String>)PortletItem::setName);
+			attributeSetterBiConsumers.put(
+				"portletId",
+				(BiConsumer<PortletItem, String>)PortletItem::setPortletId);
+			attributeSetterBiConsumers.put(
+				"classNameId",
+				(BiConsumer<PortletItem, Long>)PortletItem::setClassNameId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -843,37 +863,6 @@ public class PortletItemModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<PortletItem, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<PortletItem, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<PortletItem, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((PortletItem)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, PortletItem>
@@ -897,8 +886,9 @@ public class PortletItemModelImpl
 	private long _classNameId;
 
 	public <T> T getColumnValue(String columnName) {
-		Function<PortletItem, Object> function = _attributeGetterFunctions.get(
-			columnName);
+		Function<PortletItem, Object> function =
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

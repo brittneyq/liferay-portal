@@ -15,6 +15,7 @@
 package com.liferay.portal.search.internal.instance.lifecycle;
 
 import com.liferay.portal.instance.lifecycle.BasePortalInstanceLifecycleListener;
+import com.liferay.portal.instance.lifecycle.EveryNodeEveryStartup;
 import com.liferay.portal.instance.lifecycle.PortalInstanceLifecycleListener;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -27,12 +28,13 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = PortalInstanceLifecycleListener.class)
+@Component(service = PortalInstanceLifecycleListener.class)
 public class SearchIndexPortalInstanceLifecycleListener
-	extends BasePortalInstanceLifecycleListener {
+	extends BasePortalInstanceLifecycleListener
+	implements EveryNodeEveryStartup {
 
 	@Override
-	public void portalInstanceRegistered(Company company) throws Exception {
+	public void portalInstancePreregistered(Company company) throws Exception {
 		try {
 			_searchEngineHelper.initialize(company.getCompanyId());
 		}

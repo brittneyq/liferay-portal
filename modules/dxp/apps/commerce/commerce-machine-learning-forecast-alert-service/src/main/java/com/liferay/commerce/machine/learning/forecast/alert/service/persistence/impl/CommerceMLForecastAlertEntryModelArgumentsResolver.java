@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CommerceMLForecastAlertEntryModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.commerce.machine.learning.forecast.alert.model.impl.CommerceMLForecastAlertEntryImpl",
+		"table.name=CommerceMLForecastAlertEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class CommerceMLForecastAlertEntryModelArgumentsResolver
 	implements ArgumentsResolver {

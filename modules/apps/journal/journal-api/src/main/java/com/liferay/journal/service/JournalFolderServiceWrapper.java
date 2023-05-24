@@ -192,6 +192,17 @@ public class JournalFolderServiceWrapper
 	}
 
 	@Override
+	public java.util.List<Object> getFoldersAndArticles(
+		long groupId, long userId, long folderId, long ddmStructureId,
+		int status, java.util.Locale locale, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
+
+		return _journalFolderService.getFoldersAndArticles(
+			groupId, userId, folderId, ddmStructureId, status, locale, start,
+			end, orderByComparator);
+	}
+
+	@Override
 	public int getFoldersAndArticlesCount(
 		long groupId, java.util.List<Long> folderIds, int status) {
 
@@ -219,6 +230,15 @@ public class JournalFolderServiceWrapper
 
 		return _journalFolderService.getFoldersAndArticlesCount(
 			groupId, userId, folderId, status);
+	}
+
+	@Override
+	public int getFoldersAndArticlesCount(
+		long groupId, long userId, long folderId, long ddmStructureId,
+		int status) {
+
+		return _journalFolderService.getFoldersAndArticlesCount(
+			groupId, userId, folderId, ddmStructureId, status);
 	}
 
 	@Override
@@ -306,6 +326,16 @@ public class JournalFolderServiceWrapper
 		return _journalFolderService.searchDDMStructures(
 			companyId, groupIds, folderId, restrictionType, keywords, start,
 			end, orderByComparator);
+	}
+
+	@Override
+	public int searchDDMStructuresCount(
+			long companyId, long[] groupIds, long folderId, int restrictionType,
+			String keywords)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalFolderService.searchDDMStructuresCount(
+			companyId, groupIds, folderId, restrictionType, keywords);
 	}
 
 	@Override

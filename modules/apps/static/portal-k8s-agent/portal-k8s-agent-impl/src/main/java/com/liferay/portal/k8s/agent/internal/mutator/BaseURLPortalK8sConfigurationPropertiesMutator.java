@@ -28,9 +28,7 @@ import org.osgi.service.component.propertytypes.ServiceRanking;
 /**
  * @author Raymond Augé
  */
-@Component(
-	immediate = true, service = PortalK8sConfigurationPropertiesMutator.class
-)
+@Component(service = PortalK8sConfigurationPropertiesMutator.class)
 @ServiceRanking(1800)
 public class BaseURLPortalK8sConfigurationPropertiesMutator
 	implements PortalK8sConfigurationPropertiesMutator {
@@ -44,7 +42,10 @@ public class BaseURLPortalK8sConfigurationPropertiesMutator
 			annotations.get("ext.lxc.liferay.com/mainDomain"));
 
 		if (Validator.isNotNull(mainDomain)) {
-			properties.put("baseURL", Http.HTTPS_WITH_SLASH.concat(mainDomain));
+			properties.put(
+				"baseURL", "$[conf:.serviceScheme]://$[conf:.serviceAddress]");
+			properties.put(".serviceAddress", mainDomain);
+			properties.put(".serviceScheme", Http.HTTPS);
 		}
 	}
 

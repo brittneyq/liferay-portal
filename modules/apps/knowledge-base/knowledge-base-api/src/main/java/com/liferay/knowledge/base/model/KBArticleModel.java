@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.ResourcedModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -39,8 +40,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface KBArticleModel
-	extends BaseModel<KBArticle>, MVCCModel, ResourcedModel, ShardedModel,
-			StagedGroupedModel, WorkflowedModel {
+	extends BaseModel<KBArticle>, CTModel<KBArticle>, MVCCModel, ResourcedModel,
+			ShardedModel, StagedGroupedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -53,6 +54,7 @@ public interface KBArticleModel
 	 *
 	 * @return the primary key of this kb article
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -60,6 +62,7 @@ public interface KBArticleModel
 	 *
 	 * @param primaryKey the primary key of this kb article
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
 
 	/**
@@ -77,6 +80,22 @@ public interface KBArticleModel
 	 */
 	@Override
 	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this kb article.
+	 *
+	 * @return the ct collection ID of this kb article
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this kb article.
+	 *
+	 * @param ctCollectionId the ct collection ID of this kb article
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this kb article.
@@ -473,6 +492,34 @@ public interface KBArticleModel
 	public void setSourceURL(String sourceURL);
 
 	/**
+	 * Returns the expiration date of this kb article.
+	 *
+	 * @return the expiration date of this kb article
+	 */
+	public Date getExpirationDate();
+
+	/**
+	 * Sets the expiration date of this kb article.
+	 *
+	 * @param expirationDate the expiration date of this kb article
+	 */
+	public void setExpirationDate(Date expirationDate);
+
+	/**
+	 * Returns the review date of this kb article.
+	 *
+	 * @return the review date of this kb article
+	 */
+	public Date getReviewDate();
+
+	/**
+	 * Sets the review date of this kb article.
+	 *
+	 * @param reviewDate the review date of this kb article
+	 */
+	public void setReviewDate(Date reviewDate);
+
+	/**
 	 * Returns the last publish date of this kb article.
 	 *
 	 * @return the last publish date of this kb article
@@ -635,5 +682,9 @@ public interface KBArticleModel
 
 	@Override
 	public KBArticle cloneWithOriginalValues();
+
+	public default String toXmlString() {
+		return null;
+	}
 
 }

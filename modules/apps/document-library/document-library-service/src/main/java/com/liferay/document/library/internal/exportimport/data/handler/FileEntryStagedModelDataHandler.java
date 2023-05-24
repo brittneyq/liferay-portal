@@ -16,8 +16,6 @@ package com.liferay.document.library.internal.exportimport.data.handler;
 
 import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryLocalService;
-import com.liferay.changeset.service.ChangesetCollectionLocalService;
-import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.exportimport.data.handler.DLPluggableContentDataHandler;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
@@ -35,6 +33,7 @@ import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
 import com.liferay.document.library.kernel.util.DLProcessorThreadLocal;
+import com.liferay.document.library.util.DLFileEntryTypeUtil;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
@@ -42,8 +41,8 @@ import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.dynamic.data.mapping.util.DDMBeanTranslatorUtil;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
@@ -60,6 +59,7 @@ import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -103,8 +103,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.UUID;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -540,6 +539,8 @@ public class FileEntryStagedModelDataHandler
 							if (_log.isDebugEnabled()) {
 								_log.debug(exception);
 							}
+
+							updateFileEntry = true;
 						}
 					}
 
@@ -622,7 +623,8 @@ public class FileEntryStagedModelDataHandler
 									DLFileEntryConstants.
 										PRIVATE_WORKING_COPY_VERSION)) {
 
-								_dlAppService.deleteFileVersion(
+								_dlFileEntryLocalService.deleteFileVersion(
+									userId,
 									latestExistingFileVersion.getFileEntryId(),
 									latestExistingFileVersion.getVersion());
 							}
@@ -909,7 +911,8 @@ public class FileEntryStagedModelDataHandler
 			portletDataContext, fileEntry, dlFileEntryType,
 			PortletDataContext.REFERENCE_TYPE_STRONG);
 
-		List<DDMStructure> ddmStructures = dlFileEntryType.getDDMStructures();
+		List<DDMStructure> ddmStructures = DLFileEntryTypeUtil.getDDMStructures(
+			dlFileEntryType);
 
 		for (DDMStructure ddmStructure : ddmStructures) {
 			_exportDDMFormValues(
@@ -929,9 +932,7 @@ public class FileEntryStagedModelDataHandler
 			ddmFormValuesPath);
 
 		com.liferay.dynamic.data.mapping.storage.DDMFormValues ddmFormValues =
-			_deserialize(
-				serializedDDMFormValues,
-				DDMBeanTranslatorUtil.translate(ddmStructure.getDDMForm()));
+			_deserialize(serializedDDMFormValues, ddmStructure.getDDMForm());
 
 		ddmFormValues =
 			_ddmFormValuesExportImportContentProcessor.
@@ -1088,8 +1089,8 @@ public class FileEntryStagedModelDataHandler
 
 		boolean updateFileEntry = false;
 
-		List<DDMStructure> ddmStructures =
-			existingDLFileEntryType.getDDMStructures();
+		List<DDMStructure> ddmStructures = DLFileEntryTypeUtil.getDDMStructures(
+			existingDLFileEntryType);
 
 		for (DDMStructure ddmStructure : ddmStructures) {
 			Element structureFieldsElement =
@@ -1145,9 +1146,11 @@ public class FileEntryStagedModelDataHandler
 
 					DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
-					String oldVersion = dlFileVersion.getVersion();
+					String oldStoreFileName = dlFileVersion.getStoreFileName();
 
 					dlFileVersion.setVersion(version);
+					dlFileVersion.setStoreUUID(
+						String.valueOf(UUID.randomUUID()));
 
 					_dlFileVersionLocalService.updateDLFileVersion(
 						dlFileVersion);
@@ -1160,12 +1163,13 @@ public class FileEntryStagedModelDataHandler
 					if (DLStoreUtil.hasFile(
 							dlFileEntry.getCompanyId(),
 							dlFileEntry.getDataRepositoryId(),
-							dlFileEntry.getName(), oldVersion)) {
+							dlFileEntry.getName(), oldStoreFileName)) {
 
 						DLStoreUtil.updateFileVersion(
 							dlFileEntry.getCompanyId(),
 							dlFileEntry.getDataRepositoryId(),
-							dlFileEntry.getName(), oldVersion, version);
+							dlFileEntry.getName(), oldStoreFileName,
+							dlFileVersion.getStoreFileName());
 					}
 
 					return _dlAppLocalService.getFileEntry(
@@ -1202,17 +1206,11 @@ public class FileEntryStagedModelDataHandler
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		List<FriendlyURLEntry> friendlyURLEntries =
+		List<String> urlTitles = TransformUtil.transform(
 			_friendlyURLEntryLocalService.getFriendlyURLEntries(
 				fileEntry.getGroupId(), _portal.getClassNameId(FileEntry.class),
-				fileEntry.getFileEntryId());
-
-		Stream<FriendlyURLEntry> stream = friendlyURLEntries.stream();
-
-		Stream<String> urlTitlesStream = stream.map(
+				fileEntry.getFileEntryId()),
 			FriendlyURLEntry::getUrlTitle);
-
-		List<String> urlTitles = urlTitlesStream.collect(Collectors.toList());
 
 		List<FriendlyURLEntry> importedFriendlyURLEntries =
 			_friendlyURLEntryLocalService.getFriendlyURLEntries(
@@ -1254,12 +1252,6 @@ public class FileEntryStagedModelDataHandler
 	@Reference
 	private AssetDisplayPageEntryLocalService
 		_assetDisplayPageEntryLocalService;
-
-	@Reference
-	private ChangesetCollectionLocalService _changesetCollectionLocalService;
-
-	@Reference
-	private ChangesetEntryLocalService _changesetEntryLocalService;
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;

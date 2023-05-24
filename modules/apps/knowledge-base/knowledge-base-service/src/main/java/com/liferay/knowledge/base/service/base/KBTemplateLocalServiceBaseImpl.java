@@ -23,6 +23,7 @@ import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.KBTemplateLocalService;
 import com.liferay.knowledge.base.service.KBTemplateLocalServiceUtil;
 import com.liferay.knowledge.base.service.persistence.KBTemplatePersistence;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -46,14 +47,14 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -525,14 +526,14 @@ public abstract class KBTemplateLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		KBTemplateLocalServiceUtil.setService(null);
 	}
 
 	@Override
 	public Class<?>[] getAopInterfaces() {
 		return new Class<?>[] {
 			KBTemplateLocalService.class, IdentifiableOSGiService.class,
-			PersistedModelLocalService.class
+			CTService.class, PersistedModelLocalService.class
 		};
 	}
 
@@ -540,7 +541,7 @@ public abstract class KBTemplateLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		kbTemplateLocalService = (KBTemplateLocalService)aopProxy;
 
-		_setLocalServiceUtilService(kbTemplateLocalService);
+		KBTemplateLocalServiceUtil.setService(kbTemplateLocalService);
 	}
 
 	/**
@@ -553,8 +554,23 @@ public abstract class KBTemplateLocalServiceBaseImpl
 		return KBTemplateLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<KBTemplate> getCTPersistence() {
+		return kbTemplatePersistence;
+	}
+
+	@Override
+	public Class<KBTemplate> getModelClass() {
 		return KBTemplate.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<KBTemplate>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(kbTemplatePersistence);
 	}
 
 	protected String getModelClassName() {
@@ -582,22 +598,6 @@ public abstract class KBTemplateLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		KBTemplateLocalService kbTemplateLocalService) {
-
-		try {
-			Field field = KBTemplateLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, kbTemplateLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

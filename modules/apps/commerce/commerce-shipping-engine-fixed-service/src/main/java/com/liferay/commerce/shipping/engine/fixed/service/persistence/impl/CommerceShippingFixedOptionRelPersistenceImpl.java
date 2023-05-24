@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -48,7 +47,6 @@ import com.liferay.portal.kernel.util.SetUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -74,11 +72,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  * @generated
  */
-@Component(
-	service = {
-		CommerceShippingFixedOptionRelPersistence.class, BasePersistence.class
-	}
-)
+@Component(service = CommerceShippingFixedOptionRelPersistence.class)
 public class CommerceShippingFixedOptionRelPersistenceImpl
 	extends BasePersistenceImpl<CommerceShippingFixedOptionRel>
 	implements CommerceShippingFixedOptionRelPersistence {
@@ -206,7 +200,7 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceShippingFixedOptionRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceShippingFixedOptionRel
@@ -595,7 +589,7 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceShippingMethodId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -749,7 +743,7 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceShippingFixedOptionRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceShippingFixedOptionRel
@@ -1150,7 +1144,7 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceShippingFixedOptionId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1653,7 +1647,7 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceShippingFixedOptionRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1726,7 +1720,7 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1844,33 +1838,15 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 			new String[] {Long.class.getName()},
 			new String[] {"commerceShippingFixedOptionId"}, false);
 
-		_setCommerceShippingFixedOptionRelUtilPersistence(this);
+		CommerceShippingFixedOptionRelUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCommerceShippingFixedOptionRelUtilPersistence(null);
+		CommerceShippingFixedOptionRelUtil.setPersistence(null);
 
 		entityCache.removeCache(
 			CommerceShippingFixedOptionRelImpl.class.getName());
-	}
-
-	private void _setCommerceShippingFixedOptionRelUtilPersistence(
-		CommerceShippingFixedOptionRelPersistence
-			commerceShippingFixedOptionRelPersistence) {
-
-		try {
-			Field field =
-				CommerceShippingFixedOptionRelUtil.class.getDeclaredField(
-					"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceShippingFixedOptionRelPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -1938,9 +1914,5 @@ public class CommerceShippingFixedOptionRelPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private CommerceShippingFixedOptionRelModelArgumentsResolver
-		_commerceShippingFixedOptionRelModelArgumentsResolver;
 
 }

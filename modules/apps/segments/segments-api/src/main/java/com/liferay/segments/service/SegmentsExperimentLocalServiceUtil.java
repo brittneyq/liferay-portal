@@ -240,13 +240,6 @@ public class SegmentsExperimentLocalServiceUtil {
 		return getService().dynamicQueryCount(dynamicQuery, projection);
 	}
 
-	public static com.liferay.segments.model.SegmentsExperience
-		fetchControlSegmentExperience(
-			com.liferay.segments.model.SegmentsExperience segmentsExperience) {
-
-		return getService().fetchControlSegmentExperience(segmentsExperience);
-	}
-
 	public static SegmentsExperiment fetchSegmentsExperiment(
 		long segmentsExperimentId) {
 
@@ -520,6 +513,10 @@ public class SegmentsExperimentLocalServiceUtil {
 
 	public static SegmentsExperimentLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(SegmentsExperimentLocalService service) {
+		_service = service;
 	}
 
 	private static volatile SegmentsExperimentLocalService _service;

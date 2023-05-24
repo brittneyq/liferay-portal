@@ -37,9 +37,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.commerce.price.list.model.CommercePriceEntry",
-	service = {DTOConverter.class, PriceEntryDTOConverter.class}
+	service = DTOConverter.class
 )
 public class PriceEntryDTOConverter
 	implements DTOConverter<CommercePriceEntry, PriceEntry> {
@@ -93,6 +92,7 @@ public class PriceEntryDTOConverter
 				priceFormatted = _formatPrice(
 					priceEntryPrice, commerceCurrency, locale);
 				priceListId = commercePriceEntry.getCommercePriceListId();
+				priceOnApplication = commercePriceEntry.isPriceOnApplication();
 				skuExternalReferenceCode =
 					cpInstance.getExternalReferenceCode();
 				skuId = cpInstance.getCPInstanceId();

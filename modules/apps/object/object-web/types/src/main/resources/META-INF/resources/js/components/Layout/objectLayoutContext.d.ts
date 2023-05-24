@@ -15,14 +15,14 @@
 import React from 'react';
 import {
 	BoxType,
-	TName,
 	TObjectField,
 	TObjectLayout,
 	TObjectRelationship,
 } from './types';
 declare type TState = {
+	creationLanguageId: Liferay.Language.Locale;
+	enableCategorization: boolean;
 	isViewOnly: boolean;
-	objectDefinition: ObjectDefinition;
 	objectFieldTypes: ObjectFieldType[];
 	objectFields: TObjectField[];
 	objectLayout: TObjectLayout;
@@ -32,32 +32,23 @@ declare type TState = {
 declare type TAction =
 	| {
 			payload: {
-				objectDefinition: ObjectDefinition;
-			};
-			type: TYPES.ADD_OBJECT_DEFINITION;
-	  }
-	| {
-			payload: {
+				creationLanguageId: Liferay.Language.Locale;
+				enableCategorization: boolean;
 				objectLayout: TObjectLayout;
+				objectRelationships: TObjectRelationship[];
 			};
 			type: TYPES.ADD_OBJECT_LAYOUT;
 	  }
 	| {
 			payload: {
-				objectRelationships: TObjectRelationship[];
-			};
-			type: TYPES.ADD_OBJECT_RELATIONSHIPS;
-	  }
-	| {
-			payload: {
-				name: TName;
+				name: LocalizedValue<string>;
 				objectRelationshipId: number;
 			};
 			type: TYPES.ADD_OBJECT_LAYOUT_TAB;
 	  }
 	| {
 			payload: {
-				name: TName;
+				name: LocalizedValue<string>;
 				tabIndex?: number;
 				type: BoxType;
 			};
@@ -72,7 +63,7 @@ declare type TAction =
 	| {
 			payload: {
 				boxIndex: number;
-				objectFieldId: number;
+				objectFieldName: string;
 				objectFieldSize: number;
 				tabIndex: number;
 			};
@@ -80,7 +71,7 @@ declare type TAction =
 	  }
 	| {
 			payload: {
-				name: TName;
+				name: LocalizedValue<string>;
 			};
 			type: TYPES.CHANGE_OBJECT_LAYOUT_NAME;
 	  }
@@ -111,8 +102,15 @@ declare type TAction =
 	| {
 			payload: {
 				boxIndex: number;
+				tabIndex: number;
+			};
+			type: TYPES.DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION;
+	  }
+	| {
+			payload: {
+				boxIndex: number;
 				columnIndex: number;
-				objectFieldId: number;
+				objectFieldName: string;
 				rowIndex: number;
 				tabIndex: number;
 			};
@@ -129,16 +127,15 @@ interface ILayoutContextProps extends Array<TState | Function> {
 	1: React.Dispatch<React.ReducerAction<React.Reducer<TState, TAction>>>;
 }
 export declare enum TYPES {
-	ADD_OBJECT_DEFINITION = 'ADD_OBJECT_DEFINITION',
 	ADD_OBJECT_FIELDS = 'ADD_OBJECT_FIELDS',
 	ADD_OBJECT_LAYOUT = 'ADD_OBJECT_LAYOUT',
 	ADD_OBJECT_LAYOUT_BOX = 'ADD_OBJECT_LAYOUT_BOX',
 	ADD_OBJECT_LAYOUT_FIELD = 'ADD_OBJECT_LAYOUT_FIELD',
 	ADD_OBJECT_LAYOUT_TAB = 'ADD_OBJECT_LAYOUT_TAB',
-	ADD_OBJECT_RELATIONSHIPS = 'ADD_OBJECT_RELATIONSHIPS',
 	CHANGE_OBJECT_LAYOUT_BOX_ATTRIBUTE = 'CHANGE_OBJECT_LAYOUT_BOX_ATTRIBUTE',
 	CHANGE_OBJECT_LAYOUT_NAME = 'CHANGE_OBJECT_LAYOUT_NAME',
 	DELETE_OBJECT_LAYOUT_BOX = 'DELETE_OBJECT_LAYOUT_BOX',
+	DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION = 'DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION',
 	DELETE_OBJECT_LAYOUT_FIELD = 'DELETE_OBJECT_LAYOUT_FIELD',
 	DELETE_OBJECT_LAYOUT_TAB = 'DELETE_OBJECT_LAYOUT_TAB',
 	SET_OBJECT_LAYOUT_AS_DEFAULT = 'SET_OBJECT_LAYOUT_AS_DEFAULT',

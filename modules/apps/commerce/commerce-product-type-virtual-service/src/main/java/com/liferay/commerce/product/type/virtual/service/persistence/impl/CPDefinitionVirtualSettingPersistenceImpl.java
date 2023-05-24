@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -77,11 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @generated
  */
-@Component(
-	service = {
-		CPDefinitionVirtualSettingPersistence.class, BasePersistence.class
-	}
-)
+@Component(service = CPDefinitionVirtualSettingPersistence.class)
 public class CPDefinitionVirtualSettingPersistenceImpl
 	extends BasePersistenceImpl<CPDefinitionVirtualSetting>
 	implements CPDefinitionVirtualSettingPersistence {
@@ -200,7 +194,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CPDefinitionVirtualSetting>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CPDefinitionVirtualSetting cpDefinitionVirtualSetting :
@@ -596,7 +590,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -727,7 +721,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof CPDefinitionVirtualSetting) {
@@ -841,7 +835,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, groupId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1009,7 +1003,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CPDefinitionVirtualSetting>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CPDefinitionVirtualSetting cpDefinitionVirtualSetting :
@@ -1431,7 +1425,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1568,7 +1562,8 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByC_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_C, finderArgs, this);
 		}
 
 		if (result instanceof CPDefinitionVirtualSetting) {
@@ -1670,7 +1665,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		Object[] finderArgs = new Object[] {classNameId, classPK};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2226,7 +2221,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CPDefinitionVirtualSetting>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2299,7 +2294,7 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2428,31 +2423,14 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"classNameId", "classPK"}, false);
 
-		_setCPDefinitionVirtualSettingUtilPersistence(this);
+		CPDefinitionVirtualSettingUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCPDefinitionVirtualSettingUtilPersistence(null);
+		CPDefinitionVirtualSettingUtil.setPersistence(null);
 
 		entityCache.removeCache(CPDefinitionVirtualSettingImpl.class.getName());
-	}
-
-	private void _setCPDefinitionVirtualSettingUtilPersistence(
-		CPDefinitionVirtualSettingPersistence
-			cpDefinitionVirtualSettingPersistence) {
-
-		try {
-			Field field = CPDefinitionVirtualSettingUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, cpDefinitionVirtualSettingPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2521,9 +2499,5 @@ public class CPDefinitionVirtualSettingPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private CPDefinitionVirtualSettingModelArgumentsResolver
-		_cpDefinitionVirtualSettingModelArgumentsResolver;
 
 }

@@ -14,9 +14,9 @@
 
 package com.liferay.headless.commerce.punchout.internal.resource.v1_0;
 
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.service.CommerceAccountLocalService;
-import com.liferay.commerce.account.service.CommerceAccountUserRelLocalService;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryLocalService;
+import com.liferay.account.service.AccountEntryUserRelLocalService;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
 import com.liferay.commerce.model.CommerceOrder;
@@ -29,6 +29,7 @@ import com.liferay.commerce.punchout.oauth2.provider.PunchOutAccessTokenProvider
 import com.liferay.commerce.punchout.oauth2.provider.model.PunchOutAccessToken;
 import com.liferay.commerce.service.CommerceOrderItemLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.headless.commerce.core.util.ServiceContextHelper;
 import com.liferay.headless.commerce.punchout.dto.v1_0.Cart;
 import com.liferay.headless.commerce.punchout.dto.v1_0.CartItem;
@@ -45,6 +46,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -76,7 +78,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Jaclyn Ong
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/punch-out-session.properties",
 	scope = ServiceScope.PROTOTYPE, service = PunchOutSessionResource.class
 )
@@ -129,10 +130,10 @@ public class PunchOutSessionResourceImpl
 				"Buyer user does not belong to group");
 		}
 
-		CommerceAccount businessCommerceAccount = _fetchBusinessCommerceAccount(
+		AccountEntry businessAccountEntry = _fetchBusinessAccountEntry(
 			punchOutSession.getBuyerAccountReferenceCode());
 
-		if (businessCommerceAccount == null) {
+		if (businessAccountEntry == null) {
 			_log.error(
 				"Business commerce account not found with external reference" +
 					"code: " + punchOutSession.getBuyerAccountReferenceCode());
@@ -142,7 +143,7 @@ public class PunchOutSessionResourceImpl
 		}
 
 		_addBuyerUserToAccount(
-			businessCommerceAccount, buyerLiferayUser.getUserId(),
+			businessAccountEntry, buyerLiferayUser.getUserId(),
 			buyerGroup.getGroupId());
 
 		String punchOutSessionType = punchOutSession.getPunchOutSessionType();
@@ -181,13 +182,13 @@ public class PunchOutSessionResourceImpl
 			commerceChannel.getGroupId());
 
 		PunchOutContext punchOutContext = new PunchOutContext(
-			businessCommerceAccount, buyerGroup, buyerLiferayUser,
-			commerceChannel, editCartCommerceOrder, punchOutSession);
+			businessAccountEntry, buyerGroup, buyerLiferayUser, commerceChannel,
+			editCartCommerceOrder, punchOutSession);
 
 		PunchOutAccessToken punchOutAccessToken =
 			_punchOutAccessTokenProvider.generatePunchOutAccessToken(
 				buyerGroup.getGroupId(),
-				businessCommerceAccount.getCommerceAccountId(),
+				businessAccountEntry.getAccountEntryId(),
 				cart.getCurrencyCode(), buyerLiferayUser.getEmailAddress(),
 				commerceOrderUuid,
 				_punchOutSessionContributor.getPunchOutSessionAttributes(
@@ -206,13 +207,6 @@ public class PunchOutSessionResourceImpl
 		punchOutSession.setPunchOutStartURL(punchOutStartURL);
 
 		return punchOutSession;
-	}
-
-	@Reference(unbind = "-")
-	protected void setConfigurationProvider(
-		ConfigurationProvider configurationProvider) {
-
-		_configurationProvider = configurationProvider;
 	}
 
 	private com.liferay.portal.kernel.model.User _addBuyerUser(
@@ -236,8 +230,8 @@ public class PunchOutSessionResourceImpl
 		boolean autoScreenName = true;
 		String screenName = StringPool.BLANK;
 		Locale locale = LocaleUtil.getDefault();
-		long prefixId = 0;
-		long suffixId = 0;
+		long prefixListTypeId = 0;
+		long suffixListTypeId = 0;
 		int birthdayMonth = Calendar.JANUARY;
 		int birthdayDay = 1;
 		int birthdayYear = 1970;
@@ -250,10 +244,10 @@ public class PunchOutSessionResourceImpl
 		com.liferay.portal.kernel.model.User user = _userLocalService.addUser(
 			creatorUserId, companyId, autoPassword, password1, password2,
 			autoScreenName, screenName, email, locale, firstName, middleName,
-			lastName, prefixId, suffixId, false, birthdayMonth, birthdayDay,
-			birthdayYear, jobTitle, new long[] {groupId}, organizationIds,
-			roleIds, userGroupIds, sendEmail,
-			_serviceContextHelper.getServiceContext(groupId));
+			lastName, prefixListTypeId, suffixListTypeId, false, birthdayMonth,
+			birthdayDay, birthdayYear, jobTitle, UserConstants.TYPE_REGULAR,
+			new long[] {groupId}, organizationIds, roleIds, userGroupIds,
+			sendEmail, _serviceContextHelper.getServiceContext(groupId));
 
 		user = _userLocalService.updateLastLogin(
 			user.getUserId(), user.getLoginIP());
@@ -262,7 +256,7 @@ public class PunchOutSessionResourceImpl
 	}
 
 	private void _addBuyerUserToAccount(
-			CommerceAccount commerceAccount, long userId, long groupId)
+			AccountEntry accountEntry, long userId, long groupId)
 		throws Exception {
 
 		Role role = _roleLocalService.fetchRole(
@@ -279,8 +273,8 @@ public class PunchOutSessionResourceImpl
 			throw new InternalServerErrorException(logMessage);
 		}
 
-		_commerceAccountUserRelLocalService.addCommerceAccountUserRels(
-			commerceAccount.getCommerceAccountId(), new long[] {userId}, null,
+		_commerceAccountHelper.addAccountEntryUserRels(
+			accountEntry.getAccountEntryId(), new long[] {userId}, null,
 			new long[] {role.getRoleId()},
 			_serviceContextHelper.getServiceContext(groupId));
 	}
@@ -303,11 +297,12 @@ public class PunchOutSessionResourceImpl
 		}
 	}
 
-	private CommerceAccount _fetchBusinessCommerceAccount(
+	private AccountEntry _fetchBusinessAccountEntry(
 		String externalReferenceCode) {
 
-		return _commerceAccountLocalService.fetchByExternalReferenceCode(
-			contextCompany.getCompanyId(), externalReferenceCode);
+		return _accountEntryLocalService.
+			fetchAccountEntryByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
 	}
 
 	private CommerceChannel _fetchChannel(long groupId) {
@@ -402,6 +397,7 @@ public class PunchOutSessionResourceImpl
 						found = true;
 
 						_commerceOrderItemLocalService.updateCommerceOrderItem(
+							commerceOrder.getUserId(),
 							commerceOrderItem.getCommerceOrderItemId(),
 							cartItem.getQuantity(), commerceContext,
 							_serviceContextHelper.getServiceContext(groupId));
@@ -416,9 +412,9 @@ public class PunchOutSessionResourceImpl
 			}
 
 			_commerceOrderItemLocalService.addCommerceOrderItem(
-				commerceOrder.getCommerceOrderId(), cartItem.getSkuId(), null,
-				cartItem.getQuantity(), cartItem.getShippedQuantity(),
-				commerceContext,
+				commerceOrder.getUserId(), commerceOrder.getCommerceOrderId(),
+				cartItem.getSkuId(), null, cartItem.getQuantity(), 0,
+				cartItem.getShippedQuantity(), commerceContext,
 				_serviceContextHelper.getServiceContext(groupId));
 		}
 
@@ -442,6 +438,7 @@ public class PunchOutSessionResourceImpl
 			}
 
 			_commerceOrderItemLocalService.deleteCommerceOrderItem(
+				commerceOrder.getUserId(),
 				commerceOrderItem.getCommerceOrderItemId());
 		}
 	}
@@ -485,11 +482,13 @@ public class PunchOutSessionResourceImpl
 		PunchOutSessionResourceImpl.class);
 
 	@Reference
-	private CommerceAccountLocalService _commerceAccountLocalService;
+	private AccountEntryLocalService _accountEntryLocalService;
 
 	@Reference
-	private CommerceAccountUserRelLocalService
-		_commerceAccountUserRelLocalService;
+	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
+
+	@Reference
+	private CommerceAccountHelper _commerceAccountHelper;
 
 	@Reference
 	private CommerceChannelLocalService _commerceChannelLocalService;
@@ -506,6 +505,7 @@ public class PunchOutSessionResourceImpl
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
+	@Reference
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference

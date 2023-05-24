@@ -22,11 +22,12 @@ import {
 	Tooltip,
 } from 'recharts';
 
-import colors from '../../../utils/colors';
+import colors, {NAMED_COLORS} from '../../../utils/colors';
 import {roundPercentage} from '../../../utils/data';
 import Legend from '../Legend';
 import TooltipContent from '../TooltipContent';
 
+const {black} = NAMED_COLORS;
 const RADIAN = Math.PI / 180;
 
 export default function PieChart({data, height, totalEntries, width}) {
@@ -75,7 +76,7 @@ export default function PieChart({data, height, totalEntries, width}) {
 		return (
 			<text
 				dominantBaseline="central"
-				fill="white"
+				fill={black}
 				textAnchor="middle"
 				x={x}
 				y={y}
@@ -87,11 +88,9 @@ export default function PieChart({data, height, totalEntries, width}) {
 
 	return (
 		<div
-			className="lfr-de-recharts"
+			className="lfr-de-recharts pie-chart"
 			style={{
-				display: 'flex',
 				height: '100%',
-				minHeight: '500px',
 				width: '100%',
 			}}
 		>
@@ -108,13 +107,13 @@ export default function PieChart({data, height, totalEntries, width}) {
 						data={data}
 						dataKey="count"
 						endAngle={-270}
-						innerRadius="30%"
+						innerRadius="60%"
 						isAnimationActive={isAnimationActive}
 						label={Label}
 						labelLine={false}
 						nameKey="label"
 						onMouseOver={(_, index) => handleOnMouseOver(index)}
-						outerRadius="60%"
+						outerRadius="100%"
 						paddingAngle={0}
 						startAngle={90}
 					>
@@ -146,7 +145,7 @@ export default function PieChart({data, height, totalEntries, width}) {
 
 			<Legend
 				activeIndex={activeIndex}
-				labels={data.map(({label}) => label)}
+				data={data}
 				onMouseOut={handleOnMouseOut}
 				onMouseOver={handleOnMouseOver}
 			/>

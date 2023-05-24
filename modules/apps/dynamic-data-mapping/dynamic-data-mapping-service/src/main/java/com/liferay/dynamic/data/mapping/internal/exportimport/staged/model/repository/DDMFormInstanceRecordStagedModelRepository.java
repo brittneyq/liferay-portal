@@ -14,6 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.internal.exportimport.staged.model.repository;
 
+import com.liferay.dynamic.data.mapping.exception.NoSuchFormInstanceRecordVersionException;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
@@ -35,6 +36,8 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.util.List;
@@ -47,7 +50,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Tamas Molnar
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord",
 	service = {
 		DDMFormInstanceRecordStagedModelRepository.class,
@@ -288,6 +290,25 @@ public class DDMFormInstanceRecordStagedModelRepository
 			return;
 		}
 
+		try {
+			DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion =
+				_ddmFormInstanceRecordVersionLocalService.
+					getFormInstanceRecordVersion(
+						importedDDMFormInstanceRecord.getFormInstanceRecordId(),
+						version);
+
+			_ddmFormInstanceRecordVersionLocalService.
+				deleteDDMFormInstanceRecordVersion(
+					ddmFormInstanceRecordVersion);
+		}
+		catch (NoSuchFormInstanceRecordVersionException
+					noSuchFormInstanceRecordVersionException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchFormInstanceRecordVersionException);
+			}
+		}
+
 		DDMFormInstanceRecordVersion importedDDMFormInstanceRecordVersion =
 			importedDDMFormInstanceRecord.getFormInstanceRecordVersion();
 
@@ -302,6 +323,9 @@ public class DDMFormInstanceRecordStagedModelRepository
 		_ddmFormInstanceRecordLocalService.updateDDMFormInstanceRecord(
 			importedDDMFormInstanceRecord);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMFormInstanceRecordStagedModelRepository.class);
 
 	@Reference
 	private DDMFormInstanceRecordLocalService

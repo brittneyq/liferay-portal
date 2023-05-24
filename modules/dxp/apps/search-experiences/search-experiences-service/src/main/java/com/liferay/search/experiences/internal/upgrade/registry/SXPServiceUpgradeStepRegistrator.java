@@ -23,9 +23,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Petteri Karttunen
  */
-@Component(
-	enabled = true, immediate = true, service = UpgradeStepRegistrator.class
-)
+@Component(enabled = true, service = UpgradeStepRegistrator.class)
 public class SXPServiceUpgradeStepRegistrator
 	implements UpgradeStepRegistrator {
 
@@ -62,6 +60,16 @@ public class SXPServiceUpgradeStepRegistrator
 		registry.register(
 			"1.3.0", "1.3.1",
 			new com.liferay.search.experiences.internal.upgrade.v1_3_1.
+				SXPBlueprintUpgradeProcess());
+
+		registry.register(
+			"1.3.1", "1.3.2",
+			new com.liferay.search.experiences.internal.upgrade.v1_3_2.
+				SXPBlueprintUpgradeProcess());
+
+		registry.register(
+			"1.3.2", "1.3.3",
+			new com.liferay.search.experiences.internal.upgrade.v1_3_3.
 				SXPBlueprintUpgradeProcess());
 	}
 

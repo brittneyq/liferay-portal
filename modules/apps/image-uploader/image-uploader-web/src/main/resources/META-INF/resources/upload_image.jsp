@@ -41,10 +41,22 @@ String tempImageFileName = ParamUtil.getString(request, "tempImageFileName");
 
 		<aui:script>
 			<c:if test="<%= fileEntry != null %>">
-				Liferay.Util.getOpener().<%= HtmlUtil.escapeJS(randomNamespace) %>changeLogo(
-					'<%= previewURL %>',
-					'<%= fileEntry.getFileEntryId() %>'
-				);
+				const onChangeLogo = Liferay.Util.getOpener()
+					.<%= HtmlUtil.escapeJS(randomNamespace) %>changeLogo;
+
+				if (onChangeLogo) {
+					Liferay.Util.getOpener().<%= HtmlUtil.escapeJS(randomNamespace) %>changeLogo(
+						'<%= previewURL %>',
+						'<%= fileEntry.getFileEntryId() %>'
+					);
+				}
+				else {
+					Liferay.Util.getOpener().Liferay.fire('changeLogo', {
+						previewURL: '<%= previewURL %>',
+						fileEntryId: '<%= fileEntry.getFileEntryId() %>',
+						tempImageFileName: '<%= HtmlUtil.escape(tempImageFileName) %>',
+					});
+				}
 			</c:if>
 
 			Liferay.Util.getWindow().hide();
@@ -86,11 +98,11 @@ String tempImageFileName = ParamUtil.getString(request, "tempImageFileName");
 						<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(maxFileSize, locale) %>" key="request-is-larger-than-x-and-could-not-be-processed" translateArguments="<%= false %>" />
 					</liferay-ui:error>
 
-					<aui:fieldset-group markupView="lexicon">
-						<aui:fieldset cssClass="lfr-portrait-editor">
-							<h4 class="text-default">
+					<div class="sheet">
+						<div class="panel-group panel-group-flush">
+							<div class="h4 text-default" id="<portlet:namespace />sizeDescription">
 								<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(maxFileSize, locale) %>" key="upload-images-no-larger-than-x" />
-							</h4>
+							</div>
 
 							<div class="lfr-change-logo lfr-portrait-preview" id="<portlet:namespace />portraitPreview">
 								<img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="image-preview" />" class="img-fluid lfr-portrait-preview-img" id="<portlet:namespace />portraitPreviewImg" src="<%= HtmlUtil.escape(currentImageURL) %>" />
@@ -103,9 +115,13 @@ String tempImageFileName = ParamUtil.getString(request, "tempImageFileName");
 							</c:if>
 
 							<div class="button-holder">
-								<label class="btn btn-secondary mt-2" for="<portlet:namespace />fileName" id="<portlet:namespace />uploadImage" tabindex="0"><liferay-ui:message key="select" /></label>
+								<label for="<portlet:namespace />fileName" id="<portlet:namespace />uploadImage">
+									<span aria-describedby="<portlet:namespace />sizeDescription" aria-label="<%= LanguageUtil.format(request, "select-x", "image") %>" class="btn btn-secondary mt-2" role="button" tabindex="0">
+										<liferay-ui:message key="select" />
+									<span>
+								</label>
 
-								<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) || windowState.equals(LiferayWindowState.POP_UP) %>" cssClass="hide" label="" name="fileName" type="file">
+								<aui:input cssClass="hide" label="" name="fileName" type="file">
 									<aui:validator name="acceptFiles">
 										'<%= StringUtil.merge(dlConfiguration.fileExtensions()) %>'
 									</aui:validator>
@@ -115,8 +131,8 @@ String tempImageFileName = ParamUtil.getString(request, "tempImageFileName");
 									</aui:validator>
 								</aui:input>
 							</div>
-						</aui:fieldset>
-					</aui:fieldset-group>
+						</div>
+					</div>
 				</clay:container-fluid>
 			</div>
 
@@ -135,9 +151,9 @@ String tempImageFileName = ParamUtil.getString(request, "tempImageFileName");
 
 				if (uploadImageButton) {
 					uploadImageButton.addEventListener('keydown', (event) => {
-						event.preventDefault();
-
 						if (event.key == 'Enter' || event.key == ' ') {
+							event.preventDefault();
+
 							uploadImageButton.click();
 						}
 					});

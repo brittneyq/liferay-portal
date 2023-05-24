@@ -12,7 +12,7 @@
  * details.
  */
 
-import {openToast, sub} from 'frontend-js-web';
+import {openToast, postForm, sub} from 'frontend-js-web';
 
 import {
 	getDataEngineStructure,
@@ -35,6 +35,7 @@ export default function DataEngineLayoutBuilderHandler({namespace}) {
 		if (
 			isElementInnerSelector(
 				target,
+				'.cke_dialog',
 				'.clay-color-dropdown-menu',
 				'.date-picker-dropdown-menu',
 				'.ddm-form-builder-wrapper',
@@ -70,7 +71,7 @@ export default function DataEngineLayoutBuilderHandler({namespace}) {
 					Liferay.Language.get(
 						'please-enter-a-valid-title-for-the-default-language-x'
 					),
-					defaultLanguageId.replace('_', '-')
+					defaultLanguageId.replaceAll('_', '-')
 				),
 				title: Liferay.Language.get('error'),
 				type: 'danger',
@@ -81,7 +82,7 @@ export default function DataEngineLayoutBuilderHandler({namespace}) {
 			return;
 		}
 
-		Liferay.Util.postForm(form, {
+		postForm(form, {
 			data: getDataEngineStructure({dataLayoutBuilder, namespace}),
 		});
 	};

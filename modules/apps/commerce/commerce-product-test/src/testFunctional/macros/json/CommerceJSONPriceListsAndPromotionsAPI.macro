@@ -3,119 +3,233 @@ definition {
 	macro _addPriceList {
 		Variables.assertDefined(parameterList = "${catalogName},${priceListName},${currencyCode}");
 
-		var catalogId = CommerceJSONCatalogsAPI._getCommerceCatalogIdByName(catalogName = "${catalogName}");
+		var catalogId = CommerceJSONCatalogsAPI._getCommerceCatalogIdByName(catalogName = ${catalogName});
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
+		if (!(isSet(priority))) {
+			var priority = 0;
+		}
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
 		var curl = '''
 			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists \
-			-u test@liferay.com:test \
-			-H 'accept: application/json' \
-			-H 'Content-Type: application/json' \
-			-d '{
-				  "active": true,
-				  "catalogBasePriceList": false,
-				  "catalogId": "${catalogId}",
-				  "currencyCode": "${currencyCode}",
-				  "name": "${priceListName}",
-				  "netPrice": true,
-				  "neverExpire": true,
-				  "priority": 0,
-				  "type": "price-list"
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"active": true,
+					"catalogBasePriceList": false,
+					"catalogId": "${catalogId}",
+					"currencyCode": "${currencyCode}",
+					"name": "${priceListName}",
+					"netPrice": true,
+					"neverExpire": true,
+					"priority": ${priority},
+					"type": "price-list"
 				}'
-			''';
+		''';
 
-		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
 	macro _addPriceListEntry {
 		Variables.assertDefined(parameterList = "${productSKU},${priceListName},${entryPrice}");
 
-		var skuId = CommerceJSONProductsAPI._getSKUId(productSKU = "${productSKU}");
-		var priceListId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = "${priceListName}");
+		var skuId = CommerceJSONProductsAPI._getSKUId(productSKU = ${productSKU});
+		var priceListId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = ${priceListName});
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
 		var curl = '''
 			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListId}/price-entries \
-			-u test@liferay.com:test \
-			-H 'accept: application/json' \
-			-H 'Content-Type: application/json' \
-			-d '{
-				  "active": true,
-				  "neverExpire": true,
-				  "price": "${entryPrice}",
-				  "priceListId": "${priceListId}",
-				  "skuId": "${skuId}"
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"active": true,
+					"neverExpire": true,
+					"price": "${entryPrice}",
+					"priceListId": "${priceListId}",
+					"skuId": "${skuId}"
 				}'
-			''';
+		''';
 
-		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
+	}
+
+	macro _addPriceModifier {
+		Variables.assertDefined(parameterList = "${modifierAmount},${modifierType},${priceListName},${priceModifierTitle},${target}");
+
+		var priceListId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = ${priceListName});
+
+		if (!(isSet(baseURL))) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		if (!(isSet(active))) {
+			var active = "true";
+		}
+
+		if (!(isSet(priority))) {
+			var priority = 0;
+		}
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListId}/price-modifiers \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"active": ${active},
+					"modifierAmount": ${modifierAmount},
+					"modifierType": "${modifierType}",
+					"priceListId": ${priceListId},
+					"priority": ${priority},
+					"target": "${target}",
+					"title": "${priceModifierTitle}"
+				}'
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
+	}
+
+	macro _addPriceModifierProduct {
+		Variables.assertDefined(parameterList = "${priceListName},${priceModifierTitle},${productName}");
+
+		var baseURL = ${baseURL};
+
+		if (!(isSet(baseURL))) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		var priceModifierId = CommerceJSONPriceListsAndPromotionsAPI._getPriceModifierIdByTitle(
+			priceListName = ${priceListName},
+			priceModifierTitle = ${priceModifierTitle});
+		var productId = CommerceJSONProductsAPI._getProductId(productName = ${productName});
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-modifiers/${priceModifierId}/price-modifier-products \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"priceModifierId": ${priceModifierId},
+					"productId": ${productId}
+				}'
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
+	}
+
+	macro _addPriceModifierProductGroup {
+		Variables.assertDefined(parameterList = "${priceListName},${priceModifierTitle},${productGroupNames}");
+
+		var baseURL = ${baseURL};
+
+		if (!(isSet(baseURL))) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		if (!(isSet(responseBody))) {
+			var responseBody = CommmerceJSONProductGroupsAPI._getProductGroups();
+		}
+
+		var priceModifierId = CommerceJSONPriceListsAndPromotionsAPI._getPriceModifierIdByTitle(
+			priceListName = ${priceListName},
+			priceModifierTitle = ${priceModifierTitle});
+		var productGroupId = CommmerceJSONProductGroupsAPI.getProductGroupIdsByName(
+			productGroupNames = ${productGroupNames},
+			responseBody = ${responseBody});
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-modifiers/${priceModifierId}/price-modifier-product-groups \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"priceModifierId": ${priceModifierId},
+					"productGroupId": ${productGroupId}
+				}'
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
 	macro _addPromotion {
 		Variables.assertDefined(parameterList = "${catalogName},${promotionName},${currencyCode}");
 
-		var catalogId = CommerceJSONCatalogsAPI._getCommerceCatalogIdByName(catalogName = "${catalogName}");
+		var catalogId = CommerceJSONCatalogsAPI._getCommerceCatalogIdByName(catalogName = ${catalogName});
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
 		var curl = '''
 			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists \
-			-u test@liferay.com:test \
-			-H 'accept: application/json' \
-			-H 'Content-Type: application/json' \
-			-d '{
-				  "active": true,
-				  "catalogBasePriceList": false,
-				  "catalogId": "${catalogId}",
-				  "currencyCode": "${currencyCode}",
-				  "name": "${promotionName}",
-				  "netPrice": true,
-				  "neverExpire": true,
-				  "priority": 0,
-				  "type": "promotion"
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"active": true,
+					"catalogBasePriceList": false,
+					"catalogId": "${catalogId}",
+					"currencyCode": "${currencyCode}",
+					"name": "${promotionName}",
+					"netPrice": true,
+					"neverExpire": true,
+					"priority": 0,
+					"type": "promotion"
 				}'
-			''';
+		''';
 
-		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
 	macro _addPromotionEntry {
 		Variables.assertDefined(parameterList = "${productSKU},${promotionName},${entryPrice}");
 
-		var skuId = CommerceJSONProductsAPI._getSKUId(productSKU = "${productSKU}");
-		var promotionId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = "${promotionName}");
+		var skuId = CommerceJSONProductsAPI._getSKUId(productSKU = ${productSKU});
+		var promotionId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = ${promotionName});
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
 		var curl = '''
 			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${promotionId}/price-entries \
-			-u test@liferay.com:test \
-			-H 'accept: application/json' \
-			-H 'Content-Type: application/json' \
-			-d '{
-				  "active": true,
-				  "neverExpire": true,
-				  "price": "${entryPrice}",
-				  "priceListId": "${promotionId}",
-				  "skuId": "${skuId}"
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{
+					"active": true,
+					"neverExpire": true,
+					"price": "${entryPrice}",
+					"priceListId": "${promotionId}",
+					"skuId": "${skuId}"
 				}'
-			''';
+		''';
 
-		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
+		com.liferay.poshi.runner.util.JSONCurlUtil.post(${curl});
 	}
 
 	macro _deleteAllNoMasterPriceListsAndPromotions {
-		var baseURL = "${baseURL}";
+		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
@@ -123,15 +237,17 @@ definition {
 
 		var priceListAndPromotionIds = CommerceJSONPriceListsAndPromotionsAPI._getCommerceNoMasterPriceListsAndPromotions();
 
-		if ("${priceListAndPromotionIds}" != "") {
-			for (var priceListAndPromotionId : list "${priceListAndPromotionIds}") {
+		if (${priceListAndPromotionIds} != "") {
+			for (var priceListAndPromotionId : list ${priceListAndPromotionIds}) {
+				var userLoginInfo = JSONUtil2.formatJSONUser();
+
 				var curl = '''
 					${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListAndPromotionId} \
-					-u test@liferay.com:test \
-					-H 'accept: application/json' \
+						-u ${userLoginInfo} \
+						-H 'accept: application/json' \
 				''';
 
-				JSONCurlUtil.delete("${curl}");
+				JSONCurlUtil.delete(${curl});
 			}
 		}
 		else {
@@ -140,55 +256,166 @@ definition {
 	}
 
 	macro _getCommerceNoMasterPriceListsAndPromotions {
-		var baseURL = "${baseURL}";
+		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
 		if (isSet(priceListAndPromotionCount)) {
-			var priceListsAndPromotionsCount = "${priceListAndPromotionCount}";
+			var priceListsAndPromotionsCount = ${priceListAndPromotionCount};
 		}
 		else {
-			var priceListsAndPromotionsCount = "100";
+			var priceListsAndPromotionsCount = 100;
 		}
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
 
 		var curl = '''
 			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists?pageSize=${priceListsAndPromotionsCount} \
-			-u test@liferay.com:test \
-			-H 'accept: application/json' \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
 		''';
 
-		var priceListAndPromotionIds = JSONCurlUtil.get("${curl}", "$.items[?(@['name'] != 'Master Base Promotion' && @['name'] != 'Master Base Price List')].['id']");
+		var priceListAndPromotionIds = JSONCurlUtil.get(${curl}, "$.items[?(@['name'] != 'Master Base Promotion' && @['name'] != 'Master Base Price List')].['id']");
 
-		return "${priceListAndPromotionIds}";
+		return ${priceListAndPromotionIds};
 	}
 
 	macro _getCommercePriceListsAndPromotionsIdByName {
-		Variables.assertDefined(parameterList = "${priceListAndPromotionName}");
+		Variables.assertDefined(parameterList = ${priceListAndPromotionName});
 
-		var baseURL = "${baseURL}";
+		var baseURL = ${baseURL};
 
 		if (!(isSet(baseURL))) {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
 		if (isSet(priceListAndPromotionCount)) {
-			var priceListsAndPromotionsCount = "${priceListAndPromotionCount}";
+			var priceListsAndPromotionsCount = ${priceListAndPromotionCount};
 		}
 		else {
-			var priceListsAndPromotionsCount = "100";
+			var priceListsAndPromotionsCount = 100;
 		}
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
 
 		var curl = '''
 			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists?pageSize=${priceListsAndPromotionsCount} \
-			-u test@liferay.com:test \
-			-H 'accept: application/json' \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
 		''';
 
-		var priceListAndPromotionId = JSONCurlUtil.get("${curl}", "$.items[?(@['name'] == '${priceListAndPromotionName}')].['id']");
+		var priceListAndPromotionId = JSONCurlUtil.get(${curl}, "$.items[?(@['name'] == '${priceListAndPromotionName}')].['id']");
 
-		return "${priceListAndPromotionId}";
+		return ${priceListAndPromotionId};
+	}
+
+	macro _getPriceModifierIdByTitle {
+		Variables.assertDefined(parameterList = "${priceListName},${priceModifierTitle}");
+
+		var priceListId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = ${priceListName});
+		var baseURL = ${baseURL};
+
+		if (!(isSet(baseURL))) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		if (isSet(priceModifierCount)) {
+			var priceModifierCount = ${priceModifierCount};
+		}
+		else {
+			var priceModifierCount = 100;
+		}
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListId}/price-modifiers?pageSize=${priceModifierCount} \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+		''';
+
+		var priceModifierId = JSONCurlUtil.get(${curl}, "$.items[?(@['title'] == '${priceModifierTitle}')].['id']");
+
+		return ${priceModifierId};
+	}
+
+	macro _patchPriceModifier {
+		Variables.assertDefined(parameterList = "${priceListName},${priceModifierTitle}");
+
+		var baseURL = ${baseURL};
+		var fieldsList = ListUtil.newList();
+		var priceModifierId = CommerceJSONPriceListsAndPromotionsAPI._getPriceModifierIdByTitle(
+			priceListName = ${priceListName},
+			priceModifierTitle = ${priceModifierTitle});
+		var priceListId = CommerceJSONPriceListsAndPromotionsAPI._getCommercePriceListsAndPromotionsIdByName(priceListAndPromotionName = ${priceListName});
+
+		if (!(isSet(baseURL))) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		if (isSet(active)) {
+			var active = '''"active": ${active}''';
+
+			ListUtil.add(${fieldsList}, ${active});
+		}
+
+		if (isSet(modifierAmount)) {
+			var modifierAmount = '''"modifierAmount": ${modifierAmount}''';
+
+			ListUtil.add(${fieldsList}, ${modifierAmount});
+		}
+
+		if (isSet(modifierType)) {
+			var modifierType = '''"modifierType": "${modifierType}"''';
+
+			ListUtil.add(${fieldsList}, ${modifierType});
+		}
+
+		if (isSet(priceListName)) {
+			var priceListId = '''"priceListId": ${priceListId}''';
+
+			ListUtil.add(${fieldsList}, ${priceListId});
+		}
+
+		var priceModifierTitle = '''"title": "${priceModifierTitle}"''';
+
+		ListUtil.add(${fieldsList}, ${priceModifierTitle});
+
+		if (isSet(priority)) {
+			var priority = '''"priority": ${priority}''';
+
+			ListUtil.add(${fieldsList}, ${priority});
+		}
+
+		if (isSet(target)) {
+			var target = '''"target": "${target}"''';
+
+			ListUtil.add(${fieldsList}, ${target});
+		}
+
+		var fieldsList = ListUtil.toString(${fieldsList});
+
+		echo("Fieldlist: ${fieldsList}");
+
+		var payload = CommerceUtilities.getPayloadFromFieldsList(fieldsList = ${fieldsList});
+
+		echo("payload: ${payload}");
+
+		var userLoginInfo = JSONUtil2.formatJSONUser();
+
+		var curl = '''
+			${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-modifiers/${priceModifierId} \
+				-u ${userLoginInfo} \
+				-H 'accept: application/json' \
+				-H 'Content-Type: application/json' \
+				-d '{${payload}}'
+		''';
+
+		var responseBody = JSONCurlUtil.patch(${curl});
+
+		return ${responseBody};
 	}
 
 }

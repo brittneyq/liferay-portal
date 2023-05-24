@@ -51,6 +51,7 @@ public class SoftwareCatalogUpgradeProcess extends BaseUpgradeProcess {
 		removeServiceData(
 			null, new String[] {"com.liferay.softwarecatalog.service"},
 			new String[] {
+				"com.liferay.portlet.softwarecatalog",
 				"com.liferay.portlet.softwarecatalog.model.SCFrameworkVersion",
 				"com.liferay.portlet.softwarecatalog.model.SCLicense",
 				"com.liferay.portlet.softwarecatalog.model.SCProductEntry",

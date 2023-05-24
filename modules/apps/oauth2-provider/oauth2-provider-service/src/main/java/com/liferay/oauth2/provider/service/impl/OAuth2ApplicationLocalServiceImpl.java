@@ -16,10 +16,10 @@ package com.liferay.oauth2.provider.service.impl;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.store.Store;
 import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.constants.OAuth2ProviderConstants;
 import com.liferay.oauth2.provider.exception.DuplicateOAuth2ApplicationClientIdException;
-import com.liferay.oauth2.provider.exception.DuplicateOAuth2ApplicationExternalReferenceCodeException;
 import com.liferay.oauth2.provider.exception.NoSuchOAuth2ApplicationException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationClientGrantTypeException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationHomePageURLException;
@@ -27,7 +27,6 @@ import com.liferay.oauth2.provider.exception.OAuth2ApplicationHomePageURLSchemeE
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationNameException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationPrivacyPolicyURLException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationPrivacyPolicyURLSchemeException;
-import com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURIException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURIFragmentException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURIMissingException;
 import com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURIPathException;
@@ -35,11 +34,13 @@ import com.liferay.oauth2.provider.exception.OAuth2ApplicationRedirectURISchemeE
 import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.model.OAuth2ApplicationScopeAliases;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
+import com.liferay.oauth2.provider.redirect.OAuth2RedirectURIInterpolator;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationScopeAliasesLocalService;
 import com.liferay.oauth2.provider.service.OAuth2AuthorizationLocalService;
 import com.liferay.oauth2.provider.service.base.OAuth2ApplicationLocalServiceBaseImpl;
 import com.liferay.oauth2.provider.util.OAuth2SecureRandomGenerator;
 import com.liferay.oauth2.provider.util.builder.OAuth2ScopeBuilder;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.ImageTypeException;
@@ -76,9 +77,6 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -98,7 +96,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.oauth2.provider.model.OAuth2Application",
 	service = AopService.class
 )
@@ -143,10 +140,10 @@ public class OAuth2ApplicationLocalServiceImpl
 			redirectURIsList = new ArrayList<>();
 		}
 
-		validate(
+		_validate(
 			companyId, allowedGrantTypesList, clientAuthenticationMethod,
-			clientId, clientProfile, clientSecret, homePageURL, jwks, name,
-			privacyPolicyURL, redirectURIsList);
+			clientId, clientSecret, homePageURL, jwks, name, privacyPolicyURL,
+			redirectURIsList);
 
 		long oAuth2ApplicationId = counterLocalService.increment(
 			OAuth2Application.class.getName());
@@ -241,10 +238,10 @@ public class OAuth2ApplicationLocalServiceImpl
 			scopeAliasesList = new ArrayList<>();
 		}
 
-		validate(
+		_validate(
 			companyId, allowedGrantTypesList, clientAuthenticationMethod,
-			clientId, clientProfile, clientSecret, homePageURL, jwks, name,
-			privacyPolicyURL, redirectURIsList);
+			clientId, clientSecret, homePageURL, jwks, name, privacyPolicyURL,
+			redirectURIsList);
 
 		long oAuth2ApplicationId = counterLocalService.increment(
 			OAuth2Application.class.getName());
@@ -315,7 +312,7 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		OAuth2Application oAuth2Application =
 			fetchOAuth2ApplicationByExternalReferenceCode(
-				user.getCompanyId(), externalReferenceCode);
+				externalReferenceCode, user.getCompanyId());
 
 		if (oAuth2Application != null) {
 			long oAuth2ApplicationScopeAliasesId =
@@ -372,7 +369,7 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		OAuth2Application oAuth2Application =
 			fetchOAuth2ApplicationByExternalReferenceCode(
-				user.getCompanyId(), externalReferenceCode);
+				externalReferenceCode, user.getCompanyId());
 
 		if (oAuth2Application != null) {
 			long oAuth2ApplicationScopeAliasesId =
@@ -519,9 +516,6 @@ public class OAuth2ApplicationLocalServiceImpl
 			return oAuth2Application;
 		}
 
-		_validateExternalReferenceCode(
-			oAuth2Application.getOAuth2ApplicationId(), externalReferenceCode);
-
 		oAuth2Application.setExternalReferenceCode(externalReferenceCode);
 
 		return updateOAuth2Application(oAuth2Application);
@@ -562,8 +556,7 @@ public class OAuth2ApplicationLocalServiceImpl
 			serviceContext);
 
 		Folder folder = _portletFileRepository.addPortletFolder(
-			_userLocalService.getDefaultUserId(
-				oAuth2Application.getCompanyId()),
+			_userLocalService.getGuestUserId(oAuth2Application.getCompanyId()),
 			repository.getRepositoryId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, "icons",
 			serviceContext);
@@ -642,11 +635,11 @@ public class OAuth2ApplicationLocalServiceImpl
 			redirectURIsList = new ArrayList<>();
 		}
 
-		validate(
+		_validate(
 			oAuth2Application.getCompanyId(), oAuth2ApplicationId,
 			allowedGrantTypesList, clientAuthenticationMethod, clientId,
-			clientProfile, clientSecret, homePageURL, jwks, name,
-			privacyPolicyURL, redirectURIsList);
+			clientSecret, homePageURL, jwks, name, privacyPolicyURL,
+			redirectURIsList);
 
 		User user = _userLocalService.getUser(clientCredentialUserId);
 
@@ -713,27 +706,60 @@ public class OAuth2ApplicationLocalServiceImpl
 		}
 	}
 
-	protected void validate(
-			long companyId, List<GrantType> allowedGrantTypesList,
-			String clientAuthenticationMethod, String clientId,
-			int clientProfile, String clientSecret, String homePageURL,
-			String jwks, String name, String privacyPolicyURL,
-			List<String> redirectURIsList)
+	private long _getOAuth2ApplicationScopeAliasesId(
+			long companyId, long userId, String userName,
+			long oAuth2ApplicationId, List<String> scopeAliasesList)
 		throws PortalException {
 
-		validate(
-			companyId, 0, allowedGrantTypesList, clientAuthenticationMethod,
-			clientId, clientProfile, clientSecret, homePageURL, jwks, name,
-			privacyPolicyURL, redirectURIsList);
+		if (ListUtil.isEmpty(scopeAliasesList)) {
+			return 0;
+		}
+
+		OAuth2ApplicationScopeAliases oAuth2ApplicationScopeAliases =
+			_oAuth2ApplicationScopeAliasesLocalService.
+				fetchOAuth2ApplicationScopeAliases(
+					oAuth2ApplicationId, scopeAliasesList);
+
+		if (oAuth2ApplicationScopeAliases != null) {
+			oAuth2ApplicationScopeAliases.setUserId(userId);
+			oAuth2ApplicationScopeAliases.setUserName(userName);
+
+			oAuth2ApplicationScopeAliases =
+				_oAuth2ApplicationScopeAliasesLocalService.
+					updateOAuth2ApplicationScopeAliases(
+						oAuth2ApplicationScopeAliases);
+		}
+		else {
+			oAuth2ApplicationScopeAliases =
+				_oAuth2ApplicationScopeAliasesLocalService.
+					addOAuth2ApplicationScopeAliases(
+						companyId, userId, userName, oAuth2ApplicationId,
+						scopeAliasesList);
+		}
+
+		return oAuth2ApplicationScopeAliases.
+			getOAuth2ApplicationScopeAliasesId();
 	}
 
-	protected void validate(
+	private void _validate(
+			long companyId, List<GrantType> allowedGrantTypesList,
+			String clientAuthenticationMethod, String clientId,
+			String clientSecret, String homePageURL, String jwks, String name,
+			String privacyPolicyURL, List<String> redirectURIsList)
+		throws PortalException {
+
+		_validate(
+			companyId, 0, allowedGrantTypesList, clientAuthenticationMethod,
+			clientId, clientSecret, homePageURL, jwks, name, privacyPolicyURL,
+			redirectURIsList);
+	}
+
+	private void _validate(
 			long companyId, long oAuth2ApplicationId,
 			List<GrantType> allowedGrantTypesList,
 			String clientAuthenticationMethod, String clientId,
-			int clientProfile, String clientSecret, String homePageURL,
-			String jwks, String name, String privacyPolicyURL,
-			List<String> redirectURIsList)
+			String clientSecret, String homePageURL, String jwks, String name,
+			String privacyPolicyURL, List<String> redirectURIsList)
 		throws PortalException {
 
 		if (clientAuthenticationMethod.equals(
@@ -838,32 +864,40 @@ public class OAuth2ApplicationLocalServiceImpl
 		}
 
 		for (String redirectURI : redirectURIsList) {
-			try {
-				URI uri = new URI(redirectURI);
+			int index = redirectURI.indexOf(StringPool.POUND);
 
-				if (uri.getFragment() != null) {
-					throw new OAuth2ApplicationRedirectURIFragmentException(
-						redirectURI);
-				}
+			if (index != -1) {
+				throw new OAuth2ApplicationRedirectURIFragmentException(
+					redirectURI);
+			}
 
-				String scheme = uri.getScheme();
+			index = redirectURI.indexOf(Http.PROTOCOL_DELIMITER);
 
-				if (scheme == null) {
-					throw new OAuth2ApplicationRedirectURISchemeException(
-						redirectURI);
-				}
+			if (index == -1) {
+				throw new OAuth2ApplicationRedirectURISchemeException(
+					redirectURI);
+			}
 
-				scheme = StringUtil.toLowerCase(scheme);
+			String scheme = StringUtil.toLowerCase(
+				redirectURI.substring(0, index));
 
-				if (!Objects.equals(scheme, Http.HTTP) &&
-					!Objects.equals(scheme, Http.HTTPS) &&
-					_ianaRegisteredUriSchemes.contains(scheme)) {
+			if (!Objects.equals(
+					scheme, OAuth2RedirectURIInterpolator.TOKEN_PROTOCOL) &&
+				!Objects.equals(scheme, Http.HTTP) &&
+				!Objects.equals(scheme, Http.HTTPS) &&
+				_ianaRegisteredUriSchemes.contains(scheme)) {
 
-					throw new OAuth2ApplicationHomePageURLSchemeException(
-						redirectURI);
-				}
+				throw new OAuth2ApplicationHomePageURLSchemeException(
+					redirectURI);
+			}
 
-				String path = uri.getPath();
+			String domainAndPath = redirectURI.substring(
+				index + Http.PROTOCOL_DELIMITER.length());
+
+			index = domainAndPath.indexOf(StringPool.SLASH);
+
+			if (index > -1) {
+				String path = domainAndPath.substring(index);
 
 				String normalizedPath = HttpComponentsUtil.normalizePath(path);
 
@@ -872,68 +906,6 @@ public class OAuth2ApplicationLocalServiceImpl
 						redirectURI);
 				}
 			}
-			catch (URISyntaxException uriSyntaxException) {
-				throw new OAuth2ApplicationRedirectURIException(
-					redirectURI, uriSyntaxException);
-			}
-		}
-	}
-
-	private long _getOAuth2ApplicationScopeAliasesId(
-			long companyId, long userId, String userName,
-			long oAuth2ApplicationId, List<String> scopeAliasesList)
-		throws PortalException {
-
-		if (ListUtil.isEmpty(scopeAliasesList)) {
-			return 0;
-		}
-
-		OAuth2ApplicationScopeAliases oAuth2ApplicationScopeAliases =
-			_oAuth2ApplicationScopeAliasesLocalService.
-				fetchOAuth2ApplicationScopeAliases(
-					oAuth2ApplicationId, scopeAliasesList);
-
-		if (oAuth2ApplicationScopeAliases != null) {
-			oAuth2ApplicationScopeAliases.setUserId(userId);
-			oAuth2ApplicationScopeAliases.setUserName(userName);
-
-			oAuth2ApplicationScopeAliases =
-				_oAuth2ApplicationScopeAliasesLocalService.
-					updateOAuth2ApplicationScopeAliases(
-						oAuth2ApplicationScopeAliases);
-		}
-		else {
-			oAuth2ApplicationScopeAliases =
-				_oAuth2ApplicationScopeAliasesLocalService.
-					addOAuth2ApplicationScopeAliases(
-						companyId, userId, userName, oAuth2ApplicationId,
-						scopeAliasesList);
-		}
-
-		return oAuth2ApplicationScopeAliases.
-			getOAuth2ApplicationScopeAliasesId();
-	}
-
-	private void _validateExternalReferenceCode(
-			long oAuthApplicationId, String externalReferenceCode)
-		throws PortalException {
-
-		if (Validator.isNull(externalReferenceCode)) {
-			return;
-		}
-
-		OAuth2Application oAuth2Application = getOAuth2Application(
-			oAuthApplicationId);
-
-		oAuth2Application = fetchOAuth2ApplicationByExternalReferenceCode(
-			oAuth2Application.getCompanyId(), externalReferenceCode);
-
-		if (oAuth2Application == null) {
-			return;
-		}
-
-		if (oAuth2Application.getOAuth2ApplicationId() != oAuthApplicationId) {
-			throw new DuplicateOAuth2ApplicationExternalReferenceCodeException();
 		}
 	}
 
@@ -1016,6 +988,9 @@ public class OAuth2ApplicationLocalServiceImpl
 
 	@Reference
 	private ResourceLocalService _resourceLocalService;
+
+	@Reference(target = "(default=true)")
+	private Store _store;
 
 	@Reference
 	private UserLocalService _userLocalService;

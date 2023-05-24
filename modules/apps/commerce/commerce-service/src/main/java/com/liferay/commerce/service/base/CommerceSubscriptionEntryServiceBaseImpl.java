@@ -19,7 +19,7 @@ import com.liferay.commerce.service.CommerceSubscriptionEntryService;
 import com.liferay.commerce.service.CommerceSubscriptionEntryServiceUtil;
 import com.liferay.commerce.service.persistence.CommerceSubscriptionEntryFinder;
 import com.liferay.commerce.service.persistence.CommerceSubscriptionEntryPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -30,11 +30,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the commerce subscription entry remote service.
@@ -49,136 +49,34 @@ import javax.sql.DataSource;
  */
 public abstract class CommerceSubscriptionEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements CommerceSubscriptionEntryService, IdentifiableOSGiService {
+	implements AopService, CommerceSubscriptionEntryService,
+			   IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CommerceSubscriptionEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>CommerceSubscriptionEntryServiceUtil</code>.
 	 */
-
-	/**
-	 * Returns the commerce subscription entry local service.
-	 *
-	 * @return the commerce subscription entry local service
-	 */
-	public com.liferay.commerce.service.CommerceSubscriptionEntryLocalService
-		getCommerceSubscriptionEntryLocalService() {
-
-		return commerceSubscriptionEntryLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CommerceSubscriptionEntryServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the commerce subscription entry local service.
-	 *
-	 * @param commerceSubscriptionEntryLocalService the commerce subscription entry local service
-	 */
-	public void setCommerceSubscriptionEntryLocalService(
-		com.liferay.commerce.service.CommerceSubscriptionEntryLocalService
-			commerceSubscriptionEntryLocalService) {
-
-		this.commerceSubscriptionEntryLocalService =
-			commerceSubscriptionEntryLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CommerceSubscriptionEntryService.class,
+			IdentifiableOSGiService.class
+		};
 	}
 
-	/**
-	 * Returns the commerce subscription entry remote service.
-	 *
-	 * @return the commerce subscription entry remote service
-	 */
-	public CommerceSubscriptionEntryService
-		getCommerceSubscriptionEntryService() {
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		commerceSubscriptionEntryService =
+			(CommerceSubscriptionEntryService)aopProxy;
 
-		return commerceSubscriptionEntryService;
-	}
-
-	/**
-	 * Sets the commerce subscription entry remote service.
-	 *
-	 * @param commerceSubscriptionEntryService the commerce subscription entry remote service
-	 */
-	public void setCommerceSubscriptionEntryService(
-		CommerceSubscriptionEntryService commerceSubscriptionEntryService) {
-
-		this.commerceSubscriptionEntryService =
-			commerceSubscriptionEntryService;
-	}
-
-	/**
-	 * Returns the commerce subscription entry persistence.
-	 *
-	 * @return the commerce subscription entry persistence
-	 */
-	public CommerceSubscriptionEntryPersistence
-		getCommerceSubscriptionEntryPersistence() {
-
-		return commerceSubscriptionEntryPersistence;
-	}
-
-	/**
-	 * Sets the commerce subscription entry persistence.
-	 *
-	 * @param commerceSubscriptionEntryPersistence the commerce subscription entry persistence
-	 */
-	public void setCommerceSubscriptionEntryPersistence(
-		CommerceSubscriptionEntryPersistence
-			commerceSubscriptionEntryPersistence) {
-
-		this.commerceSubscriptionEntryPersistence =
-			commerceSubscriptionEntryPersistence;
-	}
-
-	/**
-	 * Returns the commerce subscription entry finder.
-	 *
-	 * @return the commerce subscription entry finder
-	 */
-	public CommerceSubscriptionEntryFinder
-		getCommerceSubscriptionEntryFinder() {
-
-		return commerceSubscriptionEntryFinder;
-	}
-
-	/**
-	 * Sets the commerce subscription entry finder.
-	 *
-	 * @param commerceSubscriptionEntryFinder the commerce subscription entry finder
-	 */
-	public void setCommerceSubscriptionEntryFinder(
-		CommerceSubscriptionEntryFinder commerceSubscriptionEntryFinder) {
-
-		this.commerceSubscriptionEntryFinder = commerceSubscriptionEntryFinder;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		_setServiceUtilService(commerceSubscriptionEntryService);
-	}
-
-	public void destroy() {
-		_setServiceUtilService(null);
+		CommerceSubscriptionEntryServiceUtil.setService(
+			commerceSubscriptionEntryService);
 	}
 
 	/**
@@ -224,42 +122,20 @@ public abstract class CommerceSubscriptionEntryServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CommerceSubscriptionEntryService commerceSubscriptionEntryService) {
-
-		try {
-			Field field =
-				CommerceSubscriptionEntryServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceSubscriptionEntryService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(
-		type = com.liferay.commerce.service.CommerceSubscriptionEntryLocalService.class
-	)
+	@Reference
 	protected com.liferay.commerce.service.CommerceSubscriptionEntryLocalService
 		commerceSubscriptionEntryLocalService;
 
-	@BeanReference(type = CommerceSubscriptionEntryService.class)
 	protected CommerceSubscriptionEntryService commerceSubscriptionEntryService;
 
-	@BeanReference(type = CommerceSubscriptionEntryPersistence.class)
+	@Reference
 	protected CommerceSubscriptionEntryPersistence
 		commerceSubscriptionEntryPersistence;
 
-	@BeanReference(type = CommerceSubscriptionEntryFinder.class)
+	@Reference
 	protected CommerceSubscriptionEntryFinder commerceSubscriptionEntryFinder;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 

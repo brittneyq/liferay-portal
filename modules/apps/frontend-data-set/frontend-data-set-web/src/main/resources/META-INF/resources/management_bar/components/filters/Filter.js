@@ -15,12 +15,9 @@
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import React, {useContext, useEffect, useState} from 'react';
 
-import FrontendDataSetContext from '../../../FrontendDataSetContext';
 import {getComponentByModuleURL} from '../../../utils/modules';
-import AutocompleteFilter, {
-	getOdataString as getAutocompleteFilterOdataString,
-	getSelectedItemsLabel as getAutocompleteFilterSelectedItemsLabel,
-} from './AutocompleteFilter';
+import ViewsContext from '../../../views/ViewsContext';
+import {VIEWS_ACTION_TYPES} from '../../../views/viewsReducer';
 import DateRangeFilter, {
 	getOdataString as getDateRangeFilterOdataString,
 	getSelectedItemsLabel as getDateRangeFilterSelectedItemsLabel,
@@ -31,15 +28,12 @@ import SelectionFilter, {
 } from './SelectionFilter';
 
 const FILTER_TYPE_COMPONENT = {
-	autocomplete: AutocompleteFilter,
 	dateRange: DateRangeFilter,
 	selection: SelectionFilter,
 };
 
 const getFilterSelectedItemsLabel = (filter) => {
 	switch (filter.type) {
-		case 'autocomplete':
-			return getAutocompleteFilterSelectedItemsLabel(filter);
 		case 'dateRange':
 			return getDateRangeFilterSelectedItemsLabel(filter);
 		case 'selection':
@@ -51,8 +45,6 @@ const getFilterSelectedItemsLabel = (filter) => {
 
 const getOdataFilterString = (filter) => {
 	switch (filter.type) {
-		case 'autocomplete':
-			return getAutocompleteFilterOdataString(filter);
 		case 'dateRange':
 			return getDateRangeFilterOdataString(filter);
 		case 'selection':
@@ -63,7 +55,7 @@ const getOdataFilterString = (filter) => {
 };
 
 const Filter = ({moduleURL, type, ...otherProps}) => {
-	const {setFilters} = useContext(FrontendDataSetContext);
+	const [{filters}, viewsDispatch] = useContext(ViewsContext);
 
 	const [Component, setComponent] = useState(() => {
 		if (!moduleURL) {
@@ -89,11 +81,12 @@ const Filter = ({moduleURL, type, ...otherProps}) => {
 	}, [moduleURL]);
 
 	const setFilter = ({id, ...otherProps}) => {
-		setFilters((filters) => {
-			return filters.map((filter) => ({
+		viewsDispatch({
+			type: VIEWS_ACTION_TYPES.UPDATE_FILTERS,
+			value: filters.map((filter) => ({
 				...filter,
 				...(filter.id === id ? {...otherProps} : {}),
-			}));
+			})),
 		});
 	};
 
@@ -102,7 +95,7 @@ const Filter = ({moduleURL, type, ...otherProps}) => {
 			<Component setFilter={setFilter} {...otherProps} />
 		</div>
 	) : (
-		<ClayLoadingIndicator small />
+		<ClayLoadingIndicator size="sm" />
 	);
 };
 

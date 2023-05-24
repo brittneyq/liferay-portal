@@ -56,8 +56,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -268,48 +266,21 @@ public abstract class AssetVocabularyLocalServiceBaseImpl
 		return assetVocabularyPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the asset vocabulary with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the asset vocabulary's external reference code
-	 * @return the matching asset vocabulary, or <code>null</code> if a matching asset vocabulary could not be found
-	 */
 	@Override
 	public AssetVocabulary fetchAssetVocabularyByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
-		return assetVocabularyPersistence.fetchByG_ERC(
-			groupId, externalReferenceCode);
+		return assetVocabularyPersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchAssetVocabularyByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public AssetVocabulary fetchAssetVocabularyByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return fetchAssetVocabularyByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the asset vocabulary with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the asset vocabulary's external reference code
-	 * @return the matching asset vocabulary
-	 * @throws PortalException if a matching asset vocabulary could not be found
-	 */
 	@Override
 	public AssetVocabulary getAssetVocabularyByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return assetVocabularyPersistence.findByG_ERC(
-			groupId, externalReferenceCode);
+		return assetVocabularyPersistence.findByERC_G(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -660,14 +631,14 @@ public abstract class AssetVocabularyLocalServiceBaseImpl
 			"com.liferay.asset.kernel.model.AssetVocabulary",
 			assetVocabularyLocalService);
 
-		_setLocalServiceUtilService(assetVocabularyLocalService);
+		AssetVocabularyLocalServiceUtil.setService(assetVocabularyLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.asset.kernel.model.AssetVocabulary");
 
-		_setLocalServiceUtilService(null);
+		AssetVocabularyLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -724,23 +695,6 @@ public abstract class AssetVocabularyLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		AssetVocabularyLocalService assetVocabularyLocalService) {
-
-		try {
-			Field field =
-				AssetVocabularyLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, assetVocabularyLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

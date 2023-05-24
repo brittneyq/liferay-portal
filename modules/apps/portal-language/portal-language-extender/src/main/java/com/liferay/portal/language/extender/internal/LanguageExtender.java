@@ -35,7 +35,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 /**
  * @author Carlos Sierra Andrés
  */
-@Component(immediate = true, service = {})
+@Component(service = {})
 public class LanguageExtender
 	implements BundleTrackerCustomizer<LanguageExtension> {
 
@@ -86,7 +86,7 @@ public class LanguageExtender
 		_bundleContext = bundleContext;
 
 		_bundleTracker = new BundleTracker<>(
-			bundleContext, ~Bundle.INSTALLED & ~Bundle.UNINSTALLED, this);
+			bundleContext, Bundle.ACTIVE, this);
 
 		_bundleTracker.open();
 	}

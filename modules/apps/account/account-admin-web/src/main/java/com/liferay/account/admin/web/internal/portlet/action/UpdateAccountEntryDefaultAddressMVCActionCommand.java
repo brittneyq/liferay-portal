@@ -34,7 +34,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_ADMIN,
 		"javax.portlet.name=" + AccountPortletKeys.ACCOUNT_ENTRIES_MANAGEMENT,
@@ -59,10 +58,10 @@ public class UpdateAccountEntryDefaultAddressMVCActionCommand
 		AccountEntry accountEntry = _accountEntryService.getAccountEntry(
 			accountEntryId);
 
-		if (Objects.equals("billing", type)) {
+		if (Objects.equals(type, "billing")) {
 			accountEntry.setDefaultBillingAddressId(addressId);
 		}
-		else if (Objects.equals("shipping", type)) {
+		else if (Objects.equals(type, "shipping")) {
 			accountEntry.setDefaultShippingAddressId(addressId);
 		}
 

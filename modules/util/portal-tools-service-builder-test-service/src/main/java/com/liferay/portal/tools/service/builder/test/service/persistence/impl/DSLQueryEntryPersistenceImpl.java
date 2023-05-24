@@ -39,8 +39,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.DSLQuer
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -436,7 +434,7 @@ public class DSLQueryEntryPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<DSLQueryEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -506,7 +504,7 @@ public class DSLQueryEntryPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -571,29 +569,13 @@ public class DSLQueryEntryPersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0], new String[0], false);
 
-		_setDSLQueryEntryUtilPersistence(this);
+		DSLQueryEntryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setDSLQueryEntryUtilPersistence(null);
+		DSLQueryEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(DSLQueryEntryImpl.class.getName());
-	}
-
-	private void _setDSLQueryEntryUtilPersistence(
-		DSLQueryEntryPersistence dslQueryEntryPersistence) {
-
-		try {
-			Field field = DSLQueryEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, dslQueryEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@ServiceReference(type = EntityCache.class)

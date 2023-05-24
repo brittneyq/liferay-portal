@@ -11,18 +11,53 @@
 
 <tbody>
 <tr>
+	<td>ANY_LINK</td>
+	<td>//*[contains(@href, 'liferay') and text()='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SVG_ACTIVATION_STATUS</td>
+	<td>//*[contains(@class, 'cp-label-activation-status')]//div/descendant::button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SVG_STATUS_OPTION</td>
+	<td>//*[contains(@class, 'dropdown-item')]//*[text()='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BUTTON</td>
 	<td>//*[contains(@class, btn) and text()='${key_text}']</td>
 	<td></td>
 </tr>
 <tr>
+	<td>BODY</td>
+	<td>//body</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PAGE_TITLE</td>
-	<td>//h1[text()='${key_title}']</td>
+	<td>//*[text()='${key_title}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FIELDS_KORONEIKI</td>
-	<td>//div[contains(@data-field-name, '${field}')]//input[contains(@value, '${value}')]</td>
+	<td>//*[@class='ddm-label' and text()='${key_label}']/parent::*//*[@type='text' and @value='${key_value}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FIELDS_KORONEIKI_VALUE</td>
+	<td>//*[@class='ddm-label' and text()='${key_label}']/parent::*//input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>KORONEIKI_ACCOUNT_ELLIPSIS_BUTTON</td>
+	<td>//*[text()='${key_accountName}']/parent::*//following-sibling::*[contains(@class, 'item-actions')]//*[@type='button']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ALERT_INFO_MESSAGE</td>
+	<td>//*[contains(@class, 'alert-info')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -77,12 +112,12 @@
 </tr>
 <tr>
 	<td>PROJECT_LOGO</td>
-	<td>//div[contains(@class, 'card-subscription')]//img[contains(@src, '${logo}')]</td>
+	<td>//*[contains(@class, 'subscription-card')]//img[contains(@src, '${logo}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CARD_NAME</td>
-	<td>//div[contains(@class, 'cards-subscription')]//h5[(text()='${cardName}')]</td>
+	<td>//div[contains(@class, 'cp-account-subscription-card')]//*[text()='${cardName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -92,12 +127,12 @@
 </tr>
 <tr>
 	<td>CARD_DATE</td>
-	<td>//div[contains(@class, 'card-subscription')]//p[(text()='${date}')]//..//span[(text()='${status}')]</td>
+	<td>//*[contains(@class, 'card-body')]//*[(text()='${key_date}')]//..//*[(text()='${key_status}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CARD_INSTANCE</td>
-	<td>xpath=(//div[contains(@class, 'card-subscription')]//..//p[contains(text(), '${title}')])[${key_index}]</td>
+	<td>xpath=(//*[contains(@class, 'subscription-card')]//..//p[contains(text(), '${title}')])[${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -112,12 +147,17 @@
 </tr>
 <tr>
 	<td>SUBSCRIPTION_NAVBAR</td>
-	<td>//div[@id='subscription-navbar']/button[@value='${value}']</td>
+	<td>//*[contains(@class, 'nav-segment')]//*[contains(text(), '${value}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SUBSCRIPTION_DROPDOWN</td>
-	<td>//button[contains(@class, 'dropdown-toggle') and contains(text(), 'Partnership')]</td>
+	<td>//*[@data-testid= 'subscriptionDropDown']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUBSCRIPTION_DROPDOWN_ITEM</td>
+	<td>//*[contains(@class,'show')]//*[contains(@class,'dropdown-item') and text()='${key_text}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -141,13 +181,28 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MODAL_INFO</td>
+	<td>//div[contains(@class, 'modal-content')]/parent::div//*[contains(text(), '${key_text}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_INFO</td>
+	<td>//div[contains(@class, 'container')]/parent::div//*[contains(text(), '${key_text}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_SETUP</td>
+	<td>//*[contains(@class, 'form-control')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MODAL_TITLE</td>
 	<td>//div[contains(@class, 'flex-row')]//h2[contains(., '${modalTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CLOSE_MODAL_CARD</td>
-	<td>//button[contains(@aria-label, 'close')]</td>
+	<td>CLOSE_MODAL</td>
+	<td>//h2[contains(text(), '${key_modalTitle}')]/..//following-sibling::button</td>
 	<td></td>
 </tr>
 <tr>
@@ -162,7 +217,7 @@
 </tr>
 <tr>
 	<td>GETTING_STARTED_MODAL</td>
-	<td>//header[contains(@class,'p-4')]//h2[contains(text(),'Let’s set up your project')]</td>
+	<td>//header[contains(@class,'p-4')]//h2[contains(text(),"Let's set up your project")]</td>
 	<td></td>
 </tr>
 <tr>
@@ -187,7 +242,7 @@
 </tr>
 <tr>
 	<td>PROJECT_TITLE_MAIN_PAGE</td>
-	<td>//div//h2[contains(@id,'project-title')]</td>
+	<td>//div[contains(@class, 'card-body')]//h4[contains(@class, 'text-truncate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -197,7 +252,12 @@
 </tr>
 <tr>
 	<td>ERROR_MESSAGE</td>
-	<td>//div[contains(@class, 'alert-danger')]</td>
+	<td>//*[contains(@class, 'alert-danger')]//*[text()='${key_errorMessage}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SPECIFIC_ERROR_MESSAGE</td>
+	<td>//*[contains(@name, '${value}')]/parent::*//following-sibling::*//*[text()='${key_errorMessage}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -207,17 +267,27 @@
 </tr>
 <tr>
 	<td>SLA_CARD</td>
-	<td>//div[contains(text(), '${type}')]</td>
+	<td>//*[contains(text(), '${type}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FRAGMENT_HEADING</td>
-	<td>//div[contains(@id, 'welcome-user') and contains(.,'${key_title}')]</td>
+	<td>//*[contains(@class, 'customer-portal-welcome-banner') and contains(.,'${key_title}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ANY_BUTTON</td>
-	<td>//*[contains(@type, 'button') and text()='${key_text}']</td>
+	<td>//*[contains(@type, 'button') and text()='${key_text}'] | //*[contains(@type, 'button')]//*[text()='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_DISABLED_BUTTON</td>
+	<td>//*[contains(@type, 'button') and text()='${key_text}' and @disabled] | //*[contains(@type, 'button') and @disabled]//*[text()='${key_text}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_ACTIVE_BUTTON</td>
+	<td>//*[contains(@type, 'button') and text()='${key_text}' and not(@disabled)] | //*[contains(@type, 'button') and not(@disabled)]//*[text()='${key_text}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -246,6 +316,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FIELD_VALUE</td>
+	<td>//input[contains(@id,'${label}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>FINISH_ACTIVATION</td>
 	<td>//button[contains(@class, 'btn-link') and contains(.,'Finish Activation')]</td>
 	<td></td>
@@ -257,12 +332,12 @@
 </tr>
 <tr>
 	<td>CARD_SUBSCRIPTION</td>
-	<td>//p[contains(@class, 'text-paragraph') and contains(text(), '${title}')]</td>
+	<td>//*[contains(@class, 'text-paragraph') and contains(text(), '${key_text}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CARD_TITLE</td>
-	<td>//span[contains(@class, 'text-truncate') and contains(.,'${project}')]</td>
+	<td>//*[contains(@class, 'card-title') and contains(.,'${project}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -272,12 +347,12 @@
 </tr>
 <tr>
 	<td>CARD_LOGO</td>
-	<td>//img[contains(@class, 'cp-img-activation-status') and contains(@src, '${product}')]</td>
+	<td>//*[contains(@class, 'cp-img-activation-status') and contains(@src, '${product}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>STATUS_CARD</td>
-	<td>//span[contains(text(),'${key_status}')]</td>
+	<td>//*[contains(text(),'${key_status}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -297,7 +372,7 @@
 </tr>
 <tr>
 	<td>WELCOME_PAGE_USER_NAME</td>
-	<td>//*[contains(@id,'customer-portal-user-name') and text()='${key_userFirstName}!']</td>
+	<td>//*[contains(@class,'customer-portal')]//*[contains(text(), '${key_userFirstName}!')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -307,7 +382,12 @@
 </tr>
 <tr>
 	<td>SEARCH_BAR</td>
-	<td>//*[contains(@class, 'cp-search-project')]</td>
+	<td>//*[contains(@class, 'cp-search-bar')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEARCH</td>
+	<td>//input[contains(@placeholder, 'Search')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -316,8 +396,43 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ALERT_INFO</td>
+	<td>//*[contains(@class, 'alert-info')]//*[text()='${key_alertText}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SUPPORT_SEAT</td>
 	<td>//p[contains(text(), 'Support Seat')]//..//*[*[name()='svg'][contains(@class,'lexicon-icon-info-circle')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DROPDOWN_STATUS</td>
+	<td>//span[contains(text(), 'In Progress')]/ancestor::span/following-sibling::div//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ID_CONFIRMATION</td>
+	<td>//input[@id='basicInputText']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VERSION_DROPDOWN</td>
+	<td>//*[contains(text(), 'Developer Keys')]/following-sibling::div//select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPLOY_ARTICLE_PAGE</td>
+	<td>//*[contains(text(), ' Liferay Portal instance, please read the')]/*[contains(@href, 'Deploying-Activation-Keys')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPLOY_ACTIVATION_PAGE</td>
+	<td>//*//h1[contains(text(), 'Deploying Activation Keys')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ELEMENT_BY_TEXT</td>
+	<td>//*[contains(@class, 'table-style-fluid')]//*[contains(text(), '${key_text}')]</td>
 	<td></td>
 </tr>
 </tbody>

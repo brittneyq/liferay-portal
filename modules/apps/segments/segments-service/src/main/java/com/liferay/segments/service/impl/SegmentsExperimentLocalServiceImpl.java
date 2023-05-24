@@ -14,7 +14,6 @@
 
 package com.liferay.segments.service.impl;
 
-import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -55,7 +54,6 @@ import com.liferay.segments.exception.WinnerSegmentsExperienceException;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.model.SegmentsExperiment;
 import com.liferay.segments.model.SegmentsExperimentRel;
-import com.liferay.segments.model.SegmentsExperimentRelTable;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.service.SegmentsExperimentRelLocalService;
 import com.liferay.segments.service.base.SegmentsExperimentLocalServiceBaseImpl;
@@ -67,7 +65,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -211,35 +208,6 @@ public class SegmentsExperimentLocalServiceImpl
 			segmentsExperimentLocalService.deleteSegmentsExperiment(
 				segmentsExperiment);
 		}
-	}
-
-	@Override
-	public SegmentsExperience fetchControlSegmentExperience(
-		SegmentsExperience segmentsExperience) {
-
-		List<SegmentsExperimentRel> segmentsExperimentRels =
-			_segmentsExperimentRelLocalService.dslQuery(
-				DSLQueryFactoryUtil.select(
-					SegmentsExperimentRelTable.INSTANCE
-				).from(
-					SegmentsExperimentRelTable.INSTANCE
-				).where(
-					SegmentsExperimentRelTable.INSTANCE.segmentsExperienceId.eq(
-						segmentsExperience.getSegmentsExperienceId())
-				));
-
-		if (segmentsExperimentRels.isEmpty()) {
-			return null;
-		}
-
-		SegmentsExperimentRel segmentsExperimentRel =
-			segmentsExperimentRels.get(0);
-
-		SegmentsExperiment segmentsExperiment = fetchSegmentsExperiment(
-			segmentsExperimentRel.getSegmentsExperimentId());
-
-		return _segmentsExperienceLocalService.fetchSegmentsExperience(
-			segmentsExperiment.getSegmentsExperienceId());
 	}
 
 	@Override
@@ -444,39 +412,6 @@ public class SegmentsExperimentLocalServiceImpl
 			winnerSegmentsExperienceId, status);
 	}
 
-	protected void sendNotificationEvent(SegmentsExperiment segmentsExperiment)
-		throws PortalException {
-
-		ServiceContext serviceContext =
-			ServiceContextThreadLocal.getServiceContext();
-
-		if ((serviceContext == null) ||
-			(serviceContext.getUserId() == segmentsExperiment.getUserId()) ||
-			!UserNotificationManagerUtil.isDeliver(
-				segmentsExperiment.getUserId(),
-				SegmentsPortletKeys.SEGMENTS_EXPERIMENT, 0,
-				SegmentsExperimentConstants.NOTIFICATION_TYPE_UPDATE_STATUS,
-				UserNotificationDeliveryConstants.TYPE_WEBSITE)) {
-
-			return;
-		}
-
-		_userNotificationEventLocalService.sendUserNotificationEvents(
-			segmentsExperiment.getUserId(),
-			SegmentsPortletKeys.SEGMENTS_EXPERIMENT,
-			UserNotificationDeliveryConstants.TYPE_WEBSITE,
-			JSONUtil.put(
-				"classPK", segmentsExperiment.getSegmentsExperimentId()
-			).put(
-				"referrerClassNameId", segmentsExperiment.getClassNameId()
-			).put(
-				"referrerClassPK", segmentsExperiment.getClassPK()
-			).put(
-				"segmentsExperimentKey",
-				segmentsExperiment.getSegmentsExperimentKey()
-			));
-	}
-
 	private DynamicQuery _getSegmentsExperienceIdsDynamicQuery(
 		long segmentsEntryId) {
 
@@ -499,10 +434,9 @@ public class SegmentsExperimentLocalServiceImpl
 		SegmentsExperience variantSegmentsExperience) {
 
 		SegmentsExperience segmentsExperience =
-			_segmentsExperiencePersistence.fetchByG_C_C_Last(
+			_segmentsExperiencePersistence.fetchByG_P_Last(
 				controlSegmentsExperience.getGroupId(),
-				controlSegmentsExperience.getClassNameId(),
-				controlSegmentsExperience.getClassPK(), null);
+				controlSegmentsExperience.getPlid(), null);
 
 		int controlSegmentsExperiencePriority =
 			controlSegmentsExperience.getPriority();
@@ -538,6 +472,39 @@ public class SegmentsExperimentLocalServiceImpl
 			variantSegmentsExperience);
 	}
 
+	private void _sendNotificationEvent(SegmentsExperiment segmentsExperiment)
+		throws PortalException {
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if ((serviceContext == null) ||
+			(serviceContext.getUserId() == segmentsExperiment.getUserId()) ||
+			!UserNotificationManagerUtil.isDeliver(
+				segmentsExperiment.getUserId(),
+				SegmentsPortletKeys.SEGMENTS_EXPERIMENT, 0,
+				SegmentsExperimentConstants.NOTIFICATION_TYPE_UPDATE_STATUS,
+				UserNotificationDeliveryConstants.TYPE_WEBSITE)) {
+
+			return;
+		}
+
+		_userNotificationEventLocalService.sendUserNotificationEvents(
+			segmentsExperiment.getUserId(),
+			SegmentsPortletKeys.SEGMENTS_EXPERIMENT,
+			UserNotificationDeliveryConstants.TYPE_WEBSITE,
+			JSONUtil.put(
+				"classPK", segmentsExperiment.getSegmentsExperimentId()
+			).put(
+				"referrerClassNameId", segmentsExperiment.getClassNameId()
+			).put(
+				"referrerClassPK", segmentsExperiment.getClassPK()
+			).put(
+				"segmentsExperimentKey",
+				segmentsExperiment.getSegmentsExperimentKey()
+			));
+	}
+
 	private SegmentsExperiment _updateSegmentsExperimentStatus(
 			SegmentsExperiment segmentsExperiment,
 			long winnerSegmentsExperienceId, int status)
@@ -561,7 +528,7 @@ public class SegmentsExperimentLocalServiceImpl
 		segmentsExperiment = segmentsExperimentPersistence.update(
 			segmentsExperiment);
 
-		sendNotificationEvent(segmentsExperiment);
+		_sendNotificationEvent(segmentsExperiment);
 
 		return segmentsExperiment;
 	}
@@ -685,17 +652,17 @@ public class SegmentsExperimentLocalServiceImpl
 	private void _validateSplit(Map<Long, Double> segmentsExperienceIdSplitMap)
 		throws PortalException {
 
+		double segmentsExperienceIdSplitsSum = 0;
+
 		Collection<Double> segmentsExperienceIdSplitsValues =
 			segmentsExperienceIdSplitMap.values();
 
-		Stream<Double> segmentsExperienceIdSplitsStream =
-			segmentsExperienceIdSplitsValues.stream();
+		for (Double segmentsExperienceIdSplitsValue :
+				segmentsExperienceIdSplitsValues) {
 
-		double segmentsExperienceIdSplitsSum =
-			segmentsExperienceIdSplitsStream.mapToDouble(
-				segmentsExperienceIdSplit -> BigDecimalUtil.scale(
-					segmentsExperienceIdSplit, 2, RoundingMode.HALF_DOWN)
-			).sum();
+			segmentsExperienceIdSplitsSum += BigDecimalUtil.scale(
+				segmentsExperienceIdSplitsValue, 2, RoundingMode.HALF_DOWN);
+		}
 
 		if (segmentsExperienceIdSplitsSum != 1) {
 			throw new SegmentsExperimentRelSplitException(

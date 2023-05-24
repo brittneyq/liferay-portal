@@ -25,7 +25,7 @@ import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 import com.liferay.portal.workflow.kaleo.runtime.KaleoSignaler;
 import com.liferay.portal.workflow.kaleo.runtime.graph.PathElement;
-import com.liferay.portal.workflow.kaleo.runtime.internal.node.NodeExecutorFactory;
+import com.liferay.portal.workflow.kaleo.runtime.internal.node.NodeExecutorRegistry;
 import com.liferay.portal.workflow.kaleo.runtime.internal.petra.executor.GraphWalkerPortalExecutor;
 import com.liferay.portal.workflow.kaleo.runtime.node.NodeExecutor;
 import com.liferay.portal.workflow.kaleo.runtime.util.ExecutionContextHelper;
@@ -39,7 +39,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = AopService.class)
+@Component(service = AopService.class)
 @CTAware
 @Transactional(
 	isolation = Isolation.PORTAL, propagation = Propagation.SUPPORTS,
@@ -92,7 +92,7 @@ public class DefaultKaleoSignaler
 			boolean waitForCompletion)
 		throws PortalException {
 
-		NodeExecutor nodeExecutor = _nodeExecutorFactory.getNodeExecutor(
+		NodeExecutor nodeExecutor = _nodeExecutorRegistry.getNodeExecutor(
 			currentKaleoNode.getType());
 
 		List<PathElement> remainingPathElements = new ArrayList<>();
@@ -141,6 +141,6 @@ public class DefaultKaleoSignaler
 	private GraphWalkerPortalExecutor _graphWalkerPortalExecutor;
 
 	@Reference
-	private NodeExecutorFactory _nodeExecutorFactory;
+	private NodeExecutorRegistry _nodeExecutorRegistry;
 
 }

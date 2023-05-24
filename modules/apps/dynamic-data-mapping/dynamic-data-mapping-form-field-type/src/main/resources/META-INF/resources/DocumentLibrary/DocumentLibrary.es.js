@@ -24,7 +24,7 @@ import {
 	useConfig,
 	useFormState,
 } from 'data-engine-js-components-web';
-import {openSelectionModal} from 'frontend-js-web';
+import {formatStorage, openSelectionModal, sub} from 'frontend-js-web';
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {FieldBase} from '../FieldBase/ReactFieldBase.es';
@@ -61,23 +61,19 @@ const getValue = (value) => {
 	return JSON.stringify(value);
 };
 
-function transformFileEntryProperties({fileEntryTitle, fileEntryURL, value}) {
+function transformFileEntryProperties({fileEntryTitle, value}) {
 	if (value && typeof value === 'string') {
 		try {
 			const fileEntry = JSON.parse(value);
 
 			fileEntryTitle = fileEntry.title;
-
-			if (fileEntry.url) {
-				fileEntryURL = fileEntry.url;
-			}
 		}
 		catch (error) {
 			console.warn('Unable to parse JSON', value);
 		}
 	}
 
-	return value ? [fileEntryTitle, fileEntryURL] : [];
+	return value ? [fileEntryTitle] : [];
 }
 
 const DocumentLibrary = ({
@@ -93,22 +89,21 @@ const DocumentLibrary = ({
 	readOnly,
 	value,
 }) => {
-	const [transformedFileEntryTitle, transformedFileEntryURL] = useMemo(
+	const [transformedFileEntryTitle] = useMemo(
 		() =>
 			transformFileEntryProperties({
 				fileEntryTitle,
-				fileEntryURL,
 				value,
 			}),
-		[fileEntryTitle, fileEntryURL, value]
+		[fileEntryTitle, value]
 	);
 
 	return (
 		<div className="liferay-ddm-form-field-document-library">
-			{transformedFileEntryURL && readOnly ? (
+			{transformedFileEntryTitle && readOnly ? (
 				<CardItem
 					fileEntryTitle={transformedFileEntryTitle}
-					fileEntryURL={transformedFileEntryURL}
+					fileEntryURL={fileEntryURL}
 				/>
 			) : (
 				<ClayInput.Group>
@@ -170,7 +165,6 @@ const DocumentLibrary = ({
 
 const GuestUploadFile = ({
 	fileEntryTitle = '',
-	fileEntryURL = '',
 	id,
 	message,
 	name,
@@ -185,10 +179,9 @@ const GuestUploadFile = ({
 		() =>
 			transformFileEntryProperties({
 				fileEntryTitle,
-				fileEntryURL,
 				value,
 			}),
-		[fileEntryTitle, fileEntryURL, value]
+		[fileEntryTitle, value]
 	);
 
 	return (
@@ -260,7 +253,7 @@ const Main = ({
 	_onBlur,
 	_onFocus,
 	allowGuestUsers,
-	displayErrors: initialDisplayErrors,
+	displayErrors: initialDisplayErrors = false,
 	editingLanguageId,
 	errorMessage: initialErrorMessage,
 	fieldName,
@@ -273,6 +266,7 @@ const Main = ({
 	maximumSubmissionLimitReached,
 	message,
 	name,
+	objectFieldAcceptedFileExtensions,
 	onBlur,
 	onChange,
 	onFocus,
@@ -294,7 +288,11 @@ const Main = ({
 
 	const isSignedIn = Liferay.ThemeDisplay.isSignedIn();
 
-	const getErrorMessages = (errorMessage, isSignedIn) => {
+	const getErrorMessages = (
+		errorMessage,
+		isSignedIn,
+		objectFieldInvalidExtension
+	) => {
 		const errorMessages = [errorMessage];
 
 		if (!allowGuestUsers && !isSignedIn) {
@@ -318,6 +316,16 @@ const Main = ({
 				)
 			);
 		}
+		else if (objectFieldInvalidExtension) {
+			errorMessages.push(
+				Liferay.Util.sub(
+					Liferay.Language.get(
+						'please-enter-a-file-with-a-valid-extension-x'
+					),
+					objectFieldAcceptedFileExtensions
+				)
+			);
+		}
 
 		return errorMessages.join(' ');
 	};
@@ -335,10 +343,22 @@ const Main = ({
 	}, [allowGuestUsers, isSignedIn, showUploadPermissionMessage]);
 
 	useEffect(() => {
-		setCurrentValue(value);
-		setDisplayErrors(initialDisplayErrors);
-		setErrorMessage(getErrorMessages(initialErrorMessage, isSignedIn));
-		setValid(initialValid);
+		const objectFieldInvalidExtension = isObjectFieldInvalidExtension(
+			value
+		);
+
+		setCurrentValue(objectFieldInvalidExtension ? null : value);
+		setDisplayErrors(
+			objectFieldInvalidExtension ? true : initialDisplayErrors
+		);
+		setErrorMessage(
+			getErrorMessages(
+				initialErrorMessage,
+				isSignedIn,
+				objectFieldInvalidExtension
+			)
+		);
+		setValid(objectFieldInvalidExtension ? false : initialValid);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [initialDisplayErrors, initialErrorMessage, initialValid, value]);
@@ -376,7 +396,7 @@ const Main = ({
 			onClose: () => onBlur(event),
 			onSelect: handleFieldChanged,
 			selectEventName: `${portletNamespace}selectDocumentLibrary`,
-			title: Liferay.Util.sub(
+			title: sub(
 				Liferay.Language.get('select-x'),
 				Liferay.Language.get('document')
 			),
@@ -417,14 +437,40 @@ const Main = ({
 			return false;
 		}
 
-		const errorMessage = Liferay.Util.sub(
+		const errorMessage = sub(
 			Liferay.Language.get(
 				'please-enter-a-file-with-a-valid-file-size-no-larger-than-x'
 			),
-			[Liferay.Util.formatStorage(uploadRequestSizeLimit)]
+			[formatStorage(uploadRequestSizeLimit)]
 		);
 
 		handleGuestUploadFileChanged(errorMessage, {}, null);
+
+		return true;
+	};
+
+	const isObjectFieldInvalidExtension = (value) => {
+		if (!value || !objectFieldAcceptedFileExtensions) {
+			return false;
+		}
+
+		const fileEntryJSON = JSON.parse(value);
+
+		const fileExtension = fileEntryJSON.mimeType
+			? fileEntryJSON.mimeType.split('/')[1]
+			: fileEntryJSON.extension;
+
+		if (!fileExtension) {
+			return false;
+		}
+
+		const supportedExtensions = objectFieldAcceptedFileExtensions.split(
+			', '
+		);
+
+		if (supportedExtensions.includes(fileExtension)) {
+			return false;
+		}
 
 		return true;
 	};
@@ -507,7 +553,6 @@ const Main = ({
 			{allowGuestUsers && !isSignedIn ? (
 				<GuestUploadFile
 					fileEntryTitle={fileEntryTitle}
-					fileEntryURL={fileEntryURL}
 					id={id}
 					message={message}
 					name={name}

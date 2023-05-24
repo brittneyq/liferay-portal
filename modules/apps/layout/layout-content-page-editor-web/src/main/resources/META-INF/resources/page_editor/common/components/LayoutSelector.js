@@ -12,11 +12,12 @@
  * details.
  */
 
+import {getPortletNamespace} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useMemo} from 'react';
 
 import {config} from '../../app/config/index';
-import itemSelectorValueToLayout from '../../app/utils/item-selector-value/itemSelectorValueToLayout';
+import itemSelectorValueToLayout from '../../app/utils/item_selector_value/itemSelectorValueToLayout';
 import ItemSelector from './ItemSelector';
 
 export function LayoutSelector({mappedLayout, onLayoutSelect}) {
@@ -25,7 +26,7 @@ export function LayoutSelector({mappedLayout, onLayoutSelect}) {
 			const url = new URL(config.layoutItemSelectorURL);
 
 			url.searchParams.set(
-				`${Liferay.Util.getPortletNamespace(
+				`${getPortletNamespace(
 					Liferay.PortletKeys.ITEM_SELECTOR
 				)}layoutUuid`,
 				mappedLayout.layoutUuid

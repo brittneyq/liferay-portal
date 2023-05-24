@@ -22,8 +22,6 @@ import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
@@ -43,13 +41,14 @@ public class InvalidFormatExceptionMapper
 		List<JsonMappingException.Reference> references =
 			invalidFormatException.getPath();
 
-		Stream<JsonMappingException.Reference> stream = references.stream();
+		StringBundler sb = new StringBundler(references.size() * 2);
 
-		String path = stream.map(
-			JsonMappingException.Reference::getFieldName
-		).collect(
-			Collectors.joining(".")
-		);
+		for (JsonMappingException.Reference reference : references) {
+			sb.append(reference.getFieldName());
+			sb.append(".");
+		}
+
+		sb.setIndex(sb.index() - 1);
 
 		Class<?> clazz = invalidFormatException.getTargetType();
 
@@ -57,10 +56,10 @@ public class InvalidFormatExceptionMapper
 			invalidFormatException.getLocalizedMessage(),
 			Response.Status.BAD_REQUEST,
 			StringBundler.concat(
-				"Unable to map JSON path \"", path, "\" with value \"",
+				"Unable to map JSON path \"", sb, "\" with value \"",
 				invalidFormatException.getValue(), "\" to class \"",
 				clazz.getSimpleName(), "\""),
-			"InvalidFormatException");
+			InvalidFormatException.class.getName());
 	}
 
 }

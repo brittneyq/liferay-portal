@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		DLOpenerFileEntryReferenceModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.document.library.opener.model.impl.DLOpenerFileEntryReferenceImpl",
+		"table.name=DLOpenerFileEntryReference"
+	},
+	service = ArgumentsResolver.class
 )
 public class DLOpenerFileEntryReferenceModelArgumentsResolver
 	implements ArgumentsResolver {

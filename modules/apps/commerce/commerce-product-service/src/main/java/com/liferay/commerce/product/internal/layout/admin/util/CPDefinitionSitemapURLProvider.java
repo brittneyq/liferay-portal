@@ -14,8 +14,8 @@
 
 package com.liferay.commerce.product.internal.layout.admin.util;
 
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.catalog.CPQuery;
 import com.liferay.commerce.product.constants.CPPortletKeys;
@@ -26,12 +26,14 @@ import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.url.CPFriendlyURL;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
+import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.layout.admin.kernel.model.LayoutTypePortletConstants;
-import com.liferay.layout.admin.kernel.util.Sitemap;
-import com.liferay.layout.admin.kernel.util.SitemapURLProvider;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.search.Field;
@@ -40,12 +42,19 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.site.util.Sitemap;
+import com.liferay.site.util.SitemapURLProvider;
 
 import java.io.Serializable;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -53,9 +62,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alec Sloan
  */
-@Component(
-	enabled = false, immediate = true, service = SitemapURLProvider.class
-)
+@Component(service = SitemapURLProvider.class)
 public class CPDefinitionSitemapURLProvider implements SitemapURLProvider {
 
 	@Override
@@ -85,9 +92,9 @@ public class CPDefinitionSitemapURLProvider implements SitemapURLProvider {
 					getCommerceChannelGroupIdBySiteGroupId(
 						layoutSet.getGroupId());
 
-			CommerceAccount commerceAccount =
-				_commerceAccountHelper.getCurrentCommerceAccount(
-					themeDisplay.getRequest());
+			AccountEntry accountEntry =
+				_commerceAccountHelper.getCurrentAccountEntry(
+					groupId, themeDisplay.getRequest());
 
 			SearchContext searchContext = new SearchContext();
 
@@ -96,8 +103,8 @@ public class CPDefinitionSitemapURLProvider implements SitemapURLProvider {
 					Field.STATUS, WorkflowConstants.STATUS_APPROVED
 				).put(
 					"commerceAccountGroupIds",
-					_commerceAccountHelper.getCommerceAccountGroupIds(
-						commerceAccount.getCommerceAccountId())
+					_accountGroupLocalService.getAccountGroupIds(
+						accountEntry.getAccountEntryId())
 				).put(
 					"commerceChannelGroupId", groupId
 				).build());
@@ -149,9 +156,12 @@ public class CPDefinitionSitemapURLProvider implements SitemapURLProvider {
 			return;
 		}
 
+		themeDisplay = SitemapURLProviderUtil.updateThemeDisplay(
+			_language, _portal.getLocale(themeDisplay.getRequest()),
+			themeDisplay);
+
 		String currentSiteURL = _portal.getGroupFriendlyURL(
 			layout.getLayoutSet(), themeDisplay, false, false);
-
 		String urlSeparator = _cpFriendlyURL.getProductURLSeparator(
 			themeDisplay.getCompanyId());
 
@@ -163,14 +173,34 @@ public class CPDefinitionSitemapURLProvider implements SitemapURLProvider {
 				_portal.getClassNameId(CProduct.class),
 				cpDefinition.getCProductId());
 
-		String productFriendlyURL =
-			currentSiteURL + urlSeparator +
-				friendlyURLEntry.getUrlTitle(themeDisplay.getLanguageId());
+		Map<Locale, String> alternateFriendlyURLs = new HashMap<>();
 
-		_sitemap.addURLElement(
-			element, productFriendlyURL, typeSettingsUnicodeProperties,
-			layout.getModifiedDate(), productFriendlyURL, null);
+		for (FriendlyURLEntryLocalization friendlyURLEntryLocalization :
+				_friendlyURLEntryLocalService.getFriendlyURLEntryLocalizations(
+					friendlyURLEntry.getFriendlyURLEntryId())) {
+
+			alternateFriendlyURLs.put(
+				LocaleUtil.fromLanguageId(
+					friendlyURLEntryLocalization.getLanguageId()),
+				StringBundler.concat(
+					currentSiteURL, urlSeparator,
+					friendlyURLEntryLocalization.getUrlTitle()));
+		}
+
+		String productFriendlyURL = StringBundler.concat(
+			currentSiteURL, urlSeparator,
+			friendlyURLEntry.getUrlTitle(themeDisplay.getLanguageId()));
+
+		for (String alternateFriendlyURL : alternateFriendlyURLs.values()) {
+			_sitemap.addURLElement(
+				element, alternateFriendlyURL, typeSettingsUnicodeProperties,
+				layout.getModifiedDate(), productFriendlyURL,
+				alternateFriendlyURLs);
+		}
 	}
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;
@@ -189,6 +219,9 @@ public class CPDefinitionSitemapURLProvider implements SitemapURLProvider {
 
 	@Reference
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

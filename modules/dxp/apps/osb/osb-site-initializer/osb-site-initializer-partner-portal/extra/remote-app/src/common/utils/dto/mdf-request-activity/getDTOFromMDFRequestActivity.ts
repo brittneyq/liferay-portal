@@ -10,48 +10,35 @@
  */
 
 import MDFRequestActivityDTO from '../../../interfaces/dto/mdfRequestActivityDTO';
+import LiferayAccountBrief from '../../../interfaces/liferayAccountBrief';
 import MDFRequestActivity from '../../../interfaces/mdfRequestActivity';
 
 export default function getDTOFromMDFRequestActivity(
 	mdfRequestActivity: MDFRequestActivity,
-	mdfRequestId?: number
+	company?: LiferayAccountBrief,
+	mdfRequestId?: number,
+	mdfRequestExternalReferenceCode?: string,
+	externalReferenceCode?: string,
+	externalReferenceCodeSF?: string
 ): MDFRequestActivityDTO {
+	const {activityDescription, ...newMDFRequestActivity} = mdfRequestActivity;
+
+	delete activityDescription?.creator;
+	delete activityDescription?.externalReferenceCode;
+	delete activityDescription?.status;
+
 	return {
-		activityPromotion: mdfRequestActivity.activityPromotion,
-		ad: mdfRequestActivity.ad,
-		assetsLiferayRequired: mdfRequestActivity.assetsLiferayRequired,
-		description: mdfRequestActivity.description,
-		detailsLeadFollowUp: mdfRequestActivity.detailsLeadFollowUp,
-		endDate: mdfRequestActivity.endDate,
-		gatedLandingPage: mdfRequestActivity.gatedLandingPage,
-		goalOfContent: mdfRequestActivity.goalOfContent,
-		hiringOutsideWriterOrAgency:
-			mdfRequestActivity.hiringOutsideWriterOrAgency,
-		howLiferayBrandUsed: mdfRequestActivity.howLiferayBrandUsed,
-		keywordsForPPCCampaigns: mdfRequestActivity.keywordsForPPCCampaigns,
-		leadFollowUpStrategies: mdfRequestActivity.leadFollowUpStrategies.join(
+		...activityDescription,
+		activityStatus: mdfRequestActivity.activityStatus,
+		currency: mdfRequestActivity.currency,
+		...newMDFRequestActivity,
+		externalReferenceCode,
+		externalReferenceCodeSF,
+		leadFollowUpStrategies: activityDescription?.leadFollowUpStrategies?.join(
 			', '
 		),
-		leadGenerated: mdfRequestActivity.leadGenerated,
-		liferayBranding: mdfRequestActivity.liferayBranding,
-		liferayParticipationRequirements:
-			mdfRequestActivity.liferayParticipationRequirements,
-		location: mdfRequestActivity.location,
-		marketingActivity: mdfRequestActivity.marketingActivity,
-		mdfRequestAmount: mdfRequestActivity.mdfRequestAmount,
-		name: mdfRequestActivity.name,
-		overallMessageContentCTA: mdfRequestActivity.overallMessageContentCTA,
-		primaryThemeOrMessage: mdfRequestActivity.primaryThemeOrMessage,
-		r_mdfRequestToActivities_c_mdfRequestId: mdfRequestId,
-		r_tacticToActivities_c_tacticId: mdfRequestActivity.tactic.id,
-		r_typeActivityToActivities_c_typeActivityId:
-			mdfRequestActivity.typeActivity.id,
-		sourceAndSizeOfInviteeList:
-			mdfRequestActivity.sourceAndSizeOfInviteeList,
-		specificSites: mdfRequestActivity.specificSites,
-		startDate: mdfRequestActivity.startDate,
-		targetOfLeads: mdfRequestActivity.targetOfLeads,
-		totalCostOfExpense: mdfRequestActivity.totalCostOfExpense,
-		venueName: mdfRequestActivity.venueName,
+		mdfRequestExternalReferenceCode,
+		r_accToActs_accountEntryId: company?.id,
+		r_mdfReqToActs_c_mdfRequestId: mdfRequestId,
 	};
 }

@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,7 +51,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -84,11 +82,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  * @generated
  */
-@Component(
-	service = {
-		CommercePriceListOrderTypeRelPersistence.class, BasePersistence.class
-	}
-)
+@Component(service = CommercePriceListOrderTypeRelPersistence.class)
 public class CommercePriceListOrderTypeRelPersistenceImpl
 	extends BasePersistenceImpl<CommercePriceListOrderTypeRel>
 	implements CommercePriceListOrderTypeRelPersistence {
@@ -210,7 +204,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CommercePriceListOrderTypeRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommercePriceListOrderTypeRel
@@ -616,7 +610,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -783,7 +777,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CommercePriceListOrderTypeRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommercePriceListOrderTypeRel
@@ -1215,7 +1209,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1384,7 +1378,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CommercePriceListOrderTypeRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommercePriceListOrderTypeRel
@@ -1774,7 +1768,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 			finderArgs = new Object[] {commercePriceListId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1902,7 +1896,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByCPI_COTI, finderArgs);
+				_finderPathFetchByCPI_COTI, finderArgs, this);
 		}
 
 		if (result instanceof CommercePriceListOrderTypeRel) {
@@ -2019,7 +2013,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 				commercePriceListId, commerceOrderTypeId
 			};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2734,7 +2728,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CommercePriceListOrderTypeRel>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2813,7 +2807,7 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3016,33 +3010,15 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"commercePriceListId", "commerceOrderTypeId"}, false);
 
-		_setCommercePriceListOrderTypeRelUtilPersistence(this);
+		CommercePriceListOrderTypeRelUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCommercePriceListOrderTypeRelUtilPersistence(null);
+		CommercePriceListOrderTypeRelUtil.setPersistence(null);
 
 		entityCache.removeCache(
 			CommercePriceListOrderTypeRelImpl.class.getName());
-	}
-
-	private void _setCommercePriceListOrderTypeRelUtilPersistence(
-		CommercePriceListOrderTypeRelPersistence
-			commercePriceListOrderTypeRelPersistence) {
-
-		try {
-			Field field =
-				CommercePriceListOrderTypeRelUtil.class.getDeclaredField(
-					"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, commercePriceListOrderTypeRelPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3115,9 +3091,5 @@ public class CommercePriceListOrderTypeRelPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private CommercePriceListOrderTypeRelModelArgumentsResolver
-		_commercePriceListOrderTypeRelModelArgumentsResolver;
 
 }

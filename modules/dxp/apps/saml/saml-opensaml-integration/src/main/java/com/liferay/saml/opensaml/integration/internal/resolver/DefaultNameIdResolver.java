@@ -29,7 +29,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Mika Koivisto
  */
 @Component(
-	immediate = true, property = "service.ranking:Integer=" + Integer.MIN_VALUE,
+	property = "service.ranking:Integer=" + Integer.MIN_VALUE,
 	service = NameIdResolver.class
 )
 public class DefaultNameIdResolver implements NameIdResolver {
@@ -41,11 +41,6 @@ public class DefaultNameIdResolver implements NameIdResolver {
 		NameIdResolverSAMLContext nameIdResolverSAMLContext) {
 
 		return _getNameIdValue(user, entityId);
-	}
-
-	@Reference(unbind = "-")
-	public void setMetadataManager(MetadataManager metadataManager) {
-		_metadataManager = metadataManager;
 	}
 
 	private String _getNameIdAttributeName(String entityId) {
@@ -85,6 +80,7 @@ public class DefaultNameIdResolver implements NameIdResolver {
 	@Reference
 	private BeanProperties _beanProperties;
 
+	@Reference
 	private MetadataManager _metadataManager;
 
 }

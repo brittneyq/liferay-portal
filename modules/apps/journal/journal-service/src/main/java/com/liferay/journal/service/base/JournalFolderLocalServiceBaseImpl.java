@@ -66,8 +66,6 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -279,48 +277,21 @@ public abstract class JournalFolderLocalServiceBaseImpl
 		return journalFolderPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the journal folder with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the journal folder's external reference code
-	 * @return the matching journal folder, or <code>null</code> if a matching journal folder could not be found
-	 */
 	@Override
 	public JournalFolder fetchJournalFolderByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
-		return journalFolderPersistence.fetchByG_ERC(
-			groupId, externalReferenceCode);
+		return journalFolderPersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchJournalFolderByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public JournalFolder fetchJournalFolderByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return fetchJournalFolderByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the journal folder with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the journal folder's external reference code
-	 * @return the matching journal folder
-	 * @throws PortalException if a matching journal folder could not be found
-	 */
 	@Override
 	public JournalFolder getJournalFolderByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return journalFolderPersistence.findByG_ERC(
-			groupId, externalReferenceCode);
+		return journalFolderPersistence.findByERC_G(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -640,7 +611,7 @@ public abstract class JournalFolderLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		JournalFolderLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -655,7 +626,7 @@ public abstract class JournalFolderLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		journalFolderLocalService = (JournalFolderLocalService)aopProxy;
 
-		_setLocalServiceUtilService(journalFolderLocalService);
+		JournalFolderLocalServiceUtil.setService(journalFolderLocalService);
 	}
 
 	/**
@@ -712,22 +683,6 @@ public abstract class JournalFolderLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		JournalFolderLocalService journalFolderLocalService) {
-
-		try {
-			Field field = JournalFolderLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, journalFolderLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ThrowableCollector;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.ModuleFrameworkPropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -89,7 +90,7 @@ import org.osgi.util.tracker.BundleTracker;
 /**
  * @author Shuyang Zhou
  */
-@Component(immediate = true, service = LPKGDeployer.class)
+@Component(service = LPKGDeployer.class)
 public class DefaultLPKGDeployer implements LPKGDeployer {
 
 	@Override
@@ -169,7 +170,8 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 				BundleStartLevel.class);
 
 			bundleStartLevel.setStartLevel(
-				PropsValues.MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL);
+				ModuleFrameworkPropsValues.
+					MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL);
 
 			bundles.add(lpkgBundle);
 
@@ -347,7 +349,7 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 			File lpkgFile = iterator.next();
 
 			List<File> innerLPKGFiles = ContainerLPKGUtil.deploy(
-				lpkgFile, bundleContext, null);
+				lpkgFile, null);
 
 			if (innerLPKGFiles != null) {
 				iterator.remove();
@@ -464,7 +466,8 @@ public class DefaultLPKGDeployer implements LPKGDeployer {
 
 			BundleStartLevelUtil.setStartLevelAndStart(
 				jarBundle,
-				PropsValues.MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL,
+				ModuleFrameworkPropsValues.
+					MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL,
 				bundleContext);
 
 			if (_log.isInfoEnabled()) {

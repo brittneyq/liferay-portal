@@ -184,6 +184,14 @@ public class AccountEntryUserRelWrapper
 	}
 
 	@Override
+	public java.util.List<com.liferay.portal.kernel.model.UserGroupRole>
+			getUserGroupRoles()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getUserGroupRoles();
+	}
+
+	@Override
 	public void persist() {
 		model.persist();
 	}
@@ -256,6 +264,11 @@ public class AccountEntryUserRelWrapper
 	@Override
 	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

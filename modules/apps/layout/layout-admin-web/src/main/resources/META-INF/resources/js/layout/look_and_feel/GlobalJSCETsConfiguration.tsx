@@ -15,6 +15,7 @@
 import ClayButton from '@clayui/button';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
 import {ClaySelectWithOption} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
 import ClayTable from '@clayui/table';
 import classNames from 'classnames';
 import {openSelectionModal, openToast} from 'frontend-js-web';
@@ -169,7 +170,7 @@ export default function GlobalJSCETsConfiguration({
 						openToast({
 							autoClose: true,
 							message: `${Liferay.Language.get(
-								'some-extensions-were-not-added-because-they-are-already-applied-to-this-page'
+								'some-client-extensions-were-not-added-because-they-are-already-applied-to-this-page'
 							)} (${duplicatedGlobalJSCETs
 								.map((globalJSCET) => globalJSCET.name)
 								.join(', ')})`,
@@ -191,7 +192,7 @@ export default function GlobalJSCETsConfiguration({
 				});
 			},
 			selectEventName: selectGlobalJSCETsEventName,
-			title: Liferay.Language.get('select-javascript-extensions'),
+			title: Liferay.Language.get('select-javascript-client-extensions'),
 			url: globalJSCETSelectorURL,
 		});
 	};
@@ -210,10 +211,6 @@ export default function GlobalJSCETsConfiguration({
 					/>
 				)
 			)}
-
-			<h3 className="sheet-subtitle">
-				{Liferay.Language.get('javascript-extensions')}
-			</h3>
 
 			<AddExtensionButton
 				addGlobalJSCET={addGlobalJSCET}
@@ -236,7 +233,7 @@ export default function GlobalJSCETsConfiguration({
 											'numbers-indicate-the-order-in-which-client-extensions-are-loaded'
 										),
 										Liferay.Language.get(
-											'extensions-inherited-from-master-will-always-be-loaded-first'
+											'client-extensions-inherited-from-master-will-always-be-loaded-first'
 										),
 										Liferay.Language.get(
 											'also-head-insertions-will-be-loaded-before-body-bottom-ones'
@@ -276,10 +273,10 @@ export default function GlobalJSCETsConfiguration({
 										>
 											{scriptLocation === 'bottom'
 												? Liferay.Language.get(
-														'page-bottom-js-extensions'
+														'page-bottom-js-client-extensions'
 												  )
 												: Liferay.Language.get(
-														'page-head-js-extensions'
+														'page-head-js-client-extensions'
 												  )}
 										</ClayTable.Cell>
 									</ClayTable.Row>
@@ -308,7 +305,7 @@ export default function GlobalJSCETsConfiguration({
 			) : (
 				<p className="text-secondary">
 					{Liferay.Language.get(
-						'no-javascript-extensions-were-loaded'
+						'no-javascript-client-extensions-were-loaded'
 					)}
 				</p>
 			)}
@@ -343,10 +340,11 @@ function AddExtensionButton({
 				<ClayButton
 					className="mb-3"
 					displayType="secondary"
-					small
 					type="button"
 				>
-					{Liferay.Language.get('add-javascript-extensions')}
+					<ClayIcon className="mr-2" symbol="plus" />
+
+					{Liferay.Language.get('add-javascript-client-extensions')}
 				</ClayButton>
 			}
 		/>

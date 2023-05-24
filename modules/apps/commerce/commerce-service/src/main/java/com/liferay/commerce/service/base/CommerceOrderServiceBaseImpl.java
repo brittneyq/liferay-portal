@@ -19,7 +19,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.commerce.service.CommerceOrderServiceUtil;
 import com.liferay.commerce.service.persistence.CommerceOrderFinder;
 import com.liferay.commerce.service.persistence.CommerceOrderPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -30,11 +30,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the commerce order remote service.
@@ -49,126 +49,30 @@ import javax.sql.DataSource;
  */
 public abstract class CommerceOrderServiceBaseImpl
 	extends BaseServiceImpl
-	implements CommerceOrderService, IdentifiableOSGiService {
+	implements AopService, CommerceOrderService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CommerceOrderService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>CommerceOrderServiceUtil</code>.
 	 */
-
-	/**
-	 * Returns the commerce order local service.
-	 *
-	 * @return the commerce order local service
-	 */
-	public com.liferay.commerce.service.CommerceOrderLocalService
-		getCommerceOrderLocalService() {
-
-		return commerceOrderLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CommerceOrderServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the commerce order local service.
-	 *
-	 * @param commerceOrderLocalService the commerce order local service
-	 */
-	public void setCommerceOrderLocalService(
-		com.liferay.commerce.service.CommerceOrderLocalService
-			commerceOrderLocalService) {
-
-		this.commerceOrderLocalService = commerceOrderLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CommerceOrderService.class, IdentifiableOSGiService.class
+		};
 	}
 
-	/**
-	 * Returns the commerce order remote service.
-	 *
-	 * @return the commerce order remote service
-	 */
-	public CommerceOrderService getCommerceOrderService() {
-		return commerceOrderService;
-	}
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		commerceOrderService = (CommerceOrderService)aopProxy;
 
-	/**
-	 * Sets the commerce order remote service.
-	 *
-	 * @param commerceOrderService the commerce order remote service
-	 */
-	public void setCommerceOrderService(
-		CommerceOrderService commerceOrderService) {
-
-		this.commerceOrderService = commerceOrderService;
-	}
-
-	/**
-	 * Returns the commerce order persistence.
-	 *
-	 * @return the commerce order persistence
-	 */
-	public CommerceOrderPersistence getCommerceOrderPersistence() {
-		return commerceOrderPersistence;
-	}
-
-	/**
-	 * Sets the commerce order persistence.
-	 *
-	 * @param commerceOrderPersistence the commerce order persistence
-	 */
-	public void setCommerceOrderPersistence(
-		CommerceOrderPersistence commerceOrderPersistence) {
-
-		this.commerceOrderPersistence = commerceOrderPersistence;
-	}
-
-	/**
-	 * Returns the commerce order finder.
-	 *
-	 * @return the commerce order finder
-	 */
-	public CommerceOrderFinder getCommerceOrderFinder() {
-		return commerceOrderFinder;
-	}
-
-	/**
-	 * Sets the commerce order finder.
-	 *
-	 * @param commerceOrderFinder the commerce order finder
-	 */
-	public void setCommerceOrderFinder(
-		CommerceOrderFinder commerceOrderFinder) {
-
-		this.commerceOrderFinder = commerceOrderFinder;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		_setServiceUtilService(commerceOrderService);
-	}
-
-	public void destroy() {
-		_setServiceUtilService(null);
+		CommerceOrderServiceUtil.setService(commerceOrderService);
 	}
 
 	/**
@@ -213,40 +117,19 @@ public abstract class CommerceOrderServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CommerceOrderService commerceOrderService) {
-
-		try {
-			Field field = CommerceOrderServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceOrderService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(
-		type = com.liferay.commerce.service.CommerceOrderLocalService.class
-	)
+	@Reference
 	protected com.liferay.commerce.service.CommerceOrderLocalService
 		commerceOrderLocalService;
 
-	@BeanReference(type = CommerceOrderService.class)
 	protected CommerceOrderService commerceOrderService;
 
-	@BeanReference(type = CommerceOrderPersistence.class)
+	@Reference
 	protected CommerceOrderPersistence commerceOrderPersistence;
 
-	@BeanReference(type = CommerceOrderFinder.class)
+	@Reference
 	protected CommerceOrderFinder commerceOrderFinder;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 

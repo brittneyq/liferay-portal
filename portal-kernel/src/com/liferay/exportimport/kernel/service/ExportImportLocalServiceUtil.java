@@ -243,6 +243,16 @@ public class ExportImportLocalServiceUtil {
 			userId, exportImportConfigurationId, inputStream);
 	}
 
+	public static long mergeLayoutSetPrototypeInBackground(
+			long userId, long groupId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration)
+		throws PortalException {
+
+		return getService().mergeLayoutSetPrototypeInBackground(
+			userId, groupId, exportImportConfiguration);
+	}
+
 	public static com.liferay.exportimport.kernel.lar.MissingReferences
 			validateImportLayoutsFile(
 				com.liferay.exportimport.kernel.model.ExportImportConfiguration
@@ -289,6 +299,10 @@ public class ExportImportLocalServiceUtil {
 
 	public static ExportImportLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(ExportImportLocalService service) {
+		_service = service;
 	}
 
 	private static volatile ExportImportLocalService _service;

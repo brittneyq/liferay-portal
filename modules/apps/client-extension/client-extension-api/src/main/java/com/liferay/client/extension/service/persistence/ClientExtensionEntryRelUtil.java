@@ -296,6 +296,75 @@ public class ClientExtensionEntryRelUtil {
 	}
 
 	/**
+	 * Returns the client extension entry rel where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchClientExtensionEntryRelException</code> if it could not be found.
+	 *
+	 * @param uuid the uuid
+	 * @param groupId the group ID
+	 * @return the matching client extension entry rel
+	 * @throws NoSuchClientExtensionEntryRelException if a matching client extension entry rel could not be found
+	 */
+	public static ClientExtensionEntryRel findByUUID_G(
+			String uuid, long groupId)
+		throws com.liferay.client.extension.exception.
+			NoSuchClientExtensionEntryRelException {
+
+		return getPersistence().findByUUID_G(uuid, groupId);
+	}
+
+	/**
+	 * Returns the client extension entry rel where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param uuid the uuid
+	 * @param groupId the group ID
+	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
+	 */
+	public static ClientExtensionEntryRel fetchByUUID_G(
+		String uuid, long groupId) {
+
+		return getPersistence().fetchByUUID_G(uuid, groupId);
+	}
+
+	/**
+	 * Returns the client extension entry rel where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 *
+	 * @param uuid the uuid
+	 * @param groupId the group ID
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
+	 */
+	public static ClientExtensionEntryRel fetchByUUID_G(
+		String uuid, long groupId, boolean useFinderCache) {
+
+		return getPersistence().fetchByUUID_G(uuid, groupId, useFinderCache);
+	}
+
+	/**
+	 * Removes the client extension entry rel where uuid = &#63; and groupId = &#63; from the database.
+	 *
+	 * @param uuid the uuid
+	 * @param groupId the group ID
+	 * @return the client extension entry rel that was removed
+	 */
+	public static ClientExtensionEntryRel removeByUUID_G(
+			String uuid, long groupId)
+		throws com.liferay.client.extension.exception.
+			NoSuchClientExtensionEntryRelException {
+
+		return getPersistence().removeByUUID_G(uuid, groupId);
+	}
+
+	/**
+	 * Returns the number of client extension entry rels where uuid = &#63; and groupId = &#63;.
+	 *
+	 * @param uuid the uuid
+	 * @param groupId the group ID
+	 * @return the number of matching client extension entry rels
+	 */
+	public static int countByUUID_G(String uuid, long groupId) {
+		return getPersistence().countByUUID_G(uuid, groupId);
+	}
+
+	/**
 	 * Returns all the client extension entry rels where uuid = &#63; and companyId = &#63;.
 	 *
 	 * @param uuid the uuid
@@ -1082,75 +1151,73 @@ public class ClientExtensionEntryRelUtil {
 	}
 
 	/**
-	 * Returns the client extension entry rel where companyId = &#63; and externalReferenceCode = &#63; or throws a <code>NoSuchClientExtensionEntryRelException</code> if it could not be found.
+	 * Returns the client extension entry rel where externalReferenceCode = &#63; and groupId = &#63; or throws a <code>NoSuchClientExtensionEntryRelException</code> if it could not be found.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param groupId the group ID
 	 * @return the matching client extension entry rel
 	 * @throws NoSuchClientExtensionEntryRelException if a matching client extension entry rel could not be found
 	 */
-	public static ClientExtensionEntryRel findByC_ERC(
-			long companyId, String externalReferenceCode)
+	public static ClientExtensionEntryRel findByERC_G(
+			String externalReferenceCode, long groupId)
 		throws com.liferay.client.extension.exception.
 			NoSuchClientExtensionEntryRelException {
 
-		return getPersistence().findByC_ERC(companyId, externalReferenceCode);
+		return getPersistence().findByERC_G(externalReferenceCode, groupId);
 	}
 
 	/**
-	 * Returns the client extension entry rel where companyId = &#63; and externalReferenceCode = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the client extension entry rel where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param groupId the group ID
 	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
 	 */
-	public static ClientExtensionEntryRel fetchByC_ERC(
-		long companyId, String externalReferenceCode) {
+	public static ClientExtensionEntryRel fetchByERC_G(
+		String externalReferenceCode, long groupId) {
 
-		return getPersistence().fetchByC_ERC(companyId, externalReferenceCode);
+		return getPersistence().fetchByERC_G(externalReferenceCode, groupId);
 	}
 
 	/**
-	 * Returns the client extension entry rel where companyId = &#63; and externalReferenceCode = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the client extension entry rel where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param groupId the group ID
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching client extension entry rel, or <code>null</code> if a matching client extension entry rel could not be found
 	 */
-	public static ClientExtensionEntryRel fetchByC_ERC(
-		long companyId, String externalReferenceCode, boolean useFinderCache) {
+	public static ClientExtensionEntryRel fetchByERC_G(
+		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		return getPersistence().fetchByC_ERC(
-			companyId, externalReferenceCode, useFinderCache);
+		return getPersistence().fetchByERC_G(
+			externalReferenceCode, groupId, useFinderCache);
 	}
 
 	/**
-	 * Removes the client extension entry rel where companyId = &#63; and externalReferenceCode = &#63; from the database.
+	 * Removes the client extension entry rel where externalReferenceCode = &#63; and groupId = &#63; from the database.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param groupId the group ID
 	 * @return the client extension entry rel that was removed
 	 */
-	public static ClientExtensionEntryRel removeByC_ERC(
-			long companyId, String externalReferenceCode)
+	public static ClientExtensionEntryRel removeByERC_G(
+			String externalReferenceCode, long groupId)
 		throws com.liferay.client.extension.exception.
 			NoSuchClientExtensionEntryRelException {
 
-		return getPersistence().removeByC_ERC(companyId, externalReferenceCode);
+		return getPersistence().removeByERC_G(externalReferenceCode, groupId);
 	}
 
 	/**
-	 * Returns the number of client extension entry rels where companyId = &#63; and externalReferenceCode = &#63;.
+	 * Returns the number of client extension entry rels where externalReferenceCode = &#63; and groupId = &#63;.
 	 *
-	 * @param companyId the company ID
 	 * @param externalReferenceCode the external reference code
+	 * @param groupId the group ID
 	 * @return the number of matching client extension entry rels
 	 */
-	public static int countByC_ERC(
-		long companyId, String externalReferenceCode) {
-
-		return getPersistence().countByC_ERC(companyId, externalReferenceCode);
+	public static int countByERC_G(String externalReferenceCode, long groupId) {
+		return getPersistence().countByERC_G(externalReferenceCode, groupId);
 	}
 
 	/**
@@ -1317,6 +1384,12 @@ public class ClientExtensionEntryRelUtil {
 
 	public static ClientExtensionEntryRelPersistence getPersistence() {
 		return _persistence;
+	}
+
+	public static void setPersistence(
+		ClientExtensionEntryRelPersistence persistence) {
+
+		_persistence = persistence;
 	}
 
 	private static volatile ClientExtensionEntryRelPersistence _persistence;

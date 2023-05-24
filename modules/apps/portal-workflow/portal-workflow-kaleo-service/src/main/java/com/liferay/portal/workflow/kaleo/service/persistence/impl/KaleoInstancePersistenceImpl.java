@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -51,7 +50,6 @@ import com.liferay.portal.workflow.kaleo.service.persistence.impl.constants.Kale
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
@@ -85,7 +83,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {KaleoInstancePersistence.class, BasePersistence.class})
+@Component(service = KaleoInstancePersistence.class)
 public class KaleoInstancePersistenceImpl
 	extends BasePersistenceImpl<KaleoInstance>
 	implements KaleoInstancePersistence {
@@ -208,7 +206,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -576,7 +574,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -728,7 +726,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -1110,7 +1108,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoDefinitionVersionId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1261,7 +1259,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -1660,7 +1658,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {companyId, userId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1819,7 +1817,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -2219,7 +2217,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoDefinitionId, completed};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2381,7 +2379,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -2785,7 +2783,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoDefinitionVersionId, completed};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2944,7 +2942,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -3369,7 +3367,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {className, classPK};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3521,7 +3519,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByKII_C_U, finderArgs);
+				_finderPathFetchByKII_C_U, finderArgs, this);
 		}
 
 		if (result instanceof KaleoInstance) {
@@ -3656,7 +3654,7 @@ public class KaleoInstancePersistenceImpl
 
 			finderArgs = new Object[] {kaleoInstanceId, companyId, userId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3843,7 +3841,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstance kaleoInstance : list) {
@@ -4362,7 +4360,7 @@ public class KaleoInstancePersistenceImpl
 				_getTime(completionDate)
 			};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -5052,7 +5050,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstance>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -5128,7 +5126,7 @@ public class KaleoInstancePersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -5438,30 +5436,14 @@ public class KaleoInstancePersistenceImpl
 			},
 			false);
 
-		_setKaleoInstanceUtilPersistence(this);
+		KaleoInstanceUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setKaleoInstanceUtilPersistence(null);
+		KaleoInstanceUtil.setPersistence(null);
 
 		entityCache.removeCache(KaleoInstanceImpl.class.getName());
-	}
-
-	private void _setKaleoInstanceUtilPersistence(
-		KaleoInstancePersistence kaleoInstancePersistence) {
-
-		try {
-			Field field = KaleoInstanceUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, kaleoInstancePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -5537,9 +5519,5 @@ public class KaleoInstancePersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private KaleoInstanceModelArgumentsResolver
-		_kaleoInstanceModelArgumentsResolver;
 
 }

@@ -51,8 +51,10 @@ export default function EditRelationship({
 				),
 			});
 		}
-		catch ({message}) {
-			openToast({message: message as string, type: 'danger'});
+		catch (error: unknown) {
+			const {message} = error as Error;
+
+			openToast({message, type: 'danger'});
 		}
 	};
 
@@ -72,16 +74,12 @@ export default function EditRelationship({
 
 	return (
 		<SidePanelForm
-			customLabel={
-				Liferay.FeatureFlags['LPS-158478']
-					? {
-							displayType: values.reverse ? 'info' : 'success',
-							message: values.reverse
-								? Liferay.Language.get('child')
-								: Liferay.Language.get('parent'),
-					  }
-					: undefined
-			}
+			customLabel={{
+				displayType: values.reverse ? 'info' : 'success',
+				message: values.reverse
+					? Liferay.Language.get('child')
+					: Liferay.Language.get('parent'),
+			}}
 			onSubmit={handleSubmit}
 			readOnly={readOnly}
 			title={Liferay.Language.get('relationship')}
@@ -99,6 +97,7 @@ export default function EditRelationship({
 				)}
 
 				<InputLocalized
+					disableFlag={readOnly}
 					disabled={readOnly}
 					error={errors.label}
 					label={Liferay.Language.get('label')}
@@ -137,12 +136,14 @@ export default function EditRelationship({
 						/>
 
 						<SelectRelationship
-							error={errors.parameterObjectFieldId}
-							objectDefinitionId={values.objectDefinitionId2}
-							onChange={(parameterObjectFieldId) =>
-								setValues({parameterObjectFieldId})
+							error={errors.parameterObjectFieldName}
+							objectDefinitionExternalReferenceCode={
+								values.objectDefinitionExternalReferenceCode2 as string
 							}
-							value={values.parameterObjectFieldId}
+							onChange={(parameterObjectFieldName) =>
+								setValues({parameterObjectFieldName})
+							}
+							value={values.parameterObjectFieldName}
 						/>
 					</Card>
 				)}

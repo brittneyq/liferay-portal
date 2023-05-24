@@ -18,7 +18,7 @@ import com.liferay.commerce.product.model.CPDisplayLayout;
 import com.liferay.commerce.product.service.CPDisplayLayoutService;
 import com.liferay.commerce.product.service.CPDisplayLayoutServiceUtil;
 import com.liferay.commerce.product.service.persistence.CPDisplayLayoutPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -29,11 +29,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the cp display layout remote service.
@@ -48,106 +48,30 @@ import javax.sql.DataSource;
  */
 public abstract class CPDisplayLayoutServiceBaseImpl
 	extends BaseServiceImpl
-	implements CPDisplayLayoutService, IdentifiableOSGiService {
+	implements AopService, CPDisplayLayoutService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CPDisplayLayoutService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>CPDisplayLayoutServiceUtil</code>.
 	 */
-
-	/**
-	 * Returns the cp display layout local service.
-	 *
-	 * @return the cp display layout local service
-	 */
-	public com.liferay.commerce.product.service.CPDisplayLayoutLocalService
-		getCPDisplayLayoutLocalService() {
-
-		return cpDisplayLayoutLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CPDisplayLayoutServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the cp display layout local service.
-	 *
-	 * @param cpDisplayLayoutLocalService the cp display layout local service
-	 */
-	public void setCPDisplayLayoutLocalService(
-		com.liferay.commerce.product.service.CPDisplayLayoutLocalService
-			cpDisplayLayoutLocalService) {
-
-		this.cpDisplayLayoutLocalService = cpDisplayLayoutLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CPDisplayLayoutService.class, IdentifiableOSGiService.class
+		};
 	}
 
-	/**
-	 * Returns the cp display layout remote service.
-	 *
-	 * @return the cp display layout remote service
-	 */
-	public CPDisplayLayoutService getCPDisplayLayoutService() {
-		return cpDisplayLayoutService;
-	}
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		cpDisplayLayoutService = (CPDisplayLayoutService)aopProxy;
 
-	/**
-	 * Sets the cp display layout remote service.
-	 *
-	 * @param cpDisplayLayoutService the cp display layout remote service
-	 */
-	public void setCPDisplayLayoutService(
-		CPDisplayLayoutService cpDisplayLayoutService) {
-
-		this.cpDisplayLayoutService = cpDisplayLayoutService;
-	}
-
-	/**
-	 * Returns the cp display layout persistence.
-	 *
-	 * @return the cp display layout persistence
-	 */
-	public CPDisplayLayoutPersistence getCPDisplayLayoutPersistence() {
-		return cpDisplayLayoutPersistence;
-	}
-
-	/**
-	 * Sets the cp display layout persistence.
-	 *
-	 * @param cpDisplayLayoutPersistence the cp display layout persistence
-	 */
-	public void setCPDisplayLayoutPersistence(
-		CPDisplayLayoutPersistence cpDisplayLayoutPersistence) {
-
-		this.cpDisplayLayoutPersistence = cpDisplayLayoutPersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		_setServiceUtilService(cpDisplayLayoutService);
-	}
-
-	public void destroy() {
-		_setServiceUtilService(null);
+		CPDisplayLayoutServiceUtil.setService(cpDisplayLayoutService);
 	}
 
 	/**
@@ -192,37 +116,16 @@ public abstract class CPDisplayLayoutServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CPDisplayLayoutService cpDisplayLayoutService) {
-
-		try {
-			Field field = CPDisplayLayoutServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpDisplayLayoutService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(
-		type = com.liferay.commerce.product.service.CPDisplayLayoutLocalService.class
-	)
+	@Reference
 	protected com.liferay.commerce.product.service.CPDisplayLayoutLocalService
 		cpDisplayLayoutLocalService;
 
-	@BeanReference(type = CPDisplayLayoutService.class)
 	protected CPDisplayLayoutService cpDisplayLayoutService;
 
-	@BeanReference(type = CPDisplayLayoutPersistence.class)
+	@Reference
 	protected CPDisplayLayoutPersistence cpDisplayLayoutPersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 

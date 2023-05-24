@@ -14,9 +14,9 @@
 
 package com.liferay.commerce.price.test;
 
+import com.liferay.account.model.AccountEntry;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.service.CommerceAccountLocalService;
+import com.liferay.commerce.account.test.util.CommerceAccountTestUtil;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.model.CommerceMoney;
@@ -43,7 +43,6 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.option.CommerceOptionValue;
-import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CommerceCatalogLocalService;
 import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.test.util.context.TestCommerceContext;
@@ -52,6 +51,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -97,9 +97,8 @@ public class CommerceProductPriceCalculationV2Test {
 
 		_user = UserTestUtil.addUser();
 
-		_commerceAccount =
-			_commerceAccountLocalService.getPersonalCommerceAccount(
-				_user.getUserId());
+		_accountEntry = CommerceAccountTestUtil.getPersonAccountEntry(
+			_user.getUserId());
 
 		_commerceCurrency = CommerceCurrencyTestUtil.addCommerceCurrency(
 			_group.getCompanyId());
@@ -214,7 +213,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_DYNAMIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -360,7 +359,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_DYNAMIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -501,7 +500,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_DYNAMIC, quantity3));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -661,7 +660,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -819,7 +818,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -971,7 +970,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1166,7 +1165,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1314,7 +1313,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1444,7 +1443,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1548,7 +1547,7 @@ public class CommerceProductPriceCalculationV2Test {
 				1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1653,7 +1652,7 @@ public class CommerceProductPriceCalculationV2Test {
 				quantity3));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1759,7 +1758,7 @@ public class CommerceProductPriceCalculationV2Test {
 				CPConstants.PRODUCT_OPTION_PRICE_TYPE_STATIC, 1));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1881,7 +1880,7 @@ public class CommerceProductPriceCalculationV2Test {
 				quantity3));
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -1951,13 +1950,12 @@ public class CommerceProductPriceCalculationV2Test {
 			cpInstance.getCPInstanceUuid(),
 			parentPriceList.getCommercePriceListId(), cpInstancePrice);
 
-		CommerceAccount commerceAccount1 =
-			_commerceAccountLocalService.getPersonalCommerceAccount(
-				_user.getUserId());
+		AccountEntry accountEntry1 =
+			CommerceAccountTestUtil.getPersonAccountEntry(_user.getUserId());
 
 		CommercePriceList childPriceList =
 			CommercePriceListTestUtil.addAccountPriceList(
-				catalog.getGroupId(), commerceAccount1.getCommerceAccountId(),
+				catalog.getGroupId(), accountEntry1.getAccountEntryId(),
 				CommercePriceListConstants.TYPE_PRICE_LIST);
 
 		childPriceList.setParentCommercePriceListId(
@@ -1966,7 +1964,7 @@ public class CommerceProductPriceCalculationV2Test {
 		_commercePriceListLocalService.updateCommercePriceList(childPriceList);
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, null, _user, _group, _commerceAccount, null);
+			_accountEntry, _commerceCurrency, null, _user, _group, null);
 
 		CommerceProductPriceRequest commerceProductPriceRequest =
 			new CommerceProductPriceRequest();
@@ -2022,10 +2020,8 @@ public class CommerceProductPriceCalculationV2Test {
 
 	private static User _user;
 
-	private CommerceAccount _commerceAccount;
-
-	@Inject
-	private CommerceAccountLocalService _commerceAccountLocalService;
+	@DeleteAfterTestRun
+	private AccountEntry _accountEntry;
 
 	@Inject
 	private CommerceCatalogLocalService _commerceCatalogLocalService;
@@ -2045,9 +2041,6 @@ public class CommerceProductPriceCalculationV2Test {
 
 	@Inject
 	private CommerceProductPriceCalculation _commerceProductPriceCalculation;
-
-	@Inject
-	private CPInstanceLocalService _cpInstanceLocalService;
 
 	private Group _group;
 	private ServiceContext _serviceContext;

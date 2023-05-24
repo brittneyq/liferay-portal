@@ -39,12 +39,8 @@ import org.osgi.service.component.annotations.Component;
  * @author Bruno Basto
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.CAPTCHA,
-	service = {
-		CaptchaDDMFormFieldTemplateContextContributor.class,
-		DDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class CaptchaDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {

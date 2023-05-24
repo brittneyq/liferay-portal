@@ -299,6 +299,15 @@ public class NotificationQueueEntryAttachmentLocalServiceUtil {
 		return getService().getNotificationQueueEntryAttachmentsCount();
 	}
 
+	public static List<NotificationQueueEntryAttachment>
+		getNotificationQueueEntryNotificationQueueEntryAttachments(
+			long notificationQueueEntryId) {
+
+		return getService().
+			getNotificationQueueEntryNotificationQueueEntryAttachments(
+				notificationQueueEntryId);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
@@ -337,6 +346,12 @@ public class NotificationQueueEntryAttachmentLocalServiceUtil {
 
 	public static NotificationQueueEntryAttachmentLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		NotificationQueueEntryAttachmentLocalService service) {
+
+		_service = service;
 	}
 
 	private static volatile NotificationQueueEntryAttachmentLocalService

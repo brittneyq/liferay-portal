@@ -36,7 +36,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alejandro Tardín
  */
 @Component(
-	immediate = true,
 	property = {
 		"panel.app.order:Integer=100",
 		"panel.category.key=" + PanelCategoryKeys.APPLICATIONS_MENU_APPLICATIONS_CONTENT
@@ -44,6 +43,11 @@ import org.osgi.service.component.annotations.Reference;
 	service = PanelApp.class
 )
 public class DepotAdminPanelApp extends BasePanelApp {
+
+	@Override
+	public Portlet getPortlet() {
+		return _portlet;
+	}
 
 	@Override
 	public String getPortletId() {
@@ -58,15 +62,6 @@ public class DepotAdminPanelApp extends BasePanelApp {
 	}
 
 	@Override
-	@Reference(
-		target = "(javax.portlet.name=" + DepotPortletKeys.DEPOT_ADMIN + ")",
-		unbind = "-"
-	)
-	public void setPortlet(Portlet portlet) {
-		super.setPortlet(portlet);
-	}
-
-	@Override
 	protected Group getGroup(HttpServletRequest httpServletRequest) {
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
@@ -77,5 +72,10 @@ public class DepotAdminPanelApp extends BasePanelApp {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference(
+		target = "(javax.portlet.name=" + DepotPortletKeys.DEPOT_ADMIN + ")"
+	)
+	private Portlet _portlet;
 
 }

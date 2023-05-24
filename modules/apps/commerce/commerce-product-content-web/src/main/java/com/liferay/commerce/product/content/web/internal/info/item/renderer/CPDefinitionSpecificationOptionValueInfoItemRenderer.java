@@ -32,13 +32,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false,
-	service = {
-		CPDefinitionSpecificationOptionValueInfoItemRenderer.class,
-		InfoItemRenderer.class
-	}
-)
+@Component(service = InfoItemRenderer.class)
 public class CPDefinitionSpecificationOptionValueInfoItemRenderer
 	implements InfoItemRenderer<CPDefinitionSpecificationOptionValue> {
 
@@ -59,14 +53,14 @@ public class CPDefinitionSpecificationOptionValueInfoItemRenderer
 		}
 
 		try {
-			httpServletRequest.setAttribute(
-				CPWebKeys.CP_DEFINITION_SPECIFICATION_OPTION_VALUE,
-				cpDefinitionSpecificationOptionValue);
-
 			RequestDispatcher requestDispatcher =
 				_servletContext.getRequestDispatcher(
 					"/info/item/renderer" +
 						"/cp_definition_specification_option_value/page.jsp");
+
+			httpServletRequest.setAttribute(
+				CPWebKeys.CP_DEFINITION_SPECIFICATION_OPTION_VALUE,
+				cpDefinitionSpecificationOptionValue);
 
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
@@ -75,17 +69,12 @@ public class CPDefinitionSpecificationOptionValueInfoItemRenderer
 		}
 	}
 
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.commerce.product.content.web)",
-		unbind = "-"
-	)
-	public void setServletContext(ServletContext servletContext) {
-		_servletContext = servletContext;
-	}
-
 	@Reference
 	private Language _language;
 
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.commerce.product.content.web)"
+	)
 	private ServletContext _servletContext;
 
 }

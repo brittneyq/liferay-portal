@@ -37,11 +37,12 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.product.navigation.personal.menu.configuration.PersonalMenuConfiguration;
-import com.liferay.product.navigation.personal.menu.configuration.PersonalMenuConfigurationTracker;
+import com.liferay.product.navigation.personal.menu.configuration.PersonalMenuConfigurationRegistry;
 
 import javax.portlet.PortletRequest;
 
@@ -119,7 +120,7 @@ public class PersonalApplicationURLUtil {
 				privateLayout = false;
 			}
 
-			user = UserLocalServiceUtil.getDefaultUser(
+			user = UserLocalServiceUtil.getGuestUser(
 				themeDisplay.getCompanyId());
 		}
 
@@ -142,6 +143,10 @@ public class PersonalApplicationURLUtil {
 
 		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(
 			httpServletRequest, portletId, layout, PortletRequest.RENDER_PHASE);
+
+		String backURL = ParamUtil.getString(httpServletRequest, "currentURL");
+
+		liferayPortletURL.setParameter("backURL", backURL);
 
 		return liferayPortletURL.toString();
 	}
@@ -181,7 +186,7 @@ public class PersonalApplicationURLUtil {
 		}
 	}
 
-	private static PersonalMenuConfigurationTracker
+	private static PersonalMenuConfigurationRegistry
 		_getPersonalMenuConfigurationTracker() {
 
 		return _serviceTracker.getService();
@@ -191,18 +196,19 @@ public class PersonalApplicationURLUtil {
 		PersonalApplicationURLUtil.class);
 
 	private static final ServiceTracker
-		<PersonalMenuConfigurationTracker, PersonalMenuConfigurationTracker>
+		<PersonalMenuConfigurationRegistry, PersonalMenuConfigurationRegistry>
 			_serviceTracker;
 
 	static {
 		Bundle bundle = FrameworkUtil.getBundle(
-			PersonalMenuConfigurationTracker.class);
+			PersonalMenuConfigurationRegistry.class);
 
 		ServiceTracker
-			<PersonalMenuConfigurationTracker, PersonalMenuConfigurationTracker>
-				serviceTracker = new ServiceTracker<>(
+			<PersonalMenuConfigurationRegistry,
+			 PersonalMenuConfigurationRegistry> serviceTracker =
+				new ServiceTracker<>(
 					bundle.getBundleContext(),
-					PersonalMenuConfigurationTracker.class, null);
+					PersonalMenuConfigurationRegistry.class, null);
 
 		serviceTracker.open();
 

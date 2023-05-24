@@ -87,10 +87,10 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().cancelCheckOut(userId, fileEntryId);
 	}
 
-	public static void checkFileEntries(long checkInterval)
+	public static void checkFileEntries(long companyId, long checkInterval)
 		throws PortalException {
 
-		getService().checkFileEntries(checkInterval);
+		getService().checkFileEntries(companyId, checkInterval);
 	}
 
 	public static void checkInFileEntry(
@@ -160,25 +160,25 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	public static DLFileEntry copyFileEntry(
-			long userId, long groupId, long repositoryId, long fileEntryId,
-			long destFolderId,
+			long userId, long groupId, long repositoryId,
+			long sourceFileEntryId, long targetFolderId, String fileName,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		return getService().copyFileEntry(
-			userId, groupId, repositoryId, fileEntryId, destFolderId,
-			serviceContext);
+			userId, groupId, repositoryId, sourceFileEntryId, targetFolderId,
+			fileName, serviceContext);
 	}
 
 	public static void copyFileEntryMetadata(
 			long companyId, long fileEntryTypeId, long fileEntryId,
-			long fromFileVersionId, long toFileVersionId,
+			long sourceFileVersionId, long targetFileVersionId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws PortalException {
 
 		getService().copyFileEntryMetadata(
-			companyId, fileEntryTypeId, fileEntryId, fromFileVersionId,
-			toFileVersionId, serviceContext);
+			companyId, fileEntryTypeId, fileEntryId, sourceFileVersionId,
+			targetFileVersionId, serviceContext);
 	}
 
 	/**
@@ -391,29 +391,11 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().fetchDLFileEntry(fileEntryId);
 	}
 
-	/**
-	 * Returns the document library file entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the document library file entry's external reference code
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
 	public static DLFileEntry fetchDLFileEntryByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
 		return getService().fetchDLFileEntryByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchDLFileEntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	public static DLFileEntry fetchDLFileEntryByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return getService().fetchDLFileEntryByReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -550,20 +532,12 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().getDLFileEntry(fileEntryId);
 	}
 
-	/**
-	 * Returns the document library file entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the document library file entry's external reference code
-	 * @return the matching document library file entry
-	 * @throws PortalException if a matching document library file entry could not be found
-	 */
 	public static DLFileEntry getDLFileEntryByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
 		return getService().getDLFileEntryByExternalReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -670,6 +644,13 @@ public class DLFileEntryLocalServiceUtil {
 
 	public static List<DLFileEntry> getFileEntries(long folderId, String name) {
 		return getService().getFileEntries(folderId, name);
+	}
+
+	public static List<DLFileEntry> getFileEntriesByClassNameIdAndTreePath(
+		long classNameId, String treePath) {
+
+		return getService().getFileEntriesByClassNameIdAndTreePath(
+			classNameId, treePath);
 	}
 
 	public static int getFileEntriesCount() {
@@ -1026,6 +1007,10 @@ public class DLFileEntryLocalServiceUtil {
 
 	public static DLFileEntryLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(DLFileEntryLocalService service) {
+		_service = service;
 	}
 
 	private static volatile DLFileEntryLocalService _service;

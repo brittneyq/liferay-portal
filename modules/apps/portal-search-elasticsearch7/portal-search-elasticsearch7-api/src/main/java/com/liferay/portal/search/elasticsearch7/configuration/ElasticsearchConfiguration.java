@@ -123,6 +123,12 @@ public interface ElasticsearchConfiguration {
 	public String indexNumberOfShards();
 
 	@Meta.AD(
+		deflt = "10000", description = "index-max-result-window-help",
+		name = "index-max-result-window", required = false
+	)
+	public int indexMaxResultWindow();
+
+	@Meta.AD(
 		description = "additional-index-configurations-help",
 		name = "additional-index-configurations", required = false
 	)
@@ -258,6 +264,18 @@ public interface ElasticsearchConfiguration {
 		name = "http-cors-configurations", required = false
 	)
 	public String httpCORSConfigurations();
+
+	@Meta.AD(
+		deflt = "75", description = "max-connections-help",
+		name = "max-connections", required = false
+	)
+	public int maxConnections();
+
+	@Meta.AD(
+		deflt = "75", description = "max-connections-per-route-help",
+		name = "max-connections-per-route", required = false
+	)
+	public int maxConnectionsPerRoute();
 
 	@Meta.AD(
 		deflt = "false", description = "sidecar-debug-help",

@@ -15,7 +15,7 @@
 package com.liferay.address.web.internal.portlet.action;
 
 import com.liferay.address.web.internal.constants.AddressPortletKeys;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseTransactionalMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.CountryService;
 import com.liferay.portal.kernel.util.Constants;
@@ -32,29 +32,32 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AddressPortletKeys.COUNTRIES_MANAGEMENT_ADMIN,
 		"mvc.command.name=/address/update_country_status"
 	},
 	service = MVCActionCommand.class
 )
-public class UpdateCountryStatusMVCActionCommand extends BaseMVCActionCommand {
+public class UpdateCountryStatusMVCActionCommand
+	extends BaseTransactionalMVCActionCommand {
 
 	@Override
-	protected void doProcessAction(
+	protected void doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		long countryId = ParamUtil.getLong(actionRequest, "countryId");
-
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
-		if (cmd.equals(Constants.DEACTIVATE)) {
-			_countryService.updateActive(countryId, false);
-		}
-		else if (cmd.equals(Constants.RESTORE)) {
-			_countryService.updateActive(countryId, true);
+		long[] countryIds = ParamUtil.getLongValues(
+			actionRequest, "countryIds");
+
+		for (long countryId : countryIds) {
+			if (cmd.equals(Constants.DEACTIVATE)) {
+				_countryService.updateActive(countryId, false);
+			}
+			else if (cmd.equals(Constants.RESTORE)) {
+				_countryService.updateActive(countryId, true);
+			}
 		}
 
 		String redirect = ParamUtil.getString(actionRequest, "redirect");

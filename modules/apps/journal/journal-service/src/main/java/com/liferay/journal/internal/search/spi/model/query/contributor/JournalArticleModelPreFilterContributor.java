@@ -50,7 +50,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lourdes Fernández Besada
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.journal.model.JournalArticle",
 	service = ModelPreFilterContributor.class
 )
@@ -138,6 +137,8 @@ public class JournalArticleModelPreFilterContributor
 
 		boolean head = GetterUtil.getBoolean(
 			searchContext.getAttribute("head"), Boolean.TRUE);
+		boolean headOrShowNonindexable = GetterUtil.getBoolean(
+			searchContext.getAttribute("headOrShowNonindexable"));
 		boolean latest = GetterUtil.getBoolean(
 			searchContext.getAttribute("latest"));
 		boolean relatedClassName = GetterUtil.getBoolean(
@@ -148,7 +149,9 @@ public class JournalArticleModelPreFilterContributor
 		if (latest && !relatedClassName && !showNonindexable) {
 			booleanFilter.addRequiredTerm("latest", Boolean.TRUE);
 		}
-		else if (head && !relatedClassName && !showNonindexable) {
+		else if (head && !headOrShowNonindexable && !relatedClassName &&
+				 !showNonindexable) {
+
 			booleanFilter.addRequiredTerm("head", Boolean.TRUE);
 		}
 
@@ -157,6 +160,16 @@ public class JournalArticleModelPreFilterContributor
 		}
 		else if (!relatedClassName && showNonindexable) {
 			booleanFilter.addRequiredTerm("headListable", Boolean.TRUE);
+		}
+		else if (headOrShowNonindexable && !relatedClassName) {
+			booleanFilter.add(
+				new BooleanFilter() {
+					{
+						addTerm("head", Boolean.TRUE);
+						addTerm("headListable", Boolean.TRUE);
+					}
+				},
+				BooleanClauseOccur.MUST);
 		}
 
 		boolean filterExpired = GetterUtil.getBoolean(

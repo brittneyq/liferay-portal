@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -109,6 +110,31 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 
 	public void appendSibling(TemplateNode templateNode) {
 		_siblingTemplateNodes.add(templateNode);
+	}
+
+	@Override
+	public Object clone() {
+		TemplateNode templateNode = new TemplateNode(
+			_themeDisplay, getName(), getData(), getType(), getAttributes());
+
+		for (Map.Entry<String, TemplateNode> entry :
+				_childTemplateNodes.entrySet()) {
+
+			templateNode.appendChild(entry.getValue());
+		}
+
+		templateNode.appendOptions(getOptions());
+		templateNode.appendOptionsMap(getOptionsMap());
+
+		for (TemplateNode siblingTemplateNode : _siblingTemplateNodes) {
+			templateNode.appendSibling(siblingTemplateNode);
+		}
+
+		for (Map.Entry<String, Object> entry : entrySet()) {
+			templateNode.put(entry.getKey(), entry.getValue());
+		}
+
+		return templateNode;
 	}
 
 	public String getAttribute(String name) {
@@ -199,7 +225,13 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 	}
 
 	public String getType() {
-		return (String)get("type");
+		Object type = get("type");
+
+		if ((type == null) || (type instanceof String)) {
+			return (String)type;
+		}
+
+		return StringPool.BLANK;
 	}
 
 	public String getUrl() {
@@ -435,6 +467,13 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 
 		DecimalFormat decimalFormat = (DecimalFormat)DecimalFormat.getInstance(
 			LocaleUtil.getMostRelevantLocale());
+
+		DecimalFormatSymbols decimalFormatSymbols =
+			decimalFormat.getDecimalFormatSymbols();
+
+		decimalFormatSymbols.setZeroDigit('0');
+
+		decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
 
 		decimalFormat.setGroupingUsed(false);
 		decimalFormat.setMaximumFractionDigits(Integer.MAX_VALUE);

@@ -17,8 +17,6 @@ package com.liferay.commerce.term.service.base;
 import com.liferay.commerce.term.model.CommerceTermEntryRel;
 import com.liferay.commerce.term.service.CommerceTermEntryRelService;
 import com.liferay.commerce.term.service.CommerceTermEntryRelServiceUtil;
-import com.liferay.commerce.term.service.persistence.CTermEntryLocalizationPersistence;
-import com.liferay.commerce.term.service.persistence.CommerceTermEntryPersistence;
 import com.liferay.commerce.term.service.persistence.CommerceTermEntryRelPersistence;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -31,8 +29,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
 
@@ -62,7 +58,7 @@ public abstract class CommerceTermEntryRelServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		CommerceTermEntryRelServiceUtil.setService(null);
 	}
 
 	@Override
@@ -76,7 +72,7 @@ public abstract class CommerceTermEntryRelServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		commerceTermEntryRelService = (CommerceTermEntryRelService)aopProxy;
 
-		_setServiceUtilService(commerceTermEntryRelService);
+		CommerceTermEntryRelServiceUtil.setService(commerceTermEntryRelService);
 	}
 
 	/**
@@ -122,26 +118,6 @@ public abstract class CommerceTermEntryRelServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CommerceTermEntryRelService commerceTermEntryRelService) {
-
-		try {
-			Field field =
-				CommerceTermEntryRelServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceTermEntryRelService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected CommerceTermEntryPersistence commerceTermEntryPersistence;
-
 	@Reference
 	protected com.liferay.commerce.term.service.CommerceTermEntryRelLocalService
 		commerceTermEntryRelLocalService;
@@ -152,31 +128,8 @@ public abstract class CommerceTermEntryRelServiceBaseImpl
 	protected CommerceTermEntryRelPersistence commerceTermEntryRelPersistence;
 
 	@Reference
-	protected CTermEntryLocalizationPersistence
-		cTermEntryLocalizationPersistence;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceTermEntryRelServiceBaseImpl.class);

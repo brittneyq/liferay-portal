@@ -17,6 +17,7 @@ package com.liferay.knowledge.base.internal.exportimport.data.handler;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -27,7 +28,6 @@ import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.knowledge.base.constants.KBArticleConstants;
 import com.liferay.knowledge.base.constants.KBFolderConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
-import com.liferay.knowledge.base.internal.exportimport.content.processor.KBArticleExportImportContentProcessor;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleLocalService;
@@ -61,7 +61,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Daniel Kocsis
  */
-@Component(immediate = true, service = StagedModelDataHandler.class)
+@Component(service = StagedModelDataHandler.class)
 public class KBArticleStagedModelDataHandler
 	extends BaseStagedModelDataHandler<KBArticle> {
 
@@ -330,8 +330,9 @@ public class KBArticleStagedModelDataHandler
 			kbArticle.getExternalReferenceCode(), userId,
 			parentResourceClassNameId, parentResourcePrimKey,
 			kbArticle.getTitle(), kbArticle.getUrlTitle(),
-			kbArticle.getContent(), kbArticle.getDescription(),
-			kbArticle.getSourceURL(), sections, null, serviceContext);
+			kbArticle.getContent(), kbArticle.getDescription(), sections,
+			kbArticle.getSourceURL(), kbArticle.getExpirationDate(),
+			kbArticle.getReviewDate(), null, serviceContext);
 
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
@@ -487,8 +488,9 @@ public class KBArticleStagedModelDataHandler
 
 		_kbArticleLocalService.updateKBArticle(
 			userId, resourcePrimKey, kbArticle.getTitle(),
-			kbArticle.getContent(), kbArticle.getDescription(),
-			kbArticle.getSourceURL(), sections, null, null, serviceContext);
+			kbArticle.getContent(), kbArticle.getDescription(), sections,
+			kbArticle.getSourceURL(), kbArticle.getExpirationDate(),
+			kbArticle.getReviewDate(), null, null, serviceContext);
 
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
@@ -514,8 +516,10 @@ public class KBArticleStagedModelDataHandler
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
-	@Reference
-	private KBArticleExportImportContentProcessor
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBArticle)"
+	)
+	private ExportImportContentProcessor<String>
 		_kbArticleExportImportContentProcessor;
 
 	@Reference

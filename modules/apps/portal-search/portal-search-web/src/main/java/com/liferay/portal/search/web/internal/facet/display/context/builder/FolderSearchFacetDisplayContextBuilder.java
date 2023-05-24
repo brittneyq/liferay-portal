@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.web.internal.facet.display.context.builder;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.facet.Facet;
@@ -25,17 +26,16 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.web.internal.facet.display.context.BucketDisplayContext;
 import com.liferay.portal.search.web.internal.facet.display.context.FolderSearchFacetDisplayContext;
-import com.liferay.portal.search.web.internal.facet.display.context.FolderSearchFacetTermDisplayContext;
 import com.liferay.portal.search.web.internal.facet.display.context.FolderTitleLookup;
 import com.liferay.portal.search.web.internal.folder.facet.configuration.FolderFacetPortletInstanceConfiguration;
+import com.liferay.portal.search.web.internal.util.comparator.BucketDisplayContextComparatorFactoryUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.RenderRequest;
 
@@ -61,14 +61,15 @@ public class FolderSearchFacetDisplayContextBuilder {
 		FolderSearchFacetDisplayContext folderSearchFacetDisplayContext =
 			new FolderSearchFacetDisplayContext();
 
-		List<FolderSearchFacetTermDisplayContext>
-			folderSearchFacetTermDisplayContexts =
-				_buildFolderSearchFacetTermDisplayContexts();
-
 		folderSearchFacetDisplayContext.setDisplayStyleGroupId(
 			getDisplayStyleGroupId());
-		folderSearchFacetDisplayContext.setFolderSearchFacetTermDisplayContexts(
-			folderSearchFacetTermDisplayContexts);
+
+		List<BucketDisplayContext> bucketDisplayContexts =
+			_buildBucketDisplayContexts();
+
+		folderSearchFacetDisplayContext.setBucketDisplayContexts(
+			bucketDisplayContexts);
+
 		folderSearchFacetDisplayContext.
 			setFolderFacetPortletInstanceConfiguration(
 				_folderFacetPortletInstanceConfiguration);
@@ -81,8 +82,7 @@ public class FolderSearchFacetDisplayContextBuilder {
 		folderSearchFacetDisplayContext.setParameterValues(
 			getParameterValueStrings());
 		folderSearchFacetDisplayContext.setRenderNothing(
-			isRenderNothing(
-				getTermCollectors(), folderSearchFacetTermDisplayContexts));
+			isRenderNothing(bucketDisplayContexts, getTermCollectors()));
 
 		return folderSearchFacetDisplayContext;
 	}
@@ -107,6 +107,10 @@ public class FolderSearchFacetDisplayContextBuilder {
 		_maxTerms = maxTerms;
 	}
 
+	public void setOrder(String order) {
+		_order = order;
+	}
+
 	public void setPaginationStartParameterName(
 		String paginationStartParameterName) {
 
@@ -122,17 +126,17 @@ public class FolderSearchFacetDisplayContextBuilder {
 	}
 
 	public void setParameterValues(String... parameterValues) {
-		Objects.requireNonNull(parameterValues);
+		_selectedFolderIds = TransformUtil.transformToList(
+			Objects.requireNonNull(parameterValues),
+			value -> {
+				long folderId = GetterUtil.getLong(value);
 
-		_selectedFolderIds = Stream.of(
-			parameterValues
-		).map(
-			GetterUtil::getLong
-		).filter(
-			folderId -> folderId > 0
-		).collect(
-			Collectors.toList()
-		);
+				if (folderId <= 0) {
+					return null;
+				}
+
+				return folderId;
+			});
 	}
 
 	protected long getDisplayStyleGroupId() {
@@ -155,12 +159,7 @@ public class FolderSearchFacetDisplayContextBuilder {
 	}
 
 	protected List<String> getParameterValueStrings() {
-		Stream<Long> groupIdsStream = _selectedFolderIds.stream();
-
-		Stream<String> parameterValuesStream = groupIdsStream.map(
-			String::valueOf);
-
-		return parameterValuesStream.collect(Collectors.toList());
+		return TransformUtil.transform(_selectedFolderIds, String::valueOf);
 	}
 
 	protected List<TermCollector> getTermCollectors() {
@@ -186,11 +185,11 @@ public class FolderSearchFacetDisplayContextBuilder {
 	}
 
 	protected boolean isRenderNothing(
-		List<TermCollector> termCollectors,
-		List<FolderSearchFacetTermDisplayContext> termDisplayContexts) {
+		List<BucketDisplayContext> bucketDisplayContexts,
+		List<TermCollector> termCollectors) {
 
 		if ((isNothingSelected() && ListUtil.isEmpty(termCollectors)) ||
-			ListUtil.isEmpty(termDisplayContexts)) {
+			ListUtil.isEmpty(bucketDisplayContexts)) {
 
 			return true;
 		}
@@ -206,27 +205,22 @@ public class FolderSearchFacetDisplayContextBuilder {
 		return false;
 	}
 
-	private FolderSearchFacetTermDisplayContext
-		_buildFolderSearchFacetTermDisplayContext(
-			long folderId, String displayName, int frequency,
-			boolean selected) {
+	private BucketDisplayContext _buildBucketDisplayContext(
+		long folderId, String displayName, int frequency, boolean selected) {
 
-		FolderSearchFacetTermDisplayContext
-			folderSearchFacetTermDisplayContext =
-				new FolderSearchFacetTermDisplayContext();
+		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
 
-		folderSearchFacetTermDisplayContext.setDisplayName(displayName);
-		folderSearchFacetTermDisplayContext.setFolderId(folderId);
-		folderSearchFacetTermDisplayContext.setFrequency(frequency);
-		folderSearchFacetTermDisplayContext.setFrequencyVisible(
-			_frequenciesVisible);
-		folderSearchFacetTermDisplayContext.setSelected(selected);
+		bucketDisplayContext.setBucketText(displayName);
+		bucketDisplayContext.setFilterValue(String.valueOf(folderId));
+		bucketDisplayContext.setFrequency(frequency);
+		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
+		bucketDisplayContext.setSelected(selected);
 
-		return folderSearchFacetTermDisplayContext;
+		return bucketDisplayContext;
 	}
 
-	private FolderSearchFacetTermDisplayContext
-		_buildFolderSearchFacetTermDisplayContext(TermCollector termCollector) {
+	private BucketDisplayContext _buildBucketDisplayContext(
+		TermCollector termCollector) {
 
 		long folderId = GetterUtil.getLong(termCollector.getTerm());
 
@@ -236,23 +230,20 @@ public class FolderSearchFacetDisplayContextBuilder {
 			return null;
 		}
 
-		return _buildFolderSearchFacetTermDisplayContext(
+		return _buildBucketDisplayContext(
 			folderId, displayName, termCollector.getFrequency(),
 			isSelected(folderId));
 	}
 
-	private List<FolderSearchFacetTermDisplayContext>
-		_buildFolderSearchFacetTermDisplayContexts() {
-
+	private List<BucketDisplayContext> _buildBucketDisplayContexts() {
 		List<TermCollector> termCollectors = getTermCollectors();
 
 		if (termCollectors.isEmpty()) {
-			return _getEmptyFolderSearchFacetTermDisplayContexts();
+			return _getEmptyBucketDisplayContexts();
 		}
 
-		List<FolderSearchFacetTermDisplayContext>
-			folderSearchFacetTermDisplayContexts = new ArrayList<>(
-				termCollectors.size());
+		List<BucketDisplayContext> bucketDisplayContexts = new ArrayList<>(
+			termCollectors.size());
 
 		for (int i = 0; i < termCollectors.size(); i++) {
 			if ((_maxTerms > 0) && (i >= _maxTerms)) {
@@ -267,17 +258,21 @@ public class FolderSearchFacetDisplayContextBuilder {
 				break;
 			}
 
-			FolderSearchFacetTermDisplayContext
-				folderSearchFacetTermDisplayContext =
-					_buildFolderSearchFacetTermDisplayContext(termCollector);
+			BucketDisplayContext bucketDisplayContext =
+				_buildBucketDisplayContext(termCollector);
 
-			if (folderSearchFacetTermDisplayContext != null) {
-				folderSearchFacetTermDisplayContexts.add(
-					folderSearchFacetTermDisplayContext);
+			if (bucketDisplayContext != null) {
+				bucketDisplayContexts.add(bucketDisplayContext);
 			}
 		}
 
-		return folderSearchFacetTermDisplayContexts;
+		if (_order != null) {
+			bucketDisplayContexts.sort(
+				BucketDisplayContextComparatorFactoryUtil.
+					getBucketDisplayContextComparator(_order));
+		}
+
+		return bucketDisplayContexts;
 	}
 
 	private String _getDisplayName(long folderId) {
@@ -290,24 +285,14 @@ public class FolderSearchFacetDisplayContextBuilder {
 		return null;
 	}
 
-	private FolderSearchFacetTermDisplayContext
-		_getEmptyFolderSearchFacetTermDisplayContext(long folderId) {
-
-		return _buildFolderSearchFacetTermDisplayContext(
+	private BucketDisplayContext _getEmptyBucketDisplayContext(long folderId) {
+		return _buildBucketDisplayContext(
 			folderId, _getDisplayName(folderId), 0, true);
 	}
 
-	private List<FolderSearchFacetTermDisplayContext>
-		_getEmptyFolderSearchFacetTermDisplayContexts() {
-
-		Stream<Long> folderIdsStream = _selectedFolderIds.stream();
-
-		Stream<FolderSearchFacetTermDisplayContext>
-			folderSearchFacetTermDisplayContextsStream = folderIdsStream.map(
-				this::_getEmptyFolderSearchFacetTermDisplayContext);
-
-		return folderSearchFacetTermDisplayContextsStream.collect(
-			Collectors.toList());
+	private List<BucketDisplayContext> _getEmptyBucketDisplayContexts() {
+		return TransformUtil.transform(
+			_selectedFolderIds, this::_getEmptyBucketDisplayContext);
 	}
 
 	private Facet _facet;
@@ -317,6 +302,7 @@ public class FolderSearchFacetDisplayContextBuilder {
 	private boolean _frequenciesVisible;
 	private int _frequencyThreshold;
 	private int _maxTerms;
+	private String _order;
 	private String _paginationStartParameterName;
 	private String _parameterName;
 	private List<Long> _selectedFolderIds = Collections.emptyList();

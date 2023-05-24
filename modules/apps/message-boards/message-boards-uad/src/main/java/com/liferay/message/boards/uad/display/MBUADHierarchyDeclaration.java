@@ -26,7 +26,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Samuel Trong Tran
  */
-@Component(immediate = true, service = UADHierarchyDeclaration.class)
+@Component(service = UADHierarchyDeclaration.class)
 public class MBUADHierarchyDeclaration implements UADHierarchyDeclaration {
 
 	@Override
@@ -52,13 +52,19 @@ public class MBUADHierarchyDeclaration implements UADHierarchyDeclaration {
 	@Reference
 	private Language _language;
 
-	@Reference
-	private MBCategoryUADDisplay _mbCategoryUADDisplay;
+	@Reference(
+		target = "(component.name=com.liferay.message.boards.uad.display.MBCategoryUADDisplay)"
+	)
+	private UADDisplay<?> _mbCategoryUADDisplay;
 
-	@Reference
-	private MBMessageUADDisplay _mbMessageUADDisplay;
+	@Reference(
+		target = "(component.name=com.liferay.message.boards.uad.display.MBMessageUADDisplay)"
+	)
+	private UADDisplay<?> _mbMessageUADDisplay;
 
-	@Reference
-	private MBThreadUADDisplay _mbThreadUADDisplay;
+	@Reference(
+		target = "(component.name=com.liferay.message.boards.uad.display.MBThreadUADDisplay)"
+	)
+	private UADDisplay<?> _mbThreadUADDisplay;
 
 }

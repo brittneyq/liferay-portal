@@ -314,6 +314,12 @@ public class FragmentEntryLinkPersistenceTest {
 	}
 
 	@Test
+	public void testCountByFragmentEntryIdArrayable() throws Exception {
+		_persistence.countByFragmentEntryId(
+			new long[] {RandomTestUtil.nextLong(), 0L});
+	}
+
+	@Test
 	public void testCountByRendererKey() throws Exception {
 		_persistence.countByRendererKey("");
 
@@ -336,6 +342,39 @@ public class FragmentEntryLinkPersistenceTest {
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
 		_persistence.countByG_P(0L, 0L);
+	}
+
+	@Test
+	public void testCountByC_R() throws Exception {
+		_persistence.countByC_R(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByC_R(0L, "null");
+
+		_persistence.countByC_R(0L, (String)null);
+	}
+
+	@Test
+	public void testCountByC_RArrayable() throws Exception {
+		_persistence.countByC_R(
+			RandomTestUtil.nextLong(),
+			new String[] {
+				RandomTestUtil.randomString(), "", "null", null, null
+			});
+	}
+
+	@Test
+	public void testCountByF_D() throws Exception {
+		_persistence.countByF_D(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByF_D(0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
+	public void testCountByF_DArrayable() throws Exception {
+		_persistence.countByF_D(
+			new long[] {RandomTestUtil.nextLong(), 0L},
+			RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -389,6 +428,15 @@ public class FragmentEntryLinkPersistenceTest {
 			RandomTestUtil.nextLong());
 
 		_persistence.countByG_C_C(0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByG_P_D() throws Exception {
+		_persistence.countByG_P_D(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_P_D(0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test

@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -47,7 +46,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -72,9 +70,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  * @generated
  */
-@Component(
-	service = {CommerceTaxFixedRatePersistence.class, BasePersistence.class}
-)
+@Component(service = CommerceTaxFixedRatePersistence.class)
 public class CommerceTaxFixedRatePersistenceImpl
 	extends BasePersistenceImpl<CommerceTaxFixedRate>
 	implements CommerceTaxFixedRatePersistence {
@@ -197,7 +193,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceTaxFixedRate>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceTaxFixedRate commerceTaxFixedRate : list) {
@@ -568,7 +564,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {CPTaxCategoryId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -711,7 +707,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceTaxFixedRate>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceTaxFixedRate commerceTaxFixedRate : list) {
@@ -1084,7 +1080,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceTaxMethodId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1203,7 +1199,8 @@ public class CommerceTaxFixedRatePersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByC_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_C, finderArgs, this);
 		}
 
 		if (result instanceof CommerceTaxFixedRate) {
@@ -1308,7 +1305,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 			CPTaxCategoryId, commerceTaxMethodId
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1803,7 +1800,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CommerceTaxFixedRate>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1873,7 +1870,7 @@ public class CommerceTaxFixedRatePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1986,30 +1983,14 @@ public class CommerceTaxFixedRatePersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"CPTaxCategoryId", "commerceTaxMethodId"}, false);
 
-		_setCommerceTaxFixedRateUtilPersistence(this);
+		CommerceTaxFixedRateUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCommerceTaxFixedRateUtilPersistence(null);
+		CommerceTaxFixedRateUtil.setPersistence(null);
 
 		entityCache.removeCache(CommerceTaxFixedRateImpl.class.getName());
-	}
-
-	private void _setCommerceTaxFixedRateUtilPersistence(
-		CommerceTaxFixedRatePersistence commerceTaxFixedRatePersistence) {
-
-		try {
-			Field field = CommerceTaxFixedRateUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceTaxFixedRatePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2072,9 +2053,5 @@ public class CommerceTaxFixedRatePersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private CommerceTaxFixedRateModelArgumentsResolver
-		_commerceTaxFixedRateModelArgumentsResolver;
 
 }

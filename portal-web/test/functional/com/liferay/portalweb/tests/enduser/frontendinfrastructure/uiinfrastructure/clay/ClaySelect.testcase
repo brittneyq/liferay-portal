@@ -5,7 +5,7 @@ definition {
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Clay";
-	property testray.main.component.name = "User Interface";
+	property testray.main.component.name = "Clay";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -32,7 +32,7 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
@@ -43,7 +43,7 @@ definition {
 	}
 
 	@description = "Verify clay multiple select API options can be configured"
-	@priority = "5"
+	@priority = 5
 	@refactordone
 	test MultipleCanBeConfigured {
 		Navigator.gotoNavTab(navTab = "Form Elements");
@@ -74,7 +74,7 @@ definition {
 	}
 
 	@description = "Verify clay regular select API options can be configured"
-	@priority = "5"
+	@priority = 5
 	@refactordone
 	test RegularCanBeConfigured {
 		Navigator.gotoNavTab(navTab = "Form Elements");

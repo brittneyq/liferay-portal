@@ -23,6 +23,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.test.util.search.FileEntryBlueprint;
 import com.liferay.document.library.test.util.search.FileEntrySearchFixture;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.search.JournalArticleBlueprintBuilder;
@@ -33,6 +34,7 @@ import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.service.MBMessageLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
@@ -46,6 +48,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
@@ -54,6 +57,7 @@ import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.portal.search.sort.Sorts;
 import com.liferay.portal.search.test.util.DocumentsAssert;
 import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.security.permission.PermissionCheckerUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.users.admin.test.util.search.GroupBlueprint;
@@ -67,8 +71,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -100,7 +102,8 @@ public class IndexerScoreDistortionTest {
 		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
 		JournalArticleSearchFixture journalArticleSearchFixture =
-			new JournalArticleSearchFixture(journalArticleLocalService);
+			new JournalArticleSearchFixture(
+				ddmStructureLocalService, journalArticleLocalService, portal);
 
 		_blogsEntries = blogsEntrySearchFixture.getBlogsEntries();
 		_blogsEntrySearchFixture = blogsEntrySearchFixture;
@@ -109,7 +112,10 @@ public class IndexerScoreDistortionTest {
 		_groups = groupSearchFixture.getGroups();
 		_journalArticles = journalArticleSearchFixture.getJournalArticles();
 		_journalArticleSearchFixture = journalArticleSearchFixture;
+
 		_user = TestPropsValues.getUser();
+
+		PermissionCheckerUtil.setThreadValues(_user);
 	}
 
 	@After
@@ -140,11 +146,11 @@ public class IndexerScoreDistortionTest {
 			Field.ENTRY_CLASS_NAME,
 			getClassNamesAsString(
 				BlogsEntry.class, MBMessage.class, WikiPage.class),
-			_limit(searchResponse1.getDocumentsStream(), 3), searchResponse1);
+			_limit(searchResponse1.getDocuments(), 3), searchResponse1);
 		assertValuesIgnoreRelevance(
 			Field.ENTRY_CLASS_NAME,
 			getClassNamesAsString(DLFileEntry.class, JournalArticle.class),
-			_skip(searchResponse1.getDocumentsStream(), 3), searchResponse1);
+			_skip(searchResponse1.getDocuments(), 3), searchResponse1);
 
 		SearchResponse searchResponse2 = search(
 			title, locale, classes,
@@ -255,25 +261,23 @@ public class IndexerScoreDistortionTest {
 
 		DocumentsAssert.assertValues(
 			getMessage(fieldName, searchResponse),
-			searchResponse.getDocumentsStream(), fieldName, expected);
+			searchResponse.getDocuments(), fieldName, expected);
 	}
 
 	protected void assertValuesIgnoreRelevance(
-		String fieldName, String expected, Stream<Document> stream,
+		String fieldName, String expected, List<Document> documents,
 		SearchResponse searchResponse) {
 
 		DocumentsAssert.assertValuesIgnoreRelevance(
-			getMessage(fieldName, searchResponse), stream, fieldName, expected);
+			getMessage(fieldName, searchResponse), documents, fieldName,
+			expected);
 	}
 
-	protected String getClassNamesAsString(Class... classes) {
-		return Stream.of(
-			classes
-		).map(
-			Class::getName
-		).collect(
-			Collectors.toList()
-		).toString();
+	protected String getClassNamesAsString(Class<?>... classes) {
+		List<String> classNames = TransformUtil.transformToList(
+			classes, Class::getName);
+
+		return classNames.toString();
 	}
 
 	protected String getMessage(
@@ -313,6 +317,12 @@ public class IndexerScoreDistortionTest {
 	}
 
 	@Inject
+	protected static DDMStructureLocalService ddmStructureLocalService;
+
+	@Inject
+	protected static Portal portal;
+
+	@Inject
 	protected BlogsEntryLocalService blogsEntryLocalService;
 
 	@Inject
@@ -344,12 +354,12 @@ public class IndexerScoreDistortionTest {
 			_group.getGroupId(), _user.getUserId());
 	}
 
-	private Stream<Document> _limit(Stream<Document> stream, long maxSize) {
-		return stream.limit(maxSize);
+	private List<Document> _limit(List<Document> documents, int maxSize) {
+		return documents.subList(0, maxSize);
 	}
 
-	private Stream<Document> _skip(Stream<Document> stream, long n) {
-		return stream.skip(n);
+	private List<Document> _skip(List<Document> documents, int n) {
+		return documents.subList(n, documents.size());
 	}
 
 	@DeleteAfterTestRun

@@ -61,8 +61,6 @@ import com.liferay.search.experiences.service.persistence.SXPBlueprintPersistenc
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -278,48 +276,21 @@ public abstract class SXPBlueprintLocalServiceBaseImpl
 			uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the sxp blueprint with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the sxp blueprint's external reference code
-	 * @return the matching sxp blueprint, or <code>null</code> if a matching sxp blueprint could not be found
-	 */
 	@Override
 	public SXPBlueprint fetchSXPBlueprintByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return sxpBlueprintPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return sxpBlueprintPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchSXPBlueprintByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public SXPBlueprint fetchSXPBlueprintByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchSXPBlueprintByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the sxp blueprint with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the sxp blueprint's external reference code
-	 * @return the matching sxp blueprint
-	 * @throws PortalException if a matching sxp blueprint could not be found
-	 */
 	@Override
 	public SXPBlueprint getSXPBlueprintByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return sxpBlueprintPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return sxpBlueprintPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -582,7 +553,7 @@ public abstract class SXPBlueprintLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		SXPBlueprintLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -597,7 +568,7 @@ public abstract class SXPBlueprintLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		sxpBlueprintLocalService = (SXPBlueprintLocalService)aopProxy;
 
-		_setLocalServiceUtilService(sxpBlueprintLocalService);
+		SXPBlueprintLocalServiceUtil.setService(sxpBlueprintLocalService);
 	}
 
 	/**
@@ -639,22 +610,6 @@ public abstract class SXPBlueprintLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		SXPBlueprintLocalService sxpBlueprintLocalService) {
-
-		try {
-			Field field = SXPBlueprintLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, sxpBlueprintLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

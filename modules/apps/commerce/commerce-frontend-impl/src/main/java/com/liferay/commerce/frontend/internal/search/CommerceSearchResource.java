@@ -18,9 +18,9 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.constants.AccountConstants;
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
 import com.liferay.commerce.frontend.internal.account.CommerceAccountResource;
@@ -31,6 +31,7 @@ import com.liferay.commerce.frontend.internal.account.model.OrderList;
 import com.liferay.commerce.frontend.internal.order.CommerceOrderResource;
 import com.liferay.commerce.frontend.internal.search.model.SearchItemModel;
 import com.liferay.commerce.frontend.internal.search.util.CommerceSearchUtil;
+import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.order.CommerceOrderHttpHelper;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.catalog.CPQuery;
@@ -39,6 +40,7 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
 import com.liferay.commerce.service.CommerceOrderService;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -87,7 +89,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, service = CommerceSearchResource.class)
+@Component(service = CommerceSearchResource.class)
 public class CommerceSearchResource {
 
 	@GET
@@ -116,15 +118,8 @@ public class CommerceSearchResource {
 				searchItemModels.addAll(
 					_searchAccounts(queryString, themeDisplay));
 
-				CommerceAccount commerceAccount =
-					_commerceAccountHelper.getCurrentCommerceAccount(
-						_commerceChannelLocalService.
-							getCommerceChannelGroupIdBySiteGroupId(
-								themeDisplay.getScopeGroupId()),
-						httpServletRequest);
-
 				searchItemModels.addAll(
-					_searchOrders(queryString, themeDisplay, commerceAccount));
+					_searchOrders(queryString, themeDisplay));
 			}
 
 			String url = _commerceSearchUtil.getSearchFriendlyURL(themeDisplay);
@@ -161,7 +156,7 @@ public class CommerceSearchResource {
 		throws PortalException {
 
 		PortletURL editURL = PortletProviderUtil.getPortletURL(
-			themeDisplay.getRequest(), CommerceAccount.class.getName(),
+			themeDisplay.getRequest(), AccountEntry.class.getName(),
 			PortletProvider.Action.VIEW);
 
 		if (editURL == null) {
@@ -171,6 +166,19 @@ public class CommerceSearchResource {
 		editURL.setParameter("commerceAccountId", String.valueOf(accountId));
 
 		return editURL.toString();
+	}
+
+	private CommerceOrder _getCommerceOrder(long commerceOrderId) {
+		try {
+			return _commerceOrderService.getCommerceOrder(commerceOrderId);
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+
+			return null;
+		}
 	}
 
 	private SearchItemModel _getSearchItemModel(
@@ -213,7 +221,7 @@ public class CommerceSearchResource {
 
 		AccountList accountList = _commerceAccountResource.getAccountList(
 			themeDisplay.getUserId(),
-			CommerceAccountConstants.DEFAULT_PARENT_ACCOUNT_ID,
+			AccountConstants.PARENT_ACCOUNT_ENTRY_ID_DEFAULT,
 			commerceContext.getCommerceSiteType(), queryString, 1, 5,
 			themeDisplay.getPathImage());
 
@@ -255,15 +263,14 @@ public class CommerceSearchResource {
 	}
 
 	private List<SearchItemModel> _searchOrders(
-			String queryString, ThemeDisplay themeDisplay,
-			CommerceAccount commerceAccount)
+			String queryString, ThemeDisplay themeDisplay)
 		throws PortalException {
 
 		List<SearchItemModel> searchItemModels = new ArrayList<>();
 
 		OrderList orderList = _commerceOrderResource.getOrderList(
 			themeDisplay.getScopeGroupId(), queryString, 1, 5,
-			themeDisplay.getRequest(), commerceAccount);
+			themeDisplay.getRequest());
 
 		if (orderList.getCount() > 0) {
 			searchItemModels.add(
@@ -283,8 +290,7 @@ public class CommerceSearchResource {
 					_commerceOrderHttpHelper.getCommerceCartPortletURL(
 						themeDisplay.getScopeGroupId(),
 						themeDisplay.getRequest(),
-						_commerceOrderService.getCommerceOrder(
-							order.getId()))));
+						_getCommerceOrder(order.getId()))));
 
 			searchItemModels.add(searchItemModel);
 		}
@@ -331,19 +337,18 @@ public class CommerceSearchResource {
 				"commerceChannelGroupId", commerceChannel.getGroupId());
 		}
 
-		long commerceAccountId = 0;
+		long accountEntryId = 0;
 
-		CommerceAccount commerceAccount =
-			_commerceAccountHelper.getCurrentCommerceAccount(
+		AccountEntry accountEntry =
+			_commerceAccountHelper.getCurrentAccountEntry(
 				commerceChannel.getGroupId(), themeDisplay.getRequest());
 
-		if (commerceAccount != null) {
-			commerceAccountId = commerceAccount.getCommerceAccountId();
+		if (accountEntry != null) {
+			accountEntryId = accountEntry.getAccountEntryId();
 
 			attributes.put(
 				"commerceAccountGroupIds",
-				_commerceAccountHelper.getCommerceAccountGroupIds(
-					commerceAccountId));
+				_accountGroupLocalService.getAccountGroupIds(accountEntryId));
 		}
 
 		searchContext.setAttributes(attributes);
@@ -371,7 +376,7 @@ public class CommerceSearchResource {
 
 			searchItemModels.add(
 				_getSearchItemModel(
-					commerceAccountId, cpCatalogEntry, themeDisplay));
+					accountEntryId, cpCatalogEntry, themeDisplay));
 		}
 
 		String url = _commerceSearchUtil.getCatalogFriendlyURL(themeDisplay);
@@ -399,6 +404,9 @@ public class CommerceSearchResource {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceSearchResource.class);
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;

@@ -16,7 +16,6 @@ package com.liferay.dynamic.data.mapping.form.field.type.internal.select.multi.l
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
 import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
-import com.liferay.dynamic.data.mapping.form.field.type.internal.select.SelectDDMFormFieldTemplateContextContributor;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.portal.kernel.language.Language;
@@ -35,7 +34,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Rodrigo Paulino
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.MULTI_LANGUAGE_OPTION_SELECT,
 	service = DDMFormFieldTemplateContextContributor.class
 )
@@ -76,8 +74,10 @@ public class MultiLanguageOptionSelectDDMFormFieldTemplateContextContributor
 	@Reference
 	private Language _language;
 
-	@Reference
-	private SelectDDMFormFieldTemplateContextContributor
+	@Reference(
+		target = "(ddm.form.field.type.name=" + DDMFormFieldTypeConstants.SELECT + ")"
+	)
+	private DDMFormFieldTemplateContextContributor
 		_selectDDMFormFieldTemplateContextContributor;
 
 }

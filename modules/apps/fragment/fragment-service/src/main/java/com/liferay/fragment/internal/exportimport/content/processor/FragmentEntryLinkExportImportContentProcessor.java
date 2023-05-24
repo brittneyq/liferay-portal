@@ -21,7 +21,7 @@ import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.StagedModel;
 
@@ -35,10 +35,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "model.class.name=com.liferay.fragment.model.FragmentEntryLink",
-	service = {
-		ExportImportContentProcessor.class,
-		FragmentEntryLinkExportImportContentProcessor.class
-	}
+	service = ExportImportContentProcessor.class
 )
 public class FragmentEntryLinkExportImportContentProcessor
 	implements ExportImportContentProcessor<String> {
@@ -67,7 +64,7 @@ public class FragmentEntryLinkExportImportContentProcessor
 					portletDataContext, stagedModel, content,
 					exportReferencedContent, escapeContent);
 
-		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
+		JSONObject editableValuesJSONObject = _jsonFactory.createJSONObject(
 			content);
 
 		for (ExportImportContentProcessor<JSONObject>
@@ -104,7 +101,7 @@ public class FragmentEntryLinkExportImportContentProcessor
 				replaceImportContentReferences(
 					portletDataContext, stagedModel, content);
 
-		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
+		JSONObject editableValuesJSONObject = _jsonFactory.createJSONObject(
 			content);
 
 		for (String fragmentEntryProcessorKey :
@@ -161,6 +158,9 @@ public class FragmentEntryLinkExportImportContentProcessor
 
 	private ServiceTrackerList<ExportImportContentProcessor<JSONObject>>
 		_fragmentEntryLinkEditableValuesExportImportProcessors;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference(target = "(content.processor.type=LayoutReferences)")
 	private ExportImportContentProcessor<String>

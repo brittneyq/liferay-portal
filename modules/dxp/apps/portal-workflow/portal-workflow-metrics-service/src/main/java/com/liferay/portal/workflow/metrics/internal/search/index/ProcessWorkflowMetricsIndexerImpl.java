@@ -36,13 +36,17 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Inácio Nery
  */
-@Component(immediate = true, service = ProcessWorkflowMetricsIndexer.class)
+@Component(service = ProcessWorkflowMetricsIndexer.class)
 public class ProcessWorkflowMetricsIndexerImpl
 	extends BaseWorkflowMetricsIndexer
 	implements ProcessWorkflowMetricsIndexer {
 
 	@Override
 	public void addDocument(Document document) {
+		if (!searchCapabilities.isWorkflowMetricsSupported()) {
+			return;
+		}
+
 		BulkDocumentRequest bulkDocumentRequest = new BulkDocumentRequest();
 
 		bulkDocumentRequest.addBulkableDocumentRequest(
@@ -166,6 +170,10 @@ public class ProcessWorkflowMetricsIndexerImpl
 	@Override
 	public Document updateProcess(UpdateProcessRequest updateProcessRequest) {
 		DocumentBuilder documentBuilder = documentBuilderFactory.builder();
+
+		if (!searchCapabilities.isWorkflowMetricsSupported()) {
+			return documentBuilder.build();
+		}
 
 		if (updateProcessRequest.getActive() != null) {
 			documentBuilder.setValue(

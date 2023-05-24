@@ -33,13 +33,15 @@ long deliveryCommerceTermEntryId = commerceOrder.getDeliveryCommerceTermEntryId(
 >
 	<c:choose>
 		<c:when test="<%= deliveryTermsEntries.isEmpty() %>">
-			<aui:row>
-				<aui:col widht="100">
+			<clay:row>
+				<clay:col
+					size="12"
+				>
 					<aui:alert type="info">
 						<liferay-ui:message key="there-are-no-available-delivery-terms" />
 					</aui:alert>
-				</aui:col>
-			</aui:row>
+				</clay:col>
+			</clay:row>
 
 			<aui:script use="aui-base">
 				var continueButton = A.one('#<portlet:namespace />continue');
@@ -77,7 +79,7 @@ long deliveryCommerceTermEntryId = commerceOrder.getDeliveryCommerceTermEntryId(
 				</aui:select>
 			</aui:form>
 
-			<label class="control-label <%= (deliveryCommerceTermEntryId == 0) ? " d-none" : "" %>" id="description-label"><%= LanguageUtil.get(request, "description") %></label>
+			<label class="control-label <%= (deliveryCommerceTermEntryId == 0) ? " d-none" : "" %>" id="description-label"><liferay-ui:message key="description" /></label>
 
 			<div id="description-container">
 				<%= commerceOrder.getDeliveryCommerceTermEntryDescription() %>

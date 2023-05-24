@@ -14,8 +14,7 @@
 
 package com.liferay.commerce.checkout.web.internal.util;
 
-import com.liferay.account.service.AccountEntryLocalService;
-import com.liferay.commerce.account.model.CommerceAccount;
+import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.checkout.helper.CommerceCheckoutStepHttpHelper;
 import com.liferay.commerce.checkout.web.internal.display.context.TermCommerceCheckoutStepDisplayContext;
 import com.liferay.commerce.constants.CommerceCheckoutWebKeys;
@@ -23,7 +22,6 @@ import com.liferay.commerce.constants.CommerceOrderActionKeys;
 import com.liferay.commerce.constants.CommerceOrderConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelLocalService;
-import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.service.CommerceShippingMethodLocalService;
 import com.liferay.commerce.shipping.engine.fixed.service.CommerceShippingFixedOptionLocalService;
@@ -54,7 +52,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"commerce.checkout.step.name=" + DeliveryTermCommerceCheckoutStep.NAME,
 		"commerce.checkout.step.order:Integer=25"
@@ -100,12 +97,11 @@ public class DeliveryTermCommerceCheckoutStep extends BaseCommerceCheckoutStep {
 		PermissionChecker permissionChecker =
 			PermissionCheckerFactoryUtil.create(themeDisplay.getUser());
 
-		CommerceAccount commerceAccount = commerceOrder.getCommerceAccount();
+		AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
-		if (commerceOrder.isGuestOrder() ||
-			commerceAccount.isPersonalAccount() ||
+		if (commerceOrder.isGuestOrder() || accountEntry.isPersonalAccount() ||
 			_portletResourcePermission.contains(
-				permissionChecker, commerceAccount.getCommerceAccountGroup(),
+				permissionChecker, accountEntry.getAccountEntryGroup(),
 				CommerceOrderActionKeys.MANAGE_COMMERCE_ORDER_DELIVERY_TERMS)) {
 
 			return activeDeliveryTermCommerceCheckoutStep;
@@ -157,12 +153,6 @@ public class DeliveryTermCommerceCheckoutStep extends BaseCommerceCheckoutStep {
 			httpServletRequest, httpServletResponse,
 			"/checkout_step/delivery_term.jsp");
 	}
-
-	@Reference
-	private AccountEntryLocalService _accountEntryLocalService;
-
-	@Reference
-	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	@Reference
 	private CommerceCheckoutStepHttpHelper _commerceCheckoutStepHttpHelper;

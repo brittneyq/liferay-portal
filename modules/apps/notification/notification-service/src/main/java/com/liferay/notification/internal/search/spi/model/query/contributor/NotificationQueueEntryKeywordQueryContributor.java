@@ -26,7 +26,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Paulo Albuquerque
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.notification.model.NotificationQueueEntry",
 	service = KeywordQueryContributor.class
 )
@@ -44,12 +43,6 @@ public class NotificationQueueEntryKeywordQueryContributor
 		_queryHelper.addSearchTerm(
 			booleanQuery, keywordQueryContributorHelper.getSearchContext(),
 			"subject", false);
-		_queryHelper.addSearchTerm(
-			booleanQuery, keywordQueryContributorHelper.getSearchContext(),
-			"toName", false);
-		_queryHelper.addSearchTerm(
-			booleanQuery, keywordQueryContributorHelper.getSearchContext(),
-			"triggerBy", false);
 	}
 
 	@Reference

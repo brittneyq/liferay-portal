@@ -13,13 +13,22 @@
  */
 
 const {pathname} = new URL(Liferay.ThemeDisplay.getCanonicalURL());
+
 const urlPaths = pathname.split('/').filter(Boolean);
+
 const siteName = `/${urlPaths.slice(0, urlPaths.length - 1).join('/')}`;
-const applicationId = localStorage.getItem('raylife-application-id');
+const applicationId = Liferay.Util.LocalStorage.getItem(
+	'raylife-application-id',
+	Liferay.Util.LocalStorage.TYPES.NECESSARY
+);
+
+const baseURL = window.location.origin + Liferay.ThemeDisplay.getPathContext();
+
+const NEXT_STEP_DELAY = 1000;
 
 const fetchHeadless = async (url, options) => {
 	// eslint-disable-next-line @liferay/portal/no-global-fetch
-	const response = await fetch(`${window.location.origin}/${url}`, {
+	const response = await fetch(`${baseURL}/${url}`, {
 		...options,
 		headers: {
 			'Content-Type': 'application/json',
@@ -27,9 +36,28 @@ const fetchHeadless = async (url, options) => {
 		},
 	});
 
-	const data = await response.json();
+	return response.json();
+};
 
-	return data;
+const fetchHeadlessWithToken = async (url) => {
+	if (Liferay.ThemeDisplay.getUserName()) {
+		return fetchHeadless(url);
+	}
+
+	const token = Liferay.Util.SessionStorage.getItem(
+		'raylife-guest-permission-token',
+		Liferay.Util.SessionStorage.TYPES.NECESSARY
+	);
+
+	// eslint-disable-next-line @liferay/portal/no-global-fetch
+	const response = await fetch(`${baseURL}/${url}`, {
+		headers: {
+			'Authorization': `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+	});
+
+	return response.json();
 };
 
 const addQuoteEntryData = async (payload) => {
@@ -42,9 +70,9 @@ const addQuoteEntryData = async (payload) => {
 const main = async () => {
 	const [quote, quoteComparison] = await Promise.all([
 		fetchHeadless(
-			`o/c/raylifequotes/?search=r_applicationToQuotes_c_raylifeApplicationId eq ${applicationId}&fields=id`
+			`o/c/raylifequotes?filter=r_applicationToQuotes_c_raylifeApplicationId eq '${applicationId}'&fields=id`
 		),
-		fetchHeadless(
+		fetchHeadlessWithToken(
 			`o/c/quotecomparisons/scopes/${Liferay.ThemeDisplay.getScopeGroupId()}`
 		),
 	]);
@@ -76,7 +104,9 @@ const main = async () => {
 		});
 	}
 
-	window.location.href = `${siteName}/quote-comparison`;
+	setTimeout(() => {
+		window.location.href = `${siteName}/quote-comparison`;
+	}, NEXT_STEP_DELAY);
 };
 
 main();

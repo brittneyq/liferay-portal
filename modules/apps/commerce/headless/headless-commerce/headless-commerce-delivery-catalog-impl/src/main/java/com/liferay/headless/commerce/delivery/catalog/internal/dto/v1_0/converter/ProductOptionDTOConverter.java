@@ -35,8 +35,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Sbarra
  */
 @Component(
-	enabled = false, property = "dto.class.name=CPDefinitionOptionRel",
-	service = {DTOConverter.class, ProductOptionDTOConverter.class}
+	property = "dto.class.name=CPDefinitionOptionRel",
+	service = DTOConverter.class
 )
 public class ProductOptionDTOConverter
 	implements DTOConverter<CPDefinitionOptionRel, ProductOption> {
@@ -69,6 +69,8 @@ public class ProductOptionDTOConverter
 				optionId = cpOption.getCPOptionId();
 				productOptionValues = _toProductOptionValues(
 					cpDefinitionOptionRel, languageId);
+				required = cpOption.isRequired();
+				skuContributor = cpOption.isSkuContributor();
 			}
 		};
 	}
@@ -84,6 +86,7 @@ public class ProductOptionDTOConverter
 						getCPDefinitionOptionValueRelId();
 				key = cpDefinitionOptionValueRel.getKey();
 				name = cpDefinitionOptionValueRel.getName(languageId);
+				preselected = cpDefinitionOptionValueRel.isPreselected();
 				priority = cpDefinitionOptionValueRel.getPriority();
 			}
 		};

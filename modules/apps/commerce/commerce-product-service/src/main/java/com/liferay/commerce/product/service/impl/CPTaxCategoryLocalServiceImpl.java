@@ -19,7 +19,7 @@ import com.liferay.commerce.product.exception.DuplicateCPTaxCategoryException;
 import com.liferay.commerce.product.model.CPTaxCategory;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.base.CPTaxCategoryLocalServiceBaseImpl;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -29,15 +29,21 @@ import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.product.model.CPTaxCategory",
+	service = AopService.class
+)
 public class CPTaxCategoryLocalServiceImpl
 	extends CPTaxCategoryLocalServiceBaseImpl {
 
@@ -49,7 +55,7 @@ public class CPTaxCategoryLocalServiceImpl
 
 		User user = _userLocalService.getUser(serviceContext.getUserId());
 
-		validate(user.getCompanyId(), 0, externalReferenceCode, nameMap);
+		_validate(user.getCompanyId(), 0, externalReferenceCode, nameMap);
 
 		long cpTaxCategoryId = counterLocalService.increment();
 
@@ -140,7 +146,7 @@ public class CPTaxCategoryLocalServiceImpl
 		CPTaxCategory cpTaxCategory = cpTaxCategoryPersistence.findByPrimaryKey(
 			cpTaxCategoryId);
 
-		validate(
+		_validate(
 			cpTaxCategory.getCompanyId(), cpTaxCategoryId,
 			externalReferenceCode, nameMap);
 
@@ -151,14 +157,14 @@ public class CPTaxCategoryLocalServiceImpl
 		return cpTaxCategoryPersistence.update(cpTaxCategory);
 	}
 
-	protected void validate(
+	private void _validate(
 			long companyId, long cpTaxCategoryId, String externalReferenceCode,
 			Map<Locale, String> nameMap)
 		throws PortalException {
 
 		if (Validator.isNotNull(externalReferenceCode)) {
-			CPTaxCategory cpTaxCategory = cpTaxCategoryPersistence.fetchByC_ERC(
-				companyId, externalReferenceCode);
+			CPTaxCategory cpTaxCategory = cpTaxCategoryPersistence.fetchByERC_C(
+				externalReferenceCode, companyId);
 
 			if ((cpTaxCategory != null) &&
 				(cpTaxCategory.getCPTaxCategoryId() != cpTaxCategoryId)) {
@@ -169,12 +175,10 @@ public class CPTaxCategoryLocalServiceImpl
 			}
 		}
 
-		validate(nameMap);
+		_validate(nameMap);
 	}
 
-	protected void validate(Map<Locale, String> nameMap)
-		throws PortalException {
-
+	private void _validate(Map<Locale, String> nameMap) throws PortalException {
 		Locale locale = LocaleUtil.getSiteDefault();
 
 		String name = nameMap.get(locale);
@@ -184,10 +188,10 @@ public class CPTaxCategoryLocalServiceImpl
 		}
 	}
 
-	@BeanReference(type = CPDefinitionLocalService.class)
+	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

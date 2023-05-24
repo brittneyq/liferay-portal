@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		MBSuspiciousActivityModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.message.boards.model.impl.MBSuspiciousActivityImpl",
+		"table.name=MBSuspiciousActivity"
+	},
+	service = ArgumentsResolver.class
 )
 public class MBSuspiciousActivityModelArgumentsResolver
 	implements ArgumentsResolver {

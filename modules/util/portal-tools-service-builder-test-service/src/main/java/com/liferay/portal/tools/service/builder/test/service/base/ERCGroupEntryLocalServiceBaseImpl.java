@@ -48,8 +48,6 @@ import com.liferay.portal.tools.service.builder.test.service.persistence.ERCGrou
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -258,48 +256,21 @@ public abstract class ERCGroupEntryLocalServiceBaseImpl
 		return ercGroupEntryPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the erc group entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the erc group entry's external reference code
-	 * @return the matching erc group entry, or <code>null</code> if a matching erc group entry could not be found
-	 */
 	@Override
 	public ERCGroupEntry fetchERCGroupEntryByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
-		return ercGroupEntryPersistence.fetchByG_ERC(
-			groupId, externalReferenceCode);
+		return ercGroupEntryPersistence.fetchByERC_G(
+			externalReferenceCode, groupId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchERCGroupEntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public ERCGroupEntry fetchERCGroupEntryByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return fetchERCGroupEntryByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the erc group entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the erc group entry's external reference code
-	 * @return the matching erc group entry
-	 * @throws PortalException if a matching erc group entry could not be found
-	 */
 	@Override
 	public ERCGroupEntry getERCGroupEntryByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
-		return ercGroupEntryPersistence.findByG_ERC(
-			groupId, externalReferenceCode);
+		return ercGroupEntryPersistence.findByERC_G(
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -559,14 +530,14 @@ public abstract class ERCGroupEntryLocalServiceBaseImpl
 			"com.liferay.portal.tools.service.builder.test.model.ERCGroupEntry",
 			ercGroupEntryLocalService);
 
-		_setLocalServiceUtilService(ercGroupEntryLocalService);
+		ERCGroupEntryLocalServiceUtil.setService(ercGroupEntryLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.portal.tools.service.builder.test.model.ERCGroupEntry");
 
-		_setLocalServiceUtilService(null);
+		ERCGroupEntryLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -608,22 +579,6 @@ public abstract class ERCGroupEntryLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		ERCGroupEntryLocalService ercGroupEntryLocalService) {
-
-		try {
-			Field field = ERCGroupEntryLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, ercGroupEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

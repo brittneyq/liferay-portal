@@ -14,13 +14,19 @@
 
 package com.liferay.redirect.provider;
 
+import com.liferay.redirect.model.RedirectPatternEntry;
+
+import java.util.List;
+
 /**
  * @author Adolfo Pérez
  */
 public interface RedirectProvider {
 
 	public Redirect getRedirect(
-		long groupId, String friendlyURL, String fullURL);
+		long groupId, String friendlyURL, String fullURL, String userAgent);
+
+	public List<RedirectPatternEntry> getRedirectPatternEntries(long groupId);
 
 	public interface Redirect {
 

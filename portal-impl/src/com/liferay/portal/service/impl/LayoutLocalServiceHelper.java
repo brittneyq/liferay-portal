@@ -18,7 +18,6 @@ import com.liferay.counter.kernel.service.CounterLocalService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.LayoutFriendlyURLException;
 import com.liferay.portal.kernel.exception.LayoutFriendlyURLsException;
 import com.liferay.portal.kernel.exception.LayoutNameException;
@@ -66,12 +65,10 @@ import com.liferay.portal.util.LayoutTypeControllerTracker;
 import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -186,15 +183,13 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 		int priority = defaultPriority;
 
 		if (priority < 0) {
-			List<Layout> layouts = layoutPersistence.findByG_P_P(
-				groupId, privateLayout, parentLayoutId, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, new LayoutPriorityComparator(false));
+			Layout layout = layoutPersistence.fetchByG_P_P_First(
+				groupId, privateLayout, parentLayoutId,
+				new LayoutPriorityComparator(false));
 
-			if (layouts.isEmpty()) {
+			if (layout == null) {
 				return 0;
 			}
-
-			Layout layout = layouts.get(0);
 
 			priority = layout.getPriority() + 1;
 		}
@@ -401,10 +396,7 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 			Layout layout = layoutPersistence.findByPrimaryKey(
 				layoutFriendlyURL.getPlid());
 
-			if ((layout.getLayoutId() != layoutId) ||
-				(Validator.isNotNull(languageId) &&
-				 !languageId.equals(layoutFriendlyURL.getLanguageId()))) {
-
+			if (layout.getLayoutId() != layoutId) {
 				LayoutFriendlyURLException layoutFriendlyURLException =
 					new LayoutFriendlyURLException(
 						LayoutFriendlyURLException.DUPLICATE);
@@ -536,17 +528,6 @@ public class LayoutLocalServiceHelper implements IdentifiableOSGiService {
 		throws PortalException {
 
 		LayoutFriendlyURLsException layoutFriendlyURLsException = null;
-
-		Set<String> friendlyURLs = new HashSet<>(friendlyURLMap.values());
-
-		if (friendlyURLs.size() != friendlyURLMap.size()) {
-			LayoutFriendlyURLException layoutFriendlyURLException =
-				new LayoutFriendlyURLException(
-					LayoutFriendlyURLException.DUPLICATE);
-
-			layoutFriendlyURLsException = new LayoutFriendlyURLsException(
-				layoutFriendlyURLException);
-		}
 
 		for (Map.Entry<Locale, String> entry : friendlyURLMap.entrySet()) {
 			try {

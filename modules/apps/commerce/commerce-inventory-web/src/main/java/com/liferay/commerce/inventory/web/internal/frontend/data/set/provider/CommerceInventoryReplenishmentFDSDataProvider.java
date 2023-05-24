@@ -46,7 +46,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceInventoryFDSNames.INVENTORY_REPLENISHMENT,
 	service = FDSDataProvider.class
 )
@@ -91,7 +90,8 @@ public class CommerceInventoryReplenishmentFDSDataProvider
 				new Replenishment(
 					commerceInventoryReplenishmentItem.
 						getCommerceInventoryReplenishmentItemId(),
-					commerceInventoryWarehouse.getName(),
+					commerceInventoryWarehouse.getName(
+						_portal.getLocale(httpServletRequest)),
 					dateTimeFormat.format(
 						commerceInventoryReplenishmentItem.
 							getAvailabilityDate()),

@@ -17,7 +17,7 @@ import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
-import {openToast} from 'frontend-js-web';
+import {openToast, sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
@@ -27,7 +27,7 @@ import FragmentService from '../../../app/services/FragmentService';
 import deleteFragmentComment from '../../../app/thunks/deleteFragmentComment';
 import InlineConfirm from '../../../common/components/InlineConfirm';
 import UserIcon from '../../../common/components/UserIcon';
-import {useSessionState} from '../../../core/hooks/useSessionState';
+import {useSessionState} from '../../../common/hooks/useSessionState';
 import EditCommentForm from './EditCommentForm';
 import ReplyCommentForm from './ReplyCommentForm';
 import ResolveButton from './ResolveButton';
@@ -154,7 +154,7 @@ export default function FragmentComment({
 						})}
 						data-title={
 							showModifiedDateTooltip &&
-							Liferay.Util.sub(
+							sub(
 								Liferay.Language.get('edited-x'),
 								modifiedDateDescription
 							)
@@ -184,12 +184,13 @@ export default function FragmentComment({
 						onActiveChange={setDropDownActive}
 						trigger={
 							<ClayButton
+								aria-label={Liferay.Language.get('options')}
 								borderless
 								disabled={editing}
 								displayType="secondary"
 								monospaced
 								outline
-								small
+								size="sm"
 							>
 								<ClayIcon symbol="ellipsis-v" />
 							</ClayButton>

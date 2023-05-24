@@ -3,6 +3,7 @@
 		"pageElements": [
 			{
 				"definition": {
+					"indexed": true,
 					"layout": {
 						"borderWidth": 0,
 						"marginBottom": 0,
@@ -19,10 +20,12 @@
 				"pageElements": [
 					{
 						"definition": {
+							"fragmentStyle": {
+								"minHeight": "52.5vh"
+							},
 							"widgetInstance": {
 								"widgetConfig": {
-									"portletSetupPortletDecoratorId": "barebone",
-									"properties": "route=home\nokta-session-api=https://login-dev.liferay.com/api/v1/sessions"
+									"properties": "route=home"
 								},
 								"widgetName": "[$CLIENT_EXTENSION_ENTRY_ID:CUSTOMER-PORTAL$]"
 							}
@@ -39,5 +42,6 @@
 		"masterPage": {
 			"key": "home"
 		}
-	}
+	},
+	"version": 1.1
 }

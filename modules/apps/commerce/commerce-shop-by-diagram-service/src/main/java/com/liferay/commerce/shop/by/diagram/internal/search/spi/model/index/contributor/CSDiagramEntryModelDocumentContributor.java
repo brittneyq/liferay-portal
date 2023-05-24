@@ -20,7 +20,7 @@ import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.shop.by.diagram.model.CSDiagramEntry;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 
 import java.util.List;
@@ -32,7 +32,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "indexer.class.name=com.liferay.commerce.shop.by.diagram.model.CSDiagramEntry",
 	service = ModelDocumentContributor.class
 )
@@ -67,20 +66,18 @@ public class CSDiagramEntryModelDocumentContributor
 			String name = cpDefinition.getName(languageId);
 
 			document.addText(
-				LocalizationUtil.getLocalizedName(
+				_localization.getLocalizedName(
 					CPField.SHORT_DESCRIPTION, languageId),
 				shortDescription);
 			document.addText(
-				LocalizationUtil.getLocalizedName(
-					Field.DESCRIPTION, languageId),
+				_localization.getLocalizedName(Field.DESCRIPTION, languageId),
 				description);
 			document.addText(
-				LocalizationUtil.getLocalizedName(Field.NAME, languageId),
-				name);
+				_localization.getLocalizedName(Field.NAME, languageId), name);
 		}
 
 		String cpDefinitionDefaultLanguageId =
-			LocalizationUtil.getDefaultLanguageId(cpDefinition.getName());
+			_localization.getDefaultLanguageId(cpDefinition.getName());
 
 		document.addText(
 			CPField.SHORT_DESCRIPTION,
@@ -94,5 +91,8 @@ public class CSDiagramEntryModelDocumentContributor
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
+
+	@Reference
+	private Localization _localization;
 
 }

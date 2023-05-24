@@ -225,6 +225,12 @@ public class ObjectLayoutLocalServiceUtil {
 		return getService().dynamicQueryCount(dynamicQuery, projection);
 	}
 
+	public static ObjectLayout fetchDefaultObjectLayout(
+		long objectDefinitionId) {
+
+		return getService().fetchDefaultObjectLayout(objectDefinitionId);
+	}
+
 	public static ObjectLayout fetchObjectLayout(long objectLayoutId) {
 		return getService().fetchObjectLayout(objectLayoutId);
 	}
@@ -380,6 +386,10 @@ public class ObjectLayoutLocalServiceUtil {
 
 	public static ObjectLayoutLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(ObjectLayoutLocalService service) {
+		_service = service;
 	}
 
 	private static volatile ObjectLayoutLocalService _service;

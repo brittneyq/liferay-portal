@@ -37,7 +37,6 @@ import java.time.Instant;
 
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -58,7 +57,7 @@ public class StagedLayoutSetImpl
 		// Last publish date
 
 		UnicodeProperties settingsUnicodeProperties =
-			_layoutSet.getSettingsProperties();
+			layoutSet.getSettingsProperties();
 
 		String lastPublishDateString = settingsUnicodeProperties.getProperty(
 			"last-publish-date");
@@ -70,12 +69,12 @@ public class StagedLayoutSetImpl
 
 		// Layout set prototype
 
-		if (Validator.isNotNull(_layoutSet.getLayoutSetPrototypeUuid())) {
+		if (Validator.isNotNull(layoutSet.getLayoutSetPrototypeUuid())) {
 			LayoutSetPrototype layoutSetPrototype =
 				LayoutSetPrototypeLocalServiceUtil.
 					fetchLayoutSetPrototypeByUuidAndCompanyId(
-						_layoutSet.getLayoutSetPrototypeUuid(),
-						_layoutSet.getCompanyId());
+						layoutSet.getLayoutSetPrototypeUuid(),
+						layoutSet.getCompanyId());
 
 			if (layoutSetPrototype != null) {
 				_layoutSetPrototypeName = layoutSetPrototype.getName(
@@ -84,7 +83,7 @@ public class StagedLayoutSetImpl
 		}
 
 		try {
-			Group layoutSetGroup = _layoutSet.getGroup();
+			Group layoutSetGroup = layoutSet.getGroup();
 
 			_userId = layoutSetGroup.getCreatorUserId();
 
@@ -124,8 +123,8 @@ public class StagedLayoutSetImpl
 	}
 
 	@Override
-	public Optional<String> getLayoutSetPrototypeName() {
-		return Optional.ofNullable(_layoutSetPrototypeName);
+	public String getLayoutSetPrototypeName() {
+		return _layoutSetPrototypeName;
 	}
 
 	@Override

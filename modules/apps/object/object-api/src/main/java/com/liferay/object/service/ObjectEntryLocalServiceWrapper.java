@@ -66,6 +66,16 @@ public class ObjectEntryLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.object.model.ObjectEntry addObjectEntry(
+			String externalReferenceCode, long userId,
+			com.liferay.object.model.ObjectDefinition objectDefinition)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.addObjectEntry(
+			externalReferenceCode, userId, objectDefinition);
+	}
+
+	@Override
 	public void addOrUpdateExtensionDynamicObjectDefinitionTableValues(
 			long userId,
 			com.liferay.object.model.ObjectDefinition objectDefinition,
@@ -302,6 +312,14 @@ public class ObjectEntryLocalServiceWrapper
 		return _objectEntryLocalService.fetchObjectEntry(objectEntryId);
 	}
 
+	@Override
+	public com.liferay.object.model.ObjectEntry fetchObjectEntry(
+		String externalReferenceCode, long objectDefinitionId) {
+
+		return _objectEntryLocalService.fetchObjectEntry(
+			externalReferenceCode, objectDefinitionId);
+	}
+
 	/**
 	 * Returns the object entry matching the UUID and group.
 	 *
@@ -326,13 +344,14 @@ public class ObjectEntryLocalServiceWrapper
 
 	@Override
 	public java.util.Map<Object, Long> getAggregationCounts(
-			long objectDefinitionId, String aggregationTerm,
+			long groupId, long objectDefinitionId, String aggregationTerm,
 			com.liferay.petra.sql.dsl.expression.Predicate predicate, int start,
 			int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectEntryLocalService.getAggregationCounts(
-			objectDefinitionId, aggregationTerm, predicate, start, end);
+			groupId, objectDefinitionId, aggregationTerm, predicate, start,
+			end);
 	}
 
 	@Override
@@ -406,9 +425,8 @@ public class ObjectEntryLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.object.model.ObjectEntry>
-			getObjectEntries(
-				long groupId, long objectDefinitionId, int start, int end)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		getObjectEntries(
+			long groupId, long objectDefinitionId, int start, int end) {
 
 		return _objectEntryLocalService.getObjectEntries(
 			groupId, objectDefinitionId, start, end);
@@ -416,10 +434,9 @@ public class ObjectEntryLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.object.model.ObjectEntry>
-			getObjectEntries(
-				long groupId, long objectDefinitionId, int status, int start,
-				int end)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		getObjectEntries(
+			long groupId, long objectDefinitionId, int status, int start,
+			int end) {
 
 		return _objectEntryLocalService.getObjectEntries(
 			groupId, objectDefinitionId, status, start, end);
@@ -490,6 +507,15 @@ public class ObjectEntryLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectEntryLocalService.getObjectEntry(objectEntryId);
+	}
+
+	@Override
+	public com.liferay.object.model.ObjectEntry getObjectEntry(
+			String externalReferenceCode, long objectDefinitionId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.getObjectEntry(
+			externalReferenceCode, objectDefinitionId);
 	}
 
 	@Override
@@ -571,6 +597,22 @@ public class ObjectEntryLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.Map<String, java.io.Serializable> getSystemValues(
+			com.liferay.object.model.ObjectEntry objectEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.getSystemValues(objectEntry);
+	}
+
+	@Override
+	public String getTitleValue(long objectDefinitionId, long primaryKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.getTitleValue(
+			objectDefinitionId, primaryKey);
+	}
+
+	@Override
 	public java.util.Map<String, java.io.Serializable> getValues(
 			long objectEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -589,7 +631,8 @@ public class ObjectEntryLocalServiceWrapper
 	@Override
 	public java.util.List<java.util.Map<String, java.io.Serializable>>
 			getValuesList(
-				long objectDefinitionId, long groupId, long[] accountEntryIds,
+				long groupId, long companyId, long userId,
+				long objectDefinitionId,
 				com.liferay.petra.sql.dsl.expression.Predicate predicate,
 				String search, int start, int end,
 				com.liferay.petra.sql.dsl.query.sort.OrderByExpression[]
@@ -597,29 +640,29 @@ public class ObjectEntryLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectEntryLocalService.getValuesList(
-			objectDefinitionId, groupId, accountEntryIds, predicate, search,
+			groupId, companyId, userId, objectDefinitionId, predicate, search,
 			start, end, orderByExpressions);
 	}
 
 	@Override
 	public int getValuesListCount(
-			long objectDefinitionId, long groupId, long[] accountEntryIds,
+			long groupId, long companyId, long userId, long objectDefinitionId,
 			com.liferay.petra.sql.dsl.expression.Predicate predicate,
 			String search)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _objectEntryLocalService.getValuesListCount(
-			objectDefinitionId, groupId, accountEntryIds, predicate, search);
+			groupId, companyId, userId, objectDefinitionId, predicate, search);
 	}
 
 	@Override
 	public void insertIntoOrUpdateExtensionTable(
-			long objectDefinitionId, long primaryKey,
+			long userId, long objectDefinitionId, long primaryKey,
 			java.util.Map<String, java.io.Serializable> values)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_objectEntryLocalService.insertIntoOrUpdateExtensionTable(
-			objectDefinitionId, primaryKey, values);
+			userId, objectDefinitionId, primaryKey, values);
 	}
 
 	@Override

@@ -17,18 +17,19 @@ import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import React, {useContext, useState} from 'react';
 
-import FrontendDataSetContext from '../../FrontendDataSetContext';
+import ViewsContext from '../../views/ViewsContext';
 import Filter from './filters/Filter';
 
 const FiltersDropdown = () => {
-	const {filters: initialFilters} = useContext(FrontendDataSetContext);
+	const [{filters: initialFilters}] = useContext(ViewsContext);
 
 	const [active, setActive] = useState(false);
 	const [activeFilter, setActiveFilter] = useState(null);
 	const [filters, setFilters] = useState(initialFilters);
+	const [query, setQuery] = useState('');
 
-	const onSearch = (event) => {
-		const query = event.target.value;
+	const onSearch = (query) => {
+		setQuery(query);
 
 		setFilters(
 			query
@@ -77,11 +78,12 @@ const FiltersDropdown = () => {
 
 						{activeFilter.label}
 					</li>
+
 					<Filter {...activeFilter} />
 				</>
 			) : (
 				<ClayDropDown.Group header={Liferay.Language.get('filters')}>
-					<ClayDropDown.Search onChange={onSearch} />
+					<ClayDropDown.Search onChange={onSearch} value={query} />
 
 					<ClayDropDown.Divider className="m-0" />
 

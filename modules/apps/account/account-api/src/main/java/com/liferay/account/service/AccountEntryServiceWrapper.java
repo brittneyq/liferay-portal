@@ -115,6 +115,16 @@ public class AccountEntryServiceWrapper
 	}
 
 	@Override
+	public com.liferay.account.model.AccountEntry
+			fetchAccountEntryByExternalReferenceCode(
+				long companyId, String externalReferenceCode)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _accountEntryService.fetchAccountEntryByExternalReferenceCode(
+			companyId, externalReferenceCode);
+	}
+
+	@Override
 	public java.util.List<com.liferay.account.model.AccountEntry>
 			getAccountEntries(
 				long companyId, int status, int start, int end,
@@ -179,12 +189,29 @@ public class AccountEntryServiceWrapper
 	}
 
 	@Override
+	public com.liferay.account.model.AccountEntry updateDomains(
+			long accountEntryId, String[] domains)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _accountEntryService.updateDomains(accountEntryId, domains);
+	}
+
+	@Override
 	public com.liferay.account.model.AccountEntry updateExternalReferenceCode(
 			long accountEntryId, String externalReferenceCode)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _accountEntryService.updateExternalReferenceCode(
 			accountEntryId, externalReferenceCode);
+	}
+
+	@Override
+	public com.liferay.account.model.AccountEntry updateRestrictMembership(
+			long accountEntryId, boolean restrictMembership)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _accountEntryService.updateRestrictMembership(
+			accountEntryId, restrictMembership);
 	}
 
 	@Override

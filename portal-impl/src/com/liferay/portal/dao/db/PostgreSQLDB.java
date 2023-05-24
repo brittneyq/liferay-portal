@@ -33,6 +33,8 @@ import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Alexander Chow
@@ -157,6 +159,10 @@ public class PostgreSQLDB extends BaseDB {
 		return _POSTGRESQL;
 	}
 
+	protected boolean isSupportsDuplicatedIndexName() {
+		return _SUPPORTS_DUPLICATED_INDEX_NAME;
+	}
+
 	@Override
 	protected String reword(String data) throws IOException {
 		try (UnsyncBufferedReader unsyncBufferedReader =
@@ -233,11 +239,15 @@ public class PostgreSQLDB extends BaseDB {
 						"@table@", tokens[2]);
 				}
 				else if (line.contains(getTemplateBlob())) {
-					String[] tokens = StringUtil.split(line, ' ');
+					Matcher matcher = _oidPattern.matcher(line);
 
-					createRulesSQLSB.append(StringPool.NEW_LINE);
-					createRulesSQLSB.append(
-						getCreateRulesSQL(tableName, tokens[0]));
+					if (matcher.find()) {
+						String[] tokens = StringUtil.split(line, ' ');
+
+						createRulesSQLSB.append(StringPool.NEW_LINE);
+						createRulesSQLSB.append(
+							getCreateRulesSQL(tableName, tokens[0]));
+					}
 				}
 				else if (line.contains("\\\'")) {
 					line = StringUtil.replace(line, "\\\'", "\'\'");
@@ -268,7 +278,12 @@ public class PostgreSQLDB extends BaseDB {
 		SQL_VARCHAR_MAX_SIZE, SQL_VARCHAR_MAX_SIZE
 	};
 
+	private static final boolean _SUPPORTS_DUPLICATED_INDEX_NAME = false;
+
 	private static final boolean _SUPPORTS_QUERYING_AFTER_EXCEPTION = false;
+
+	private static final Pattern _oidPattern = Pattern.compile(
+		" oid(\\W|$)", Pattern.CASE_INSENSITIVE);
 
 	private final boolean _supportsNewUuidFunction;
 

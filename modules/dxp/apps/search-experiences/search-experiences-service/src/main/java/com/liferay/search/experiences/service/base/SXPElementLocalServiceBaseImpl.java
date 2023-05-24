@@ -53,8 +53,6 @@ import com.liferay.search.experiences.service.persistence.SXPElementPersistence;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -269,48 +267,21 @@ public abstract class SXPElementLocalServiceBaseImpl
 		return sxpElementPersistence.fetchByUuid_C_First(uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the sxp element with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the sxp element's external reference code
-	 * @return the matching sxp element, or <code>null</code> if a matching sxp element could not be found
-	 */
 	@Override
 	public SXPElement fetchSXPElementByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return sxpElementPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return sxpElementPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchSXPElementByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public SXPElement fetchSXPElementByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchSXPElementByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the sxp element with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the sxp element's external reference code
-	 * @return the matching sxp element
-	 * @throws PortalException if a matching sxp element could not be found
-	 */
 	@Override
 	public SXPElement getSXPElementByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return sxpElementPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return sxpElementPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -534,7 +505,7 @@ public abstract class SXPElementLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		SXPElementLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -549,7 +520,7 @@ public abstract class SXPElementLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		sxpElementLocalService = (SXPElementLocalService)aopProxy;
 
-		_setLocalServiceUtilService(sxpElementLocalService);
+		SXPElementLocalServiceUtil.setService(sxpElementLocalService);
 	}
 
 	/**
@@ -591,22 +562,6 @@ public abstract class SXPElementLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		SXPElementLocalService sxpElementLocalService) {
-
-		try {
-			Field field = SXPElementLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, sxpElementLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

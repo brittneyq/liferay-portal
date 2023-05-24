@@ -414,6 +414,8 @@ public interface Portlet extends PersistedModel, PortletModel {
 	 */
 	public String getFriendlyURLMapping();
 
+	public String getFriendlyURLMapping(boolean lookUpFriendlyURLMapper);
+
 	/**
 	 * Returns the class loader resource path to the friendly URL routes of the
 	 * portlet.
@@ -646,21 +648,6 @@ public interface Portlet extends PersistedModel, PortletModel {
 	 * @return the plugin type of the portlet
 	 */
 	public String getPluginType();
-
-	/**
-	 * Returns the name of the poller processor class of the portlet.
-	 *
-	 * @return the name of the poller processor class of the portlet
-	 */
-	public String getPollerProcessorClass();
-
-	/**
-	 * Returns the poller processor instance of the portlet.
-	 *
-	 * @return the poller processor instance of the portlet
-	 */
-	public com.liferay.portal.kernel.poller.PollerProcessor
-		getPollerProcessorInstance();
 
 	/**
 	 * Returns the name of the POP message listener class of the portlet.
@@ -2056,14 +2043,6 @@ public interface Portlet extends PersistedModel, PortletModel {
 	 */
 	public void setPluginPackage(
 		com.liferay.portal.kernel.plugin.PluginPackage pluginPackage);
-
-	/**
-	 * Sets the name of the poller processor class of the portlet.
-	 *
-	 * @param pollerProcessorClass the name of the poller processor class of the
-	 portlet
-	 */
-	public void setPollerProcessorClass(String pollerProcessorClass);
 
 	/**
 	 * Sets the name of the POP message listener class of the portlet.

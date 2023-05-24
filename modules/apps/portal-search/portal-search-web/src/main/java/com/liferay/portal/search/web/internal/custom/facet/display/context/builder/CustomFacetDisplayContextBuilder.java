@@ -21,15 +21,16 @@ import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.web.internal.custom.facet.display.context.CustomFacetDisplayContext;
-import com.liferay.portal.search.web.internal.custom.facet.display.context.CustomFacetTermDisplayContext;
-import com.liferay.portal.search.web.internal.util.SearchStringUtil;
+import com.liferay.portal.search.web.internal.facet.display.context.BucketDisplayContext;
+import com.liferay.portal.search.web.internal.util.comparator.BucketDisplayContextComparatorFactoryUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -58,6 +59,8 @@ public class CustomFacetDisplayContextBuilder {
 		CustomFacetDisplayContext customFacetDisplayContext =
 			new CustomFacetDisplayContext(_httpServletRequest);
 
+		customFacetDisplayContext.setBucketDisplayContexts(
+			_buildBucketDisplayContexts(termCollectors));
 		customFacetDisplayContext.setDisplayCaption(getDisplayCaption());
 		customFacetDisplayContext.setNothingSelected(nothingSelected);
 		customFacetDisplayContext.setPaginationStartParameterName(
@@ -66,18 +69,14 @@ public class CustomFacetDisplayContextBuilder {
 		customFacetDisplayContext.setParameterValue(_getFirstParameterValue());
 		customFacetDisplayContext.setParameterValues(_parameterValues);
 		customFacetDisplayContext.setRenderNothing(renderNothing);
-		customFacetDisplayContext.setTermDisplayContexts(
-			_buildTermDisplayContexts(termCollectors));
 
 		return customFacetDisplayContext;
 	}
 
 	public CustomFacetDisplayContextBuilder setCustomDisplayCaption(
-		Optional<String> customDisplayCaptionOptional) {
+		String customDisplayCaption) {
 
-		customDisplayCaptionOptional.ifPresent(
-			customDisplayCaption ->
-				_customDisplayCaption = customDisplayCaption);
+		_customDisplayCaption = customDisplayCaption;
 
 		return this;
 	}
@@ -118,6 +117,12 @@ public class CustomFacetDisplayContextBuilder {
 		return this;
 	}
 
+	public CustomFacetDisplayContextBuilder setOrder(String order) {
+		_order = order;
+
+		return this;
+	}
+
 	public CustomFacetDisplayContextBuilder setPaginationStartParameterName(
 		String paginationStartParameterName) {
 
@@ -148,22 +153,29 @@ public class CustomFacetDisplayContextBuilder {
 	}
 
 	public CustomFacetDisplayContextBuilder setParameterValues(
-		Optional<List<String>> parameterValuesOptional) {
+		String[] parameterValues) {
 
-		parameterValuesOptional.ifPresent(
-			parameterValues -> _parameterValues = parameterValues);
+		if (parameterValues != null) {
+			_parameterValues = Arrays.asList(parameterValues);
+		}
 
 		return this;
 	}
 
 	protected String getDisplayCaption() {
-		Optional<String> optional1 = SearchStringUtil.maybe(
-			_customDisplayCaption);
+		String customDisplayCaption = StringUtil.trim(_customDisplayCaption);
 
-		Optional<String> optional2 = SearchStringUtil.maybe(
-			optional1.orElse(_fieldToAggregate));
+		if (Validator.isNotNull(customDisplayCaption)) {
+			return customDisplayCaption;
+		}
 
-		return optional2.orElse("custom");
+		String fieldToAggregate = StringUtil.trim(_fieldToAggregate);
+
+		if (Validator.isNotNull(fieldToAggregate)) {
+			return fieldToAggregate;
+		}
+
+		return "custom";
 	}
 
 	protected List<TermCollector> getTermCollectors() {
@@ -194,32 +206,32 @@ public class CustomFacetDisplayContextBuilder {
 		return false;
 	}
 
-	private CustomFacetTermDisplayContext _buildTermDisplayContext(
+	private BucketDisplayContext _buildBucketDisplayContext(
 		TermCollector termCollector) {
+
+		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
 
 		String term = GetterUtil.getString(termCollector.getTerm());
 
-		CustomFacetTermDisplayContext customFacetTermDisplayContext =
-			new CustomFacetTermDisplayContext();
+		bucketDisplayContext.setBucketText(term);
+		bucketDisplayContext.setFilterValue(term);
 
-		customFacetTermDisplayContext.setFrequency(
-			termCollector.getFrequency());
-		customFacetTermDisplayContext.setFrequencyVisible(_frequenciesVisible);
-		customFacetTermDisplayContext.setSelected(isSelected(term));
-		customFacetTermDisplayContext.setFieldName(term);
+		bucketDisplayContext.setFrequency(termCollector.getFrequency());
+		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
+		bucketDisplayContext.setSelected(isSelected(term));
 
-		return customFacetTermDisplayContext;
+		return bucketDisplayContext;
 	}
 
-	private List<CustomFacetTermDisplayContext> _buildTermDisplayContexts(
+	private List<BucketDisplayContext> _buildBucketDisplayContexts(
 		List<TermCollector> termCollectors) {
 
 		if (termCollectors.isEmpty()) {
-			return _getEmptyTermDisplayContexts();
+			return _getEmptyBucketDisplayContexts();
 		}
 
-		List<CustomFacetTermDisplayContext> customFacetTermDisplayContexts =
-			new ArrayList<>(termCollectors.size());
+		List<BucketDisplayContext> bucketDisplayContexts = new ArrayList<>(
+			termCollectors.size());
 
 		for (int i = 0; i < termCollectors.size(); i++) {
 			TermCollector termCollector = termCollectors.get(i);
@@ -231,27 +243,33 @@ public class CustomFacetDisplayContextBuilder {
 				break;
 			}
 
-			customFacetTermDisplayContexts.add(
-				_buildTermDisplayContext(termCollector));
+			bucketDisplayContexts.add(
+				_buildBucketDisplayContext(termCollector));
 		}
 
-		return customFacetTermDisplayContexts;
+		if (_order != null) {
+			bucketDisplayContexts.sort(
+				BucketDisplayContextComparatorFactoryUtil.
+					getBucketDisplayContextComparator(_order));
+		}
+
+		return bucketDisplayContexts;
 	}
 
-	private List<CustomFacetTermDisplayContext> _getEmptyTermDisplayContexts() {
+	private List<BucketDisplayContext> _getEmptyBucketDisplayContexts() {
 		if (_parameterValues.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		CustomFacetTermDisplayContext customFacetTermDisplayContext =
-			new CustomFacetTermDisplayContext();
+		BucketDisplayContext bucketDisplayContext = new BucketDisplayContext();
 
-		customFacetTermDisplayContext.setFrequency(0);
-		customFacetTermDisplayContext.setFrequencyVisible(_frequenciesVisible);
-		customFacetTermDisplayContext.setSelected(true);
-		customFacetTermDisplayContext.setFieldName(_parameterValues.get(0));
+		bucketDisplayContext.setBucketText(_parameterValues.get(0));
+		bucketDisplayContext.setFilterValue(_parameterValues.get(0));
+		bucketDisplayContext.setFrequency(0);
+		bucketDisplayContext.setFrequencyVisible(_frequenciesVisible);
+		bucketDisplayContext.setSelected(true);
 
-		return Collections.singletonList(customFacetTermDisplayContext);
+		return Collections.singletonList(bucketDisplayContext);
 	}
 
 	private String _getFirstParameterValue() {
@@ -269,6 +287,7 @@ public class CustomFacetDisplayContextBuilder {
 	private int _frequencyThreshold;
 	private final HttpServletRequest _httpServletRequest;
 	private int _maxTerms;
+	private String _order;
 	private String _paginationStartParameterName;
 	private String _parameterName;
 	private List<String> _parameterValues = Collections.emptyList();

@@ -49,7 +49,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pavel Savinov
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES,
 		"mvc.command.name=/layout_page_template_admin/copy_layout_page_template_entry"
@@ -122,9 +121,10 @@ public class CopyLayoutPageTemplateEntryMVCActionCommand
 		Layout draftTargetLayout = _layoutLocalService.fetchLayout(
 			_portal.getClassNameId(Layout.class), targetLayout.getPlid());
 
-		_layoutCopyHelper.copyLayout(draftSourceLayout, draftTargetLayout);
+		_layoutCopyHelper.copyLayoutContent(
+			draftSourceLayout, draftTargetLayout);
 
-		_layoutCopyHelper.copyLayout(sourceLayout, targetLayout);
+		_layoutCopyHelper.copyLayoutContent(sourceLayout, targetLayout);
 
 		return layoutPageTemplateEntry;
 	}

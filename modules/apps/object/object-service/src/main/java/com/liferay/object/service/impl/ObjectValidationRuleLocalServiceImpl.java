@@ -20,17 +20,19 @@ import com.liferay.object.constants.ObjectValidationRuleConstants;
 import com.liferay.object.exception.ObjectValidationRuleEngineException;
 import com.liferay.object.exception.ObjectValidationRuleNameException;
 import com.liferay.object.exception.ObjectValidationRuleScriptException;
-import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.internal.action.util.ObjectEntryVariablesUtil;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectValidationRule;
 import com.liferay.object.scripting.exception.ObjectScriptingException;
 import com.liferay.object.scripting.validator.ObjectScriptingValidator;
-import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.base.ObjectValidationRuleLocalServiceBaseImpl;
 import com.liferay.object.service.persistence.ObjectDefinitionPersistence;
+import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.object.validation.rule.ObjectValidationRuleEngine;
-import com.liferay.object.validation.rule.ObjectValidationRuleEngineTracker;
+import com.liferay.object.validation.rule.ObjectValidationRuleEngineRegistry;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
@@ -42,10 +44,11 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.vulcan.extension.EntityExtensionThreadLocal;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 
 import java.util.HashMap;
 import java.util.List;
@@ -185,76 +188,83 @@ public class ObjectValidationRuleLocalServiceImpl
 
 	@Override
 	@Transactional(readOnly = true)
-	public void validate(BaseModel<?> baseModel, long objectDefinitionId)
+	public void validate(
+			BaseModel<?> baseModel, long objectDefinitionId,
+			JSONObject payloadJSONObject, long userId)
 		throws PortalException {
 
 		if (baseModel == null) {
 			return;
 		}
 
-		Map<String, Object> values = new HashMap<>();
-
-		if (baseModel instanceof ObjectEntry) {
-			values = HashMapBuilder.<String, Object>putAll(
-				baseModel.getModelAttributes()
-			).putAll(
-				_objectEntryLocalService.getValues((ObjectEntry)baseModel)
-			).build();
-		}
-		else {
-			values = HashMapBuilder.<String, Object>putAll(
-				baseModel.getModelAttributes()
-			).putAll(
-				_objectEntryLocalService.
-					getExtensionDynamicObjectDefinitionTableValues(
-						_objectDefinitionPersistence.fetchByPrimaryKey(
-							objectDefinitionId),
-						GetterUtil.getLong(baseModel.getPrimaryKeyObj()))
-			).putAll(
-				EntityExtensionThreadLocal.getExtendedProperties()
-			).build();
-		}
-
 		List<ObjectValidationRule> objectValidationRules =
 			objectValidationRuleLocalService.getObjectValidationRules(
 				objectDefinitionId, true);
 
+		if (ListUtil.isEmpty(objectValidationRules)) {
+			return;
+		}
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
+
+		Map<String, Object> variables = ObjectEntryVariablesUtil.getVariables(
+			_dtoConverterRegistry, objectDefinition, payloadJSONObject,
+			_systemObjectDefinitionManagerRegistry);
+
 		for (ObjectValidationRule objectValidationRule :
 				objectValidationRules) {
 
+			Map<String, Object> results = new HashMap<>();
+
 			ObjectValidationRuleEngine objectValidationRuleEngine =
-				_objectValidationRuleEngineTracker.
+				_objectValidationRuleEngineRegistry.
 					getObjectValidationRuleEngine(
 						objectValidationRule.getEngine());
 
-			Map<String, Object> results = objectValidationRuleEngine.execute(
-				values, objectValidationRule.getScript());
+			if (StringUtil.equals(
+					objectValidationRuleEngine.getName(),
+					ObjectValidationRuleConstants.ENGINE_TYPE_DDM)) {
 
-			if (GetterUtil.getBoolean(results.get("invalidScript"))) {
-				throw new ObjectValidationRuleScriptException(
-					"Script is invalid");
+				results = objectValidationRuleEngine.execute(
+					variables, objectValidationRule.getScript());
+			}
+			else {
+				results = objectValidationRuleEngine.execute(
+					(Map<String, Object>)variables.get("baseModel"),
+					objectValidationRule.getScript());
 			}
 
 			if (GetterUtil.getBoolean(results.get("invalidFields"))) {
-				throw new ObjectValidationRuleEngineException(
-					objectValidationRule.getErrorLabel(
-						LocaleUtil.getMostRelevantLocale()));
+				Locale locale = LocaleUtil.getMostRelevantLocale();
+
+				User user = _userLocalService.fetchUser(userId);
+
+				if (user != null) {
+					locale = user.getLocale();
+				}
+
+				throw new ObjectValidationRuleEngineException.InvalidFields(
+					objectValidationRule.getErrorLabel(locale));
+			}
+
+			if (GetterUtil.getBoolean(results.get("invalidScript"))) {
+				throw new ObjectValidationRuleEngineException.InvalidScript();
 			}
 		}
 	}
 
 	private void _validateEngine(String engine) throws PortalException {
 		if (Validator.isNull(engine)) {
-			throw new ObjectValidationRuleEngineException("Engine is null");
+			throw new ObjectValidationRuleEngineException.MustNotBeNull();
 		}
 
 		ObjectValidationRuleEngine objectValidationRuleEngine =
-			_objectValidationRuleEngineTracker.getObjectValidationRuleEngine(
+			_objectValidationRuleEngineRegistry.getObjectValidationRuleEngine(
 				engine);
 
 		if (objectValidationRuleEngine == null) {
-			throw new ObjectValidationRuleEngineException(
-				"Engine \"" + engine + "\" does not exist");
+			throw new ObjectValidationRuleEngineException.NoSuchEngine(engine);
 		}
 	}
 
@@ -316,17 +326,21 @@ public class ObjectValidationRuleLocalServiceImpl
 	private DDMExpressionFactory _ddmExpressionFactory;
 
 	@Reference
-	private ObjectDefinitionPersistence _objectDefinitionPersistence;
+	private DTOConverterRegistry _dtoConverterRegistry;
 
 	@Reference
-	private ObjectEntryLocalService _objectEntryLocalService;
+	private ObjectDefinitionPersistence _objectDefinitionPersistence;
 
 	@Reference
 	private ObjectScriptingValidator _objectScriptingValidator;
 
 	@Reference
-	private ObjectValidationRuleEngineTracker
-		_objectValidationRuleEngineTracker;
+	private ObjectValidationRuleEngineRegistry
+		_objectValidationRuleEngineRegistry;
+
+	@Reference
+	private SystemObjectDefinitionManagerRegistry
+		_systemObjectDefinitionManagerRegistry;
 
 	@Reference
 	private UserLocalService _userLocalService;

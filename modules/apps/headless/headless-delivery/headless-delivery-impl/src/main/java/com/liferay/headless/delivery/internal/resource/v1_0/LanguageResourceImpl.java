@@ -19,16 +19,15 @@ import com.liferay.headless.delivery.resource.v1_0.LanguageResource;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -56,7 +55,7 @@ public class LanguageResourceImpl extends BaseLanguageResourceImpl {
 		Locale defaultLocale = _getDefaultLocale(siteId);
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				availableLocales,
 				availableLocale -> _toLanguage(
 					contextAcceptLanguage.isAcceptAllLanguages(),
@@ -67,7 +66,7 @@ public class LanguageResourceImpl extends BaseLanguageResourceImpl {
 	private Locale _getDefaultLocale(long groupId) throws Exception {
 		Group group = _groupService.getGroup(groupId);
 
-		String defaultLanguageId = LocalizationUtil.getDefaultLanguageId(
+		String defaultLanguageId = _localization.getDefaultLanguageId(
 			group.getName());
 
 		if (Validator.isNotNull(defaultLanguageId)) {
@@ -94,13 +93,15 @@ public class LanguageResourceImpl extends BaseLanguageResourceImpl {
 							return null;
 						}
 
-						Stream<Locale> stream = availableLocales.stream();
+						Map<String, String> map = new HashMap<>();
 
-						return stream.collect(
-							Collectors.toMap(
-								LocaleUtil::toBCP47LanguageId,
-								availableLocale -> locale.getDisplayCountry(
-									availableLocale)));
+						for (Locale availableLocale : availableLocales) {
+							map.put(
+								LocaleUtil.toBCP47LanguageId(availableLocale),
+								locale.getDisplayCountry(availableLocale));
+						}
+
+						return map;
 					});
 				setName_i18n(
 					() -> {
@@ -108,13 +109,15 @@ public class LanguageResourceImpl extends BaseLanguageResourceImpl {
 							return null;
 						}
 
-						Stream<Locale> stream = availableLocales.stream();
+						Map<String, String> map = new HashMap<>();
 
-						return stream.collect(
-							Collectors.toMap(
-								LocaleUtil::toBCP47LanguageId,
-								availableLocale -> locale.getDisplayLanguage(
-									availableLocale)));
+						for (Locale availableLocale : availableLocales) {
+							map.put(
+								LocaleUtil.toBCP47LanguageId(availableLocale),
+								locale.getDisplayLanguage(availableLocale));
+						}
+
+						return map;
 					});
 			}
 		};
@@ -125,5 +128,8 @@ public class LanguageResourceImpl extends BaseLanguageResourceImpl {
 
 	@Reference
 	private com.liferay.portal.kernel.language.Language _language;
+
+	@Reference
+	private Localization _localization;
 
 }

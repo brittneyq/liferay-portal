@@ -29,7 +29,6 @@ import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.stock.activity.CommerceLowStockActivity;
 import com.liferay.commerce.stock.activity.CommerceLowStockActivityRegistry;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -45,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "destination.name=" + DestinationNames.COMMERCE_ORDER_STATUS,
 	service = MessageListener.class
 )
@@ -53,8 +51,7 @@ public class CommerceOrderStatusMessageListener extends BaseMessageListener {
 
 	@Override
 	protected void doReceive(Message message) throws Exception {
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			String.valueOf(message.getPayload()));
+		JSONObject jsonObject = (JSONObject)message.getPayload();
 
 		long commerceOrderId = jsonObject.getLong("commerceOrderId");
 
@@ -74,7 +71,7 @@ public class CommerceOrderStatusMessageListener extends BaseMessageListener {
 			CommerceVirtualOrderItem commerceVirtualOrderItem =
 				_commerceVirtualOrderItemLocalService.
 					fetchCommerceVirtualOrderItemByCommerceOrderItemId(
-						commerceOrderItem.getCommerceOrderItemId());
+						commerceOrderItem.getCommerceOrderItemId(), false);
 
 			if ((commerceVirtualOrderItem != null) &&
 				(orderStatus ==
@@ -113,7 +110,8 @@ public class CommerceOrderStatusMessageListener extends BaseMessageListener {
 		}
 
 		int stockQuantity = _commerceInventoryEngine.getStockQuantity(
-			commerceOrderItem.getCompanyId(), commerceOrderItem.getSku());
+			commerceOrderItem.getCompanyId(), cpInstance.getGroupId(),
+			commerceOrderItem.getSku());
 
 		CPDefinitionInventoryEngine cpDefinitionInventoryEngine =
 			_cpDefinitionInventoryEngineRegistry.getCPDefinitionInventoryEngine(

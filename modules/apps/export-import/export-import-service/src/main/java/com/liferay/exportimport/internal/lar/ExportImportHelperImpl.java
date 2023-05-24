@@ -35,6 +35,7 @@ import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandler
 import com.liferay.exportimport.portlet.data.handler.util.ExportImportGroupedModelUtil;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -46,7 +47,7 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -56,7 +57,6 @@ import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
-import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -115,7 +115,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import javax.portlet.PortletRequest;
 
@@ -135,7 +134,7 @@ import org.xml.sax.XMLReader;
  */
 @Component(
 	configurationPid = "com.liferay.staging.configuration.StagingConfiguration",
-	immediate = true, service = ExportImportHelper.class
+	service = ExportImportHelper.class
 )
 public class ExportImportHelperImpl implements ExportImportHelper {
 
@@ -149,12 +148,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	public Map<Long, Boolean> getAllLayoutIdsMap(
 		long groupId, boolean privateLayout) {
 
-		List<Layout> layouts = _layoutLocalService.getLayouts(
-			groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
-
 		Map<Long, Boolean> layoutIdMap = new HashMap<>();
 
-		for (Layout layout : layouts) {
+		for (Layout layout :
+				_layoutLocalService.getLayouts(
+					groupId, privateLayout,
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID)) {
+
 			layoutIdMap.put(layout.getPlid(), true);
 		}
 
@@ -177,9 +177,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		Map<Integer, List<Portlet>> rankedPortletsMap = new TreeMap<>();
 
-		List<Portlet> portlets = _portletLocalService.getPortlets(companyId);
-
-		for (Portlet portlet : portlets) {
+		for (Portlet portlet : _portletLocalService.getPortlets(companyId)) {
 			if (!portlet.isActive()) {
 				continue;
 			}
@@ -274,24 +272,23 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	public Map<Long, Boolean> getLayoutIdMap(PortletRequest portletRequest)
 		throws PortalException {
 
-		Map<Long, Boolean> layoutIdMap = new LinkedHashMap<>();
-
 		String layoutIdsJSON = GetterUtil.getString(
 			portletRequest.getAttribute("layoutIdMap"));
 
 		if (Validator.isNull(layoutIdsJSON)) {
-			return layoutIdMap;
+			return Collections.emptyMap();
 		}
 
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray(layoutIdsJSON);
+		Map<Long, Boolean> layoutIdMap = new LinkedHashMap<>();
+
+		JSONArray jsonArray = _jsonFactory.createJSONArray(layoutIdsJSON);
 
 		for (int i = 0; i < jsonArray.length(); ++i) {
 			JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-			long plid = jsonObject.getLong("plid");
-			boolean includeChildren = jsonObject.getBoolean("includeChildren");
-
-			layoutIdMap.put(plid, includeChildren);
+			layoutIdMap.put(
+				jsonObject.getLong("plid"),
+				jsonObject.getBoolean("includeChildren"));
 		}
 
 		return layoutIdMap;
@@ -299,15 +296,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 	@Override
 	public long[] getLayoutIds(List<Layout> layouts) {
-		long[] layoutIds = new long[layouts.size()];
-
-		for (int i = 0; i < layouts.size(); i++) {
-			Layout layout = layouts.get(i);
-
-			layoutIds[i] = layout.getLayoutId();
-		}
-
-		return layoutIds;
+		return TransformUtil.transformToLongArray(layouts, Layout::getLayoutId);
 	}
 
 	@Override
@@ -593,18 +582,19 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	public String getSelectedLayoutsJSON(
 		long groupId, boolean privateLayout, String selectedNodes) {
 
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
 
-		List<Layout> layouts = _layoutLocalService.getLayouts(
-			groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+		long[] selectedLayoutIds = StringUtil.split(selectedNodes, 0L);
 
-		long[] selectedPlids = StringUtil.split(selectedNodes, 0L);
+		for (Layout layout :
+				_layoutLocalService.getLayouts(
+					groupId, privateLayout,
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID)) {
 
-		for (Layout layout : layouts) {
-			_populateLayoutsJSON(jsonArray, layout, selectedPlids);
+			_populateLayoutsJSON(jsonArray, layout, selectedLayoutIds);
 		}
 
-		if (ArrayUtil.contains(selectedPlids, 0)) {
+		if (ArrayUtil.contains(selectedLayoutIds, 0)) {
 			jsonArray.put(
 				JSONUtil.put(
 					"includeChildren", true
@@ -718,15 +708,12 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 	@Override
 	public boolean isLayoutRevisionInReview(Layout layout) {
-		List<LayoutRevision> layoutRevisions =
-			_layoutRevisionLocalService.getLayoutRevisions(layout.getPlid());
-
-		Stream<LayoutRevision> layoutRevisionsStream = layoutRevisions.stream();
-
-		if (layoutRevisionsStream.anyMatch(
+		if (ListUtil.exists(
+				_layoutRevisionLocalService.getLayoutRevisions(
+					layout.getPlid()),
 				layoutRevision ->
-					layoutRevision.getStatus() ==
-						WorkflowConstants.STATUS_PENDING)) {
+					WorkflowConstants.STATUS_PENDING ==
+						layoutRevision.getStatus())) {
 
 			return true;
 		}
@@ -1393,7 +1380,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		boolean includeChildren = true;
 
 		if (ListUtil.isNotEmpty(childLayouts)) {
-			childLayoutsJSONArray = JSONFactoryUtil.createJSONArray();
+			childLayoutsJSONArray = _jsonFactory.createJSONArray();
 
 			for (Layout childLayout : childLayouts) {
 				if (!_populateLayoutsJSON(
@@ -1480,6 +1467,9 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

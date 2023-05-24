@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
@@ -45,6 +44,7 @@ import com.liferay.portal.security.service.access.policy.exception.SAPEntryNameE
 import com.liferay.portal.security.service.access.policy.exception.SAPEntryTitleException;
 import com.liferay.portal.security.service.access.policy.model.SAPEntry;
 import com.liferay.portal.security.service.access.policy.service.base.SAPEntryLocalServiceBaseImpl;
+import com.liferay.portal.util.PortalInstances;
 
 import java.util.List;
 import java.util.Locale;
@@ -77,12 +77,12 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		// Service access policy entry
 
 		User user = _userLocalService.getUser(userId);
-		allowedServiceSignatures = normalizeServiceSignatures(
+		allowedServiceSignatures = _normalizeServiceSignatures(
 			allowedServiceSignatures);
 
 		name = StringUtil.trim(name);
 
-		validate(name, titleMap);
+		_validate(name, titleMap);
 
 		if (sapEntryPersistence.fetchByC_N(user.getCompanyId(), name) != null) {
 			throw new DuplicateSAPEntryNameException();
@@ -126,7 +126,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 			return;
 		}
 
-		long defaultUserId = _userLocalService.getDefaultUserId(companyId);
+		long guestUserId = _userLocalService.getGuestUserId(companyId);
 		Role guestRole = _roleLocalService.getRole(
 			companyId, RoleConstants.GUEST);
 
@@ -137,7 +137,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 			).build();
 
 			systemDefaultSAPEntry = addSAPEntry(
-				defaultUserId,
+				guestUserId,
 				_sapConfiguration.systemDefaultSAPEntryServiceSignatures(),
 				true, true, _sapConfiguration.systemDefaultSAPEntryName(),
 				titleMap, new ServiceContext());
@@ -156,7 +156,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 			).build();
 
 			systemUserPasswordSAPEntry = addSAPEntry(
-				defaultUserId,
+				guestUserId,
 				_sapConfiguration.systemUserPasswordSAPEntryServiceSignatures(),
 				false, true, _sapConfiguration.systemUserPasswordSAPEntryName(),
 				titleMap, new ServiceContext());
@@ -179,7 +179,9 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 	@Override
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public SAPEntry deleteSAPEntry(SAPEntry sapEntry) throws PortalException {
-		if (sapEntry.isSystem() && !CompanyThreadLocal.isDeleteInProcess()) {
+		if (sapEntry.isSystem() &&
+			!PortalInstances.isCurrentCompanyInDeletionProcess()) {
+
 			throw new RequiredSAPEntryException();
 		}
 
@@ -250,7 +252,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 			throw new DuplicateSAPEntryNameException();
 		}
 
-		allowedServiceSignatures = normalizeServiceSignatures(
+		allowedServiceSignatures = _normalizeServiceSignatures(
 			allowedServiceSignatures);
 
 		if (sapEntry.isSystem()) {
@@ -260,7 +262,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 
 		name = StringUtil.trim(name);
 
-		validate(name, titleMap);
+		_validate(name, titleMap);
 
 		sapEntry.setAllowedServiceSignatures(allowedServiceSignatures);
 		sapEntry.setDefaultSAPEntry(defaultSAPEntry);
@@ -278,7 +280,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 			SAPConfiguration.class, properties);
 	}
 
-	protected String normalizeServiceSignatures(String serviceSignatures) {
+	private String _normalizeServiceSignatures(String serviceSignatures) {
 		String[] serviceSignaturesArray = serviceSignatures.split(
 			StringPool.NEW_LINE);
 
@@ -327,7 +329,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		return sb.toString();
 	}
 
-	protected void validate(String name, Map<Locale, String> titleMap)
+	private void _validate(String name, Map<Locale, String> titleMap)
 		throws PortalException {
 
 		if (Validator.isNull(name)) {

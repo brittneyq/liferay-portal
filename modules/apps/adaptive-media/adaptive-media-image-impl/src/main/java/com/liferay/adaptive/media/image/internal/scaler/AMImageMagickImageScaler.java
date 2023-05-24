@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.image.ImageMagick;
 import com.liferay.portal.kernel.image.ImageTool;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.awt.image.RenderedImage;
@@ -40,14 +39,15 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eric Yan
  */
 @Component(
-	immediate = true,
-	property = {"mime.type=image/heic", "mime.type=image/webp"},
+	configurationPid = "com.liferay.adaptive.media.image.internal.configuration.AMImageMagickConfiguration",
+	configurationPolicy = ConfigurationPolicy.REQUIRE,
 	service = AMImageScaler.class
 )
 public class AMImageMagickImageScaler implements AMImageScaler {
@@ -112,7 +112,7 @@ public class AMImageMagickImageScaler implements AMImageScaler {
 		throws IOException, PortalException {
 
 		try (InputStream inputStream = fileVersion.getContentStream(false)) {
-			return FileUtil.createTempFile(inputStream);
+			return _file.createTempFile(inputStream);
 		}
 	}
 
@@ -136,7 +136,7 @@ public class AMImageMagickImageScaler implements AMImageScaler {
 			AMImageConfigurationEntry amImageConfigurationEntry, File imageFile)
 		throws Exception {
 
-		File scaledImageFile = FileUtil.createTempFile(ImageTool.TYPE_PNG);
+		File scaledImageFile = _file.createTempFile(ImageTool.TYPE_PNG);
 
 		List<String> arguments = new ArrayList<>();
 
@@ -157,6 +157,9 @@ public class AMImageMagickImageScaler implements AMImageScaler {
 
 		return scaledImageFile;
 	}
+
+	@Reference
+	private com.liferay.portal.kernel.util.File _file;
 
 	@Reference
 	private ImageMagick _imageMagick;

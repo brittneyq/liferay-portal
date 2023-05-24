@@ -46,7 +46,6 @@ import com.liferay.portal.model.impl.UserNotificationEventModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.HashMap;
@@ -183,7 +182,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -573,7 +572,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -734,7 +734,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -1152,7 +1152,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1308,7 +1309,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -1675,7 +1676,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1812,7 +1814,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -2202,7 +2204,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {type};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2361,7 +2364,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -2754,7 +2757,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, deliveryType};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2906,7 +2910,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -3298,7 +3302,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, delivered};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -3449,7 +3454,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -3841,7 +3846,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, archived};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -3999,7 +4005,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -4418,7 +4424,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, deliveryType, delivered};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -4583,7 +4590,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -5002,7 +5009,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, deliveryType, archived};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -5169,7 +5177,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -5590,7 +5598,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, delivered, actionRequired};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -5754,7 +5763,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -6171,7 +6180,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, delivered, archived};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -6337,7 +6347,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -6758,7 +6768,8 @@ public class UserNotificationEventPersistenceImpl
 
 		Object[] finderArgs = new Object[] {userId, actionRequired, archived};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(4);
@@ -6936,7 +6947,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -7407,7 +7418,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, type, deliveryType, delivered
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(5);
@@ -7605,7 +7617,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -8060,7 +8072,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, deliveryType, delivered, actionRequired
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(5);
@@ -8243,7 +8256,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -8688,7 +8701,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, deliveryType, delivered, archived
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(5);
@@ -8872,7 +8886,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -9324,7 +9338,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, deliveryType, actionRequired, archived
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(5);
@@ -9508,7 +9523,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -9962,7 +9977,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, delivered, actionRequired, archived
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(5);
@@ -10152,7 +10168,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -10654,7 +10670,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, type, deliveryType, delivered, archived
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(6);
@@ -10864,7 +10881,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (UserNotificationEvent userNotificationEvent : list) {
@@ -11343,7 +11360,8 @@ public class UserNotificationEventPersistenceImpl
 			userId, deliveryType, delivered, actionRequired, archived
 		};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(6);
@@ -11834,7 +11852,7 @@ public class UserNotificationEventPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<UserNotificationEvent>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -11904,7 +11922,7 @@ public class UserNotificationEventPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -12463,29 +12481,13 @@ public class UserNotificationEventPersistenceImpl
 			},
 			false);
 
-		_setUserNotificationEventUtilPersistence(this);
+		UserNotificationEventUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setUserNotificationEventUtilPersistence(null);
+		UserNotificationEventUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(UserNotificationEventImpl.class.getName());
-	}
-
-	private void _setUserNotificationEventUtilPersistence(
-		UserNotificationEventPersistence userNotificationEventPersistence) {
-
-		try {
-			Field field = UserNotificationEventUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, userNotificationEventPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_USERNOTIFICATIONEVENT =

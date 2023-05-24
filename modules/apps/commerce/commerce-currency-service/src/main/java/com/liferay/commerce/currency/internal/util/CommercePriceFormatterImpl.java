@@ -14,6 +14,9 @@
 
 package com.liferay.commerce.currency.internal.util;
 
+import com.ibm.icu.text.DecimalFormat;
+import com.ibm.icu.text.DecimalFormatSymbols;
+
 import com.liferay.commerce.currency.configuration.RoundingTypeConfiguration;
 import com.liferay.commerce.currency.constants.CommerceCurrencyConstants;
 import com.liferay.commerce.currency.model.CommerceCurrency;
@@ -25,9 +28,6 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 
 import java.util.Locale;
 import java.util.Map;
@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Modified;
  */
 @Component(
 	configurationPid = "com.liferay.commerce.currency.configuration.RoundingTypeConfiguration",
-	enabled = false, immediate = true, service = CommercePriceFormatter.class
+	service = CommercePriceFormatter.class
 )
 public class CommercePriceFormatterImpl implements CommercePriceFormatter {
 
@@ -131,7 +131,7 @@ public class CommercePriceFormatterImpl implements CommercePriceFormatter {
 
 		decimalFormat.setMaximumFractionDigits(maxFractionDigits);
 		decimalFormat.setMinimumFractionDigits(minFractionDigits);
-		decimalFormat.setRoundingMode(roundingMode);
+		decimalFormat.setRoundingMode(roundingMode.ordinal());
 
 		return decimalFormat;
 	}

@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		TemplateEntryModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.template.model.impl.TemplateEntryImpl",
+		"table.name=TemplateEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class TemplateEntryModelArgumentsResolver implements ArgumentsResolver {
 

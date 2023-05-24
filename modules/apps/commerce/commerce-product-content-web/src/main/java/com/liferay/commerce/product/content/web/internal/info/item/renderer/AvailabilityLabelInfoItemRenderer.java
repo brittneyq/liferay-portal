@@ -14,10 +14,10 @@
 
 package com.liferay.commerce.product.content.web.internal.info.item.renderer;
 
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.frontend.model.ProductSettingsModel;
 import com.liferay.commerce.frontend.util.ProductHelper;
+import com.liferay.commerce.model.CPDefinitionInventory;
 import com.liferay.commerce.product.catalog.CPCatalogEntry;
 import com.liferay.commerce.product.catalog.CPSku;
 import com.liferay.commerce.product.constants.CPContentContributorConstants;
@@ -25,6 +25,8 @@ import com.liferay.commerce.product.content.util.CPContentHelper;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.util.CPDefinitionHelper;
+import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.info.item.renderer.InfoItemRenderer;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -49,10 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alec Sloan
  */
-@Component(
-	enabled = false,
-	service = {AvailabilityLabelInfoItemRenderer.class, InfoItemRenderer.class}
-)
+@Component(service = InfoItemRenderer.class)
 public class AvailabilityLabelInfoItemRenderer
 	implements InfoItemRenderer<CPDefinition> {
 
@@ -76,6 +75,19 @@ public class AvailabilityLabelInfoItemRenderer
 		}
 
 		try {
+			RequestDispatcher requestDispatcher =
+				_servletContext.getRequestDispatcher(
+					"/info/item/renderer/availability_label/page.jsp");
+
+			CPDefinitionInventory cpDefinitionInventory =
+				_cpDefinitionInventoryLocalService.
+					fetchCPDefinitionInventoryByCPDefinitionId(
+						cpDefinition.getCPDefinitionId());
+
+			httpServletRequest.setAttribute(
+				"liferay-commerce:availability-label:displayAvailability",
+				cpDefinitionInventory.isDisplayAvailability());
+
 			String namespace = (String)httpServletRequest.getAttribute(
 				"liferay-commerce:availability-label:namespace");
 
@@ -110,7 +122,7 @@ public class AvailabilityLabelInfoItemRenderer
 			if ((cpSku != null) && !hasChildCPDefinitions) {
 				ProductSettingsModel productSettingsModel =
 					_productHelper.getProductSettingsModel(
-						cpSku.getCPInstanceId());
+						cpDefinition.getCPDefinitionId());
 
 				if (productSettingsModel.isShowAvailabilityDot()) {
 					JSONObject availabilityContentContributorValueJSONObject =
@@ -132,10 +144,6 @@ public class AvailabilityLabelInfoItemRenderer
 				}
 			}
 
-			RequestDispatcher requestDispatcher =
-				_servletContext.getRequestDispatcher(
-					"/info/item/renderer/availability_label/page.jsp");
-
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
 		catch (Exception exception) {
@@ -143,28 +151,20 @@ public class AvailabilityLabelInfoItemRenderer
 		}
 	}
 
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.commerce.product.content.web)",
-		unbind = "-"
-	)
-	public void setServletContext(ServletContext servletContext) {
-		_servletContext = servletContext;
-	}
-
 	private long _getCommerceAccountId(
 			long groupId, HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		CommerceAccount commerceAccount =
-			_commerceAccountHelper.getCurrentCommerceAccount(
+		AccountEntry accountEntry =
+			_commerceAccountHelper.getCurrentAccountEntry(
 				_commerceChannelLocalService.
 					getCommerceChannelGroupIdBySiteGroupId(groupId),
 				httpServletRequest);
 
 		long commerceAccountId = 0;
 
-		if (commerceAccount != null) {
-			commerceAccountId = commerceAccount.getCommerceAccountId();
+		if (accountEntry != null) {
+			commerceAccountId = accountEntry.getAccountEntryId();
 		}
 
 		return commerceAccountId;
@@ -183,6 +183,10 @@ public class AvailabilityLabelInfoItemRenderer
 	private CPDefinitionHelper _cpDefinitionHelper;
 
 	@Reference
+	private CPDefinitionInventoryLocalService
+		_cpDefinitionInventoryLocalService;
+
+	@Reference
 	private Language _language;
 
 	@Reference
@@ -191,6 +195,9 @@ public class AvailabilityLabelInfoItemRenderer
 	@Reference
 	private ProductHelper _productHelper;
 
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.commerce.product.content.web)"
+	)
 	private ServletContext _servletContext;
 
 }

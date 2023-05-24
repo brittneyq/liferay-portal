@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -48,7 +47,6 @@ import com.liferay.portal.kernel.util.SetUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -75,10 +73,7 @@ import org.osgi.service.component.annotations.Reference;
  * @generated
  */
 @Component(
-	service = {
-		CommerceNotificationTemplateCommerceAccountGroupRelPersistence.class,
-		BasePersistence.class
-	}
+	service = CommerceNotificationTemplateCommerceAccountGroupRelPersistence.class
 )
 public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 	extends BasePersistenceImpl
@@ -219,7 +214,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 		if (useFinderCache) {
 			list =
 				(List<CommerceNotificationTemplateCommerceAccountGroupRel>)
-					finderCache.getResult(finderPath, finderArgs);
+					finderCache.getResult(finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceNotificationTemplateCommerceAccountGroupRel
@@ -643,7 +638,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceNotificationTemplateId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -797,7 +792,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 		if (useFinderCache) {
 			list =
 				(List<CommerceNotificationTemplateCommerceAccountGroupRel>)
-					finderCache.getResult(finderPath, finderArgs);
+					finderCache.getResult(finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CommerceNotificationTemplateCommerceAccountGroupRel
@@ -1214,7 +1209,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 
 		Object[] finderArgs = new Object[] {commerceAccountGroupId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1340,7 +1335,8 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache) {
-			result = finderCache.getResult(_finderPathFetchByC_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_C, finderArgs, this);
 		}
 
 		if (result instanceof
@@ -1459,7 +1455,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 			commerceNotificationTemplateId, commerceAccountGroupId
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2056,7 +2052,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 		if (useFinderCache) {
 			list =
 				(List<CommerceNotificationTemplateCommerceAccountGroupRel>)
-					finderCache.getResult(finderPath, finderArgs);
+					finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2133,7 +2129,7 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2267,39 +2263,18 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 			},
 			false);
 
-		_setCommerceNotificationTemplateCommerceAccountGroupRelUtilPersistence(
+		CommerceNotificationTemplateCommerceAccountGroupRelUtil.setPersistence(
 			this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setCommerceNotificationTemplateCommerceAccountGroupRelUtilPersistence(
+		CommerceNotificationTemplateCommerceAccountGroupRelUtil.setPersistence(
 			null);
 
 		entityCache.removeCache(
 			CommerceNotificationTemplateCommerceAccountGroupRelImpl.class.
 				getName());
-	}
-
-	private void
-		_setCommerceNotificationTemplateCommerceAccountGroupRelUtilPersistence(
-			CommerceNotificationTemplateCommerceAccountGroupRelPersistence
-				commerceNotificationTemplateCommerceAccountGroupRelPersistence) {
-
-		try {
-			Field field =
-				CommerceNotificationTemplateCommerceAccountGroupRelUtil.class.
-					getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(
-				null,
-				commerceNotificationTemplateCommerceAccountGroupRelPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2370,10 +2345,5 @@ public class CommerceNotificationTemplateCommerceAccountGroupRelPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private
-		CommerceNotificationTemplateCommerceAccountGroupRelModelArgumentsResolver
-			_commerceNotificationTemplateCommerceAccountGroupRelModelArgumentsResolver;
 
 }

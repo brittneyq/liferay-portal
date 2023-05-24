@@ -84,6 +84,15 @@ public class CommerceChannelAccountEntryRelServiceWrapper
 	}
 
 	@Override
+	public CommerceChannelAccountEntryRel getCommerceChannelAccountEntryRel(
+			long commerceChannelAccountEntryRelId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _commerceChannelAccountEntryRelService.
+			getCommerceChannelAccountEntryRel(commerceChannelAccountEntryRelId);
+	}
+
+	@Override
 	public java.util.List<CommerceChannelAccountEntryRel>
 			getCommerceChannelAccountEntryRels(
 				long accountEntryId, int type, int start, int end,
@@ -94,6 +103,16 @@ public class CommerceChannelAccountEntryRelServiceWrapper
 		return _commerceChannelAccountEntryRelService.
 			getCommerceChannelAccountEntryRels(
 				accountEntryId, type, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<CommerceChannelAccountEntryRel>
+		getCommerceChannelAccountEntryRels(
+			String className, long classPK, long commerceChannelId, int type) {
+
+		return _commerceChannelAccountEntryRelService.
+			getCommerceChannelAccountEntryRels(
+				className, classPK, commerceChannelId, type);
 	}
 
 	@Override

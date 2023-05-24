@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {MBThreadModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.message.boards.model.impl.MBThreadImpl",
+		"table.name=MBThread"
+	},
+	service = ArgumentsResolver.class
 )
 public class MBThreadModelArgumentsResolver implements ArgumentsResolver {
 

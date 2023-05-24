@@ -72,6 +72,7 @@ import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -102,7 +103,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang.time.StopWatch;
 
@@ -123,7 +123,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Zsolt Berentey
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.portal.kernel.model.Layout",
 	service = {ExportImportController.class, LayoutImportController.class}
 )
@@ -402,12 +401,12 @@ public class LayoutImportController implements ImportController {
 
 	protected boolean isValidateMissingReferences() {
 		try {
-			ExportImportServiceConfiguration configuration =
+			ExportImportServiceConfiguration exportImportServiceConfiguration =
 				_configurationProvider.getCompanyConfiguration(
 					ExportImportServiceConfiguration.class,
 					CompanyThreadLocal.getCompanyId());
 
-			return configuration.validateMissingReferences();
+			return exportImportServiceConfiguration.validateMissingReferences();
 		}
 		catch (Exception exception) {
 			_log.error(exception);
@@ -552,9 +551,7 @@ public class LayoutImportController implements ImportController {
 			"layout-prototype", "layout-set", "layout-set-prototype"
 		};
 
-		Stream<String> stream = Stream.of(expectedLARTypes);
-
-		if (stream.noneMatch(lt -> lt.equals(larType))) {
+		if (!ArrayUtil.exists(expectedLARTypes, type -> type.equals(larType))) {
 			throw new LARTypeException(larType, expectedLARTypes);
 		}
 
@@ -696,15 +693,9 @@ public class LayoutImportController implements ImportController {
 		Element layoutsElement = rootElement.element(
 			Layout.class.getSimpleName());
 
-		List<Node> nodes = xPath.selectNodes(layoutsElement);
-
-		Stream<Node> nodesStream = nodes.stream();
-
-		nodesStream.map(
-			node -> (Element)node
-		).forEach(
-			portletElements::add
-		);
+		for (Node node : xPath.selectNodes(layoutsElement)) {
+			portletElements.add((Element)node);
+		}
 
 		return portletElements;
 	}

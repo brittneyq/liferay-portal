@@ -14,9 +14,8 @@
 
 package com.liferay.commerce.internal.context;
 
-import com.liferay.commerce.account.service.CommerceAccountLocalService;
-import com.liferay.commerce.account.service.CommerceAccountService;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
+import com.liferay.account.service.AccountEntryLocalService;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.commerce.context.BaseCommerceContext;
 import com.liferay.commerce.context.BaseCommerceContextHttp;
 import com.liferay.commerce.context.CommerceContext;
@@ -26,6 +25,7 @@ import com.liferay.commerce.order.CommerceOrderHttpHelper;
 import com.liferay.commerce.product.service.CommerceChannelAccountEntryRelLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.service.CommerceOrderService;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.util.Portal;
 
@@ -37,14 +37,14 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Marco Leo
  */
-@Component(enabled = false, service = CommerceContextFactory.class)
+@Component(service = CommerceContextFactory.class)
 public class CommerceContextFactoryImpl implements CommerceContextFactory {
 
 	@Override
 	public CommerceContext create(HttpServletRequest httpServletRequest) {
 		return new BaseCommerceContextHttp(
-			httpServletRequest, _commerceAccountHelper,
-			_commerceChannelAccountEntryRelLocalService,
+			httpServletRequest, _accountGroupLocalService,
+			_commerceAccountHelper, _commerceChannelAccountEntryRelLocalService,
 			_commerceChannelLocalService, _commerceCurrencyLocalService,
 			_commerceOrderHttpHelper, _configurationProvider, _portal);
 	}
@@ -56,21 +56,20 @@ public class CommerceContextFactoryImpl implements CommerceContextFactory {
 
 		return new BaseCommerceContext(
 			companyId, commerceChannelGroupId, orderId, commerceAccountId,
-			_commerceAccountHelper, _commerceAccountLocalService,
-			_commerceAccountService,
+			_accountEntryLocalService, _accountGroupLocalService,
 			_commerceChannelAccountEntryRelLocalService,
 			_commerceChannelLocalService, _commerceCurrencyLocalService,
 			_commerceOrderService, _configurationProvider);
 	}
 
 	@Reference
+	private AccountEntryLocalService _accountEntryLocalService;
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
+
+	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;
-
-	@Reference
-	private CommerceAccountLocalService _commerceAccountLocalService;
-
-	@Reference
-	private CommerceAccountService _commerceAccountService;
 
 	@Reference
 	private CommerceChannelAccountEntryRelLocalService

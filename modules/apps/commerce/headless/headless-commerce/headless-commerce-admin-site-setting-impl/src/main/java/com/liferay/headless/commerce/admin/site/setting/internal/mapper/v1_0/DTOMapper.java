@@ -28,7 +28,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Alessio Antonio Rendina
  * @author Zoltán Takács
  */
-@Component(enabled = false, immediate = true, service = DTOMapper.class)
+@Component(service = DTOMapper.class)
 public class DTOMapper {
 
 	public AvailabilityEstimate modelToDTO(
@@ -62,12 +62,16 @@ public class DTOMapper {
 
 		warehouse.setActive(commerceInventoryWarehouse.isActive());
 		warehouse.setCity(commerceInventoryWarehouse.getCity());
-		warehouse.setDescription(commerceInventoryWarehouse.getDescription());
+		warehouse.setDescription(
+			LanguageUtils.getLanguageIdMap(
+				commerceInventoryWarehouse.getDescriptionMap()));
 		warehouse.setId(
 			commerceInventoryWarehouse.getCommerceInventoryWarehouseId());
 		warehouse.setLatitude(commerceInventoryWarehouse.getLatitude());
 		warehouse.setLongitude(commerceInventoryWarehouse.getLongitude());
-		warehouse.setName(commerceInventoryWarehouse.getName());
+		warehouse.setName(
+			LanguageUtils.getLanguageIdMap(
+				commerceInventoryWarehouse.getNameMap()));
 		warehouse.setStreet1(commerceInventoryWarehouse.getStreet1());
 		warehouse.setStreet2(commerceInventoryWarehouse.getStreet2());
 		warehouse.setStreet3(commerceInventoryWarehouse.getStreet3());

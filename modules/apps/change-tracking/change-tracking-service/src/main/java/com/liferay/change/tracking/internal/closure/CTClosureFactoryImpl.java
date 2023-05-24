@@ -20,12 +20,15 @@ import com.liferay.change.tracking.constants.CTConstants;
 import com.liferay.change.tracking.internal.reference.TableJoinHolder;
 import com.liferay.change.tracking.internal.reference.TableReferenceDefinitionManager;
 import com.liferay.change.tracking.internal.reference.TableReferenceInfo;
+import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTEntry;
 import com.liferay.change.tracking.service.CTEntryLocalService;
+import com.liferay.change.tracking.service.persistence.CTCollectionPersistence;
 import com.liferay.change.tracking.spi.reference.TableReferenceDefinition;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.Table;
+import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.petra.sql.dsl.query.FromStep;
 import com.liferay.petra.sql.dsl.query.GroupByStep;
@@ -33,7 +36,10 @@ import com.liferay.petra.sql.dsl.query.JoinStep;
 import com.liferay.petra.sql.dsl.spi.ast.DefaultASTNodeListener;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.kernel.dao.orm.ORMException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -62,7 +68,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Tina Tian
  * @author Preston Crary
  */
-@Component(immediate = true, service = CTClosureFactory.class)
+@Component(service = CTClosureFactory.class)
 public class CTClosureFactoryImpl implements CTClosureFactory {
 
 	@Override
@@ -109,6 +115,24 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 				combinedTableReferenceInfos.get(childClassNameId);
 
 			if (childTableReferenceInfo == null) {
+				CTCollection ctCollection =
+					_ctCollectionPersistence.fetchByPrimaryKey(ctCollectionId);
+
+				if ((ctCollection != null) &&
+					(ctCollection.getStatus() !=
+						WorkflowConstants.STATUS_DRAFT) &&
+					(ctCollection.getStatus() !=
+						WorkflowConstants.STATUS_PENDING)) {
+
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"No table reference definition for " +
+								childClassNameId);
+					}
+
+					continue;
+				}
+
 				throw new IllegalArgumentException(
 					"No table reference definition for " + childClassNameId);
 			}
@@ -131,51 +155,116 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 				TableReferenceInfo<?> parentTableReferenceInfo =
 					combinedTableReferenceInfos.get(parentClassNameId);
 
-				DSLQuery dslQuery = _getDSLQuery(
-					ctCollectionId, childPrimaryKeysArray, entry.getValue());
+				int i = 0;
 
-				try (Connection connection = _getConnection(
-						parentTableReferenceInfo);
-					PreparedStatement preparedStatement = _getPreparedStatement(
-						connection, dslQuery);
-					ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (i < childPrimaryKeysArray.length) {
+					int batchSize = _SQL_PLACEHOLDER_LIMIT;
 
-					List<Long> newParents = null;
-
-					while (resultSet.next()) {
-						Node parentNode = new Node(
-							parentClassNameId, resultSet.getLong(1));
-						Node childNode = new Node(
-							childClassNameId, resultSet.getLong(2));
-
-						if (nodes.add(parentNode)) {
-							if (newParents == null) {
-								newParents = new ArrayList<>();
-							}
-
-							newParents.add(parentNode.getPrimaryKey());
-						}
-
-						Collection<Edge> edges = edgeMap.computeIfAbsent(
-							parentNode, key -> new LinkedList<>());
-
-						edges.add(new Edge(parentNode, childNode));
+					if ((i + batchSize) > childPrimaryKeysArray.length) {
+						batchSize = childPrimaryKeysArray.length - i;
 					}
 
-					if (newParents != null) {
+					Long[] batchChildPrimaryKeys = new Long[batchSize];
+
+					System.arraycopy(
+						childPrimaryKeysArray, i, batchChildPrimaryKeys, 0,
+						batchSize);
+
+					List<Long> newParentPrimaryKeys = _collectParentPrimaryKeys(
+						childClassNameId, batchChildPrimaryKeys, ctCollectionId,
+						entry, edgeMap, nodes, parentClassNameId,
+						parentTableReferenceInfo);
+
+					if (newParentPrimaryKeys != null) {
 						queue.add(
 							new AbstractMap.SimpleImmutableEntry<>(
-								parentClassNameId, newParents));
+								parentClassNameId, newParentPrimaryKeys));
 					}
-				}
-				catch (SQLException sqlException) {
-					throw new ORMException(
-						"Unable to execute query: " + dslQuery, sqlException);
+
+					i += batchSize;
 				}
 			}
 		}
 
 		return GraphUtil.getNodeMap(nodes, edgeMap);
+	}
+
+	private List<Long> _collectParentPrimaryKeys(
+		long childClassNameId, Long[] childPrimaryKeys, long ctCollectionId,
+		Map.Entry<Table<?>, List<TableJoinHolder>> entry,
+		Map<Node, Collection<Edge>> edgeMap, Set<Node> nodes,
+		long parentClassNameId,
+		TableReferenceInfo<?> parentTableReferenceInfo) {
+
+		List<Long> newParentPrimaryKeys = null;
+
+		DSLQuery dslQuery = _getDSLQuery(
+			ctCollectionId, childPrimaryKeys, entry.getValue());
+
+		try (Connection connection = _getConnection(parentTableReferenceInfo);
+			PreparedStatement preparedStatement = _getPreparedStatement(
+				connection, dslQuery);
+			ResultSet resultSet = preparedStatement.executeQuery()) {
+
+			while (resultSet.next()) {
+				Node parentNode = new Node(
+					parentClassNameId, resultSet.getLong(1));
+				Node childNode = new Node(
+					childClassNameId, resultSet.getLong(2));
+
+				if (nodes.add(parentNode)) {
+					if (newParentPrimaryKeys == null) {
+						newParentPrimaryKeys = new ArrayList<>();
+					}
+
+					newParentPrimaryKeys.add(parentNode.getPrimaryKey());
+				}
+
+				Collection<Edge> edges = edgeMap.computeIfAbsent(
+					parentNode, key -> new LinkedList<>());
+
+				edges.add(new Edge(parentNode, childNode));
+			}
+		}
+		catch (SQLException sqlException) {
+			throw new ORMException(
+				"Unable to execute query: " + dslQuery, sqlException);
+		}
+
+		return newParentPrimaryKeys;
+	}
+
+	private Predicate _getChildPKColumnPredicate(
+		Column<?, Long> childPKColumn, Long[] childPrimaryKeysArray) {
+
+		Predicate predicate = null;
+
+		int i = 0;
+
+		while (i < childPrimaryKeysArray.length) {
+			int batchSize = 1000;
+
+			if ((i + batchSize) > childPrimaryKeysArray.length) {
+				batchSize = childPrimaryKeysArray.length - i;
+			}
+
+			Long[] batchChildPrimaryKeys = new Long[batchSize];
+
+			System.arraycopy(
+				childPrimaryKeysArray, i, batchChildPrimaryKeys, 0, batchSize);
+
+			if (predicate == null) {
+				predicate = childPKColumn.in(batchChildPrimaryKeys);
+			}
+			else {
+				predicate = predicate.or(
+					childPKColumn.in(batchChildPrimaryKeys));
+			}
+
+			i += batchSize;
+		}
+
+		return predicate.withParentheses();
 	}
 
 	private Connection _getConnection(TableReferenceInfo<?> tableReferenceInfo)
@@ -212,8 +301,8 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 			JoinStep joinStep = joinFunction.apply(fromStep);
 
 			GroupByStep groupByStep = joinStep.where(
-				() -> childPKColumn.in(
-					childPrimaryKeysArray
+				() -> _getChildPKColumnPredicate(
+					childPKColumn, childPrimaryKeysArray
 				).and(
 					() -> {
 						Table<?> parentTable = parentPKColumn.getTable();
@@ -264,6 +353,14 @@ public class CTClosureFactoryImpl implements CTClosureFactory {
 
 		return preparedStatement;
 	}
+
+	private static final int _SQL_PLACEHOLDER_LIMIT = 65533;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		CTClosureFactoryImpl.class);
+
+	@Reference
+	private CTCollectionPersistence _ctCollectionPersistence;
 
 	@Reference
 	private CTEntryLocalService _ctEntryLocalService;

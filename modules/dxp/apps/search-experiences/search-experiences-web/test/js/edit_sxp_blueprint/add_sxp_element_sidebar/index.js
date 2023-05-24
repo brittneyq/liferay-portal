@@ -13,7 +13,7 @@ import {fireEvent, render} from '@testing-library/react';
 import React from 'react';
 
 import AddSXPElementSidebar from '../../../../src/main/resources/META-INF/resources/sxp_blueprint_admin/js/edit_sxp_blueprint/add_sxp_element_sidebar/index';
-import {QUERY_SXP_ELEMENTS} from '../../mocks/data';
+import {QUERY_SXP_ELEMENTS} from '../../mocks/sxpElements';
 
 import '@testing-library/jest-dom/extend-expect';
 
@@ -22,6 +22,8 @@ import '@testing-library/jest-dom/extend-expect';
 // you-probably-dont-need-act-in-your-react-tests-2a0bcd2ad65c
 
 const originalError = console.error;
+
+Liferay.ThemeDisplay.getPathContext = () => '';
 
 beforeAll(() => {
 	console.error = (...args) => {

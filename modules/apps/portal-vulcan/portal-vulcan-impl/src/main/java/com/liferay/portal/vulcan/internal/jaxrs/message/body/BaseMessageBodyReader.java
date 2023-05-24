@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.extension.EntityExtensionThreadLocal;
-import com.liferay.portal.vulcan.internal.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.internal.jaxrs.validation.ValidationUtil;
 
 import java.io.IOException;
@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -102,13 +101,18 @@ public abstract class BaseMessageBodyReader
 			Map<String, Serializable> extendedProperties =
 				_getExtendedProperties(clazz, jsonNode, objectMapper);
 
-			entityExtensionHandler.validate(
-				_company.getCompanyId(), extendedProperties,
-				Objects.equals(
-					_httpServletRequest.getMethod(), HttpMethod.PATCH));
+			try {
+				entityExtensionHandler.validate(
+					_company.getCompanyId(), extendedProperties,
+					Objects.equals(
+						_httpServletRequest.getMethod(), HttpMethod.PATCH));
 
-			EntityExtensionThreadLocal.setExtendedProperties(
-				extendedProperties);
+				EntityExtensionThreadLocal.setExtendedProperties(
+					extendedProperties);
+			}
+			catch (Exception exception) {
+				throw new IOException(exception);
+			}
 		}
 		else {
 			object = objectReader.readValue(inputStream);
@@ -196,14 +200,19 @@ public abstract class BaseMessageBodyReader
 	}
 
 	private ObjectMapper _getObjectMapper(Class<?> clazz) {
-		return Optional.ofNullable(
-			_providers.getContextResolver(_contextType, _mediaType)
-		).map(
-			contextResolver -> contextResolver.getContext(clazz)
-		).orElseThrow(
-			() -> new InternalServerErrorException(
-				"Unable to generate object mapper for class " + clazz)
-		);
+		ContextResolver<? extends ObjectMapper> contextResolver =
+			_providers.getContextResolver(_contextType, _mediaType);
+
+		if (contextResolver != null) {
+			ObjectMapper objectMapper = contextResolver.getContext(clazz);
+
+			if (objectMapper != null) {
+				return objectMapper;
+			}
+		}
+
+		throw new InternalServerErrorException(
+			"Unable to generate object mapper for class " + clazz);
 	}
 
 	private boolean _isCreateOrUpdateMethod(String method) {

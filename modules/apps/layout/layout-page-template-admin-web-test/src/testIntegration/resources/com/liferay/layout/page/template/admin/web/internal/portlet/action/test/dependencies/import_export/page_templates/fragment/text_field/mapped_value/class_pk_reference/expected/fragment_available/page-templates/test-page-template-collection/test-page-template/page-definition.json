@@ -4,7 +4,8 @@
 			{
 				"definition": {
 					"fragment": {
-						"key": "test-text-fragment"
+						"key": "test-text-fragment",
+						"siteKey": "£{SITE_KEY}"
 					},
 					"fragmentConfig": {
 					},
@@ -37,7 +38,6 @@
 						"maxWidth": "none",
 						"minHeight": "auto",
 						"minWidth": "auto",
-						"opacity": "100",
 						"overflow": "visible",
 						"shadow": "shadow-none",
 						"textAlign": "none",

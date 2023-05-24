@@ -38,7 +38,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"json.web.service.context.name=commerce",
 		"json.web.service.context.path=CommerceCountryManager"
@@ -189,13 +188,22 @@ public class CommerceCountryManagerImpl implements CommerceCountryManager {
 						commerceChannelId));
 
 				groupFilterPredicate = groupFilterPredicate.or(
-					channelFilterPredicate);
+					channelFilterPredicate.withParentheses());
 
-				predicate = predicate.and(groupFilterPredicate);
 				predicate = predicate.and(
-					CountryTable.INSTANCE.billingAllowed.eq(billingAllowed));
-				predicate = predicate.and(
-					CountryTable.INSTANCE.shippingAllowed.eq(shippingAllowed));
+					groupFilterPredicate.withParentheses());
+
+				if (billingAllowed) {
+					predicate = predicate.and(
+						CountryTable.INSTANCE.billingAllowed.eq(
+							billingAllowed));
+				}
+
+				if (shippingAllowed) {
+					predicate = predicate.and(
+						CountryTable.INSTANCE.shippingAllowed.eq(
+							shippingAllowed));
+				}
 
 				return predicate;
 			});

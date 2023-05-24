@@ -16,6 +16,7 @@ package com.liferay.batch.engine.internal.item;
 
 import com.liferay.batch.engine.BatchEngineTaskItemDelegate;
 import com.liferay.batch.engine.BatchEngineTaskOperation;
+import com.liferay.batch.engine.jaxrs.uri.BatchEngineUriInfo;
 import com.liferay.batch.engine.pagination.Page;
 import com.liferay.batch.engine.pagination.Pagination;
 import com.liferay.batch.engine.strategy.BatchEngineImportStrategy;
@@ -33,7 +34,6 @@ import com.liferay.portal.odata.sort.SortField;
 import com.liferay.portal.odata.sort.SortParser;
 import com.liferay.portal.odata.sort.SortParserProvider;
 
-import java.io.Closeable;
 import java.io.Serializable;
 
 import java.util.Collection;
@@ -42,34 +42,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.framework.ServiceObjects;
-
 /**
  * @author Ivica Cardic
+ * @author Igor Beslic
  */
-public class BatchEngineTaskItemDelegateExecutor implements Closeable {
+public class BatchEngineTaskItemDelegateExecutor {
 
 	public BatchEngineTaskItemDelegateExecutor(
+		BatchEngineTaskItemDelegate<?> batchEngineTaskItemDelegate,
 		Company company, ExpressionConvert<Filter> expressionConvert,
 		FilterParserProvider filterParserProvider,
 		Map<String, Serializable> parameters,
-		ServiceObjects<BatchEngineTaskItemDelegate<Object>> serviceObjects,
 		SortParserProvider sortParserProvider, User user) {
 
+		_batchEngineTaskItemDelegate =
+			(BatchEngineTaskItemDelegate<Object>)batchEngineTaskItemDelegate;
 		_company = company;
 		_expressionConvert = expressionConvert;
 		_filterParserProvider = filterParserProvider;
 		_parameters = parameters;
-		_serviceObjects = serviceObjects;
 		_sortParserProvider = sortParserProvider;
 		_user = user;
-
-		_batchEngineTaskItemDelegate = _serviceObjects.getService();
-	}
-
-	@Override
-	public void close() {
-		_serviceObjects.ungetService(_batchEngineTaskItemDelegate);
 	}
 
 	public Page<?> getItems(int page, int pageSize) throws Exception {
@@ -182,6 +175,16 @@ public class BatchEngineTaskItemDelegateExecutor implements Closeable {
 		BatchEngineTaskItemDelegate<Object> batchEngineTaskItemDelegate) {
 
 		batchEngineTaskItemDelegate.setContextCompany(_company);
+
+		BatchEngineUriInfo.Builder builder = new BatchEngineUriInfo.Builder();
+
+		for (Map.Entry<String, Serializable> entry : _parameters.entrySet()) {
+			builder.queryParameter(
+				entry.getKey(), String.valueOf(entry.getValue()));
+		}
+
+		batchEngineTaskItemDelegate.setContextUriInfo(builder.build());
+
 		batchEngineTaskItemDelegate.setContextUser(_user);
 		batchEngineTaskItemDelegate.setLanguageId(_user.getLanguageId());
 	}
@@ -204,8 +207,6 @@ public class BatchEngineTaskItemDelegateExecutor implements Closeable {
 	private final ExpressionConvert<Filter> _expressionConvert;
 	private final FilterParserProvider _filterParserProvider;
 	private final Map<String, Serializable> _parameters;
-	private final ServiceObjects<BatchEngineTaskItemDelegate<Object>>
-		_serviceObjects;
 	private final SortParserProvider _sortParserProvider;
 	private final User _user;
 

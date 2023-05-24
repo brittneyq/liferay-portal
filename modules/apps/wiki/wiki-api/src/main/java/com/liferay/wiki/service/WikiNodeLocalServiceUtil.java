@@ -55,8 +55,8 @@ public class WikiNodeLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 #addNode(String, long, String, String, ServiceContext)}
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #addNode(String,
+	 long, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	public static WikiNode addNode(
@@ -288,29 +288,11 @@ public class WikiNodeLocalServiceUtil {
 		return getService().fetchWikiNode(nodeId);
 	}
 
-	/**
-	 * Returns the wiki node with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the wiki node's external reference code
-	 * @return the matching wiki node, or <code>null</code> if a matching wiki node could not be found
-	 */
 	public static WikiNode fetchWikiNodeByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
 		return getService().fetchWikiNodeByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchWikiNodeByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	public static WikiNode fetchWikiNodeByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return getService().fetchWikiNodeByReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -437,20 +419,12 @@ public class WikiNodeLocalServiceUtil {
 		return getService().getWikiNode(nodeId);
 	}
 
-	/**
-	 * Returns the wiki node with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the wiki node's external reference code
-	 * @return the matching wiki node
-	 * @throws PortalException if a matching wiki node could not be found
-	 */
 	public static WikiNode getWikiNodeByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws PortalException {
 
 		return getService().getWikiNodeByExternalReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -524,12 +498,11 @@ public class WikiNodeLocalServiceUtil {
 	}
 
 	public static void importPages(
-			long userId, long nodeId, String importer,
-			InputStream[] inputStreams, Map<String, String[]> options)
+			long userId, long nodeId, InputStream[] inputStreams,
+			Map<String, String[]> options)
 		throws PortalException {
 
-		getService().importPages(
-			userId, nodeId, importer, inputStreams, options);
+		getService().importPages(userId, nodeId, inputStreams, options);
 	}
 
 	public static WikiNode moveNodeToTrash(long userId, long nodeId)
@@ -595,6 +568,10 @@ public class WikiNodeLocalServiceUtil {
 
 	public static WikiNodeLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(WikiNodeLocalService service) {
+		_service = service;
 	}
 
 	private static volatile WikiNodeLocalService _service;

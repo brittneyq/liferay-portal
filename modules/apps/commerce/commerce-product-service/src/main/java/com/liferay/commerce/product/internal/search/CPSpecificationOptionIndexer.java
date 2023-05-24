@@ -33,7 +33,7 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -51,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, immediate = true, service = Indexer.class)
+@Component(service = Indexer.class)
 public class CPSpecificationOptionIndexer
 	extends BaseIndexer<CPSpecificationOption> {
 
@@ -100,10 +100,10 @@ public class CPSpecificationOptionIndexer
 		addSearchLocalizedTerm(
 			searchQuery, searchContext, CPField.CP_OPTION_CATEGORY_TITLE,
 			false);
+		addSearchTerm(searchQuery, searchContext, CPField.KEY, false);
 		addSearchLocalizedTerm(
 			searchQuery, searchContext, Field.DESCRIPTION, false);
 		addSearchTerm(searchQuery, searchContext, Field.ENTRY_CLASS_PK, false);
-		addSearchTerm(searchQuery, searchContext, CPField.KEY, false);
 		addSearchTerm(searchQuery, searchContext, Field.TITLE, false);
 		addSearchLocalizedTerm(searchQuery, searchContext, Field.TITLE, false);
 		addSearchTerm(searchQuery, searchContext, Field.USER_NAME, false);
@@ -146,39 +146,37 @@ public class CPSpecificationOptionIndexer
 			_cpOptionCategoryLocalService.fetchCPOptionCategory(
 				cpSpecificationOption.getCPOptionCategoryId());
 
-		String[] languageIds = LocalizationUtil.getAvailableLanguageIds(
+		String[] languageIds = _localization.getAvailableLanguageIds(
 			cpSpecificationOption.getTitle());
 
 		for (String languageId : languageIds) {
-			String title = cpSpecificationOption.getTitle(languageId);
-
-			document.addText(
-				LocalizationUtil.getLocalizedName(Field.TITLE, languageId),
-				title);
-
-			String description = cpSpecificationOption.getDescription(
-				languageId);
-
-			document.addText(
-				LocalizationUtil.getLocalizedName(
-					Field.DESCRIPTION, languageId),
-				description);
-
 			if (cpOptionCategory != null) {
-				document.addText(
-					LocalizationUtil.getLocalizedName(
-						CPField.CP_OPTION_CATEGORY_TITLE, languageId),
-					cpOptionCategory.getTitle(languageId));
-
 				document.addKeyword(
 					CPField.CP_OPTION_CATEGORY_ID,
 					cpOptionCategory.getCPOptionCategoryId());
+				document.addText(
+					_localization.getLocalizedName(
+						CPField.CP_OPTION_CATEGORY_TITLE, languageId),
+					cpOptionCategory.getTitle(languageId));
 			}
 
 			document.addKeyword(
 				CPField.FACETABLE, cpSpecificationOption.isFacetable());
 			document.addText(CPField.KEY, cpSpecificationOption.getKey());
+
+			String title = cpSpecificationOption.getTitle(languageId);
+
 			document.addText(Field.CONTENT, title);
+
+			String description = cpSpecificationOption.getDescription(
+				languageId);
+
+			document.addText(
+				_localization.getLocalizedName(Field.DESCRIPTION, languageId),
+				description);
+
+			document.addText(
+				_localization.getLocalizedName(Field.TITLE, languageId), title);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -207,8 +205,8 @@ public class CPSpecificationOptionIndexer
 		throws Exception {
 
 		_indexWriterHelper.updateDocument(
-			getSearchEngineId(), cpSpecificationOption.getCompanyId(),
-			getDocument(cpSpecificationOption), isCommitImmediately());
+			cpSpecificationOption.getCompanyId(),
+			getDocument(cpSpecificationOption));
 	}
 
 	@Override
@@ -251,7 +249,6 @@ public class CPSpecificationOptionIndexer
 					}
 				}
 			});
-		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
 	}
@@ -268,5 +265,8 @@ public class CPSpecificationOptionIndexer
 
 	@Reference
 	private IndexWriterHelper _indexWriterHelper;
+
+	@Reference
+	private Localization _localization;
 
 }

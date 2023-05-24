@@ -15,8 +15,10 @@
 package com.liferay.frontend.js.loader.modules.extender.internal.servlet.taglib;
 
 import com.liferay.frontend.js.loader.modules.extender.internal.configuration.Details;
+import com.liferay.frontend.js.loader.modules.extender.internal.servlet.JSResolveModulesServlet;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.frontend.esm.FrontendESMUtil;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.taglib.BaseDynamicInclude;
@@ -33,7 +35,6 @@ import java.io.PrintWriter;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.frontend.js.loader.modules.extender.internal.configuration.Details",
-	immediate = true, property = "service.ranking:Integer=" + Integer.MAX_VALUE,
+	property = "service.ranking:Integer=" + Integer.MAX_VALUE,
 	service = DynamicInclude.class
 )
 public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
@@ -80,6 +81,8 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 		printWriter.write(Boolean.toString(_details.exposeGlobal()));
 		printWriter.write(", logLevel: '");
 		printWriter.write(_details.logLevel());
+		printWriter.write("', moduleType: '");
+		printWriter.write(FrontendESMUtil.getScriptType());
 		printWriter.write("', namespace:'Liferay', ");
 		printWriter.write(
 			"reportMismatchedAnonymousModules: 'warn', resolvePath: '");
@@ -137,7 +140,7 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 				httpServletRequest);
 
 		return absolutePortalURLBuilder.forServlet(
-			"/js_resolve_modules"
+			_jsResolveModulesServlet.getURL()
 		).build();
 	}
 
@@ -164,14 +167,13 @@ public class JSLoaderTopHeadDynamicInclude extends BaseDynamicInclude {
 
 	private volatile Bundle _bundle;
 	private volatile Details _details;
+
+	@Reference
+	private JSResolveModulesServlet _jsResolveModulesServlet;
+
 	private volatile String _lastModified;
 
 	@Reference
 	private Portal _portal;
-
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.frontend.js.loader.modules.extender)"
-	)
-	private ServletContext _servletContext;
 
 }

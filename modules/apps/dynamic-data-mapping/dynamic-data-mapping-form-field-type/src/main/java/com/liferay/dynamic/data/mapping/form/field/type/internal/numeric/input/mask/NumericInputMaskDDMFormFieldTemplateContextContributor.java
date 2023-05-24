@@ -44,12 +44,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Carolina Barbosa
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.NUMERIC_INPUT_MASK,
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		NumericInputMaskDDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class NumericInputMaskDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {

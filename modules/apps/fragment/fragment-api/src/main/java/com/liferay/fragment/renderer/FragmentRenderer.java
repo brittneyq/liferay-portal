@@ -66,6 +66,17 @@ public interface FragmentRenderer {
 		return FragmentConstants.TYPE_COMPONENT;
 	}
 
+	public default String getTypeOptions() {
+		return StringPool.BLANK;
+	}
+
+	public default boolean hasViewPermission(
+		FragmentRendererContext fragmentRendererContext,
+		HttpServletRequest httpServletRequest) {
+
+		return true;
+	}
+
 	public default boolean isSelectable(HttpServletRequest httpServletRequest) {
 		return true;
 	}

@@ -15,15 +15,15 @@
 package com.liferay.dynamic.data.mapping.form.renderer.internal.servlet;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldType;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
+import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesRegistry;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.events.EventsProcessorUtil;
 import com.liferay.portal.json.JSONObjectImpl;
 import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
@@ -36,8 +36,6 @@ import java.io.IOException;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -52,7 +50,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Matuzalem Teles
  */
 @Component(
-	immediate = true,
 	property = {
 		"osgi.http.whiteboard.context.path=/dynamic-data-mapping-form-field-types",
 		"osgi.http.whiteboard.servlet.name=com.liferay.dynamic.data.mapping.form.renderer.internal.servlet.DDMFormFieldTypesServlet",
@@ -96,25 +93,22 @@ public class DDMFormFieldTypesServlet extends HttpServlet {
 			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		JSONArray fieldTypesJSONArray = _jsonFactory.createJSONArray();
-
-		Set<String> ddmFormFieldTypeNames =
-			_ddmFormFieldTypeServicesTracker.getDDMFormFieldTypeNames();
-
-		Stream<String> stream = ddmFormFieldTypeNames.stream();
-
-		stream.map(
-			ddmFormFieldTypeName -> _getFieldTypeMetadataJSONObject(
-				ddmFormFieldTypeName, Collections.emptyMap())
-		).forEach(
-			fieldTypesJSONArray::put
-		);
-
 		httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 
-		ServletResponseUtil.write(
-			httpServletResponse, fieldTypesJSONArray.toString());
+		JSONArray jsonArray = null;
+
+		try {
+			jsonArray = JSONUtil.toJSONArray(
+				_ddmFormFieldTypeServicesRegistry.getDDMFormFieldTypeNames(),
+				ddmFormFieldTypeName -> _getFieldTypeMetadataJSONObject(
+					ddmFormFieldTypeName, Collections.emptyMap()));
+		}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
+
+		ServletResponseUtil.write(httpServletResponse, jsonArray.toString());
 	}
 
 	@Reference
@@ -137,7 +131,7 @@ public class DDMFormFieldTypesServlet extends HttpServlet {
 		).put(
 			"javaScriptModule",
 			_resolveModuleName(
-				_ddmFormFieldTypeServicesTracker.getDDMFormFieldType(
+				_ddmFormFieldTypeServicesRegistry.getDDMFormFieldType(
 					ddmFormFieldName))
 		).put(
 			"name", ddmFormFieldName
@@ -160,9 +154,6 @@ public class DDMFormFieldTypesServlet extends HttpServlet {
 		DDMFormFieldTypesServlet.class);
 
 	@Reference
-	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
-
-	@Reference
-	private JSONFactory _jsonFactory;
+	private DDMFormFieldTypeServicesRegistry _ddmFormFieldTypeServicesRegistry;
 
 }

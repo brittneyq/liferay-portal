@@ -18,10 +18,14 @@ import React, {useContext} from 'react';
 
 const {SidebarContext} = require('../Sidebar');
 
-const Subscribe = ({icon, label, url}: IProps) => {
+const Subscribe = ({disabled, icon, label, url}: IProps) => {
 	const {fetchData} = useContext(SidebarContext);
 
 	const handleSubscribe = async (): Promise<void> => {
+		if (disabled) {
+			return;
+		}
+
 		try {
 			const {ok}: Response = await fetch(url);
 
@@ -52,8 +56,10 @@ const Subscribe = ({icon, label, url}: IProps) => {
 
 	return (
 		<ClayButtonWithIcon
+			aria-label={label}
 			className="component-action mr-2"
 			data-tooltip-align="bottom"
+			disabled={disabled}
 			displayType="unstyled"
 			onClick={handleSubscribe}
 			symbol={icon}
@@ -64,6 +70,7 @@ const Subscribe = ({icon, label, url}: IProps) => {
 
 interface IProps {
 	children?: React.ReactNode;
+	disabled: boolean;
 	icon: string;
 	label: string;
 	url: RequestInfo;

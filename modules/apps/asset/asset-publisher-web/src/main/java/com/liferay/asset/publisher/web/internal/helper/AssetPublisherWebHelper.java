@@ -29,6 +29,10 @@ import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectio
 import com.liferay.asset.util.AssetEntryQueryProcessor;
 import com.liferay.asset.util.AssetRendererFactoryClassProvider;
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.petra.concurrent.DCLSingleton;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -59,7 +63,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
@@ -81,25 +85,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Eudaldo Alonso
  */
 @Component(
 	configurationPid = "com.liferay.asset.publisher.web.internal.configuration.AssetPublisherPortletInstanceConfiguration",
-	immediate = true, service = AssetPublisherWebHelper.class
+	service = AssetPublisherWebHelper.class
 )
 public class AssetPublisherWebHelper {
 
@@ -258,7 +259,7 @@ public class AssetPublisherWebHelper {
 		PortletPreferences portletPreferences) {
 
 		Map<Locale, String> emailAssetEntryAddedBodyMap =
-			LocalizationUtil.getLocalizationMap(
+			_localization.getLocalizationMap(
 				portletPreferences, "emailAssetEntryAddedBody",
 				StringPool.BLANK, StringPool.BLANK,
 				AssetPublisherWebHelper.class.getClassLoader());
@@ -266,8 +267,12 @@ public class AssetPublisherWebHelper {
 		Locale defaultLocale = LocaleUtil.getSiteDefault();
 
 		if (Validator.isNull(emailAssetEntryAddedBodyMap.get(defaultLocale))) {
+			AssetPublisherPortletInstanceConfiguration
+				assetPublisherPortletInstanceConfiguration =
+					_getAssetPublisherPortletInstanceConfiguration();
+
 			LocalizedValuesMap emailAssetEntryAddedLocalizedBodyMap =
-				_assetPublisherPortletInstanceConfiguration.
+				assetPublisherPortletInstanceConfiguration.
 					emailAssetEntryAddedBody();
 
 			emailAssetEntryAddedBodyMap.put(
@@ -288,7 +293,11 @@ public class AssetPublisherWebHelper {
 			return GetterUtil.getBoolean(emailAssetEntryAddedEnabled);
 		}
 
-		return _assetPublisherPortletInstanceConfiguration.
+		AssetPublisherPortletInstanceConfiguration
+			assetPublisherPortletInstanceConfiguration =
+				_getAssetPublisherPortletInstanceConfiguration();
+
+		return assetPublisherPortletInstanceConfiguration.
 			emailAssetEntryAddedEnabled();
 	}
 
@@ -296,7 +305,7 @@ public class AssetPublisherWebHelper {
 		PortletPreferences portletPreferences) {
 
 		Map<Locale, String> emailAssetEntryAddedSubjectMap =
-			LocalizationUtil.getLocalizationMap(
+			_localization.getLocalizationMap(
 				portletPreferences, "emailAssetEntryAddedSubject",
 				StringPool.BLANK, StringPool.BLANK,
 				AssetPublisherWebHelper.class.getClassLoader());
@@ -306,8 +315,12 @@ public class AssetPublisherWebHelper {
 		if (Validator.isNull(
 				emailAssetEntryAddedSubjectMap.get(defaultLocale))) {
 
+			AssetPublisherPortletInstanceConfiguration
+				assetPublisherPortletInstanceConfiguration =
+					_getAssetPublisherPortletInstanceConfiguration();
+
 			LocalizedValuesMap emailAssetEntryAddedLocalizedSubjectMap =
-				_assetPublisherPortletInstanceConfiguration.
+				assetPublisherPortletInstanceConfiguration.
 					emailAssetEntryAddedSubject();
 
 			emailAssetEntryAddedSubjectMap.put(
@@ -387,17 +400,25 @@ public class AssetPublisherWebHelper {
 	public String getEmailFromAddress(
 		PortletPreferences portletPreferences, long companyId) {
 
+		AssetPublisherPortletInstanceConfiguration
+			assetPublisherPortletInstanceConfiguration =
+				_getAssetPublisherPortletInstanceConfiguration();
+
 		return _portal.getEmailFromAddress(
 			portletPreferences, companyId,
-			_assetPublisherPortletInstanceConfiguration.emailFromAddress());
+			assetPublisherPortletInstanceConfiguration.emailFromAddress());
 	}
 
 	public String getEmailFromName(
 		PortletPreferences portletPreferences, long companyId) {
 
+		AssetPublisherPortletInstanceConfiguration
+			assetPublisherPortletInstanceConfiguration =
+				_getAssetPublisherPortletInstanceConfiguration();
+
 		return _portal.getEmailFromName(
 			portletPreferences, companyId,
-			_assetPublisherPortletInstanceConfiguration.emailFromName());
+			assetPublisherPortletInstanceConfiguration.emailFromName());
 	}
 
 	public long getSubscriptionClassPK(
@@ -517,7 +538,7 @@ public class AssetPublisherWebHelper {
 		throws Exception {
 
 		for (AssetEntryQueryProcessor assetEntryQueryProcessor :
-				_assetEntryQueryProcessors) {
+				_serviceTrackerList) {
 
 			assetEntryQueryProcessor.processAssetEntryQuery(
 				user, portletPreferences, assetEntryQuery);
@@ -554,30 +575,14 @@ public class AssetPublisherWebHelper {
 	}
 
 	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties)
-		throws ConfigurationException {
-
-		_assetPublisherPortletInstanceConfiguration =
-			_configurationProvider.getSystemConfiguration(
-				AssetPublisherPortletInstanceConfiguration.class);
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerList = ServiceTrackerListFactory.open(
+			bundleContext, AssetEntryQueryProcessor.class);
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	protected void setAssetEntryQueryProcessor(
-		AssetEntryQueryProcessor assetEntryQueryProcessor) {
-
-		_assetEntryQueryProcessors.add(assetEntryQueryProcessor);
-	}
-
-	protected void unsetAssetEntryQueryProcessor(
-		AssetEntryQueryProcessor assetEntryQueryProcessor) {
-
-		_assetEntryQueryProcessors.remove(assetEntryQueryProcessor);
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerList.close();
 	}
 
 	private String _getAssetEntryXml(
@@ -609,6 +614,23 @@ public class AssetPublisherWebHelper {
 		}
 
 		return xml;
+	}
+
+	private AssetPublisherPortletInstanceConfiguration
+		_getAssetPublisherPortletInstanceConfiguration() {
+
+		return _assetPublisherPortletInstanceConfigurationDCLSingleton.
+			getSingleton(
+				() -> {
+					try {
+						return _configurationProvider.getSystemConfiguration(
+							AssetPublisherPortletInstanceConfiguration.class);
+					}
+					catch (ConfigurationException configurationException) {
+						return ReflectionUtil.throwException(
+							configurationException);
+					}
+				});
 	}
 
 	private Long[] _getClassTypeIds(
@@ -648,14 +670,12 @@ public class AssetPublisherWebHelper {
 	@Reference
 	private AssetEntryLocalService _assetEntryLocalService;
 
-	private final List<AssetEntryQueryProcessor> _assetEntryQueryProcessors =
-		new CopyOnWriteArrayList<>();
-
 	@Reference
 	private AssetPublisherHelper _assetPublisherHelper;
 
-	private volatile AssetPublisherPortletInstanceConfiguration
-		_assetPublisherPortletInstanceConfiguration;
+	private final DCLSingleton<AssetPublisherPortletInstanceConfiguration>
+		_assetPublisherPortletInstanceConfigurationDCLSingleton =
+			new DCLSingleton<>();
 
 	@Reference
 	private AssetRendererFactoryClassProvider
@@ -683,10 +703,16 @@ public class AssetPublisherWebHelper {
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
+	private Localization _localization;
+
+	@Reference
 	private Portal _portal;
 
 	@Reference
 	private PortletPreferencesLocalService _portletPreferencesLocalService;
+
+	private volatile ServiceTrackerList<AssetEntryQueryProcessor>
+		_serviceTrackerList;
 
 	@Reference
 	private Sites _sites;

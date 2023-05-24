@@ -38,7 +38,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Alejandro Tardín
  */
-@Component(immediate = true, service = DepotAssetRendererFactoryTracker.class)
+@Component(service = {})
 public class DepotAssetRendererFactoryTracker {
 
 	@Activate
@@ -118,7 +118,7 @@ public class DepotAssetRendererFactoryTracker {
 			}
 
 			Integer serviceRanking = (Integer)serviceReference.getProperty(
-				"service.ranking:Integer");
+				"service.ranking");
 
 			long defaultRanking = Integer.MAX_VALUE - 1000;
 

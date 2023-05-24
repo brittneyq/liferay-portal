@@ -26,7 +26,6 @@ import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
-import com.liferay.portal.kernel.frontend.icons.FrontendIconsUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -91,14 +90,14 @@ public class FragmentEntryLinkRichTextEditorConfigContributor
 		).put(
 			"skin", "moono-lisa"
 		).put(
-			"spritemap", FrontendIconsUtil.getSpritemap(themeDisplay)
+			"spritemap", themeDisplay.getPathThemeSpritemap()
 		).put(
 			"toolbars", _getToolbarsJSONObject(themeDisplay.getLocale())
 		);
 	}
 
 	protected String getExtraPluginsLists() {
-		return "ae_autolink,ae_dragresize,ae_addimages,ae_imagealignment," +
+		return "autolink,ae_dragresize,ae_addimages,ae_imagealignment," +
 			"ae_placeholder,ae_selectionregion,ae_tableresize," +
 				"ae_tabletools,ae_uicore,itemselector,media,adaptivemedia";
 	}

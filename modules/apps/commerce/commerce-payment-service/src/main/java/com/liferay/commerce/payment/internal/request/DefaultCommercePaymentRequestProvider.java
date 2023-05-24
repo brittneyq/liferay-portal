@@ -14,7 +14,6 @@
 
 package com.liferay.commerce.payment.internal.request;
 
-import com.liferay.commerce.constants.CommercePaymentConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.payment.request.CommercePaymentRequest;
 import com.liferay.commerce.payment.request.CommercePaymentRequestProvider;
@@ -32,8 +31,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  */
 @Component(
-	enabled = false, immediate = true,
-	property = "commerce.payment.engine.method.key=" + CommercePaymentConstants.DEFAULT_PAYMENT_REQUEST_PROVIDER_KEY,
+	property = "commerce.payment.engine.method.key=default",
 	service = CommercePaymentRequestProvider.class
 )
 public class DefaultCommercePaymentRequestProvider

@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {SAPEntryModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.portal.security.service.access.policy.model.impl.SAPEntryImpl",
+		"table.name=SAPEntry"
+	},
+	service = ArgumentsResolver.class
 )
 public class SAPEntryModelArgumentsResolver implements ArgumentsResolver {
 

@@ -51,10 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false, immediate = true,
-	service = CommerceNotificationHelper.class
-)
+@Component(service = CommerceNotificationHelper.class)
 public class CommerceNotificationHelperImpl
 	implements CommerceNotificationHelper {
 
@@ -95,7 +92,7 @@ public class CommerceNotificationHelperImpl
 			String subject, String body, Object object)
 		throws PortalException {
 
-		User user = _userLocalService.getDefaultUser(
+		User user = _userLocalService.getGuestUser(
 			CompanyThreadLocal.getCompanyId());
 
 		_commerceNotificationQueueEntryLocalService.

@@ -46,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Brian Wing Shun Chan
  */
-@Component(immediate = true, service = CETManager.class)
+@Component(service = CETManager.class)
 public class CETManagerImpl implements CETManager {
 
 	@Override
@@ -62,7 +62,10 @@ public class CETManagerImpl implements CETManager {
 
 		cetsMap.put(externalReferenceCode, cet);
 
-		_serviceRegistrationsMaps.put(
+		Map<String, List<ServiceRegistration<?>>> serviceRegistrationsMap =
+			_getServiceRegistrationsMap(cet.getCompanyId());
+
+		serviceRegistrationsMap.put(
 			externalReferenceCode, _cetDeployer.deploy(cet));
 
 		return cet;
@@ -82,7 +85,7 @@ public class CETManagerImpl implements CETManager {
 		ClientExtensionEntry clientExtensionEntry =
 			_clientExtensionEntryLocalService.
 				fetchClientExtensionEntryByExternalReferenceCode(
-					companyId, externalReferenceCode);
+					externalReferenceCode, companyId);
 
 		if (clientExtensionEntry != null) {
 			try {
@@ -189,6 +192,21 @@ public class CETManagerImpl implements CETManager {
 		return cetsMap;
 	}
 
+	private Map<String, List<ServiceRegistration<?>>>
+		_getServiceRegistrationsMap(long companyId) {
+
+		Map<String, List<ServiceRegistration<?>>> serviceRegistrationsMap =
+			_serviceRegistrationsMaps.get(companyId);
+
+		if (serviceRegistrationsMap == null) {
+			serviceRegistrationsMap = new ConcurrentHashMap<>();
+
+			_serviceRegistrationsMaps.put(companyId, serviceRegistrationsMap);
+		}
+
+		return serviceRegistrationsMap;
+	}
+
 	private boolean _isInclude(CET cet, String keywords, String type) {
 		if (Validator.isNotNull(type) && !Objects.equals(type, cet.getType())) {
 			return false;
@@ -207,8 +225,11 @@ public class CETManagerImpl implements CETManager {
 	}
 
 	private void _undeployCET(CET cet) {
+		Map<String, List<ServiceRegistration<?>>> serviceRegistrationsMap =
+			_getServiceRegistrationsMap(cet.getCompanyId());
+
 		List<ServiceRegistration<?>> serviceRegistrations =
-			_serviceRegistrationsMaps.remove(cet.getExternalReferenceCode());
+			serviceRegistrationsMap.remove(cet.getExternalReferenceCode());
 
 		if (serviceRegistrations != null) {
 			for (ServiceRegistration<?> serviceRegistration :
@@ -233,7 +254,7 @@ public class CETManagerImpl implements CETManager {
 	@Reference
 	private ClientExtensionEntryLocalService _clientExtensionEntryLocalService;
 
-	private final Map<String, List<ServiceRegistration<?>>>
+	private final Map<Long, Map<String, List<ServiceRegistration<?>>>>
 		_serviceRegistrationsMaps = new ConcurrentHashMap<>();
 
 }

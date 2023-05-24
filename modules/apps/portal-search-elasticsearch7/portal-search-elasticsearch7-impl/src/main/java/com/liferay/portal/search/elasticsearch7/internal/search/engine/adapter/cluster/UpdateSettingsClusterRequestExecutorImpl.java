@@ -35,9 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Bryan Engler
  */
-@Component(
-	immediate = true, service = UpdateSettingsClusterRequestExecutor.class
-)
+@Component(service = UpdateSettingsClusterRequestExecutor.class)
 public class UpdateSettingsClusterRequestExecutorImpl
 	implements UpdateSettingsClusterRequestExecutor {
 
@@ -59,13 +57,6 @@ public class UpdateSettingsClusterRequestExecutorImpl
 
 		return new UpdateSettingsClusterResponse(
 			persistentSettings.toString(), transientSettings.toString());
-	}
-
-	@Reference(unbind = "-")
-	protected void setElasticsearchClientResolver(
-		ElasticsearchClientResolver elasticsearchClientResolver) {
-
-		_elasticsearchClientResolver = elasticsearchClientResolver;
 	}
 
 	private ClusterUpdateSettingsRequest _createClusterUpdateSettingsRequest(
@@ -121,6 +112,7 @@ public class UpdateSettingsClusterRequestExecutorImpl
 		}
 	}
 
+	@Reference
 	private ElasticsearchClientResolver _elasticsearchClientResolver;
 
 }

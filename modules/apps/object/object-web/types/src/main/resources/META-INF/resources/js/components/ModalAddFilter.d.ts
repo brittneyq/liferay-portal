@@ -16,23 +16,11 @@
 
 import {Observer} from '@clayui/modal/lib/types';
 import './ModalAddFilter.scss';
-export declare function ModalAddFilter({
-	currentFilters,
-	disableDateValues,
-	editingFilter,
-	editingObjectFieldName,
-	filterOperators,
-	filterTypeRequired,
-	header,
-	objectFields,
-	observer,
-	onClose,
-	onSave,
-	validate,
-	workflowStatusJSONArray,
-}: IProps): JSX.Element;
 interface IProps {
-	currentFilters: TCurrentFilter[];
+	aggregationFilter?: boolean;
+	creationLanguageId?: Liferay.Language.Locale;
+	currentFilters: CurrentFilter[];
+	disableAutoClose?: boolean;
 	disableDateValues?: boolean;
 	editingFilter: boolean;
 	editingObjectFieldName: string;
@@ -60,7 +48,7 @@ interface IProps {
 		setErrors,
 		value,
 	}: FilterValidation) => FilterErrors;
-	workflowStatusJSONArray: TWorkflowStatus[];
+	workflowStatusJSONArray: LabelValueObject[];
 }
 interface IItem extends LabelValueObject {
 	checked?: boolean;
@@ -82,24 +70,35 @@ export declare type FilterValidation = {
 	setErrors: (value: FilterErrors) => void;
 	value?: string;
 };
-declare type TCurrentFilter = {
+declare type CurrentFilter = {
 	definition: {
 		[key: string]: string[] | number[];
 	} | null;
 	fieldLabel?: string;
 	filterBy?: string;
 	filterType: string | null;
-	label: TName;
+	label: LocalizedValue<string>;
 	objectFieldBusinessType?: string;
 	objectFieldName?: string;
 	value?: string;
 	valueList?: LabelValueObject[];
 };
-declare type TWorkflowStatus = {
-	label: string;
-	value: string;
-};
-declare type TName = {
-	[key: string]: string;
-};
+export declare function ModalAddFilter({
+	aggregationFilter,
+	creationLanguageId,
+	currentFilters,
+	disableAutoClose,
+	disableDateValues,
+	editingFilter,
+	editingObjectFieldName,
+	filterOperators,
+	filterTypeRequired,
+	header,
+	objectFields,
+	observer,
+	onClose,
+	onSave,
+	validate,
+	workflowStatusJSONArray,
+}: IProps): JSX.Element;
 export {};

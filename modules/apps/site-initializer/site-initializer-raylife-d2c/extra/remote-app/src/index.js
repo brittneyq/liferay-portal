@@ -19,6 +19,8 @@ import ClayIconProvider from './common/context/ClayIconProvider';
 import {GoogleMapsService} from './common/services/google-maps';
 import './common/styles/index.scss';
 import ApplicationContextProvider from './common/context/ApplicationPropertiesProvider';
+import {getGuestPermissionToken} from './common/services/token';
+import {Liferay} from './common/utils/liferay';
 import GetAQuote from './routes/get-a-quote/pages/GetAQuote';
 import QuoteComparison from './routes/quote-comparison/pages/QuoteComparison';
 import SelectedQuote from './routes/selected-quote/pages/SelectedQuote';
@@ -41,6 +43,16 @@ const DirectToCustomer = ({route}) => {
 	}
 };
 
+const giveGuestAuthorization = async () => {
+	const token = await getGuestPermissionToken();
+
+	Liferay.Util.SessionStorage.setItem(
+		'raylife-guest-permission-token',
+		token?.access_token,
+		Liferay.Util.SessionStorage.TYPES.NECESSARY
+	);
+};
+
 class DirectToCustomerWebComponent extends HTMLElement {
 	connectedCallback() {
 		const properties = {
@@ -51,6 +63,10 @@ class DirectToCustomerWebComponent extends HTMLElement {
 
 		if (properties.googleplaceskey) {
 			GoogleMapsService.setup(properties.googleplaceskey);
+		}
+
+		if (!Liferay.ThemeDisplay.getUserName()) {
+			giveGuestAuthorization();
 		}
 
 		ReactDOM.render(

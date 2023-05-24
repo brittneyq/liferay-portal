@@ -18,15 +18,18 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.PortletPreferenceValueLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import com.liferay.taglib.security.PermissionsURLTag;
 import com.liferay.template.constants.TemplatePortletKeys;
 import com.liferay.template.web.internal.security.permissions.resource.DDMTemplatePermission;
@@ -51,7 +54,7 @@ public class DDMTemplateActionDropdownItemsProvider {
 		_liferayPortletResponse = liferayPortletResponse;
 		_tabs1 = tabs1;
 
-		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
 
@@ -85,6 +88,14 @@ public class DDMTemplateActionDropdownItemsProvider {
 								_ddmTemplate.getClassNameId(),
 								_ddmTemplate.getResourceClassNameId()),
 						_getCopyDDMTemplateActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						_getViewDDMTemplateUsagesActionUnsafeConsumer()
 					).build());
 				dropdownGroupItem.setSeparator(true);
 			}
@@ -153,6 +164,8 @@ public class DDMTemplateActionDropdownItemsProvider {
 				).setParameter(
 					"ddmTemplateId", _ddmTemplate.getTemplateId()
 				).buildString());
+			dropdownItem.putData(
+				"usagesCount", String.valueOf(_getUsagesCount()));
 			dropdownItem.setIcon("trash");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "delete"));
@@ -198,6 +211,35 @@ public class DDMTemplateActionDropdownItemsProvider {
 			dropdownItem.setIcon("password-policies");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "permissions"));
+		};
+	}
+
+	private int _getUsagesCount() {
+		return PortletPreferenceValueLocalServiceUtil.
+			getPortletPreferenceValuesCount(
+				_ddmTemplate.getCompanyId(), "displayStyle",
+				PortletDisplayTemplate.DISPLAY_STYLE_PREFIX +
+					HtmlUtil.escape(_ddmTemplate.getTemplateKey()));
+	}
+
+	private UnsafeConsumer<DropdownItem, Exception>
+		_getViewDDMTemplateUsagesActionUnsafeConsumer() {
+
+		return dropdownItem -> {
+			dropdownItem.setDisabled(_getUsagesCount() == 0);
+			dropdownItem.setHref(
+				PortletURLBuilder.createRenderURL(
+					_liferayPortletResponse
+				).setMVCPath(
+					"/view_widget_templates_usages.jsp"
+				).setRedirect(
+					_themeDisplay.getURLCurrent()
+				).setParameter(
+					"ddmTemplateId", _ddmTemplate.getTemplateId()
+				).buildPortletURL());
+			dropdownItem.setIcon("list-ul");
+			dropdownItem.setLabel(
+				LanguageUtil.get(_httpServletRequest, "view-usages"));
 		};
 	}
 

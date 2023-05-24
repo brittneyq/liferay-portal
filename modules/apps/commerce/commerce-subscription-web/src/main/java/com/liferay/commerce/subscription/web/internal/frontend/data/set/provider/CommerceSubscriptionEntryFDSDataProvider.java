@@ -15,7 +15,7 @@
 package com.liferay.commerce.subscription.web.internal.frontend.data.set.provider;
 
 import com.liferay.account.constants.AccountPortletKeys;
-import com.liferay.commerce.account.model.CommerceAccount;
+import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.constants.CommerceSubscriptionEntryConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
@@ -30,11 +30,11 @@ import com.liferay.commerce.subscription.web.internal.model.SubscriptionEntry;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -57,7 +57,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceSubscriptionFDSNames.SUBSCRIPTION_ENTRIES,
 	service = FDSDataProvider.class
 )
@@ -88,11 +87,10 @@ public class CommerceSubscriptionEntryFDSDataProvider
 
 			CommerceOrder commerceOrder = commerceOrderItem.getCommerceOrder();
 
-			CommerceAccount commerceAccount =
-				commerceOrder.getCommerceAccount();
+			AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
-			String commerceAccountIdString = String.valueOf(
-				commerceAccount.getCommerceAccountId());
+			String accountEntryIdString = String.valueOf(
+				accountEntry.getAccountEntryId());
 
 			SubscriptionEntry subscriptionEntry = new SubscriptionEntry(
 				commerceSubscriptionEntry.getCommerceSubscriptionEntryId(),
@@ -102,12 +100,11 @@ public class CommerceSubscriptionEntryFDSDataProvider
 						commerceOrder.getCommerceOrderId(),
 						httpServletRequest)),
 				new Link(
-					commerceAccountIdString,
+					accountEntryIdString,
 					_getEditAccountURL(
-						commerceAccount.getCommerceAccountId(),
-						httpServletRequest)),
+						accountEntry.getAccountEntryId(), httpServletRequest)),
 				_getSubscriptionStatus(commerceSubscriptionEntry),
-				commerceAccount.getName());
+				accountEntry.getName());
 
 			subscriptionEntries.add(subscriptionEntry);
 		}
@@ -148,7 +145,7 @@ public class CommerceSubscriptionEntryFDSDataProvider
 	}
 
 	private String _getEditAccountURL(
-			long commerceAccountId, HttpServletRequest httpServletRequest)
+			long accountEntryId, HttpServletRequest httpServletRequest)
 		throws PortalException {
 
 		return PortletURLBuilder.create(
@@ -162,7 +159,7 @@ public class CommerceSubscriptionEntryFDSDataProvider
 				httpServletRequest, "currentUrl",
 				_portal.getCurrentURL(httpServletRequest))
 		).setParameter(
-			"accountEntryId", commerceAccountId
+			"accountEntryId", accountEntryId
 		).buildString();
 	}
 

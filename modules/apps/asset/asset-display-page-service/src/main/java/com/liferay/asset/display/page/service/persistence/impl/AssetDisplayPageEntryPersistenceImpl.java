@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,7 +51,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -84,9 +82,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(
-	service = {AssetDisplayPageEntryPersistence.class, BasePersistence.class}
-)
+@Component(service = AssetDisplayPageEntryPersistence.class)
 public class AssetDisplayPageEntryPersistenceImpl
 	extends BasePersistenceImpl<AssetDisplayPageEntry>
 	implements AssetDisplayPageEntryPersistence {
@@ -208,7 +204,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<AssetDisplayPageEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AssetDisplayPageEntry assetDisplayPageEntry : list) {
@@ -607,7 +603,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -744,7 +740,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof AssetDisplayPageEntry) {
@@ -866,7 +862,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1040,7 +1036,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<AssetDisplayPageEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AssetDisplayPageEntry assetDisplayPageEntry : list) {
@@ -1467,7 +1463,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1630,7 +1626,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<AssetDisplayPageEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AssetDisplayPageEntry assetDisplayPageEntry : list) {
@@ -2007,7 +2003,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2159,7 +2155,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<AssetDisplayPageEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AssetDisplayPageEntry assetDisplayPageEntry : list) {
@@ -2548,7 +2544,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 			finderArgs = new Object[] {layoutPageTemplateEntryId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2679,7 +2675,8 @@ public class AssetDisplayPageEntryPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByG_C_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByG_C_C, finderArgs, this);
 		}
 
 		if (result instanceof AssetDisplayPageEntry) {
@@ -2796,7 +2793,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 			finderArgs = new Object[] {groupId, classNameId, classPK};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3508,7 +3505,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<AssetDisplayPageEntry>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3584,7 +3581,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3828,30 +3825,14 @@ public class AssetDisplayPageEntryPersistenceImpl
 			},
 			new String[] {"groupId", "classNameId", "classPK"}, false);
 
-		_setAssetDisplayPageEntryUtilPersistence(this);
+		AssetDisplayPageEntryUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setAssetDisplayPageEntryUtilPersistence(null);
+		AssetDisplayPageEntryUtil.setPersistence(null);
 
 		entityCache.removeCache(AssetDisplayPageEntryImpl.class.getName());
-	}
-
-	private void _setAssetDisplayPageEntryUtilPersistence(
-		AssetDisplayPageEntryPersistence assetDisplayPageEntryPersistence) {
-
-		try {
-			Field field = AssetDisplayPageEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, assetDisplayPageEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3923,9 +3904,5 @@ public class AssetDisplayPageEntryPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private AssetDisplayPageEntryModelArgumentsResolver
-		_assetDisplayPageEntryModelArgumentsResolver;
 
 }

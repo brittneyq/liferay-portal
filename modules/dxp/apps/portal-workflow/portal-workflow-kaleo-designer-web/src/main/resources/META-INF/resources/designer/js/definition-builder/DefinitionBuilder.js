@@ -31,6 +31,10 @@ export default function DefinitionBuilder(props) {
 	const [definitionInfo, setDefinitionInfo] = useState(null);
 	const [definitionName, setDefinitionName] = useState(null);
 	const [definitionTitle, setDefinitionTitle] = useState(props.title);
+	const [
+		definitionTitleTranslations,
+		setDefinitionTitleTranslations,
+	] = useState(props.translations);
 	const [deserialize, setDeserialize] = useState(false);
 	const [elements, setElements] = useState(defaultNodes);
 	const [selectedLanguageId, setSelectedLanguageId] = useState('');
@@ -40,7 +44,6 @@ export default function DefinitionBuilder(props) {
 	);
 	const [sourceView, setSourceView] = useState(false);
 	const [showAlert, setShowAlert] = useState(false);
-	const [translations, setTranslations] = useState(props.translations);
 	const [version, setVersion] = useState(parseInt(props.version, 10));
 
 	const contextProps = {
@@ -55,8 +58,10 @@ export default function DefinitionBuilder(props) {
 		definitionInfo,
 		definitionName,
 		definitionTitle,
+		definitionTitleTranslations,
 		deserialize,
 		elements,
+		functionActionExecutors: props.functionActionExecutors,
 		selectedLanguageId,
 		setAccountEntryId,
 		setActive,
@@ -69,6 +74,7 @@ export default function DefinitionBuilder(props) {
 		setDefinitionInfo,
 		setDefinitionName,
 		setDefinitionTitle,
+		setDefinitionTitleTranslations,
 		setDeserialize,
 		setElements,
 		setSelectedLanguageId,
@@ -76,13 +82,12 @@ export default function DefinitionBuilder(props) {
 		setShowDefinitionInfo,
 		setShowInvalidContentMessage,
 		setSourceView,
-		setTranslations,
 		setVersion,
 		showAlert,
 		showDefinitionInfo,
 		showInvalidContentMessage,
 		sourceView,
-		translations,
+		statuses: props.statuses,
 		version,
 	};
 

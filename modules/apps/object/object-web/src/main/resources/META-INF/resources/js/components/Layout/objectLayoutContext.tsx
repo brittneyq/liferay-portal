@@ -15,21 +15,22 @@
 import React, {createContext, useContext, useReducer} from 'react';
 
 import {
-	findObjectFieldIndex,
+	findObjectFieldIndexById,
+	findObjectFieldIndexByName,
 	findObjectLayoutRowIndex,
 } from '../../utils/layout';
 import {BoxesVisitor, RowsVisitor} from '../../utils/visitor';
 import {
 	BoxType,
-	TName,
 	TObjectField,
 	TObjectLayout,
 	TObjectRelationship,
 } from './types';
 
 type TState = {
+	creationLanguageId: Liferay.Language.Locale;
+	enableCategorization: boolean;
 	isViewOnly: boolean;
-	objectDefinition: ObjectDefinition;
 	objectFieldTypes: ObjectFieldType[];
 	objectFields: TObjectField[];
 	objectLayout: TObjectLayout;
@@ -39,26 +40,27 @@ type TState = {
 
 type TAction =
 	| {
-			payload: {objectDefinition: ObjectDefinition};
-			type: TYPES.ADD_OBJECT_DEFINITION;
-	  }
-	| {
-			payload: {objectLayout: TObjectLayout};
+			payload: {
+				creationLanguageId: Liferay.Language.Locale;
+				enableCategorization: boolean;
+				objectLayout: TObjectLayout;
+				objectRelationships: TObjectRelationship[];
+			};
 			type: TYPES.ADD_OBJECT_LAYOUT;
 	  }
 	| {
-			payload: {objectRelationships: TObjectRelationship[]};
-			type: TYPES.ADD_OBJECT_RELATIONSHIPS;
-	  }
-	| {
 			payload: {
-				name: TName;
+				name: LocalizedValue<string>;
 				objectRelationshipId: number;
 			};
 			type: TYPES.ADD_OBJECT_LAYOUT_TAB;
 	  }
 	| {
-			payload: {name: TName; tabIndex?: number; type: BoxType};
+			payload: {
+				name: LocalizedValue<string>;
+				tabIndex?: number;
+				type: BoxType;
+			};
 			type: TYPES.ADD_OBJECT_LAYOUT_BOX;
 	  }
 	| {
@@ -68,14 +70,14 @@ type TAction =
 	| {
 			payload: {
 				boxIndex: number;
-				objectFieldId: number;
+				objectFieldName: string;
 				objectFieldSize: number;
 				tabIndex: number;
 			};
 			type: TYPES.ADD_OBJECT_LAYOUT_FIELD;
 	  }
 	| {
-			payload: {name: TName};
+			payload: {name: LocalizedValue<string>};
 			type: TYPES.CHANGE_OBJECT_LAYOUT_NAME;
 	  }
 	| {
@@ -103,8 +105,15 @@ type TAction =
 	| {
 			payload: {
 				boxIndex: number;
+				tabIndex: number;
+			};
+			type: TYPES.DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION;
+	  }
+	| {
+			payload: {
+				boxIndex: number;
 				columnIndex: number;
-				objectFieldId: number;
+				objectFieldName: string;
 				rowIndex: number;
 				tabIndex: number;
 			};
@@ -125,16 +134,15 @@ interface ILayoutContextProps extends Array<TState | Function> {
 const LayoutContext = createContext({} as ILayoutContextProps);
 
 export enum TYPES {
-	ADD_OBJECT_DEFINITION = 'ADD_OBJECT_DEFINITION',
 	ADD_OBJECT_FIELDS = 'ADD_OBJECT_FIELDS',
 	ADD_OBJECT_LAYOUT = 'ADD_OBJECT_LAYOUT',
 	ADD_OBJECT_LAYOUT_BOX = 'ADD_OBJECT_LAYOUT_BOX',
 	ADD_OBJECT_LAYOUT_FIELD = 'ADD_OBJECT_LAYOUT_FIELD',
 	ADD_OBJECT_LAYOUT_TAB = 'ADD_OBJECT_LAYOUT_TAB',
-	ADD_OBJECT_RELATIONSHIPS = 'ADD_OBJECT_RELATIONSHIPS',
 	CHANGE_OBJECT_LAYOUT_BOX_ATTRIBUTE = 'CHANGE_OBJECT_LAYOUT_BOX_ATTRIBUTE',
 	CHANGE_OBJECT_LAYOUT_NAME = 'CHANGE_OBJECT_LAYOUT_NAME',
 	DELETE_OBJECT_LAYOUT_BOX = 'DELETE_OBJECT_LAYOUT_BOX',
+	DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION = 'DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION',
 	DELETE_OBJECT_LAYOUT_FIELD = 'DELETE_OBJECT_LAYOUT_FIELD',
 	DELETE_OBJECT_LAYOUT_TAB = 'DELETE_OBJECT_LAYOUT_TAB',
 	SET_OBJECT_LAYOUT_AS_DEFAULT = 'SET_OBJECT_LAYOUT_AS_DEFAULT',
@@ -148,27 +156,19 @@ const initialState = {
 
 const layoutReducer = (state: TState, action: TAction) => {
 	switch (action.type) {
-		case TYPES.ADD_OBJECT_DEFINITION: {
-			const {objectDefinition} = action.payload;
-
-			return {
-				...state,
-				objectDefinition,
-			};
-		}
 		case TYPES.ADD_OBJECT_LAYOUT: {
-			const {objectLayout} = action.payload;
-
-			return {
-				...state,
+			const {
+				creationLanguageId,
+				enableCategorization,
 				objectLayout,
-			};
-		}
-		case TYPES.ADD_OBJECT_RELATIONSHIPS: {
-			const {objectRelationships} = action.payload;
+				objectRelationships,
+			} = action.payload;
 
 			return {
 				...state,
+				creationLanguageId,
+				enableCategorization,
+				objectLayout,
 				objectRelationships,
 			};
 		}
@@ -186,7 +186,7 @@ const layoutReducer = (state: TState, action: TAction) => {
 
 			if (objectRelationshipId) {
 				newState.objectRelationships[
-					findObjectFieldIndex(
+					findObjectFieldIndexById(
 						newState.objectRelationships,
 						objectRelationshipId
 					)
@@ -235,8 +235,12 @@ const layoutReducer = (state: TState, action: TAction) => {
 				(box) => box.type !== 'regular'
 			);
 
+			const hasCategorizationBox = !!objectLayoutBoxes.find(
+				(layoutBox) => layoutBox.type === 'categorization'
+			);
+
 			if (
-				type === 'regular' ||
+				(type === 'regular' && hasCategorizationBox) ||
 				(type === 'categorization' && frameworkIndex >= 0)
 			) {
 				objectLayoutBoxes.splice(frameworkIndex, 0, newBox);
@@ -258,7 +262,7 @@ const layoutReducer = (state: TState, action: TAction) => {
 		case TYPES.ADD_OBJECT_LAYOUT_FIELD: {
 			const {
 				boxIndex,
-				objectFieldId,
+				objectFieldName,
 				objectFieldSize,
 				tabIndex,
 			} = action.payload;
@@ -266,7 +270,7 @@ const layoutReducer = (state: TState, action: TAction) => {
 			const newState = {...state};
 
 			const newField = {
-				objectFieldId,
+				objectFieldName,
 				priority: 0,
 				size: objectFieldSize,
 			};
@@ -293,7 +297,10 @@ const layoutReducer = (state: TState, action: TAction) => {
 			}
 
 			newState.objectFields[
-				findObjectFieldIndex(newState.objectFields, objectFieldId)
+				findObjectFieldIndexByName(
+					newState.objectFields,
+					objectFieldName
+				)
 			].inLayout = true;
 
 			return newState;
@@ -346,15 +353,19 @@ const layoutReducer = (state: TState, action: TAction) => {
 
 			// Change object field inLayout attribute to false to be visible when add field again.
 
-			const objectFieldIds = newState.objectFields.map(({id}) => id);
+			const objectFieldNames = newState.objectFields.map(
+				({name}) => name
+			);
 			const visitor = new RowsVisitor(
 				newState.objectLayout.objectLayoutTabs[
 					tabIndex
-				].objectLayoutBoxes[tabIndex]
+				].objectLayoutBoxes[boxIndex]
 			);
 
 			visitor.mapFields((field) => {
-				const objectIndex = objectFieldIds.indexOf(field.objectFieldId);
+				const objectIndex = objectFieldNames.indexOf(
+					field.objectFieldName
+				);
 				newState.objectFields[objectIndex].inLayout = false;
 			});
 
@@ -366,11 +377,22 @@ const layoutReducer = (state: TState, action: TAction) => {
 
 			return newState;
 		}
+		case TYPES.DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION: {
+			const {boxIndex, tabIndex} = action.payload;
+
+			const newState = {...state};
+
+			newState.objectLayout.objectLayoutTabs[
+				tabIndex
+			].objectLayoutBoxes.splice(boxIndex, 1);
+
+			return newState;
+		}
 		case TYPES.DELETE_OBJECT_LAYOUT_FIELD: {
 			const {
 				boxIndex,
 				columnIndex,
-				objectFieldId,
+				objectFieldName,
 				rowIndex,
 				tabIndex,
 			} = action.payload;
@@ -389,9 +411,9 @@ const layoutReducer = (state: TState, action: TAction) => {
 				objectLayoutBox.objectLayoutRows.splice(rowIndex, 1);
 			}
 
-			const objectFieldIndex = findObjectFieldIndex(
+			const objectFieldIndex = findObjectFieldIndexByName(
 				newState.objectFields,
-				objectFieldId
+				objectFieldName
 			);
 
 			newState.objectFields[objectFieldIndex].inLayout = false;
@@ -422,15 +444,17 @@ const layoutReducer = (state: TState, action: TAction) => {
 
 			// Change object field inLayout attribute to false to be visible when add field again.
 
-			const objectFieldIds = newState.objectFields.map(({id}) => id);
+			const objectFieldNames = newState.objectFields.map(
+				({name}) => name
+			);
 			const visitor = new BoxesVisitor(
 				newState.objectLayout.objectLayoutTabs[tabIndex]
 			);
 
 			visitor.mapFields((field) => {
-				if (field.objectFieldId) {
-					const objectFieldIndex = objectFieldIds.indexOf(
-						field.objectFieldId
+				if (field.objectFieldName) {
+					const objectFieldIndex = objectFieldNames.indexOf(
+						field.objectFieldName
 					);
 					newState.objectFields[objectFieldIndex].inLayout = false;
 				}

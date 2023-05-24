@@ -35,13 +35,13 @@ import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.file.criterion.FileItemSelectorCriterion;
 import com.liferay.item.selector.criteria.image.criterion.ImageItemSelectorCriterion;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.taglib.util.CustomAttributesUtil;
@@ -51,10 +51,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
 
 /**
@@ -273,8 +272,8 @@ public class CPAttachmentFileEntriesDisplayContext
 	}
 
 	public String renderOptions(
-			PageContext pageContext, RenderRequest renderRequest,
-			RenderResponse renderResponse)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, PageContext pageContext)
 		throws PortalException {
 
 		CPAttachmentFileEntry cpAttachmentFileEntry =
@@ -287,8 +286,8 @@ public class CPAttachmentFileEntriesDisplayContext
 		}
 
 		return _ddmHelper.renderCPAttachmentFileEntryOptions(
-			getCPDefinitionId(), json, pageContext, renderRequest,
-			renderResponse,
+			getCPDefinitionId(), json, pageContext, httpServletRequest,
+			httpServletResponse,
 			_cpInstanceHelper.getCPDefinitionOptionValueRelsMap(
 				getCPDefinitionId(), true, false));
 	}

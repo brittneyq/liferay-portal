@@ -30,7 +30,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "frontend.data.set.name=" + CommerceOrderFDSNames.PAYMENTS,
 	service = FDSView.class
 )
@@ -48,7 +47,7 @@ public class CommercePaymentTableFDSView extends BaseTableFDSView {
 		).add(
 			"amount", "amount"
 		).add(
-			"createDate", "timestamp"
+			"createDateString", "timestamp"
 		).add(
 			"content", "details"
 		).build();

@@ -15,16 +15,16 @@
 import ClayButton from '@clayui/button';
 import {ClayToggle} from '@clayui/form';
 import {useModal} from '@clayui/modal';
+import {Panel, PanelBody, PanelHeader} from '@liferay/object-js-components-web';
 import React, {useState} from 'react';
 
-import Panel from '../../Panel/Panel';
 import {TYPES, useLayoutContext} from '../objectLayoutContext';
 import {BoxType, TObjectLayoutRow} from '../types';
-import HeaderDropdown from './HeaderDropdown';
+import {HeaderDropdown} from './HeaderDropdown';
 import ModalAddObjectLayoutField from './ModalAddObjectLayoutField';
-import ObjectLayoutRows from './ObjectLayoutRows';
+import {ObjectLayoutRows} from './ObjectLayoutRows';
 
-interface IObjectLayoutBoxProps extends React.HTMLAttributes<HTMLElement> {
+interface ObjectLayoutBoxProps extends React.HTMLAttributes<HTMLElement> {
 	boxIndex: number;
 	collapsable: boolean;
 	label: string;
@@ -33,31 +33,27 @@ interface IObjectLayoutBoxProps extends React.HTMLAttributes<HTMLElement> {
 	type: BoxType;
 }
 
-const ObjectLayoutBox: React.FC<IObjectLayoutBoxProps> = ({
+export function ObjectLayoutBox({
 	boxIndex,
 	collapsable,
 	label,
 	objectLayoutRows,
 	tabIndex,
 	type,
-}) => {
-	const [{isViewOnly, objectDefinition}, dispatch] = useLayoutContext();
+}: ObjectLayoutBoxProps) {
+	const [{enableCategorization, isViewOnly}, dispatch] = useLayoutContext();
 	const [visibleModal, setVisibleModal] = useState(false);
 	const {observer, onClose} = useModal({
 		onClose: () => setVisibleModal(false),
 	});
 
 	const disabled =
-		(Liferay.FeatureFlags['LPS-158672'] &&
-			((type === 'comments' && !objectDefinition.enableComments) ||
-				(type === 'categorization' &&
-					!objectDefinition.enableCategorization))) ||
-		isViewOnly;
+		(type === 'categorization' && !enableCategorization) || isViewOnly;
 
 	return (
 		<>
 			<Panel>
-				<Panel.Header
+				<PanelHeader
 					contentRight={
 						<>
 							<ClayToggle
@@ -100,7 +96,10 @@ const ObjectLayoutBox: React.FC<IObjectLayoutBoxProps> = ({
 											boxIndex,
 											tabIndex,
 										},
-										type: TYPES.DELETE_OBJECT_LAYOUT_BOX,
+										type:
+											type === 'categorization'
+												? TYPES.DELETE_OBJECT_LAYOUT_BOX_CATEGORIZATION
+												: TYPES.DELETE_OBJECT_LAYOUT_BOX,
 									});
 								}}
 								disabled={disabled}
@@ -113,13 +112,13 @@ const ObjectLayoutBox: React.FC<IObjectLayoutBoxProps> = ({
 				/>
 
 				{!!objectLayoutRows?.length && (
-					<Panel.Body>
+					<PanelBody>
 						<ObjectLayoutRows
 							boxIndex={boxIndex}
 							objectLayoutRows={objectLayoutRows}
 							tabIndex={tabIndex}
 						/>
-					</Panel.Body>
+					</PanelBody>
 				)}
 			</Panel>
 
@@ -133,6 +132,4 @@ const ObjectLayoutBox: React.FC<IObjectLayoutBoxProps> = ({
 			)}
 		</>
 	);
-};
-
-export default ObjectLayoutBox;
+}

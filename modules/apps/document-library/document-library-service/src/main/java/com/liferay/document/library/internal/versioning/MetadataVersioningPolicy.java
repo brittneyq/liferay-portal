@@ -19,10 +19,11 @@ import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
+import com.liferay.document.library.util.DLFileEntryTypeUtil;
 import com.liferay.document.library.versioning.VersioningPolicy;
-import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
-import com.liferay.dynamic.data.mapping.kernel.StorageEngineManagerUtil;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.dynamic.data.mapping.storage.DDMStorageEngineManager;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -32,7 +33,6 @@ import java.io.Serializable;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 public class MetadataVersioningPolicy implements VersioningPolicy {
 
 	@Override
-	public Optional<DLVersionNumberIncrease> computeDLVersionNumberIncrease(
+	public DLVersionNumberIncrease computeDLVersionNumberIncrease(
 		DLFileVersion previousDLFileVersion, DLFileVersion nextDLFileVersion) {
 
 		if (!Objects.equals(
@@ -62,10 +62,10 @@ public class MetadataVersioningPolicy implements VersioningPolicy {
 				previousDLFileVersion, nextDLFileVersion) ||
 			_isExpandoUpdated(previousDLFileVersion, nextDLFileVersion)) {
 
-			return Optional.of(DLVersionNumberIncrease.MINOR);
+			return DLVersionNumberIncrease.MINOR;
 		}
 
-		return Optional.empty();
+		return null;
 	}
 
 	private boolean _isDLFileEntryTypeUpdated(
@@ -76,7 +76,7 @@ public class MetadataVersioningPolicy implements VersioningPolicy {
 				previousDLFileVersion.getDLFileEntryType();
 
 			for (DDMStructure ddmStructure :
-					dlFileEntryType.getDDMStructures()) {
+					DLFileEntryTypeUtil.getDDMStructures(dlFileEntryType)) {
 
 				DLFileEntryMetadata previousFileEntryMetadata =
 					_dlFileEntryMetadataLocalService.fetchFileEntryMetadata(
@@ -93,10 +93,10 @@ public class MetadataVersioningPolicy implements VersioningPolicy {
 						nextDLFileVersion.getFileVersionId());
 
 				DDMFormValues previousDDMFormValues =
-					StorageEngineManagerUtil.getDDMFormValues(
+					_ddmStorageEngineManager.getDDMFormValues(
 						previousFileEntryMetadata.getDDMStorageId());
 				DDMFormValues nextDDMFormValues =
-					StorageEngineManagerUtil.getDDMFormValues(
+					_ddmStorageEngineManager.getDDMFormValues(
 						nextFileEntryMetadata.getDDMStorageId());
 
 				if (!previousDDMFormValues.equals(nextDDMFormValues)) {
@@ -136,6 +136,9 @@ public class MetadataVersioningPolicy implements VersioningPolicy {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MetadataVersioningPolicy.class);
+
+	@Reference
+	private DDMStorageEngineManager _ddmStorageEngineManager;
 
 	@Reference
 	private DLFileEntryMetadataLocalService _dlFileEntryMetadataLocalService;

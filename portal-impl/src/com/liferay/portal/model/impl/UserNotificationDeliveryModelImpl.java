@@ -249,91 +249,107 @@ public class UserNotificationDeliveryModelImpl
 	public Map<String, Function<UserNotificationDelivery, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<UserNotificationDelivery, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<UserNotificationDelivery, Object>>
-		_attributeGetterFunctions;
-	private static final Map
-		<String, BiConsumer<UserNotificationDelivery, Object>>
-			_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<UserNotificationDelivery, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<UserNotificationDelivery, Object>>();
-		Map<String, BiConsumer<UserNotificationDelivery, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String, BiConsumer<UserNotificationDelivery, ?>>();
+		private static final Map
+			<String, Function<UserNotificationDelivery, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", UserNotificationDelivery::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<UserNotificationDelivery, Long>)
-				UserNotificationDelivery::setMvccVersion);
-		attributeGetterFunctions.put(
-			"userNotificationDeliveryId",
-			UserNotificationDelivery::getUserNotificationDeliveryId);
-		attributeSetterBiConsumers.put(
-			"userNotificationDeliveryId",
-			(BiConsumer<UserNotificationDelivery, Long>)
-				UserNotificationDelivery::setUserNotificationDeliveryId);
-		attributeGetterFunctions.put(
-			"companyId", UserNotificationDelivery::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<UserNotificationDelivery, Long>)
-				UserNotificationDelivery::setCompanyId);
-		attributeGetterFunctions.put(
-			"userId", UserNotificationDelivery::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId",
-			(BiConsumer<UserNotificationDelivery, Long>)
-				UserNotificationDelivery::setUserId);
-		attributeGetterFunctions.put(
-			"portletId", UserNotificationDelivery::getPortletId);
-		attributeSetterBiConsumers.put(
-			"portletId",
-			(BiConsumer<UserNotificationDelivery, String>)
-				UserNotificationDelivery::setPortletId);
-		attributeGetterFunctions.put(
-			"classNameId", UserNotificationDelivery::getClassNameId);
-		attributeSetterBiConsumers.put(
-			"classNameId",
-			(BiConsumer<UserNotificationDelivery, Long>)
-				UserNotificationDelivery::setClassNameId);
-		attributeGetterFunctions.put(
-			"notificationType", UserNotificationDelivery::getNotificationType);
-		attributeSetterBiConsumers.put(
-			"notificationType",
-			(BiConsumer<UserNotificationDelivery, Integer>)
-				UserNotificationDelivery::setNotificationType);
-		attributeGetterFunctions.put(
-			"deliveryType", UserNotificationDelivery::getDeliveryType);
-		attributeSetterBiConsumers.put(
-			"deliveryType",
-			(BiConsumer<UserNotificationDelivery, Integer>)
-				UserNotificationDelivery::setDeliveryType);
-		attributeGetterFunctions.put(
-			"deliver", UserNotificationDelivery::getDeliver);
-		attributeSetterBiConsumers.put(
-			"deliver",
-			(BiConsumer<UserNotificationDelivery, Boolean>)
-				UserNotificationDelivery::setDeliver);
+		static {
+			Map<String, Function<UserNotificationDelivery, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<UserNotificationDelivery, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", UserNotificationDelivery::getMvccVersion);
+			attributeGetterFunctions.put(
+				"userNotificationDeliveryId",
+				UserNotificationDelivery::getUserNotificationDeliveryId);
+			attributeGetterFunctions.put(
+				"companyId", UserNotificationDelivery::getCompanyId);
+			attributeGetterFunctions.put(
+				"userId", UserNotificationDelivery::getUserId);
+			attributeGetterFunctions.put(
+				"portletId", UserNotificationDelivery::getPortletId);
+			attributeGetterFunctions.put(
+				"classNameId", UserNotificationDelivery::getClassNameId);
+			attributeGetterFunctions.put(
+				"notificationType",
+				UserNotificationDelivery::getNotificationType);
+			attributeGetterFunctions.put(
+				"deliveryType", UserNotificationDelivery::getDeliveryType);
+			attributeGetterFunctions.put(
+				"deliver", UserNotificationDelivery::getDeliver);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<UserNotificationDelivery, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<UserNotificationDelivery, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<UserNotificationDelivery, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<UserNotificationDelivery, Long>)
+					UserNotificationDelivery::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"userNotificationDeliveryId",
+				(BiConsumer<UserNotificationDelivery, Long>)
+					UserNotificationDelivery::setUserNotificationDeliveryId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<UserNotificationDelivery, Long>)
+					UserNotificationDelivery::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<UserNotificationDelivery, Long>)
+					UserNotificationDelivery::setUserId);
+			attributeSetterBiConsumers.put(
+				"portletId",
+				(BiConsumer<UserNotificationDelivery, String>)
+					UserNotificationDelivery::setPortletId);
+			attributeSetterBiConsumers.put(
+				"classNameId",
+				(BiConsumer<UserNotificationDelivery, Long>)
+					UserNotificationDelivery::setClassNameId);
+			attributeSetterBiConsumers.put(
+				"notificationType",
+				(BiConsumer<UserNotificationDelivery, Integer>)
+					UserNotificationDelivery::setNotificationType);
+			attributeSetterBiConsumers.put(
+				"deliveryType",
+				(BiConsumer<UserNotificationDelivery, Integer>)
+					UserNotificationDelivery::setDeliveryType);
+			attributeSetterBiConsumers.put(
+				"deliver",
+				(BiConsumer<UserNotificationDelivery, Boolean>)
+					UserNotificationDelivery::setDeliver);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -809,38 +825,6 @@ public class UserNotificationDeliveryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<UserNotificationDelivery, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<UserNotificationDelivery, Object>>
-				entry : attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<UserNotificationDelivery, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply((UserNotificationDelivery)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function
@@ -863,7 +847,8 @@ public class UserNotificationDeliveryModelImpl
 
 	public <T> T getColumnValue(String columnName) {
 		Function<UserNotificationDelivery, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

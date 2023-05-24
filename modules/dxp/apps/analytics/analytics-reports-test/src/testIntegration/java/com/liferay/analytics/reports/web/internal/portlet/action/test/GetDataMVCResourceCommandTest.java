@@ -47,11 +47,9 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PrefsProps;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.PrefsPropsImpl;
 
 import java.io.ByteArrayOutputStream;
 
@@ -64,7 +62,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -94,11 +91,11 @@ public class GetDataMVCResourceCommandTest {
 	@Test
 	public void testGetAuthorWithoutPortraitURL() throws Exception {
 		MockContextUtil.testWithMockContext(
-			new MockContextUtil.MockContext.Builder().
-				mockObjectAnalyticsReportsInfoItem(
-					MockObjectAnalyticsReportsInfoItem.builder(
-					).build()
-				).build(),
+			new MockContextUtil.MockContext.Builder(
+			).mockObjectAnalyticsReportsInfoItem(
+				MockObjectAnalyticsReportsInfoItem.builder(
+				).build()
+			).build(),
 			() -> {
 				MockLiferayResourceRequest mockLiferayResourceRequest =
 					_getMockLiferayResourceRequest(
@@ -140,19 +137,19 @@ public class GetDataMVCResourceCommandTest {
 		String title = RandomTestUtil.randomString();
 
 		MockContextUtil.testWithMockContext(
-			new MockContextUtil.MockContext.Builder().
-				mockObjectAnalyticsReportsInfoItem(
-					MockObjectAnalyticsReportsInfoItem.builder(
-					).authorName(
-						authorName
-					).authorProfileImage(
-						authorProfileImage
-					).publishDate(
-						publishDate
-					).title(
-						title
-					).build()
-				).build(),
+			new MockContextUtil.MockContext.Builder(
+			).mockObjectAnalyticsReportsInfoItem(
+				MockObjectAnalyticsReportsInfoItem.builder(
+				).authorName(
+					authorName
+				).authorProfileImage(
+					authorProfileImage
+				).publishDate(
+					publishDate
+				).title(
+					title
+				).build()
+			).build(),
 			() -> {
 				MockLiferayResourceRequest mockLiferayResourceRequest =
 					_getMockLiferayResourceRequest(
@@ -245,30 +242,30 @@ public class GetDataMVCResourceCommandTest {
 		String title = RandomTestUtil.randomString();
 
 		MockContextUtil.testWithMockContext(
-			new MockContextUtil.MockContext.Builder().
-				mockObjectAnalyticsReportsInfoItem(
-					MockObjectAnalyticsReportsInfoItem.builder(
-					).authorName(
-						RandomTestUtil.randomString()
-					).authorProfileImage(
-						RandomTestUtil.randomString()
-					).publishDate(
-						new Date()
-					).title(
-						RandomTestUtil.randomString()
-					).build()
-				).mockSuperClassObjectAnalyticsReportsInfoItem(
-					MockSuperClassObjectAnalyticsReportsInfoItem.builder(
-					).authorName(
-						authorName
-					).authorProfileImage(
-						authorProfileImage
-					).publishDate(
-						publishDate
-					).title(
-						title
-					).build()
-				).build(),
+			new MockContextUtil.MockContext.Builder(
+			).mockObjectAnalyticsReportsInfoItem(
+				MockObjectAnalyticsReportsInfoItem.builder(
+				).authorName(
+					RandomTestUtil.randomString()
+				).authorProfileImage(
+					RandomTestUtil.randomString()
+				).publishDate(
+					new Date()
+				).title(
+					RandomTestUtil.randomString()
+				).build()
+			).mockSuperClassObjectAnalyticsReportsInfoItem(
+				MockSuperClassObjectAnalyticsReportsInfoItem.builder(
+				).authorName(
+					authorName
+				).authorProfileImage(
+					authorProfileImage
+				).publishDate(
+					publishDate
+				).title(
+					title
+				).build()
+			).build(),
 			() -> {
 				MockLiferayResourceRequest mockLiferayResourceRequest =
 					_getMockLiferayResourceRequest(
@@ -554,51 +551,5 @@ public class GetDataMVCResourceCommandTest {
 
 	@Inject
 	private Portal _portal;
-
-	private class InvalidPropsWrapper extends PrefsPropsImpl {
-
-		public InvalidPropsWrapper(PrefsProps prefsProps) {
-			_prefsProps = prefsProps;
-		}
-
-		@Override
-		public String getString(long companyId, String name) {
-			if (Objects.equals("liferayAnalyticsDataSourceId", name) ||
-				Objects.equals(
-					name, "liferayAnalyticsFaroBackendSecuritySignature") ||
-				Objects.equals("liferayAnalyticsFaroBackendURL", name)) {
-
-				return null;
-			}
-
-			return _prefsProps.getString(companyId, name);
-		}
-
-		private final PrefsProps _prefsProps;
-
-	}
-
-	private class ValidPrefsPropsWrapper extends PrefsPropsImpl {
-
-		public ValidPrefsPropsWrapper(PrefsProps prefsProps) {
-			_prefsProps = prefsProps;
-		}
-
-		@Override
-		public String getString(long companyId, String name) {
-			if (Objects.equals("liferayAnalyticsDataSourceId", name) ||
-				Objects.equals(
-					name, "liferayAnalyticsFaroBackendSecuritySignature") ||
-				Objects.equals("liferayAnalyticsFaroBackendURL", name)) {
-
-				return "test";
-			}
-
-			return _prefsProps.getString(companyId, name);
-		}
-
-		private final PrefsProps _prefsProps;
-
-	}
 
 }

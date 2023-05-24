@@ -18,6 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.function.UnsafeRunnable;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.ConfigurationTemporarySwapper;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
@@ -200,9 +200,8 @@ public class SXPBlueprintSearchRequestContributorTest {
 				).build()));
 
 		DocumentsAssert.assertValues(
-			searchResponse.getRequestString(),
-			searchResponse.getDocumentsStream(), "localized_title_en_US",
-			expected);
+			searchResponse.getRequestString(), searchResponse.getDocuments(),
+			"localized_title_en_US", expected);
 	}
 
 	private ConfigurationTemporarySwapper _getConfigurationTemporarySwapper(
@@ -225,7 +224,7 @@ public class SXPBlueprintSearchRequestContributorTest {
 		return (Http)ProxyUtil.newProxyInstance(
 			Http.class.getClassLoader(), new Class<?>[] {Http.class},
 			(proxy, method, args) -> {
-				if (!Objects.equals("URLtoString", method.getName()) ||
+				if (!Objects.equals(method.getName(), "URLtoString") ||
 					(args.length != 1) || !(args[0] instanceof String)) {
 
 					return method.invoke(_http, args);

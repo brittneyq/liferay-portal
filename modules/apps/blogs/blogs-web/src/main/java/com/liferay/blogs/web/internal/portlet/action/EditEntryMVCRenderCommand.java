@@ -22,7 +22,6 @@ import com.liferay.blogs.exception.NoSuchEntryException;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.settings.BlogsGroupServiceSettings;
 import com.liferay.blogs.web.internal.display.context.BlogsEditEntryDisplayContext;
-import com.liferay.blogs.web.internal.helper.BlogsItemSelectorHelper;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -52,7 +51,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.blogs.configuration.BlogsFileUploadsConfiguration",
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + BlogsPortletKeys.BLOGS,
 		"javax.portlet.name=" + BlogsPortletKeys.BLOGS_ADMIN,
@@ -90,7 +88,7 @@ public class EditEntryMVCRenderCommand implements MVCRenderCommand {
 					_blogsFileUploadsConfiguration,
 					BlogsGroupServiceSettings.getInstance(
 						themeDisplay.getScopeGroupId()),
-					_blogsItemSelectorHelper, httpServletRequest,
+					httpServletRequest,
 					_portal.getLiferayPortletResponse(renderResponse)));
 		}
 		catch (Exception exception) {
@@ -135,9 +133,6 @@ public class EditEntryMVCRenderCommand implements MVCRenderCommand {
 
 	private volatile BlogsFileUploadsConfiguration
 		_blogsFileUploadsConfiguration;
-
-	@Reference
-	private BlogsItemSelectorHelper _blogsItemSelectorHelper;
 
 	@Reference
 	private Portal _portal;

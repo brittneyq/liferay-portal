@@ -42,13 +42,13 @@ PortletURL configurationRenderURL = (PortletURL)request.getAttribute("configurat
 
 <aui:input cssClass="hidden-field show-asset-title" inlineLabel="right" labelCssClass="simple-toggle-switch" name="preferences--showAssetTitle--" type="toggle-switch" value="<%= assetPublisherDisplayContext.isShowAssetTitle() %>" />
 
-<aui:input cssClass="hidden-field show-context-link" inlineLabel="right" labelCssClass="simple-toggle-switch" name="preferences--showContextLink--" type="toggle-switch" value="<%= assetPublisherDisplayContext.isShowContextLink() %>" />
+<aui:input cssClass="hidden-field show-context-link" inlineLabel="right" label="show-new-page-link" labelCssClass="simple-toggle-switch" name="preferences--showContextLink--" type="toggle-switch" value="<%= assetPublisherDisplayContext.isShowContextLink() %>" />
 
 <aui:input cssClass="hidden-field show-extra-info" inlineLabel="right" labelCssClass="simple-toggle-switch" name="preferences--showExtraInfo--" type="toggle-switch" value="<%= assetPublisherDisplayContext.isShowExtraInfo() %>" />
 
 <aui:select cssClass="asset-link-behavior" name="preferences--assetLinkBehavior--">
 	<aui:option label="show-full-content" selected="<%= assetPublisherDisplayContext.isAssetLinkBehaviorShowFullContent() %>" value="showFullContent" />
-	<aui:option label="view-in-context" selected="<%= assetPublisherDisplayContext.isAssetLinkBehaviorViewInPortlet() %>" value="viewInPortlet" />
+	<aui:option label="view-on-new-page" selected="<%= assetPublisherDisplayContext.isAssetLinkBehaviorViewInPortlet() %>" value="viewInPortlet" />
 </aui:select>
 
 <aui:input helpMessage='<%= LanguageUtil.format(request, "number-of-items-to-display-help", new Object[] {SearchContainer.MAX_DELTA}, false) %>' label="number-of-items-to-display" name="preferences--delta--" type="text" value="<%= assetPublisherDisplayContext.getDelta() %>">

@@ -70,10 +70,10 @@ import org.osgi.service.component.annotations.Reference;
  * @author Pei-Jung Lan
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + UsersAdminPortletKeys.MY_ACCOUNT,
 		"javax.portlet.name=" + UsersAdminPortletKeys.MY_ORGANIZATIONS,
+		"javax.portlet.name=" + UsersAdminPortletKeys.SERVICE_ACCOUNTS,
 		"javax.portlet.name=" + UsersAdminPortletKeys.USERS_ADMIN,
 		"mvc.command.name=/users_admin/update_user_roles"
 	},
@@ -130,13 +130,14 @@ public class UpdateUserRolesMVCActionCommand extends BaseMVCActionCommand {
 				user.getEmailAddress(), user.getLanguageId(),
 				user.getTimeZoneId(), user.getGreeting(), user.getComments(),
 				user.getFirstName(), user.getMiddleName(), user.getLastName(),
-				contact.getPrefixId(), contact.getSuffixId(), user.isMale(),
-				birthdayCal.get(Calendar.MONTH), birthdayCal.get(Calendar.DATE),
-				birthdayCal.get(Calendar.YEAR), contact.getSmsSn(),
-				contact.getFacebookSn(), contact.getJabberSn(),
-				contact.getSkypeSn(), contact.getTwitterSn(),
-				user.getJobTitle(), null, user.getOrganizationIds(), roleIds,
-				userGroupRoles, user.getUserGroupIds(), serviceContext);
+				contact.getPrefixListTypeId(), contact.getSuffixListTypeId(),
+				user.isMale(), birthdayCal.get(Calendar.MONTH),
+				birthdayCal.get(Calendar.DATE), birthdayCal.get(Calendar.YEAR),
+				contact.getSmsSn(), contact.getFacebookSn(),
+				contact.getJabberSn(), contact.getSkypeSn(),
+				contact.getTwitterSn(), user.getJobTitle(), null,
+				user.getOrganizationIds(), roleIds, userGroupRoles,
+				user.getUserGroupIds(), serviceContext);
 
 			User currentUser = _userService.getCurrentUser();
 

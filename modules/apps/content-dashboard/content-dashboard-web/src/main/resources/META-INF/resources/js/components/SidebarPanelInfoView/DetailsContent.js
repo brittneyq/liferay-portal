@@ -20,6 +20,7 @@ import CollapsibleSection from './CollapsibleSection';
 import ItemLanguages from './ItemLanguages';
 import PreviewActionsDescriptionSection from './PreviewActionsDescriptionSection';
 import SpecificFields from './SpecificFields';
+import formatDate from './utils/formatDate';
 
 const DetailsContent = ({
 	classPK,
@@ -27,7 +28,6 @@ const DetailsContent = ({
 	description,
 	downloadURL,
 	fetchSharingButtonURL,
-	formatDate,
 	handleError,
 	languageTag = 'en',
 	modifiedDate,
@@ -42,20 +42,18 @@ const DetailsContent = ({
 
 	return (
 		<>
-			{Liferay.FeatureFlags['LPS-161013'] && (
-				<>
-					<PreviewActionsDescriptionSection
-						description={description}
-						downloadURL={downloadURL}
-						fetchSharingButtonURL={fetchSharingButtonURL}
-						handleError={handleError}
-						preview={preview}
-						title={title}
-					/>
+			<>
+				<PreviewActionsDescriptionSection
+					description={description}
+					downloadURL={downloadURL}
+					fetchSharingButtonURL={fetchSharingButtonURL}
+					handleError={handleError}
+					preview={preview}
+					title={title}
+				/>
 
-					<Categorization tags={tags} vocabularies={vocabularies} />
-				</>
-			)}
+				<Categorization tags={tags} vocabularies={vocabularies} />
+			</>
 
 			<CollapsibleSection title={Liferay.Language.get('details')}>
 				<div className="sidebar-section">
@@ -64,10 +62,7 @@ const DetailsContent = ({
 						languageTag={languageTag}
 					/>
 
-					<div
-						className="c-mb-4 sidebar-dl sidebar-section"
-						key="creation-date"
-					>
+					<div className="c-mb-4 sidebar-section" key="creation-date">
 						<h5 className="c-mb-1 font-weight-semi-bold">
 							{Liferay.Language.get('creation-date')}
 						</h5>
@@ -77,10 +72,7 @@ const DetailsContent = ({
 						</p>
 					</div>
 
-					<div
-						className="c-mb-4 sidebar-dl sidebar-section"
-						key="modified-date"
-					>
+					<div className="c-mb-4 sidebar-section" key="modified-date">
 						<h5 className="c-mb-1 font-weight-semi-bold">
 							{Liferay.Language.get('modified-date')}
 						</h5>
@@ -90,7 +82,7 @@ const DetailsContent = ({
 						</p>
 					</div>
 
-					<div className="c-mb-4 sidebar-dl sidebar-section" key="id">
+					<div className="c-mb-4 sidebar-section" key="id">
 						<h5 className="c-mb-1 font-weight-semi-bold">
 							{Liferay.Language.get('id')}
 						</h5>
@@ -112,7 +104,6 @@ DetailsContent.defaultProps = {
 DetailsContent.propTypes = {
 	classPK: PropTypes.string.isRequired,
 	createDate: PropTypes.string.isRequired,
-	formatDate: PropTypes.func.isRequired,
 	modifiedDate: PropTypes.string.isRequired,
 	specificFields: PropTypes.object.isRequired,
 	viewURLs: PropTypes.array.isRequired,

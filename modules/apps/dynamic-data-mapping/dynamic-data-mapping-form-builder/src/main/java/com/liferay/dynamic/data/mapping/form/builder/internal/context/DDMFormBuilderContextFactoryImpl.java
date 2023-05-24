@@ -18,15 +18,10 @@ import com.liferay.dynamic.data.mapping.form.builder.context.DDMFormBuilderConte
 import com.liferay.dynamic.data.mapping.form.builder.context.DDMFormBuilderContextRequest;
 import com.liferay.dynamic.data.mapping.form.builder.context.DDMFormBuilderContextResponse;
 import com.liferay.dynamic.data.mapping.form.builder.internal.context.helper.DDMFormBuilderContextFactoryHelper;
-import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
+import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesRegistry;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormTemplateContextFactory;
-import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.util.GetterUtil;
-
-import java.util.Optional;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -34,7 +29,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Rafael Praxedes
  */
-@Component(immediate = true, service = DDMFormBuilderContextFactory.class)
+@Component(service = DDMFormBuilderContextFactory.class)
 public class DDMFormBuilderContextFactoryImpl
 	implements DDMFormBuilderContextFactory {
 
@@ -42,24 +37,17 @@ public class DDMFormBuilderContextFactoryImpl
 	public DDMFormBuilderContextResponse create(
 		DDMFormBuilderContextRequest ddmFormBuilderContextRequest) {
 
-		Optional<DDMStructure> ddmStructureOptional = Optional.ofNullable(
-			ddmFormBuilderContextRequest.getProperty("ddmStructure"));
-		Optional<DDMStructureVersion> ddmStructureVersionOptional =
-			Optional.ofNullable(
-				ddmFormBuilderContextRequest.getProperty(
-					"ddmStructureVersion"));
-		String portletNamespace = GetterUtil.getString(
-			ddmFormBuilderContextRequest.getProperty("portletNamespace"));
-
 		DDMFormBuilderContextFactoryHelper ddmFormBuilderContextFactoryHelper =
 			new DDMFormBuilderContextFactoryHelper(
-				ddmStructureOptional, ddmStructureVersionOptional,
-				_ddmFormFieldTypeServicesTracker,
+				ddmFormBuilderContextRequest.getProperty("ddmStructure"),
+				ddmFormBuilderContextRequest.getProperty("ddmStructureVersion"),
+				_ddmFormFieldTypeServicesRegistry,
 				_ddmFormTemplateContextFactory,
 				ddmFormBuilderContextRequest.getHttpServletRequest(),
 				ddmFormBuilderContextRequest.getHttpServletResponse(),
 				_jsonFactory, ddmFormBuilderContextRequest.getLocale(),
-				_npmResolver, portletNamespace,
+				_npmResolver,
+				ddmFormBuilderContextRequest.getProperty("portletNamespace"),
 				ddmFormBuilderContextRequest.getReadOnly());
 
 		DDMFormBuilderContextResponse ddmFormBuilderContextResponse =
@@ -72,7 +60,7 @@ public class DDMFormBuilderContextFactoryImpl
 	}
 
 	@Reference
-	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
+	private DDMFormFieldTypeServicesRegistry _ddmFormFieldTypeServicesRegistry;
 
 	@Reference
 	private DDMFormTemplateContextFactory _ddmFormTemplateContextFactory;

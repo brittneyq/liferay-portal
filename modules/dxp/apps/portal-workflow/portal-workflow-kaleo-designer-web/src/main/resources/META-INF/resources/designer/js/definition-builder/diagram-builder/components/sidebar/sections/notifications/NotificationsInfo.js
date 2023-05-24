@@ -15,7 +15,6 @@ import {MultipleSelect} from '@liferay/object-js-components-web';
 import PropTypes from 'prop-types';
 import React, {useContext, useEffect, useState} from 'react';
 
-import {DEFAULT_LANGUAGE} from '../../../../../source-builder/constants';
 import {DiagramBuilderContext} from '../../../../DiagramBuilderContext';
 import ScriptInput from '../../../shared-components/ScriptInput';
 import SidebarPanel from '../../SidebarPanel';
@@ -139,11 +138,34 @@ const NotificationsInfo = ({
 
 	const [items, setItems] = useState(notificationTypesOptions);
 
-	const [recipientType, setRecipientType] = useState(
-		getRecipientType(
-			selectedItem.data.notifications?.recipients?.[notificationIndex]
-		) || 'assetCreator'
-	);
+	let recipientTypeHolder;
+
+	if (
+		selectedItem.data.notifications?.recipients?.[notificationIndex]
+			?.length !== 0
+	) {
+		if (
+			!selectedItem.data.notifications?.recipients?.[
+				notificationIndex
+			]?.[0]
+		) {
+			recipientTypeHolder = getRecipientType(
+				selectedItem.data.notifications?.recipients?.[notificationIndex]
+			);
+		}
+		else {
+			recipientTypeHolder = getRecipientType(
+				selectedItem.data.notifications?.recipients?.[
+					notificationIndex
+				][0]
+			);
+		}
+	}
+	else {
+		recipientTypeHolder = 'assetCreator';
+	}
+
+	const [recipientType, setRecipientType] = useState(recipientTypeHolder);
 
 	const RecipientTypeComponent = recipientTypeComponents[recipientType];
 
@@ -172,9 +194,11 @@ const NotificationsInfo = ({
 	const scriptedRecipientUpdateSelectedItem = ({target}) => {
 		setSelectedItem((previousItem) => {
 			previousItem.data.notifications.recipients[notificationIndex] = {
+				...previousItem.data.notifications.recipients[
+					notificationIndex
+				],
 				assignmentType: ['scriptedRecipient'],
 				script: [target.value],
-				scriptLanguage: [DEFAULT_LANGUAGE],
 			};
 
 			return previousItem;
@@ -289,14 +313,14 @@ const NotificationsInfo = ({
 			})
 			.map((item) => item.label);
 
-		if (checkedTrue.includes('Email')) {
+		if (checkedTrue.includes(Liferay.Language.get('email'))) {
 			setNotificationTypeEmail(true);
 		}
 		else {
 			setNotificationTypeEmail(false);
 		}
 
-		if (checkedTrue.includes('User Notification')) {
+		if (checkedTrue.includes(Liferay.Language.get('user-notification'))) {
 			setNotificationTypeUserNotification(true);
 		}
 		else {
@@ -313,6 +337,16 @@ const NotificationsInfo = ({
 
 				if (recipientType === 'assetCreator') {
 					recipientDetails = {assignmentType: ['user']};
+
+					if (
+						selectedItem.data.notifications.recipients[
+							notificationIndex
+						]
+					) {
+						delete selectedItem.data.notifications?.recipients?.[
+							notificationIndex
+						].emailAddress;
+					}
 				}
 				else if (recipientType === 'taskAssignees') {
 					recipientDetails = {assignmentType: ['taskAssignees']};
@@ -354,14 +388,16 @@ const NotificationsInfo = ({
 
 		const recipients =
 			selectedItem.data.notifications &&
-			selectedItem.data.notifications.recipients[notificationIndex];
+			(selectedItem.data.notifications.recipients[notificationIndex][0] ||
+				selectedItem.data.notifications.recipients[notificationIndex]);
 
 		if (recipients && recipientType === 'roleType') {
-			for (let i = 0; i < recipients.roleName.length; i++) {
+			for (let i = 0; i < recipients.roleType.length; i++) {
 				sectionsData.push({
 					autoCreate: recipients.autoCreate?.[i],
 					identifier: `${Date.now()}-${i}`,
-					roleName: recipients.roleName[i],
+					roleKey: recipients.roleKey[i],
+					roleName: recipients.roleName?.[i],
 					roleType: recipients.roleType[i],
 				});
 			}
@@ -537,10 +573,32 @@ const NotificationsInfo = ({
 						<ClayForm.Group className="recipient-type-form-group">
 							{internalSections.map((props, index) => (
 								<RecipientTypeComponent
+									defaultScriptLanguage={
+										selectedItem.data.notifications
+											?.recipients?.[notificationIndex]
+											?.scriptLanguage
+									}
+									handleClickCapture={(scriptLanguage) =>
+										setSelectedItem((previousItem) => {
+											previousItem.data.notifications.recipients[
+												notificationIndex
+											] = {
+												...previousItem.data
+													.notifications.recipients[
+													notificationIndex
+												],
+												scriptLanguage: [
+													scriptLanguage,
+												],
+											};
+
+											return previousItem;
+										})
+									}
 									index={index}
 									inputValue={
 										selectedItem.data.notifications
-											?.recipients[notificationIndex]
+											?.recipients?.[notificationIndex]
 											?.script?.[0]
 									}
 									key={`section-${props.identifier}`}

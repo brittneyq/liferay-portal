@@ -16,13 +16,14 @@ package com.liferay.headless.admin.address.internal.dto.v1_0.converter;
 
 import com.liferay.headless.admin.address.dto.v1_0.Country;
 import com.liferay.headless.admin.address.dto.v1_0.Region;
+import com.liferay.headless.admin.address.internal.dto.v1_0.converter.constants.DTOConverterConstants;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.service.CountryService;
 import com.liferay.portal.kernel.service.RegionService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -32,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "dto.class.name=com.liferay.portal.kernel.model.Country",
-	service = {CountryResourceDTOConverter.class, DTOConverter.class}
+	service = DTOConverter.class
 )
 public class CountryResourceDTOConverter
 	implements DTOConverter<com.liferay.portal.kernel.model.Country, Country> {
@@ -95,8 +96,9 @@ public class CountryResourceDTOConverter
 	@Reference
 	private CountryService _countryService;
 
-	@Reference
-	private RegionResourceDTOConverter _regionResourceDTOConverter;
+	@Reference(target = DTOConverterConstants.REGION_RESOURCE_DTO_CONVERTER)
+	private DTOConverter<com.liferay.portal.kernel.model.Region, Region>
+		_regionResourceDTOConverter;
 
 	@Reference
 	private RegionService _regionService;

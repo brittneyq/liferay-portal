@@ -19,6 +19,7 @@ import ClayLayout from '@clayui/layout';
 import ClayList from '@clayui/list';
 import ClayPanel from '@clayui/panel';
 import ClayProgressBar from '@clayui/progress-bar';
+import {sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 
@@ -59,7 +60,7 @@ export default function IssuesList() {
 		<>
 			{localizedIssues && !loading && (
 				<ClayAlert className="mb-4" displayType="info" variant="stripe">
-					{Liferay.Util.sub(
+					{sub(
 						Liferay.Language.get(
 							'showing-data-from-x-relaunch-to-update-data'
 						),
@@ -175,7 +176,7 @@ const Section = ({section}) => {
 			<ClayPanel.Body>
 				{sectionTotal === '0' ? (
 					<div className="text-secondary">
-						{Liferay.Util.sub(
+						{sub(
 							Liferay.Language.get(
 								'there-are-no-x-related-issues'
 							),
@@ -209,25 +210,23 @@ const Issue = ({issue}) => {
 
 	return (
 		issueTotal > 0 && (
-			<ClayList.Item action className="border-0 issue rounded-0" flex>
-				<ClayButton
-					className="w-100"
-					displayType="unstyled"
-					onClick={() => dispatch({issue, type: SET_SELECTED_ISSUE})}
+			<ClayButton
+				className="p-1 w-100"
+				displayType="unstyled"
+				onClick={() => dispatch({issue, type: SET_SELECTED_ISSUE})}
+			>
+				<span
+					className="align-items-center c-inner d-flex justify-content-between m-0 px-2 text-secondary w-100"
+					tabIndex="-1"
 				>
-					<span
-						className="align-items-center c-inner d-flex justify-content-between m-0 px-2 text-secondary w-100"
-						tabIndex="-1"
-					>
-						{issue.title}
+					{issue.title}
 
-						<ClayBadge
-							displayType={issueTotal === 0 ? 'success' : 'info'}
-							label={issueTotal}
-						/>
-					</span>
-				</ClayButton>
-			</ClayList.Item>
+					<ClayBadge
+						displayType={issueTotal === 0 ? 'success' : 'info'}
+						label={issueTotal}
+					/>
+				</span>
+			</ClayButton>
 		)
 	);
 };

@@ -52,6 +52,7 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.staging.StagingGroupHelper;
 
@@ -74,7 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.exportimport.configuration.ExportImportServiceConfiguration",
-	immediate = true, property = "content.processor.type=LayoutReferences",
+	property = "content.processor.type=LayoutReferences",
 	service = ExportImportContentProcessor.class
 )
 public class LayoutReferencesExportImportContentProcessor
@@ -963,7 +964,9 @@ public class LayoutReferencesExportImportContentProcessor
 
 			url = replaceExportHostname(group, url, urlSB);
 
-			if (!url.startsWith(StringPool.SLASH)) {
+			if (!url.startsWith(StringPool.SLASH) ||
+				PortalInstances.isVirtualHostsIgnorePath(url)) {
+
 				continue;
 			}
 
@@ -1187,7 +1190,7 @@ public class LayoutReferencesExportImportContentProcessor
 				}
 			}
 
-			if (uri != null) {
+			if ((uri != null) && Validator.isIPAddress(uri.getHost())) {
 				InetAddress inetAddress = InetAddressUtil.getInetAddressByName(
 					uri.getHost());
 

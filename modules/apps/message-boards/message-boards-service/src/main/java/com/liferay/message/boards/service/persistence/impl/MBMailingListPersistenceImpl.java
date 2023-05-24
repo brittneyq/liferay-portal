@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,7 +51,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -84,7 +82,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {MBMailingListPersistence.class, BasePersistence.class})
+@Component(service = MBMailingListPersistence.class)
 public class MBMailingListPersistenceImpl
 	extends BasePersistenceImpl<MBMailingList>
 	implements MBMailingListPersistence {
@@ -204,7 +202,7 @@ public class MBMailingListPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBMailingList>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBMailingList mbMailingList : list) {
@@ -595,7 +593,7 @@ public class MBMailingListPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -731,7 +729,7 @@ public class MBMailingListPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof MBMailingList) {
@@ -851,7 +849,7 @@ public class MBMailingListPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1023,7 +1021,7 @@ public class MBMailingListPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBMailingList>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBMailingList mbMailingList : list) {
@@ -1448,7 +1446,7 @@ public class MBMailingListPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1610,7 +1608,7 @@ public class MBMailingListPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBMailingList>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBMailingList mbMailingList : list) {
@@ -1978,7 +1976,7 @@ public class MBMailingListPersistenceImpl
 
 			finderArgs = new Object[] {active};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2097,7 +2095,8 @@ public class MBMailingListPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByG_C, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByG_C, finderArgs, this);
 		}
 
 		if (result instanceof MBMailingList) {
@@ -2204,7 +2203,7 @@ public class MBMailingListPersistenceImpl
 
 			finderArgs = new Object[] {groupId, categoryId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2872,7 +2871,7 @@ public class MBMailingListPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBMailingList>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2948,7 +2947,7 @@ public class MBMailingListPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3175,30 +3174,14 @@ public class MBMailingListPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"groupId", "categoryId"}, false);
 
-		_setMBMailingListUtilPersistence(this);
+		MBMailingListUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setMBMailingListUtilPersistence(null);
+		MBMailingListUtil.setPersistence(null);
 
 		entityCache.removeCache(MBMailingListImpl.class.getName());
-	}
-
-	private void _setMBMailingListUtilPersistence(
-		MBMailingListPersistence mbMailingListPersistence) {
-
-		try {
-			Field field = MBMailingListUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, mbMailingListPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3269,9 +3252,5 @@ public class MBMailingListPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private MBMailingListModelArgumentsResolver
-		_mbMailingListModelArgumentsResolver;
 
 }

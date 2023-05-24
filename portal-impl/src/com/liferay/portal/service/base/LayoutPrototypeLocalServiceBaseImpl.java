@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
@@ -47,13 +48,12 @@ import com.liferay.portal.kernel.service.LayoutPrototypeLocalServiceUtil;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutPrototypePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -561,14 +561,14 @@ public abstract class LayoutPrototypeLocalServiceBaseImpl
 			"com.liferay.portal.kernel.model.LayoutPrototype",
 			layoutPrototypeLocalService);
 
-		_setLocalServiceUtilService(layoutPrototypeLocalService);
+		LayoutPrototypeLocalServiceUtil.setService(layoutPrototypeLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.portal.kernel.model.LayoutPrototype");
 
-		_setLocalServiceUtilService(null);
+		LayoutPrototypeLocalServiceUtil.setService(null);
 	}
 
 	/**
@@ -581,8 +581,23 @@ public abstract class LayoutPrototypeLocalServiceBaseImpl
 		return LayoutPrototypeLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<LayoutPrototype> getCTPersistence() {
+		return layoutPrototypePersistence;
+	}
+
+	@Override
+	public Class<LayoutPrototype> getModelClass() {
 		return LayoutPrototype.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<LayoutPrototype>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(layoutPrototypePersistence);
 	}
 
 	protected String getModelClassName() {
@@ -610,23 +625,6 @@ public abstract class LayoutPrototypeLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		LayoutPrototypeLocalService layoutPrototypeLocalService) {
-
-		try {
-			Field field =
-				LayoutPrototypeLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, layoutPrototypeLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

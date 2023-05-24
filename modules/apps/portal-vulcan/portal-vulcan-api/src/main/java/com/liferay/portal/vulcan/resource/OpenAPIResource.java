@@ -14,14 +14,17 @@
 
 package com.liferay.portal.vulcan.resource;
 
+import com.liferay.portal.vulcan.openapi.OpenAPIContext;
 import com.liferay.portal.vulcan.openapi.OpenAPISchemaFilter;
+import com.liferay.portal.vulcan.openapi.contributor.OpenAPIContributor;
 
+import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletRequest;
 
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -30,16 +33,13 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface OpenAPIResource {
 
-	public default Response getOpenAPI(
-			Application application, HttpHeaders httpHeaders,
-			Set<Class<?>> resourceClasses, ServletConfig servletConfig,
-			String type, UriInfo uriInfo)
-		throws Exception {
-
-		return getOpenAPI(resourceClasses, type);
-	}
+	public Response getOpenAPI(
+			HttpServletRequest httpServletRequest,
+			Set<Class<?>> resourceClasses, String type, UriInfo uriInfo)
+		throws Exception;
 
 	public default Response getOpenAPI(
+			OpenAPIContributor openAPIContributor,
 			OpenAPISchemaFilter openAPISchemaFilter,
 			Set<Class<?>> resourceClasses, String type, UriInfo uriInfo)
 		throws Exception {
@@ -58,7 +58,14 @@ public interface OpenAPIResource {
 			Set<Class<?>> resourceClasses, String type, UriInfo uriInfo)
 		throws Exception {
 
-		return getOpenAPI(resourceClasses, type, uriInfo);
+		return null;
 	}
+
+	public Map<String, Schema> getSchemas(Set<Class<?>> resourceClasses)
+		throws Exception;
+
+	public Response mergeOpenAPIs(
+		String description, Map<OpenAPIContext, Response> openAPIResponses,
+		String path, String title, String type);
 
 }

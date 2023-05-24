@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -47,7 +46,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -77,11 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(
-	service = {
-		DDMDataProviderInstanceLinkPersistence.class, BasePersistence.class
-	}
-)
+@Component(service = DDMDataProviderInstanceLinkPersistence.class)
 public class DDMDataProviderInstanceLinkPersistenceImpl
 	extends BasePersistenceImpl<DDMDataProviderInstanceLink>
 	implements DDMDataProviderInstanceLinkPersistence {
@@ -209,7 +203,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMDataProviderInstanceLink>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DDMDataProviderInstanceLink ddmDataProviderInstanceLink :
@@ -601,7 +595,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 			finderArgs = new Object[] {dataProviderInstanceId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -750,7 +744,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMDataProviderInstanceLink>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DDMDataProviderInstanceLink ddmDataProviderInstanceLink :
@@ -1133,7 +1127,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 			finderArgs = new Object[] {structureId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1256,7 +1250,8 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByD_S, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByD_S, finderArgs, this);
 		}
 
 		if (result instanceof DDMDataProviderInstanceLink) {
@@ -1368,7 +1363,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 			finderArgs = new Object[] {dataProviderInstanceId, structureId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2032,7 +2027,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DDMDataProviderInstanceLink>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2111,7 +2106,7 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -2284,33 +2279,15 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"dataProviderInstanceId", "structureId"}, false);
 
-		_setDDMDataProviderInstanceLinkUtilPersistence(this);
+		DDMDataProviderInstanceLinkUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setDDMDataProviderInstanceLinkUtilPersistence(null);
+		DDMDataProviderInstanceLinkUtil.setPersistence(null);
 
 		entityCache.removeCache(
 			DDMDataProviderInstanceLinkImpl.class.getName());
-	}
-
-	private void _setDDMDataProviderInstanceLinkUtilPersistence(
-		DDMDataProviderInstanceLinkPersistence
-			ddmDataProviderInstanceLinkPersistence) {
-
-		try {
-			Field field =
-				DDMDataProviderInstanceLinkUtil.class.getDeclaredField(
-					"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ddmDataProviderInstanceLinkPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2376,9 +2353,5 @@ public class DDMDataProviderInstanceLinkPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private DDMDataProviderInstanceLinkModelArgumentsResolver
-		_ddmDataProviderInstanceLinkModelArgumentsResolver;
 
 }

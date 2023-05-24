@@ -14,13 +14,16 @@
 
 package com.liferay.segments.experiment.web.internal.processor;
 
+import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.cookies.CookiesManagerUtil;
+import com.liferay.portal.kernel.cookies.constants.CookiesConstants;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -28,7 +31,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.constants.SegmentsExperimentConstants;
 import com.liferay.segments.experiment.web.internal.constants.SegmentsExperimentWebKeys;
-import com.liferay.segments.experiment.web.internal.util.SegmentsExperimentUtil;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.model.SegmentsExperiment;
 import com.liferay.segments.model.SegmentsExperimentRel;
@@ -37,12 +39,8 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.service.SegmentsExperimentLocalService;
 import com.liferay.segments.service.SegmentsExperimentRelLocalService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +53,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eduardo García
  */
 @Component(
-	immediate = true,
 	property = "segments.experience.request.processor.priority:Integer=50",
 	service = {
 		SegmentsExperienceRequestProcessor.class,
@@ -69,29 +66,33 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 		HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse) {
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		_unsetCookie(
-			httpServletRequest, httpServletResponse,
-			themeDisplay.getURLCurrent());
+		_unsetCookie(httpServletRequest, httpServletResponse);
 	}
 
 	@Override
 	public long[] getSegmentsExperienceIds(
-		HttpServletRequest httpServletRequest,
-		HttpServletResponse httpServletResponse, long groupId, long classNameId,
-		long classPK, long[] segmentsExperienceIds) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, long groupId, long plid,
+			long[] segmentsExperienceIds)
+		throws PortalException {
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		if (!SegmentsExperimentUtil.isAnalyticsSynced(
-				themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId())) {
+		try {
+			if (!_analyticsSettingsManager.isSiteIdSynced(
+					themeDisplay.getCompanyId(),
+					themeDisplay.getScopeGroupId())) {
 
-			return segmentsExperienceIds;
+				return segmentsExperienceIds;
+			}
+		}
+		catch (PortalException portalException) {
+			throw portalException;
+		}
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 
 		long segmentsExperienceId = _getSelectedSegmentsExperienceId(
@@ -117,12 +118,13 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 		}
 
 		segmentsExperienceId = _getCurrentSegmentsExperienceId(
-			groupId, classNameId, classPK, httpServletRequest);
+			groupId, plid, httpServletRequest);
 
 		if (segmentsExperienceId != -1) {
 			SegmentsExperiment segmentsExperiment =
 				_segmentsExperimentLocalService.fetchSegmentsExperiment(
-					segmentsExperienceId, classNameId, classPK,
+					segmentsExperienceId, _portal.getClassNameId(Layout.class),
+					plid,
 					SegmentsExperimentConstants.Status.getSplitStatusValues());
 
 			if (segmentsExperiment != null) {
@@ -143,22 +145,22 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 			}
 		}
 
-		_unsetCookie(
-			httpServletRequest, httpServletResponse,
-			themeDisplay.getURLCurrent());
+		_unsetCookie(httpServletRequest, httpServletResponse);
 
-		LongStream longStream = Arrays.stream(segmentsExperienceIds);
-
-		segmentsExperienceId = longStream.findFirst(
-		).orElse(
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				classPK)
-		);
+		if (ArrayUtil.isEmpty(segmentsExperienceIds)) {
+			segmentsExperienceId =
+				_segmentsExperienceLocalService.
+					fetchDefaultSegmentsExperienceId(plid);
+		}
+		else {
+			segmentsExperienceId = segmentsExperienceIds[0];
+		}
 
 		List<SegmentsExperiment> segmentsExperiments =
 			_segmentsExperimentLocalService.
 				getSegmentsExperienceSegmentsExperiments(
-					new long[] {segmentsExperienceId}, classNameId, classPK,
+					new long[] {segmentsExperienceId},
+					_portal.getClassNameId(Layout.class), plid,
 					SegmentsExperimentConstants.Status.getSplitStatusValues(),
 					0, 1);
 
@@ -206,57 +208,53 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 
 	@Override
 	public long[] getSegmentsExperienceIds(
-		HttpServletRequest httpServletRequest,
-		HttpServletResponse httpServletResponse, long groupId, long classNameId,
-		long classPK, long[] segmentsEntryIds, long[] segmentsExperienceIds) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, long groupId, long plid,
+			long[] segmentsEntryIds, long[] segmentsExperienceIds)
+		throws PortalException {
 
 		return getSegmentsExperienceIds(
-			httpServletRequest, httpServletResponse, groupId, classNameId,
-			classPK, segmentsExperienceIds);
+			httpServletRequest, httpServletResponse, groupId, plid,
+			segmentsExperienceIds);
 	}
 
-	private Optional<Cookie> _getCookieOptional(
-		HttpServletRequest httpServletRequest) {
-
+	private Cookie _getCookie(HttpServletRequest httpServletRequest) {
 		Cookie[] cookies = httpServletRequest.getCookies();
 
 		if (ArrayUtil.isEmpty(cookies)) {
-			return Optional.empty();
+			return null;
 		}
 
-		return Stream.of(
-			cookies
-		).filter(
-			cookie -> Objects.equals(
-				cookie.getName(), _AB_TEST_VARIANT_ID_COOKIE_NAME)
-		).findFirst();
+		for (Cookie cookie : cookies) {
+			if (Objects.equals(
+					cookie.getName(), _AB_TEST_VARIANT_ID_COOKIE_NAME)) {
+
+				return cookie;
+			}
+		}
+
+		return null;
 	}
 
 	private long _getCurrentSegmentsExperienceId(
-		long groupId, long classNameId, long classPK,
-		HttpServletRequest httpServletRequest) {
+		long groupId, long plid, HttpServletRequest httpServletRequest) {
 
-		Optional<Cookie> cookieOptional = _getCookieOptional(
-			httpServletRequest);
+		Cookie cookie = _getCookie(httpServletRequest);
 
-		if (!cookieOptional.isPresent()) {
+		if (cookie == null) {
 			return -1;
 		}
 
-		Cookie cookie = cookieOptional.get();
-
-		return _getSegmentsExperienceId(
-			groupId, cookie.getValue(), classNameId, classPK);
+		return _getSegmentsExperienceId(groupId, cookie.getValue(), plid);
 	}
 
 	private long _getSegmentsExperienceId(
-		long groupId, String segmentsExperienceKey, long classNameId,
-		long classPK) {
+		long groupId, String segmentsExperienceKey, long plid) {
 
 		if (Validator.isNotNull(segmentsExperienceKey)) {
 			SegmentsExperience segmentsExperience =
 				_segmentsExperienceLocalService.fetchSegmentsExperience(
-					groupId, segmentsExperienceKey, classNameId, classPK);
+					groupId, segmentsExperienceKey, plid);
 
 			if (segmentsExperience != null) {
 				return segmentsExperience.getSegmentsExperienceId();
@@ -318,7 +316,7 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 
 		return _getSegmentsExperienceId(
 			themeDisplay.getScopeGroupId(), selectedSegmentsExperienceKey,
-			_portal.getClassNameId(Layout.class), themeDisplay.getPlid());
+			themeDisplay.getPlid());
 	}
 
 	private String _getSelectedSegmentsExperimentKey(
@@ -340,42 +338,33 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 			_AB_TEST_VARIANT_ID_COOKIE_NAME,
 			_getSegmentsExperienceKey(segmentsExperienceId));
 
-		String domain = CookieKeys.getDomain(httpServletRequest);
+		String domain = CookiesManagerUtil.getDomain(httpServletRequest);
 
 		if (Validator.isNotNull(domain)) {
 			abTestVariantIdCookie.setDomain(domain);
 		}
 
-		abTestVariantIdCookie.setMaxAge(CookieKeys.MAX_AGE);
+		abTestVariantIdCookie.setMaxAge(CookiesConstants.MAX_AGE);
 		abTestVariantIdCookie.setPath(path);
 
-		CookieKeys.addCookie(
-			httpServletRequest, httpServletResponse, abTestVariantIdCookie);
+		CookiesManagerUtil.addCookie(
+			CookiesConstants.CONSENT_TYPE_PERSONALIZATION,
+			abTestVariantIdCookie, httpServletRequest, httpServletResponse);
 	}
 
 	private void _unsetCookie(
 		HttpServletRequest httpServletRequest,
-		HttpServletResponse httpServletResponse, String path) {
+		HttpServletResponse httpServletResponse) {
 
-		Optional<Cookie> cookieOptional = _getCookieOptional(
-			httpServletRequest);
+		Cookie cookie = _getCookie(httpServletRequest);
 
-		if (!cookieOptional.isPresent()) {
+		if (cookie == null) {
 			return;
 		}
 
-		Cookie cookie = cookieOptional.get();
-
-		String domain = CookieKeys.getDomain(httpServletRequest);
-
-		if (Validator.isNotNull(domain)) {
-			cookie.setDomain(domain);
-		}
-
-		cookie.setMaxAge(0);
-		cookie.setPath(path);
-
-		httpServletResponse.addCookie(cookie);
+		CookiesManagerUtil.deleteCookies(
+			CookiesManagerUtil.getDomain(httpServletRequest),
+			httpServletRequest, httpServletResponse, cookie.getName());
 	}
 
 	private static final String _AB_TEST_VARIANT_ID_COOKIE_NAME =
@@ -383,6 +372,9 @@ public class SegmentsExperimentSegmentsExperienceRequestProcessor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SegmentsExperimentSegmentsExperienceRequestProcessor.class);
+
+	@Reference
+	private AnalyticsSettingsManager _analyticsSettingsManager;
 
 	@Reference
 	private Portal _portal;

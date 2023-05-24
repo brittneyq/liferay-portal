@@ -17,13 +17,15 @@ package com.liferay.content.dashboard.web.internal.portlet.action;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.content.dashboard.item.ContentDashboardItem;
+import com.liferay.content.dashboard.item.ContentDashboardItemFactory;
+import com.liferay.content.dashboard.item.ContentDashboardItemVersion;
+import com.liferay.content.dashboard.item.type.ContentDashboardItemSubtype;
 import com.liferay.content.dashboard.web.internal.constants.ContentDashboardPortletKeys;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItem;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactory;
-import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryTracker;
+import com.liferay.content.dashboard.web.internal.item.ContentDashboardItemFactoryRegistry;
 import com.liferay.content.dashboard.web.internal.search.request.ContentDashboardSearchContextBuilder;
 import com.liferay.content.dashboard.web.internal.searcher.ContentDashboardSearchRequestBuilderFactory;
-import com.liferay.info.search.InfoSearchClassMapperTracker;
+import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -64,10 +66,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -88,7 +87,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.portal.search.configuration.DefaultSearchResultPermissionFilterConfiguration",
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentDashboardPortletKeys.CONTENT_DASHBOARD_ADMIN,
 		"mvc.command.name=/content_dashboard/get_content_dashboard_items_xls"
@@ -139,30 +137,37 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 		WorkbookBuilder workbookBuilder) {
 
 		workbookBuilder.cell(
+			String.valueOf(contentDashboardItem.getId())
+		).cell(
 			contentDashboardItem.getTitle(locale)
 		).cell(
 			contentDashboardItem.getUserName()
 		).cell(
 			contentDashboardItem.getTypeLabel(locale)
 		).cell(
-			Optional.ofNullable(
-				contentDashboardItem.getContentDashboardItemSubtype()
-			).map(
-				contentDashboardItemSubtype ->
-					contentDashboardItemSubtype.getLabel(locale)
-			).orElse(
-				StringPool.BLANK
-			)
+			() -> {
+				ContentDashboardItemSubtype<?> contentDashboardItemSubtype =
+					contentDashboardItem.getContentDashboardItemSubtype();
+
+				if (contentDashboardItemSubtype == null) {
+					return StringPool.BLANK;
+				}
+
+				return contentDashboardItemSubtype.getLabel(locale);
+			}
 		).cell(
 			contentDashboardItem.getScopeName(locale)
 		).cell(
 			() -> {
-				List<ContentDashboardItem.Version> latestVersions =
-					contentDashboardItem.getLatestVersions(locale);
+				List<ContentDashboardItemVersion>
+					latestContentDashboardItemVersions =
+						contentDashboardItem.
+							getLatestContentDashboardItemVersions(locale);
 
-				ContentDashboardItem.Version version = latestVersions.get(0);
+				ContentDashboardItemVersion contentDashboardItemVersion =
+					latestContentDashboardItemVersions.get(0);
 
-				return version.getLabel();
+				return contentDashboardItemVersion.getLabel();
 			}
 		).cell(
 			StringUtil.merge(
@@ -177,43 +182,45 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 		).cell(
 			_toString(contentDashboardItem.getModifiedDate())
 		).cell(
+			() -> {
+				Date reviewDate = contentDashboardItem.getReviewDate();
+
+				if (reviewDate != null) {
+					return _toString(reviewDate);
+				}
+
+				return StringPool.DASH;
+			}
+		).cell(
 			contentDashboardItem.getDescription(locale)
 		);
 
-		Map<String, Object> specificInformation =
-			contentDashboardItem.getSpecificInformation(locale);
+		List<ContentDashboardItem.SpecificInformation<?>>
+			specificInformationList =
+				contentDashboardItem.getSpecificInformationList(locale);
 
-		workbookBuilder.cell(_toString(specificInformation, "extension"));
+		workbookBuilder.cell(_toString(specificInformationList, "extension"));
 
-		if (contentDashboardItem.getClipboard() != null) {
-			ContentDashboardItem.Clipboard clipboard =
-				contentDashboardItem.getClipboard();
-
-			workbookBuilder.cell(_toString(clipboard.getName()));
-		}
+		workbookBuilder.cell(_toString(specificInformationList, "file-name"));
 
 		workbookBuilder.cell(
-			_toString(specificInformation, "size")
+			_toString(specificInformationList, "size")
 		).cell(
-			_toString(specificInformation, "display-date")
+			_toString(specificInformationList, "display-date")
 		).cell(
 			_toString(contentDashboardItem.getCreateDate())
 		);
 
-		List<Locale> locales = contentDashboardItem.getAvailableLocales();
-
-		Stream<Locale> stream = locales.stream();
-
 		workbookBuilder.cell(
-			stream.map(
-				LocaleUtil::toLanguageId
-			).collect(
-				Collectors.joining(StringPool.COMMA)
-			));
+			StringUtil.merge(
+				contentDashboardItem.getAvailableLocales(),
+				LocaleUtil::toLanguageId, StringPool.COMMA));
 	}
 
 	private void _addWorkbookHeaders(WorkbookBuilder workbookBuilder) {
 		workbookBuilder.localizedCell(
+			"id"
+		).localizedCell(
 			"title"
 		).localizedCell(
 			"author"
@@ -231,6 +238,8 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 			"tags"
 		).localizedCell(
 			"modified-date"
+		).localizedCell(
+			"review-date"
 		).localizedCell(
 			"description"
 		).localizedCell(
@@ -309,8 +318,8 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 
 	private ContentDashboardItem<?> _toContentDashboardItem(Document document) {
 		ContentDashboardItemFactory<?> contentDashboardItemFactory =
-			_contentDashboardItemFactoryTracker.getContentDashboardItemFactory(
-				_infoSearchClassMapperTracker.getClassName(
+			_contentDashboardItemFactoryRegistry.getContentDashboardItemFactory(
+				_infoSearchClassMapperRegistry.getClassName(
 					document.get(Field.ENTRY_CLASS_NAME)));
 
 		if (contentDashboardItemFactory == null) {
@@ -339,19 +348,23 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 	}
 
 	private String _toString(
-		Map<String, Object> specificInformation, String fieldName) {
+		List<ContentDashboardItem.SpecificInformation<?>>
+			specificInformationList,
+		String fieldName) {
 
-		return Optional.ofNullable(
-			specificInformation
-		).map(
-			safeSpecificInformation -> safeSpecificInformation.get(fieldName)
-		).filter(
-			Objects::nonNull
-		).map(
-			field -> _toString(field)
-		).orElse(
-			StringPool.BLANK
-		);
+		if (specificInformationList == null) {
+			return StringPool.BLANK;
+		}
+
+		for (ContentDashboardItem.SpecificInformation<?> specificInformation :
+				specificInformationList) {
+
+			if (Objects.equals(specificInformation.getKey(), fieldName)) {
+				return _toString(specificInformation.getValue());
+			}
+		}
+
+		return StringPool.BLANK;
 	}
 
 	private String _toString(Object value) {
@@ -376,8 +389,8 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 	private AssetVocabularyLocalService _assetVocabularyLocalService;
 
 	@Reference
-	private ContentDashboardItemFactoryTracker
-		_contentDashboardItemFactoryTracker;
+	private ContentDashboardItemFactoryRegistry
+		_contentDashboardItemFactoryRegistry;
 
 	@Reference
 	private ContentDashboardSearchRequestBuilderFactory
@@ -387,7 +400,7 @@ public class GetContentDashboardItemsXlsMVCResourceCommand
 		_defaultSearchResultPermissionFilterConfiguration;
 
 	@Reference
-	private InfoSearchClassMapperTracker _infoSearchClassMapperTracker;
+	private InfoSearchClassMapperRegistry _infoSearchClassMapperRegistry;
 
 	@Reference
 	private Language _language;

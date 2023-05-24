@@ -18,7 +18,6 @@ import com.liferay.commerce.order.rule.model.COREntry;
 import com.liferay.commerce.order.rule.service.COREntryLocalService;
 import com.liferay.commerce.order.rule.service.COREntryLocalServiceUtil;
 import com.liferay.commerce.order.rule.service.persistence.COREntryPersistence;
-import com.liferay.commerce.order.rule.service.persistence.COREntryRelPersistence;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -61,8 +60,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -274,48 +271,21 @@ public abstract class COREntryLocalServiceBaseImpl
 		return corEntryPersistence.fetchByUuid_C_First(uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the cor entry with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the cor entry's external reference code
-	 * @return the matching cor entry, or <code>null</code> if a matching cor entry could not be found
-	 */
 	@Override
 	public COREntry fetchCOREntryByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return corEntryPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return corEntryPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCOREntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public COREntry fetchCOREntryByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchCOREntryByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the cor entry with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the cor entry's external reference code
-	 * @return the matching cor entry
-	 * @throws PortalException if a matching cor entry could not be found
-	 */
 	@Override
 	public COREntry getCOREntryByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return corEntryPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return corEntryPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -571,7 +541,7 @@ public abstract class COREntryLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		COREntryLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -586,7 +556,7 @@ public abstract class COREntryLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		corEntryLocalService = (COREntryLocalService)aopProxy;
 
-		_setLocalServiceUtilService(corEntryLocalService);
+		COREntryLocalServiceUtil.setService(corEntryLocalService);
 	}
 
 	/**
@@ -631,45 +601,14 @@ public abstract class COREntryLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		COREntryLocalService corEntryLocalService) {
-
-		try {
-			Field field = COREntryLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, corEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected COREntryLocalService corEntryLocalService;
 
 	@Reference
 	protected COREntryPersistence corEntryPersistence;
 
 	@Reference
-	protected COREntryRelPersistence corEntryRelPersistence;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		COREntryLocalServiceBaseImpl.class);

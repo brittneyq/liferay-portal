@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = {})
+@Component(service = {})
 public class ScriptingExecutorMessagingConfigurator {
 
 	@Activate
@@ -77,10 +77,6 @@ public class ScriptingExecutorMessagingConfigurator {
 		_bundleContext = null;
 	}
 
-	@Reference(unbind = "-")
-	protected void setMessageBus(MessageBus messageBus) {
-	}
-
 	private volatile BundleContext _bundleContext;
 
 	@Reference
@@ -88,6 +84,9 @@ public class ScriptingExecutorMessagingConfigurator {
 
 	private volatile ServiceRegistration<Destination>
 		_destinationServiceRegistration;
+
+	@Reference
+	private MessageBus _messageBus;
 
 	@Reference
 	private Scripting _scripting;

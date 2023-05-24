@@ -62,6 +62,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -224,6 +225,8 @@ public class LayoutSetPrototypePropagationTest
 		Assert.assertEquals(
 			_initialPrototypeLayoutsCount, getGroupLayoutCount());
 
+		MergeLayoutPrototypesThreadLocal.setSkipMerge(false);
+
 		LayoutServiceUtil.getLayouts(
 			group.getGroupId(), false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
 			false, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
@@ -318,6 +321,38 @@ public class LayoutSetPrototypePropagationTest
 	@Test
 	public void testLayoutPropagationWithLinkEnabled() throws Exception {
 		doTestLayoutPropagation(true);
+	}
+
+	@Test
+	public void testLayoutPropagationWithMasterLayout() throws Exception {
+		Layout siteTemplateMasterLayout = LayoutTestUtil.addTypeContentLayout(
+			_layoutSetPrototypeGroup, true, false);
+
+		LayoutTestUtil.addTypeContentLayout(
+			_layoutSetPrototypeGroup, true, false,
+			siteTemplateMasterLayout.getPlid());
+
+		propagateChanges(group);
+
+		LayoutTestUtil.addTypeContentLayout(
+			_layoutSetPrototypeGroup, true, false,
+			siteTemplateMasterLayout.getPlid());
+
+		propagateChanges(group);
+
+		Assert.assertEquals(
+			0,
+			LayoutLocalServiceUtil.getMasterLayoutsCount(
+				group.getGroupId(), siteTemplateMasterLayout.getPlid()));
+
+		Layout siteMasterLayout = LayoutLocalServiceUtil.getFriendlyURLLayout(
+			group.getGroupId(), false,
+			siteTemplateMasterLayout.getFriendlyURL());
+
+		Assert.assertEquals(
+			4,
+			LayoutLocalServiceUtil.getMasterLayoutsCount(
+				group.getGroupId(), siteMasterLayout.getPlid()));
 	}
 
 	@Test
@@ -851,9 +886,29 @@ public class LayoutSetPrototypePropagationTest
 		LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			group.getGroupId(), false);
 
+		MergeLayoutPrototypesThreadLocal.setSkipMerge(false);
+
 		SitesUtil.mergeLayoutSetPrototypeLayouts(group, layoutSet);
 
 		Thread.sleep(2000);
+
+		LayoutSetPrototype layoutSetPrototype =
+			LayoutSetPrototypeLocalServiceUtil.
+				getLayoutSetPrototypeByUuidAndCompanyId(
+					layoutSet.getLayoutSetPrototypeUuid(),
+					layoutSet.getCompanyId());
+
+		LayoutSet layoutSetPrototypeLayoutSet =
+			layoutSetPrototype.getLayoutSet();
+
+		UnicodeProperties layoutSetPrototypeSettingsUnicodeProperties =
+			layoutSetPrototypeLayoutSet.getSettingsProperties();
+
+		int mergeFailCount = GetterUtil.getInteger(
+			layoutSetPrototypeSettingsUnicodeProperties.getProperty(
+				Sites.MERGE_FAIL_COUNT));
+
+		Assert.assertEquals(0, mergeFailCount);
 	}
 
 	protected void setLayoutsUpdateable(boolean layoutsUpdateable)

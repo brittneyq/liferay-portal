@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.increment.BufferedIncrementThreadLocal;
-import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
 import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -109,11 +108,9 @@ public class ViewCountEntryLocalServiceTest {
 
 			FutureTask<Void> futureTask = new FutureTask<>(
 				() -> {
-					try (SafeCloseable safeCloseable1 =
+					try (SafeCloseable safeCloseable =
 							BufferedIncrementThreadLocal.setWithSafeCloseable(
-								true);
-						SafeCloseable safeCloseable2 =
-							ProxyModeThreadLocal.setWithSafeCloseable(true)) {
+								true)) {
 
 						_viewCountEntryLocalService.incrementViewCount(
 							TestPropsValues.getCompanyId(),
@@ -153,7 +150,7 @@ public class ViewCountEntryLocalServiceTest {
 			SessionFactory.class.getClassLoader(),
 			new Class<?>[] {SessionFactory.class},
 			(proxy, method, args) -> {
-				if (Objects.equals("openSession", method.getName())) {
+				if (Objects.equals(method.getName(), "openSession")) {
 					return _createSessionProxy(
 						countDownLatch, sessionFactory.openSession(),
 						viewCountEntries);
@@ -170,7 +167,7 @@ public class ViewCountEntryLocalServiceTest {
 		return ProxyUtil.newProxyInstance(
 			Session.class.getClassLoader(), new Class<?>[] {Session.class},
 			(proxy, method, args) -> {
-				if (Objects.equals("get", method.getName()) &&
+				if (Objects.equals(method.getName(), "get") &&
 					(countDownLatch.getCount() > 0)) {
 
 					countDownLatch.countDown();

@@ -41,12 +41,12 @@ public class OAuthClientEntryServiceUtil {
 	public static OAuthClientEntry addOAuthClientEntry(
 			long userId, String authRequestParametersJSON,
 			String authServerWellKnownURI, String infoJSON,
-			String tokenRequestParametersJSON)
+			String oidcUserInfoMapperJSON, String tokenRequestParametersJSON)
 		throws PortalException {
 
 		return getService().addOAuthClientEntry(
 			userId, authRequestParametersJSON, authServerWellKnownURI, infoJSON,
-			tokenRequestParametersJSON);
+			oidcUserInfoMapperJSON, tokenRequestParametersJSON);
 	}
 
 	public static OAuthClientEntry deleteOAuthClientEntry(
@@ -117,16 +117,21 @@ public class OAuthClientEntryServiceUtil {
 	public static OAuthClientEntry updateOAuthClientEntry(
 			long oAuthClientEntryId, String authRequestParametersJSON,
 			String authServerWellKnownURI, String infoJSON,
-			String tokenRequestParametersJSON)
+			String oidcUserInfoMapperJSON, String tokenRequestParametersJSON)
 		throws PortalException {
 
 		return getService().updateOAuthClientEntry(
 			oAuthClientEntryId, authRequestParametersJSON,
-			authServerWellKnownURI, infoJSON, tokenRequestParametersJSON);
+			authServerWellKnownURI, infoJSON, oidcUserInfoMapperJSON,
+			tokenRequestParametersJSON);
 	}
 
 	public static OAuthClientEntryService getService() {
 		return _service;
+	}
+
+	public static void setService(OAuthClientEntryService service) {
+		_service = service;
 	}
 
 	private static volatile OAuthClientEntryService _service;

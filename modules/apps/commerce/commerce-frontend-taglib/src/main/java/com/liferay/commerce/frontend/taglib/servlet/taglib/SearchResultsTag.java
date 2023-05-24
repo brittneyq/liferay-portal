@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.frontend.taglib.servlet.taglib;
 
-import com.liferay.commerce.account.model.CommerceAccount;
+import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.constants.CommerceWebKeys;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.frontend.taglib.internal.servlet.ServletContextUtil;
@@ -22,7 +22,6 @@ import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
 import com.liferay.frontend.taglib.soy.servlet.taglib.ComponentRendererTag;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.frontend.icons.FrontendIconsUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -47,13 +46,10 @@ public class SearchResultsTag extends ComponentRendererTag {
 				CommerceWebKeys.COMMERCE_CONTEXT);
 
 		try {
-			CommerceAccount commerceAccount =
-				commerceContext.getCommerceAccount();
+			AccountEntry accountEntry = commerceContext.getAccountEntry();
 
-			if (commerceAccount != null) {
-				putValue(
-					"commerceAccountId",
-					commerceAccount.getCommerceAccountId());
+			if (accountEntry != null) {
+				putValue("commerceAccountId", accountEntry.getAccountEntryId());
 			}
 		}
 		catch (PortalException portalException) {
@@ -69,7 +65,7 @@ public class SearchResultsTag extends ComponentRendererTag {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		putValue("spritemap", FrontendIconsUtil.getSpritemap(themeDisplay));
+		putValue("spritemap", themeDisplay.getPathThemeSpritemap());
 
 		putValue("visible", false);
 

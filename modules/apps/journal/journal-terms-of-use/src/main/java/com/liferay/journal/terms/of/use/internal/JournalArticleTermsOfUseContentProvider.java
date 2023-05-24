@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.journal.configuration.JournalServiceConfiguration",
-	immediate = true, service = TermsOfUseContentProvider.class
+	service = TermsOfUseContentProvider.class
 )
 public class JournalArticleTermsOfUseContentProvider
 	implements TermsOfUseContentProvider {
@@ -58,14 +58,6 @@ public class JournalArticleTermsOfUseContentProvider
 
 		_includeJSPPath(
 			httpServletRequest, httpServletResponse, _JSP_PATH_VIEW);
-	}
-
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.journal.terms.of.use)",
-		unbind = "-"
-	)
-	protected void setServletContext(ServletContext servletContext) {
-		_servletContext = servletContext;
 	}
 
 	private void _includeJSPPath(
@@ -100,6 +92,9 @@ public class JournalArticleTermsOfUseContentProvider
 	@Reference
 	private ConfigurationProvider _configurationProvider;
 
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.journal.terms.of.use)"
+	)
 	private ServletContext _servletContext;
 
 }

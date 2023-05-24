@@ -151,9 +151,6 @@ public interface PropsKeys {
 	public static final String ASSET_BROWSER_SEARCH_WITH_DATABASE =
 		"asset.browser.search.with.database";
 
-	public static final String ASSET_CATEGORIES_SEARCH_HIERARCHICAL =
-		"asset.categories.search.hierarchical";
-
 	public static final String ASSET_CATEGORIES_SELECTOR_MAX_ENTRIES =
 		"asset.categories.selector.max.entries";
 
@@ -236,12 +233,6 @@ public interface PropsKeys {
 
 	public static final String AUTH_VERIFIER_PIPELINE =
 		"auth.verifier.pipeline";
-
-	public static final String AUTO_DEPLOY_COPY_COMMONS_LOGGING =
-		"auto.deploy.copy.commons.logging";
-
-	public static final String AUTO_DEPLOY_COPY_LOG4J =
-		"auto.deploy.copy.log4j";
 
 	public static final String AUTO_DEPLOY_CUSTOM_PORTLET_XML =
 		"auto.deploy.custom.portlet.xml";
@@ -345,9 +336,6 @@ public interface PropsKeys {
 
 	public static final String BUFFERED_INCREMENT_THREADPOOL_MAX_SIZE =
 		"buffered.increment.threadpool.max.size";
-
-	public static final String CACHE_CLEAR_ON_PLUGIN_UNDEPLOY =
-		"cache.clear.on.plugin.undeploy";
 
 	public static final String CACHE_CONTENT_THRESHOLD_SIZE =
 		"cache.content.threshold.size";
@@ -1059,6 +1047,9 @@ public interface PropsKeys {
 	public static final String HIBERNATE_GENERATE_STATISTICS =
 		"hibernate.generate_statistics";
 
+	public static final String HIBERNATE_HBM_JAXB_CACHE =
+		"hibernate.hbm.jaxb.cache";
+
 	public static final String HIBERNATE_JDBC_BATCH_SIZE =
 		"hibernate.jdbc.batch_size";
 
@@ -1094,11 +1085,6 @@ public interface PropsKeys {
 
 	public static final String IMAGE_DEFAULT_USER_PORTRAIT =
 		"image.default.user.portrait";
-
-	public static final String IMAGE_HOOK_FILE_SYSTEM_ROOT_DIR =
-		"image.hook.file.system.root.dir";
-
-	public static final String IMAGE_HOOK_IMPL = "image.hook.impl";
 
 	public static final String IMAGE_IO_USE_DISK_CACHE =
 		"image.io.use.disk.cache";
@@ -1137,9 +1123,6 @@ public interface PropsKeys {
 		INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_SCORES_THRESHOLD =
 			"index.search.collated.spell.check.result.scores.threshold";
 
-	public static final String INDEX_SEARCH_ENGINE_ID =
-		"index.search.engine.id";
-
 	public static final String INDEX_SEARCH_HIGHLIGHT_FRAGMENT_SIZE =
 		"index.search.highlight.fragment.size";
 
@@ -1177,9 +1160,6 @@ public interface PropsKeys {
 
 	public static final String INDEX_SEARCH_SPELL_CHECKER_SUPPORTED_LOCALES =
 		"index.search.spell.checker.supported.locales";
-
-	public static final String INDEX_SEARCH_WRITER_MAX_QUEUE_SIZE =
-		"index.search.writer.max.queue.size";
 
 	public static final String INDEX_SORTABLE_TEXT_FIELDS =
 		"index.sortable.text.fields";
@@ -1500,46 +1480,6 @@ public interface PropsKeys {
 
 	public static final String MAIL_BATCH_SIZE = "mail.batch.size";
 
-	public static final String MAIL_HOOK_CYRUS_HOME = "mail.hook.cyrus.home";
-
-	public static final String MAIL_HOOK_FUSEMAIL_ACCOUNT_TYPE =
-		"mail.hook.fusemail.account.type";
-
-	public static final String MAIL_HOOK_FUSEMAIL_GROUP_PARENT =
-		"mail.hook.fusemail.group.parent";
-
-	public static final String MAIL_HOOK_FUSEMAIL_PASSWORD =
-		"mail.hook.fusemail.password";
-
-	public static final String MAIL_HOOK_FUSEMAIL_URL =
-		"mail.hook.fusemail.url";
-
-	public static final String MAIL_HOOK_FUSEMAIL_USERNAME =
-		"mail.hook.fusemail.username";
-
-	public static final String MAIL_HOOK_IMPL = "mail.hook.impl";
-
-	public static final String MAIL_HOOK_SENDMAIL_ADD_USER =
-		"mail.hook.sendmail.add.user";
-
-	public static final String MAIL_HOOK_SENDMAIL_CHANGE_PASSWORD =
-		"mail.hook.sendmail.change.password";
-
-	public static final String MAIL_HOOK_SENDMAIL_DELETE_USER =
-		"mail.hook.sendmail.delete.user";
-
-	public static final String MAIL_HOOK_SENDMAIL_HOME =
-		"mail.hook.sendmail.home";
-
-	public static final String MAIL_HOOK_SENDMAIL_VIRTUSERTABLE =
-		"mail.hook.sendmail.virtusertable";
-
-	public static final String MAIL_HOOK_SENDMAIL_VIRTUSERTABLE_REFRESH =
-		"mail.hook.sendmail.virtusertable.refresh";
-
-	public static final String MAIL_HOOK_SHELL_SCRIPT =
-		"mail.hook.shell.script";
-
 	public static final String MAIL_MX_UPDATE = "mail.mx.update";
 
 	public static final String MAIL_SEND_BLACKLIST = "mail.send.blacklist";
@@ -1720,21 +1660,8 @@ public interface PropsKeys {
 	public static final String MODULE_FRAMEWORK_BASE_DIR =
 		"module.framework.base.dir";
 
-	public static final String MODULE_FRAMEWORK_BEGINNING_START_LEVEL =
-		"module.framework.beginning.start.level";
-
-	public static final String MODULE_FRAMEWORK_CONCURRENT_STARTUP_ENABLED =
-		"module.framework.concurrent.startup.enabled";
-
 	public static final String MODULE_FRAMEWORK_CONFIGS_DIR =
 		"module.framework.configs.dir";
-
-	public static final String
-		MODULE_FRAMEWORK_CONFIGURATION_BUNDLE_SYMBOLIC_NAMES =
-			"module.framework.configuration.bundle.symbolic.names";
-
-	public static final String MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL =
-		"module.framework.dynamic.install.start.level";
 
 	public static final String MODULE_FRAMEWORK_EXPORT_PASSWORD_ATTRIBUTES =
 		"module.framework.export.password.attributes";
@@ -1755,9 +1682,6 @@ public interface PropsKeys {
 
 	public static final String MODULE_FRAMEWORK_FILE_INSTALL_CFG_ENABLED =
 		"module.framework.file.install.cfg.enabled";
-
-	public static final String MODULE_FRAMEWORK_FILE_INSTALL_CONFIG_ENCODING =
-		"module.framework.file.install.config.encoding";
 
 	public static final String MODULE_FRAMEWORK_FILE_INSTALL_FILTER =
 		"module.framework.file.install.filter";
@@ -1780,23 +1704,11 @@ public interface PropsKeys {
 	public static final String MODULE_FRAMEWORK_PROPERTIES =
 		"module.framework.properties.";
 
-	public static final String MODULE_FRAMEWORK_RUNTIME_START_LEVEL =
-		"module.framework.runtime.start.level";
-
-	public static final String MODULE_FRAMEWORK_SERVICES_IGNORED_INTERFACES =
-		"module.framework.services.ignored.interfaces";
-
 	public static final String MODULE_FRAMEWORK_STATE_DIR =
 		"module.framework.state.dir";
 
-	public static final String MODULE_FRAMEWORK_STATIC_JARS =
-		"module.framework.static.jars";
-
 	public static final String MODULE_FRAMEWORK_STOP_WAIT_TIMEOUT =
 		"module.framework.stop.wait.timeout";
-
-	public static final String MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA =
-		"module.framework.system.packages.extra";
 
 	public static final String MODULE_FRAMEWORK_WAR_DIR =
 		"module.framework.war.dir";
@@ -1831,9 +1743,6 @@ public interface PropsKeys {
 		MODULE_FRAMEWORK_WEB_SERVLET_ANNOTATION_SCANNING_WHITELIST =
 			"module.framework.web.servlet.annotation.scanning.whitelist";
 
-	public static final String MODULE_FRAMEWORK_WEB_START_LEVEL =
-		"module.framework.web.start.level";
-
 	public static final String MY_SITES_DIRECTORY_SITE_EXCLUDES =
 		"my.sites.directory.site.excludes";
 
@@ -1855,8 +1764,19 @@ public interface PropsKeys {
 	public static final String NETVIBES_SERVLET_MAPPING =
 		"netvibes.servlet.mapping";
 
+	public static final String NOTIFICATION_EMAIL_TEMPLATE_ENABLED =
+		"notification.email.template.enabled";
+
 	public static final String NOTIFICATIONS_MAX_EVENTS =
 		"notifications.max.events";
+
+	public static final String OBJECT_ENCRYPTION_ALGORITHM =
+		"object.encryption.algorithm";
+
+	public static final String OBJECT_ENCRYPTION_ENABLED =
+		"object.encryption.enabled";
+
+	public static final String OBJECT_ENCRYPTION_KEY = "object.encryption.key";
 
 	public static final String OBJECT_NESTED_FIELDS_MAX_QUERY_DEPTH =
 		"object.nested.fields.max.query.depth";
@@ -2103,12 +2023,6 @@ public interface PropsKeys {
 	public static final String PHONE_NUMBER_FORMAT_USA_REGEXP =
 		"phone.number.format.usa.regexp";
 
-	public static final String POLLER_NOTIFICATIONS_TIMEOUT =
-		"poller.notifications.timeout";
-
-	public static final String POLLER_REQUEST_TIMEOUT =
-		"poller.request.timeout";
-
 	public static final String POP_SERVER_NOTIFICATIONS_ENABLED =
 		"pop.server.notifications.enabled";
 
@@ -2334,9 +2248,6 @@ public interface PropsKeys {
 		"scheduler.description.max.length";
 
 	public static final String SCHEDULER_ENABLED = "scheduler.enabled";
-
-	public static final String SCHEDULER_EVENT_MESSAGE_LISTENER_LOCK_TIMEOUT =
-		"scheduler.event.message.listener.lock.timeout";
 
 	public static final String SCHEDULER_GROUP_NAME_MAX_LENGTH =
 		"scheduler.group.name.max.length";
@@ -2720,12 +2631,6 @@ public interface PropsKeys {
 
 	public static final String TERMS_OF_USE_REQUIRED = "terms.of.use.required";
 
-	public static final String TEXT_EXTRACTION_FORK_PROCESS_ENABLED =
-		"text.extraction.fork.process.enabled";
-
-	public static final String TEXT_EXTRACTION_FORK_PROCESS_MIME_TYPES =
-		"text.extraction.fork.process.mime.types";
-
 	public static final String THEME_CSS_FAST_LOAD = "theme.css.fast.load";
 
 	public static final String THEME_CSS_FAST_LOAD_CHECK_REQUEST_PARAMETER =
@@ -2819,8 +2724,8 @@ public interface PropsKeys {
 	public static final String UPGRADE_LOG_CONTEXT_ENABLED =
 		"upgrade.log.context.enabled";
 
-	public static final String UPGRADE_LOG_CONTEXT_NAME =
-		"upgrade.log.context.name";
+	public static final String UPGRADE_REPORT_DL_STORAGE_SIZE_TIMEOUT =
+		"upgrade.report.dl.storage.size.timeout";
 
 	public static final String UPGRADE_REPORT_ENABLED =
 		"upgrade.report.enabled";

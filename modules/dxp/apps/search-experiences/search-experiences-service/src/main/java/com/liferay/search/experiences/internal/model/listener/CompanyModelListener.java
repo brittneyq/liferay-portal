@@ -17,6 +17,7 @@ package com.liferay.search.experiences.internal.model.listener;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
@@ -25,8 +26,6 @@ import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.search.experiences.rest.dto.v1_0.SXPElement;
@@ -42,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.osgi.framework.Bundle;
@@ -53,8 +53,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  */
 @Component(
-	enabled = false, immediate = true,
-	service = {CompanyModelListener.class, ModelListener.class}
+	enabled = false, service = {CompanyModelListener.class, ModelListener.class}
 )
 public class CompanyModelListener extends BaseModelListener<Company> {
 
@@ -62,23 +61,27 @@ public class CompanyModelListener extends BaseModelListener<Company> {
 			Company company, SXPElementLocalService sxpElementLocalService)
 		throws PortalException {
 
-		Set<String> titles = new HashSet<>();
+		Set<String> externalReferenceCodes = new HashSet<>();
 
 		for (com.liferay.search.experiences.model.SXPElement sxpPElement :
 				sxpElementLocalService.getSXPElements(
 					company.getCompanyId(), true)) {
 
-			titles.add(sxpPElement.getTitle(LocaleUtil.US));
+			externalReferenceCodes.add(sxpPElement.getExternalReferenceCode());
 		}
 
-		for (SXPElement sxpElement : _sxpElements) {
-			if (titles.contains(
-					MapUtil.getString(sxpElement.getTitle_i18n(), "en_US"))) {
+		for (SXPElement sxpElement : _getSXPElements()) {
+			if ((!FeatureFlagManagerUtil.isEnabled("LPS-122920") &&
+				 Objects.equals(
+					 sxpElement.getExternalReferenceCode(),
+					 "RESCORE_BY_TEXT_EMBEDDING")) ||
+				externalReferenceCodes.contains(
+					sxpElement.getExternalReferenceCode())) {
 
 				continue;
 			}
 
-			User user = company.getDefaultUser();
+			User user = company.getGuestUser();
 
 			sxpElementLocalService.addSXPElement(
 				sxpElement.getExternalReferenceCode(), user.getUserId(),
@@ -156,6 +159,14 @@ public class CompanyModelListener extends BaseModelListener<Company> {
 		return sxpElements;
 	}
 
+	private List<SXPElement> _getSXPElements() {
+		if (_sxpElements == null) {
+			_sxpElements = _createSXPElements();
+		}
+
+		return _sxpElements;
+	}
+
 	private static final String _SCHEMA_VERSION = StringUtil.replace(
 		StringUtil.extractFirst(
 			StringUtil.extractLast(SXPElement.class.getName(), ".v"),
@@ -171,6 +182,6 @@ public class CompanyModelListener extends BaseModelListener<Company> {
 	@Reference
 	private SXPElementLocalService _sxpElementLocalService;
 
-	private final List<SXPElement> _sxpElements = _createSXPElements();
+	private List<SXPElement> _sxpElements;
 
 }

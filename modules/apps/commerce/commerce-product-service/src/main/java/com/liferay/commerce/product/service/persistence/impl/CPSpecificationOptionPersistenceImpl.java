@@ -21,8 +21,10 @@ import com.liferay.commerce.product.model.impl.CPSpecificationOptionImpl;
 import com.liferay.commerce.product.model.impl.CPSpecificationOptionModelImpl;
 import com.liferay.commerce.product.service.persistence.CPSpecificationOptionPersistence;
 import com.liferay.commerce.product.service.persistence.CPSpecificationOptionUtil;
+import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
+import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -31,6 +33,7 @@ import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -47,11 +50,9 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUID;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -66,6 +67,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * The persistence implementation for the cp specification option service.
  *
@@ -76,6 +84,7 @@ import java.util.Set;
  * @author Marco Leo
  * @generated
  */
+@Component(service = CPSpecificationOptionPersistence.class)
 public class CPSpecificationOptionPersistenceImpl
 	extends BasePersistenceImpl<CPSpecificationOption>
 	implements CPSpecificationOptionPersistence {
@@ -197,7 +206,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CPSpecificationOption>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CPSpecificationOption cpSpecificationOption : list) {
@@ -957,7 +966,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1191,7 +1200,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CPSpecificationOption>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CPSpecificationOption cpSpecificationOption : list) {
@@ -1996,7 +2005,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2233,7 +2242,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CPSpecificationOption>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CPSpecificationOption cpSpecificationOption : list) {
@@ -2948,7 +2957,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3144,7 +3153,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CPSpecificationOption>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (CPSpecificationOption cpSpecificationOption : list) {
@@ -3868,7 +3877,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 			finderArgs = new Object[] {CPOptionCategoryId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4039,7 +4048,8 @@ public class CPSpecificationOptionPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByC_K, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByC_K, finderArgs, this);
 		}
 
 		if (result instanceof CPSpecificationOption) {
@@ -4160,7 +4170,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 			finderArgs = new Object[] {companyId, key};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4858,7 +4868,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<CPSpecificationOption>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -4934,7 +4944,7 @@ public class CPSpecificationOptionPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -5056,7 +5066,8 @@ public class CPSpecificationOptionPersistenceImpl
 	/**
 	 * Initializes the cp specification option persistence.
 	 */
-	public void afterPropertiesSet() {
+	@Activate
+	public void activate() {
 		_valueObjectFinderCacheListThreshold = GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.VALUE_OBJECT_FINDER_CACHE_LIST_THRESHOLD));
 
@@ -5155,38 +5166,49 @@ public class CPSpecificationOptionPersistenceImpl
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"companyId", "key_"}, false);
 
-		_setCPSpecificationOptionUtilPersistence(this);
+		CPSpecificationOptionUtil.setPersistence(this);
 	}
 
-	public void destroy() {
-		_setCPSpecificationOptionUtilPersistence(null);
+	@Deactivate
+	public void deactivate() {
+		CPSpecificationOptionUtil.setPersistence(null);
 
 		entityCache.removeCache(CPSpecificationOptionImpl.class.getName());
 	}
 
-	private void _setCPSpecificationOptionUtilPersistence(
-		CPSpecificationOptionPersistence cpSpecificationOptionPersistence) {
-
-		try {
-			Field field = CPSpecificationOptionUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, cpSpecificationOptionPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
+	@Override
+	@Reference(
+		target = CommercePersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
+	public void setConfiguration(Configuration configuration) {
 	}
 
-	@ServiceReference(type = CTPersistenceHelper.class)
+	@Override
+	@Reference(
+		target = CommercePersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+	}
+
+	@Override
+	@Reference(
+		target = CommercePersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		super.setSessionFactory(sessionFactory);
+	}
+
+	@Reference
 	protected CTPersistenceHelper ctPersistenceHelper;
 
-	@ServiceReference(type = EntityCache.class)
+	@Reference
 	protected EntityCache entityCache;
 
-	@ServiceReference(type = FinderCache.class)
+	@Reference
 	protected FinderCache finderCache;
 
 	private static final String _SQL_SELECT_CPSPECIFICATIONOPTION =
@@ -5245,7 +5267,7 @@ public class CPSpecificationOptionPersistenceImpl
 		return finderCache;
 	}
 
-	@ServiceReference(type = PortalUUID.class)
+	@Reference
 	private PortalUUID _portalUUID;
 
 }

@@ -41,15 +41,12 @@ public class NotificationQueueEntryLocalServiceWrapper
 	@Override
 	public com.liferay.notification.model.NotificationQueueEntry
 			addNotificationQueueEntry(
-				long userId, long notificationTemplateId, String bcc,
-				String body, String cc, String className, long classPK,
-				String from, String fromName, double priority, String subject,
-				String to, String toName, java.util.List<Long> fileEntryIds)
+				com.liferay.notification.context.NotificationContext
+					notificationContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _notificationQueueEntryLocalService.addNotificationQueueEntry(
-			userId, notificationTemplateId, bcc, body, cc, className, classPK,
-			from, fromName, priority, subject, to, toName, fileEntryIds);
+			notificationContext);
 	}
 
 	/**
@@ -287,6 +284,14 @@ public class NotificationQueueEntryLocalServiceWrapper
 			getIndexableActionableDynamicQuery();
 	}
 
+	@Override
+	public java.util.List<com.liferay.notification.model.NotificationQueueEntry>
+		getNotificationEntries(String type, int status) {
+
+		return _notificationQueueEntryLocalService.getNotificationEntries(
+			type, status);
+	}
+
 	/**
 	 * Returns a range of all the notification queue entries.
 	 *
@@ -364,11 +369,6 @@ public class NotificationQueueEntryLocalServiceWrapper
 			notificationQueueEntryId);
 	}
 
-	@Override
-	public void sendNotificationQueueEntries() {
-		_notificationQueueEntryLocalService.sendNotificationQueueEntries();
-	}
-
 	/**
 	 * Updates the notification queue entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -390,12 +390,12 @@ public class NotificationQueueEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.notification.model.NotificationQueueEntry updateSent(
-			long notificationQueueEntryId, boolean sent)
+	public com.liferay.notification.model.NotificationQueueEntry updateStatus(
+			long notificationQueueEntryId, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _notificationQueueEntryLocalService.updateSent(
-			notificationQueueEntryId, sent);
+		return _notificationQueueEntryLocalService.updateStatus(
+			notificationQueueEntryId, status);
 	}
 
 	@Override

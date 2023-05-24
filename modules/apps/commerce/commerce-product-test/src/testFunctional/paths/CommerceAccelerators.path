@@ -21,6 +21,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ORGANIZATION_AUTOCOMPLETE_SPECIFIC</td>
+	<td>//div[contains(@class,'autocomplete-dropdown-menu')]//ul/li//button[.='${key_organizationName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IN_FLOW_ACCOUNTS_MODAL_DESCRIPTION</td>
+	<td>//textarea[contains(@name,'accountDescription')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ACCOUNT_ORDER_NAME</td>
 	<td>xpath=(//div[contains(@class,'dnd-td') and contains(text(),'${accountName}')])[1]</td>
 	<td></td>
@@ -51,8 +61,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ACCOUNT_MANAGEMENT_REVERSE_SORT_DIRECTION_BUTTON</td>
+	<td>//div//a[@class='nav-link nav-link-monospaced link-unstyled']/..//..//*[contains(@class, 'lexicon-icon lexicon-icon-order')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ACCOUNT_MANAGEMENT_REVERSE_SORT_DIRECTION_BUTTON_ICON</td>
+	<td>//nav[contains(@class,'management-bar')]//*[*[name()='svg'][contains(@class,'${key_icon}')] and contains(@title,'Reverse Sort Direction')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ACCOUNT_SELECTOR_ACCOUNT_LIST_ITEM</td>
 	<td>//ul[contains(@class,'accounts-list')]//button[@class='dropdown-item']/span[contains(.,'${key_accountName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ACCOUNT_SELECTOR_ACCOUNT_LIST_ITEM_N</td>
+	<td>//ul[contains(@class,'accounts-list')]//button[@class='dropdown-item']/span[contains(.,'${key_accountName}')][${key_index}]</td>
 	<td></td>
 </tr>
 <tr>
@@ -63,6 +88,11 @@
 <tr>
 	<td>ACCOUNT_SELECTOR_DROPDOWN_SHOW</td>
 	<td>//div[contains(@class,'account-selector-dropdown-menu show')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ACCOUNT_SELECTOR_ORDERS_LIST_ITEM</td>
+	<td>//div[contains(@class,'account-selector-dropdown')]//a[text()='${key_orderId}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -98,6 +128,11 @@
 <tr>
 	<td>ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE_DISABLED</td>
 	<td>//h2[@class='product-header-title']//../..//button[contains(@class,'add-to-cart') and @disabled]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADD_TO_CART_BUTTON_PRODUCT_DETAILS_PAGE_INVALID</td>
+	<td>//h2[@class='product-header-title']//../..//button[contains(@class,'add-to-cart not-allowed')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -161,6 +196,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PRODUCT_CARD_PRICE_FIELD</td>
+	<td>//p[@title='${key_productName}']/..//span[@class='price-value${key_element}'][normalize-space(text())='$ ${key_price}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PRODUCT_CARD_PRICE_VALUE</td>
 	<td>//p[@title='${key_productName}']/..//span[@class='price-value'][normalize-space(text())='$ ${key_productPrice}']</td>
 	<td></td>
@@ -176,13 +216,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MINIUM_SIDEBAR_USER_NAME</td>
+	<td>//div[contains(@class,'minium-user-nav__name') and contains(.,'${key_userName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PORTLET_LOADED</td>
 	<td>//div[contains(@class,'portlet-title-default') and contains(.,'${key_portletName}')]/../../../div[@data-qa-id='app-loaded']/span</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SEARCH_RESULT_OPTIONS</td>
-	<td>//section[contains(@id,'CPSearchResultsPortlet')]//div[@class='dropdown lfr-icon-menu portlet-options']</td>
+	<td>//section[contains(@id,'CPSearchResultsPortlet')]//header//menu//div[@class='dropdown']</td>
 	<td></td>
 </tr>
 <tr>
@@ -198,6 +243,16 @@
 <tr>
 	<td>GENERAL_QUANTITY_SELECTOR_INPUT_FIELD_ENABLED</td>
 	<td>//input[contains(@class,"quantity-selector") and not(@disabled)]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GENERAL_QUANTITY_SELECTOR_INPUT_FIELD_OPTION_VALUE</td>
+	<td>//input[contains(@class,"quantity-selector") and @value='${key_optionValue}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GENERAL_QUANTITY_SELECTOR_INPUT_FIELD_HAS_ERROR</td>
+	<td>//div[contains(@class,'has-error')]/input[contains(@class,"quantity-selector")]</td>
 	<td></td>
 </tr>
 <tr>
@@ -272,7 +327,7 @@
 </tr>
 <tr>
 	<td>PRODUCT_CARD_AVAILABILITY_LABEL</td>
-	<td>//a[contains(@href,'${key_productName}')]//span[contains(@class,'m-0')]</td>
+	<td>//a[contains(@href,'${key_productName}')]//span[contains(@class,'m-0') and not(contains(@class,'invisible'))]</td>
 	<td></td>
 </tr>
 <tr>
@@ -397,6 +452,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHECKOUT_SUMMARY_PRODUCT_TABLE_VALUE</td>
+	<td>//td[contains(@class,'lfr-${key_column}-column')]//*/*[contains(.,'${key_value}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CHECKOUT_SUMMARY_PRODUCT_TABLE_PRICE</td>
 	<td>//td[contains(@class,'lfr-price-column')]//*/*[contains(.,'${key_productPrice}')]</td>
 	<td></td>
@@ -419,6 +479,16 @@
 <tr>
 	<td>CHECKOUT_SUMMARY_SHIPPING_ADDRESS</td>
 	<td>//address[@class='shipping-address' and contains(.,'${key_addressInfo}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHECKOUT_SUMMARY_SHIPPING_COST</td>
+	<td>//div[contains(@class,'shipping-method')]//div[contains(@class,'shipping-cost') and contains(.,'${key_shippingCost}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHECKOUT_SUMMARY_SHIPPING_OPTION</td>
+	<td>//div[contains(@class,'shipping-method')]//div[contains(@class,'shipping-description') and contains(.,'${key_shippingOption}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -495,6 +565,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MINI_CART_ITEM_QUANTITY_SELECTOR_SELECT_FIELD</td>
+	<td>//p[@class='item-sku' and contains(.,'${key_cartItemSku}')]/../../../../div[@class='mini-cart-item-quantity']//select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MINI_CART_ITEM_QUANTITY_SELECTOR_SELECT_FIELD_OPTION_VALUE</td>
+	<td>//p[@class='item-sku' and contains(.,'${key_cartItemSku}')]/../../../../div[@class='mini-cart-item-quantity']//select/option[@value='${key_optionValue}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MINI_CART_ITEM_PRICE_VALUE</td>
 	<td>//p[@class='item-sku' and contains(.,'${key_cartItemSku}')]/../../../..//span[@class='price-value']</td>
 	<td></td>
@@ -555,11 +635,39 @@
 	<td></td>
 </tr>
 
+<!--QUICK_ADD_TO_CART-->
+
+<tr>
+	<td>QUICK_ADD_TO_CART_SEARCH_RESULT</td>
+	<td>//div[contains(@class,'autofit-col') and contains(.,"${key_productSku}")]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUICK_ADD_TO_CART_EMPTY_SEARCH_BAR</td>
+	<td>//input[contains(@class,"form-control") and @placeholder= '${key_searchBarValue}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUICK_ADD_TO_CART_BUTTON</td>
+	<td>//div[contains(@class,'input-group-item-shrink')]//button[contains(@class,'btn-primary')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_CHIP_REMOVE_ICON</td>
+	<td>//span[contains(.,"${key_productSku}")]//button[contains(@class,'close')]</td>
+	<td></td>
+</tr>
+
 <!--ORDERS-->
 
 <tr>
 	<td>ACCOUNT_SELECTOR_ORDER_ID</td>
 	<td>//a[contains(@href,'commerceOrderId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ACCOUNT_SELECTOR_SPECIFIC_ORDER_ID</td>
+	<td>//a[contains(@href,'commerceOrderId') and contains(text(),'${key_orderID}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -620,6 +728,16 @@
 <tr>
 	<td>PRODUCT_CARD_VIEW_ALL_VARIANTS</td>
 	<td>//p[@class='card-title']//span[text()='${key_productName}']/ancestor::div[contains(@class,'card-body')]//div/a[normalize-space(text()='View All Variants')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_CARD_VIEW_BUTTON</td>
+	<td>//p[@title='${key_productName}']//../..//a[normalize-space(text())='View']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PRODUCT_CARD_DESCRIPTION</td>
+	<td>//p[@title='${key_productName}']/..//following-sibling::p[@class='card-body']//span[contains(normalize-space(text()),'${key_productDescription}')]</td>
 	<td></td>
 </tr>
 <tr>

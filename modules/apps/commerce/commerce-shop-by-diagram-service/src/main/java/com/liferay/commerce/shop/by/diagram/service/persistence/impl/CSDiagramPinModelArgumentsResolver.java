@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		CSDiagramPinModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.commerce.shop.by.diagram.model.impl.CSDiagramPinImpl",
+		"table.name=CSDiagramPin"
+	},
+	service = ArgumentsResolver.class
 )
 public class CSDiagramPinModelArgumentsResolver implements ArgumentsResolver {
 

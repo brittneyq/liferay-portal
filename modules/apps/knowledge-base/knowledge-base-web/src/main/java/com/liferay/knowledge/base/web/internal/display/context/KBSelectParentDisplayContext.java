@@ -25,12 +25,13 @@ import com.liferay.knowledge.base.util.comparator.KBObjectsTitleComparator;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
 import com.liferay.knowledge.base.web.internal.security.permission.resource.KBArticlePermission;
 import com.liferay.knowledge.base.web.internal.security.permission.resource.KBFolderPermission;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -62,7 +63,7 @@ public class KBSelectParentDisplayContext {
 		_liferayPortletResponse = liferayPortletResponse;
 		_renderRequest = renderRequest;
 
-		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		_initParentData();
@@ -74,6 +75,27 @@ public class KBSelectParentDisplayContext {
 
 	public long getParentResourcePrimKey() {
 		return _parentResourcePrimKey;
+	}
+
+	public String getParentTitle() throws PortalException {
+		long resourcePrimKey = getParentResourcePrimKey();
+
+		if (resourcePrimKey == KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+			return LanguageUtil.get(_httpServletRequest, "home");
+		}
+		else if (getParentResourceClassNameId() == PortalUtil.getClassNameId(
+					KBFolderConstants.getClassName())) {
+
+			KBFolder kbFolder = KBFolderServiceUtil.getKBFolder(
+				resourcePrimKey);
+
+			return kbFolder.getName();
+		}
+
+		KBArticle kbArticle = KBArticleServiceUtil.getLatestKBArticle(
+			resourcePrimKey, WorkflowConstants.STATUS_APPROVED);
+
+		return kbArticle.getTitle();
 	}
 
 	public long getResourceClassNameId() {

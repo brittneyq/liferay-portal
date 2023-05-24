@@ -44,7 +44,6 @@ import com.liferay.portal.model.impl.CompanyInfoModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.HashMap;
@@ -150,7 +149,7 @@ public class CompanyInfoPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByCompanyId, finderArgs);
+				_finderPathFetchByCompanyId, finderArgs, this);
 		}
 
 		if (result instanceof CompanyInfo) {
@@ -240,7 +239,8 @@ public class CompanyInfoPersistenceImpl
 
 		Object[] finderArgs = new Object[] {companyId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -681,7 +681,7 @@ public class CompanyInfoPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<CompanyInfo>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -751,7 +751,7 @@ public class CompanyInfoPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -831,29 +831,13 @@ public class CompanyInfoPersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"companyId"},
 			false);
 
-		_setCompanyInfoUtilPersistence(this);
+		CompanyInfoUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setCompanyInfoUtilPersistence(null);
+		CompanyInfoUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(CompanyInfoImpl.class.getName());
-	}
-
-	private void _setCompanyInfoUtilPersistence(
-		CompanyInfoPersistence companyInfoPersistence) {
-
-		try {
-			Field field = CompanyInfoUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, companyInfoPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_COMPANYINFO =

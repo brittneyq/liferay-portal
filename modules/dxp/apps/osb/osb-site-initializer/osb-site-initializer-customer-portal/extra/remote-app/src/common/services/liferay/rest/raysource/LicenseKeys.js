@@ -52,27 +52,6 @@ export async function getDevelopmentLicenseKey(
 	return response;
 }
 
-export async function getActivationLicenseKey(
-	accountKey,
-	provisioningServerAPI,
-	filter,
-	page,
-	pageSize,
-	sessionId
-) {
-	// eslint-disable-next-line @liferay/portal/no-global-fetch
-	const response = await fetch(
-		`${provisioningServerAPI}/accounts/${accountKey}/license-keys?filter=${filter}&page=${page}&pageSize=${pageSize}`,
-		{
-			headers: {
-				'Okta-Session-ID': sessionId,
-			},
-		}
-	);
-
-	return response.json();
-}
-
 export async function getActivationDownloadKey(
 	licenseKey,
 	provisioningServerAPI,
@@ -247,6 +226,65 @@ export async function createNewGenerateKey(
 				'Okta-Session-ID': sessionId,
 			},
 			method: 'POST',
+		}
+	);
+
+	return response.json();
+}
+
+export async function putSubscriptionInKey(
+	provisioningServerAPI,
+	licenseKeyIds,
+	sessionId
+) {
+	// eslint-disable-next-line @liferay/portal/no-global-fetch
+	const response = await fetch(
+		`${provisioningServerAPI}/license-keys/subscriptions?licenseKeyIds=${licenseKeyIds}`,
+
+		{
+			headers: {
+				'Okta-Session-ID': sessionId,
+			},
+			method: 'PUT',
+		}
+	);
+
+	return response;
+}
+
+export async function deleteSubscriptionInKey(
+	provisioningServerAPI,
+	licenseKeyIds,
+	sessionId
+) {
+	// eslint-disable-next-line @liferay/portal/no-global-fetch
+	const response = await fetch(
+		`${provisioningServerAPI}/license-keys/subscriptions?licenseKeyIds=${licenseKeyIds}`,
+
+		{
+			headers: {
+				'Okta-Session-ID': sessionId,
+			},
+			method: 'DELETE',
+		}
+	);
+
+	return response;
+}
+
+export async function getSubscriptionInKey(
+	provisioningServerAPI,
+	licenseKeyIds,
+	sessionId
+) {
+	// eslint-disable-next-line @liferay/portal/no-global-fetch
+	const response = await fetch(
+		`${provisioningServerAPI}/license-keys/subscriptions?licenseKeyId=${licenseKeyIds}`,
+		{
+			headers: {
+				'Okta-Session-ID': sessionId,
+			},
+			method: 'GET',
 		}
 	);
 

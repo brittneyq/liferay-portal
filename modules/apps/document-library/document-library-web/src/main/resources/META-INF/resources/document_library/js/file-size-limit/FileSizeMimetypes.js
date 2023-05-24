@@ -18,7 +18,7 @@ import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import PropTypes from 'prop-types';
 import React, {useState} from 'react';
-import uuidv4 from 'uuid/v4';
+import {v4 as uuidv4} from 'uuid';
 
 import '../../css/file_size_mimetypes.scss';
 
@@ -37,7 +37,7 @@ const FileSizeField = ({
 	const [sizeErrorMessage, setSizeErrorMessage] = useState('');
 
 	return (
-		<ClayLayout.Row className="size-limit-row">
+		<ClayLayout.Row className="mt-4 size-limit-row">
 			<ClayLayout.Col md="6">
 				<label htmlFor="mimeType">
 					{Liferay.Language.get('mime-type-field-label')}
@@ -147,13 +147,15 @@ const FileSizePerMimeType = ({
 
 	const [sizesList, setSizesList] = useState(
 		initialSizeList && !!initialSizeList.length
-			? initialSizeList
+			? initialSizeList.map((item) => ({...item, id: uuidv4()}))
 			: [emptyRow()]
 	);
 
 	return (
 		<>
-			<p className="text-muted">{Liferay.Language.get(description)}</p>
+			<p className="mb-4 text-3 text-secondary">
+				{Liferay.Language.get(description)}
+			</p>
 
 			{sizesList.map((item, index) => (
 				<FileSizeField

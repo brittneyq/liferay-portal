@@ -220,77 +220,101 @@ public class FVSCustomEntryModelImpl
 	public Map<String, Function<FVSCustomEntry, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<FVSCustomEntry, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<FVSCustomEntry, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<FVSCustomEntry, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<FVSCustomEntry, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<FVSCustomEntry, Object>>();
-		Map<String, BiConsumer<FVSCustomEntry, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<FVSCustomEntry, ?>>();
+		private static final Map<String, Function<FVSCustomEntry, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", FVSCustomEntry::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<FVSCustomEntry, Long>)FVSCustomEntry::setMvccVersion);
-		attributeGetterFunctions.put("uuid", FVSCustomEntry::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid",
-			(BiConsumer<FVSCustomEntry, String>)FVSCustomEntry::setUuid);
-		attributeGetterFunctions.put(
-			"fvsCustomEntryId", FVSCustomEntry::getFvsCustomEntryId);
-		attributeSetterBiConsumers.put(
-			"fvsCustomEntryId",
-			(BiConsumer<FVSCustomEntry, Long>)
-				FVSCustomEntry::setFvsCustomEntryId);
-		attributeGetterFunctions.put("companyId", FVSCustomEntry::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<FVSCustomEntry, Long>)FVSCustomEntry::setCompanyId);
-		attributeGetterFunctions.put("userId", FVSCustomEntry::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId",
-			(BiConsumer<FVSCustomEntry, Long>)FVSCustomEntry::setUserId);
-		attributeGetterFunctions.put("userName", FVSCustomEntry::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<FVSCustomEntry, String>)FVSCustomEntry::setUserName);
-		attributeGetterFunctions.put(
-			"createDate", FVSCustomEntry::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<FVSCustomEntry, Date>)FVSCustomEntry::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate", FVSCustomEntry::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<FVSCustomEntry, Date>)FVSCustomEntry::setModifiedDate);
-		attributeGetterFunctions.put(
-			"fvsEntryId", FVSCustomEntry::getFvsEntryId);
-		attributeSetterBiConsumers.put(
-			"fvsEntryId",
-			(BiConsumer<FVSCustomEntry, Long>)FVSCustomEntry::setFvsEntryId);
-		attributeGetterFunctions.put("name", FVSCustomEntry::getName);
-		attributeSetterBiConsumers.put(
-			"name",
-			(BiConsumer<FVSCustomEntry, String>)FVSCustomEntry::setName);
+		static {
+			Map<String, Function<FVSCustomEntry, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<FVSCustomEntry, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", FVSCustomEntry::getMvccVersion);
+			attributeGetterFunctions.put("uuid", FVSCustomEntry::getUuid);
+			attributeGetterFunctions.put(
+				"fvsCustomEntryId", FVSCustomEntry::getFvsCustomEntryId);
+			attributeGetterFunctions.put(
+				"companyId", FVSCustomEntry::getCompanyId);
+			attributeGetterFunctions.put("userId", FVSCustomEntry::getUserId);
+			attributeGetterFunctions.put(
+				"userName", FVSCustomEntry::getUserName);
+			attributeGetterFunctions.put(
+				"createDate", FVSCustomEntry::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", FVSCustomEntry::getModifiedDate);
+			attributeGetterFunctions.put(
+				"fvsEntryId", FVSCustomEntry::getFvsEntryId);
+			attributeGetterFunctions.put("name", FVSCustomEntry::getName);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<FVSCustomEntry, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<FVSCustomEntry, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap<String, BiConsumer<FVSCustomEntry, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<FVSCustomEntry, Long>)
+					FVSCustomEntry::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"uuid",
+				(BiConsumer<FVSCustomEntry, String>)FVSCustomEntry::setUuid);
+			attributeSetterBiConsumers.put(
+				"fvsCustomEntryId",
+				(BiConsumer<FVSCustomEntry, Long>)
+					FVSCustomEntry::setFvsCustomEntryId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<FVSCustomEntry, Long>)FVSCustomEntry::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<FVSCustomEntry, Long>)FVSCustomEntry::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<FVSCustomEntry, String>)
+					FVSCustomEntry::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<FVSCustomEntry, Date>)
+					FVSCustomEntry::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<FVSCustomEntry, Date>)
+					FVSCustomEntry::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"fvsEntryId",
+				(BiConsumer<FVSCustomEntry, Long>)
+					FVSCustomEntry::setFvsEntryId);
+			attributeSetterBiConsumers.put(
+				"name",
+				(BiConsumer<FVSCustomEntry, String>)FVSCustomEntry::setName);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -796,37 +820,6 @@ public class FVSCustomEntryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<FVSCustomEntry, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<FVSCustomEntry, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<FVSCustomEntry, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((FVSCustomEntry)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, FVSCustomEntry>
@@ -852,7 +845,8 @@ public class FVSCustomEntryModelImpl
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<FVSCustomEntry, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

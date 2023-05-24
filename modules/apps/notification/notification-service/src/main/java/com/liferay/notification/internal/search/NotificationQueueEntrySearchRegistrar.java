@@ -29,7 +29,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Paulo Albuquerque
  */
-@Component(immediate = true, service = {})
+@Component(service = {})
 public class NotificationQueueEntrySearchRegistrar {
 
 	@Activate
@@ -39,8 +39,7 @@ public class NotificationQueueEntrySearchRegistrar {
 			modelSearchDefinition -> {
 				modelSearchDefinition.setDefaultSelectedFieldNames(
 					Field.COMPANY_ID, Field.ENTRY_CLASS_NAME,
-					Field.ENTRY_CLASS_PK, Field.UID, "fromName", "subject",
-					"toName", "triggerBy");
+					Field.ENTRY_CLASS_PK, Field.UID, "fromName", "subject");
 				modelSearchDefinition.setModelIndexWriteContributor(
 					_modelIndexWriterContributor);
 			});

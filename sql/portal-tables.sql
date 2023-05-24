@@ -1,8 +1,9 @@
 create table Address (
 	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	externalReferenceCode VARCHAR(75) null,
-	addressId LONG not null primary key,
+	addressId LONG not null,
 	companyId LONG,
 	userId LONG,
 	userName VARCHAR(75) null,
@@ -25,7 +26,8 @@ create table Address (
 	street3 VARCHAR(255) null,
 	validationDate DATE null,
 	validationStatus INTEGER,
-	zip VARCHAR(75) null
+	zip VARCHAR(75) null,
+	primary key (addressId, ctCollectionId)
 );
 
 create table AnnouncementsDelivery (
@@ -221,7 +223,9 @@ create table Company (
 	tickerSymbol VARCHAR(75) null,
 	industry VARCHAR(75) null,
 	type_ VARCHAR(75) null,
-	size_ VARCHAR(75) null
+	size_ VARCHAR(75) null,
+	indexNameCurrent VARCHAR(75) null,
+	indexNameNext VARCHAR(75) null
 );
 
 create table CompanyInfo (
@@ -246,8 +250,8 @@ create table Contact_ (
 	firstName VARCHAR(75) null,
 	middleName VARCHAR(75) null,
 	lastName VARCHAR(75) null,
-	prefixId LONG,
-	suffixId LONG,
+	prefixListTypeId LONG,
+	suffixListTypeId LONG,
 	male BOOLEAN,
 	birthday DATE null,
 	smsSn VARCHAR(75) null,
@@ -431,6 +435,7 @@ create table DLFileVersion (
 	version VARCHAR(75) null,
 	size_ LONG,
 	checksum VARCHAR(75) null,
+	storeUUID VARCHAR(255) null,
 	expirationDate DATE null,
 	reviewDate DATE null,
 	lastPublishDate DATE null,
@@ -473,8 +478,9 @@ create table DLFolder (
 
 create table EmailAddress (
 	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	emailAddressId LONG not null primary key,
+	emailAddressId LONG not null,
 	companyId LONG,
 	userId LONG,
 	userName VARCHAR(75) null,
@@ -483,8 +489,9 @@ create table EmailAddress (
 	classNameId LONG,
 	classPK LONG,
 	address VARCHAR(254) null,
-	typeId LONG,
-	primary_ BOOLEAN
+	listTypeId LONG,
+	primary_ BOOLEAN,
+	primary key (emailAddressId, ctCollectionId)
 );
 
 create table ExpandoColumn (
@@ -705,8 +712,9 @@ create table LayoutFriendlyURL (
 
 create table LayoutPrototype (
 	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	layoutPrototypeId LONG not null primary key,
+	layoutPrototypeId LONG not null,
 	companyId LONG,
 	userId LONG,
 	userName VARCHAR(75) null,
@@ -715,7 +723,8 @@ create table LayoutPrototype (
 	name TEXT null,
 	description TEXT null,
 	settings_ STRING null,
-	active_ BOOLEAN
+	active_ BOOLEAN,
+	primary key (layoutPrototypeId, ctCollectionId)
 );
 
 create table LayoutRevision (
@@ -833,7 +842,7 @@ create table OrgLabor (
 	orgLaborId LONG not null primary key,
 	companyId LONG,
 	organizationId LONG,
-	typeId LONG,
+	listTypeId LONG,
 	sunOpen INTEGER,
 	sunClose INTEGER,
 	monOpen INTEGER,
@@ -868,7 +877,7 @@ create table Organization_ (
 	recursable BOOLEAN,
 	regionId LONG,
 	countryId LONG,
-	statusId LONG,
+	statusListTypeId LONG,
 	comments STRING null,
 	logoId LONG,
 	primary key (organizationId, ctCollectionId)
@@ -932,8 +941,9 @@ create table PasswordTracker (
 
 create table Phone (
 	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	phoneId LONG not null primary key,
+	phoneId LONG not null,
 	companyId LONG,
 	userId LONG,
 	userName VARCHAR(75) null,
@@ -943,8 +953,9 @@ create table Phone (
 	classPK LONG,
 	number_ VARCHAR(75) null,
 	extension VARCHAR(75) null,
-	typeId LONG,
-	primary_ BOOLEAN
+	listTypeId LONG,
+	primary_ BOOLEAN,
+	primary key (phoneId, ctCollectionId)
 );
 
 create table PluginSetting (
@@ -1207,7 +1218,7 @@ create table Role_ (
 	classPK LONG,
 	name VARCHAR(75) null,
 	title STRING null,
-	description STRING null,
+	description TEXT null,
 	type_ INTEGER,
 	subtype VARCHAR(75) null,
 	primary key (roleId, ctCollectionId)
@@ -1422,7 +1433,6 @@ create table User_ (
 	companyId LONG,
 	createDate DATE null,
 	modifiedDate DATE null,
-	defaultUser BOOLEAN,
 	contactId LONG,
 	password_ VARCHAR(75) null,
 	passwordEncrypted BOOLEAN,
@@ -1457,6 +1467,7 @@ create table User_ (
 	lockoutDate DATE null,
 	agreedToTermsOfUse BOOLEAN,
 	emailAddressVerified BOOLEAN,
+	type_ INTEGER,
 	status INTEGER,
 	primary key (userId, ctCollectionId)
 );
@@ -1637,7 +1648,7 @@ create table Website (
 	classNameId LONG,
 	classPK LONG,
 	url STRING null,
-	typeId LONG,
+	listTypeId LONG,
 	primary_ BOOLEAN,
 	lastPublishDate DATE null
 );

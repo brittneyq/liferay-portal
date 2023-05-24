@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.cluster.ClusterMasterExecutor;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.lock.LockManager;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ClassUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -36,15 +35,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = BackgroundTaskManager.class)
+@Component(service = BackgroundTaskManager.class)
 public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 
 	@Override
@@ -552,15 +549,6 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 		_backgroundTaskLocalService.triggerBackgroundTask(backgroundTaskId);
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		if (!_clusterMasterExecutor.isEnabled() ||
-			_clusterMasterExecutor.isMaster()) {
-
-			cleanUpBackgroundTasks();
-		}
-	}
-
 	private List<BackgroundTask> _translate(
 		List<com.liferay.portal.background.task.model.BackgroundTask>
 			backgroundTaskModels) {
@@ -612,13 +600,6 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 	private BackgroundTaskLocalService _backgroundTaskLocalService;
 
 	@Reference
-	private BackgroundTaskMessagingConfigurator
-		_backgroundTaskMessagingConfigurator;
-
-	@Reference
 	private ClusterMasterExecutor _clusterMasterExecutor;
-
-	@Reference
-	private LockManager _lockManager;
 
 }

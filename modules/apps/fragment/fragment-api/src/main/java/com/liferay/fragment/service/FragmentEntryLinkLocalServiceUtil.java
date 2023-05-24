@@ -137,10 +137,29 @@ public class FragmentEntryLinkLocalServiceUtil {
 		getService().deleteFragmentEntryLinks(groupId);
 	}
 
+	public static void deleteFragmentEntryLinks(
+		long groupId, long plid, boolean deleted) {
+
+		getService().deleteFragmentEntryLinks(groupId, plid, deleted);
+	}
+
 	public static void deleteFragmentEntryLinks(long[] fragmentEntryLinkIds)
 		throws PortalException {
 
 		getService().deleteFragmentEntryLinks(fragmentEntryLinkIds);
+	}
+
+	public static void deleteFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId) {
+
+		getService().deleteFragmentEntryLinksByFragmentEntryId(fragmentEntryId);
+	}
+
+	public static void deleteFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId, boolean deleted) {
+
+		getService().deleteFragmentEntryLinksByFragmentEntryId(
+			fragmentEntryId, deleted);
 	}
 
 	public static List<FragmentEntryLink>
@@ -403,6 +422,18 @@ public class FragmentEntryLinkLocalServiceUtil {
 	}
 
 	public static List<FragmentEntryLink> getFragmentEntryLinks(
+		long companyId, String rendererKey) {
+
+		return getService().getFragmentEntryLinks(companyId, rendererKey);
+	}
+
+	public static List<FragmentEntryLink> getFragmentEntryLinks(
+		long companyId, String[] rendererKeys) {
+
+		return getService().getFragmentEntryLinks(companyId, rendererKeys);
+	}
+
+	public static List<FragmentEntryLink> getFragmentEntryLinks(
 		String rendererKey) {
 
 		return getService().getFragmentEntryLinks(rendererKey);
@@ -413,6 +444,14 @@ public class FragmentEntryLinkLocalServiceUtil {
 
 		return getService().getFragmentEntryLinksByFragmentEntryId(
 			fragmentEntryId);
+	}
+
+	public static List<FragmentEntryLink>
+		getFragmentEntryLinksByFragmentEntryId(
+			long fragmentEntryId, boolean deleted) {
+
+		return getService().getFragmentEntryLinksByFragmentEntryId(
+			fragmentEntryId, deleted);
 	}
 
 	public static List<FragmentEntryLink> getFragmentEntryLinksByPlid(
@@ -495,6 +534,13 @@ public class FragmentEntryLinkLocalServiceUtil {
 			fragmentEntryId);
 	}
 
+	public static int getFragmentEntryLinksCountByFragmentEntryId(
+		long fragmentEntryId, boolean deleted) {
+
+		return getService().getFragmentEntryLinksCountByFragmentEntryId(
+			fragmentEntryId, deleted);
+	}
+
 	public static int getFragmentEntryLinksCountByPlid(
 		long groupId, long plid) {
 
@@ -567,6 +613,13 @@ public class FragmentEntryLinkLocalServiceUtil {
 		getService().updateClassedModel(plid);
 	}
 
+	public static FragmentEntryLink updateDeleted(
+			long fragmentEntryLinkId, boolean deleted)
+		throws PortalException {
+
+		return getService().updateDeleted(fragmentEntryLinkId, deleted);
+	}
+
 	/**
 	 * Updates the fragment entry link in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -622,6 +675,14 @@ public class FragmentEntryLinkLocalServiceUtil {
 			fragmentEntryLinkId, editableValues, updateClassedModel);
 	}
 
+	public static void updateLatestChanges(
+			com.liferay.fragment.model.FragmentEntry fragmentEntry,
+			FragmentEntryLink fragmentEntryLink)
+		throws PortalException {
+
+		getService().updateLatestChanges(fragmentEntry, fragmentEntryLink);
+	}
+
 	public static void updateLatestChanges(long fragmentEntryLinkId)
 		throws PortalException {
 
@@ -630,6 +691,10 @@ public class FragmentEntryLinkLocalServiceUtil {
 
 	public static FragmentEntryLinkLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(FragmentEntryLinkLocalService service) {
+		_service = service;
 	}
 
 	private static volatile FragmentEntryLinkLocalService _service;

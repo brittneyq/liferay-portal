@@ -54,8 +54,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -562,7 +560,7 @@ public abstract class CommerceVirtualOrderItemLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommerceVirtualOrderItemLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -578,7 +576,8 @@ public abstract class CommerceVirtualOrderItemLocalServiceBaseImpl
 		commerceVirtualOrderItemLocalService =
 			(CommerceVirtualOrderItemLocalService)aopProxy;
 
-		_setLocalServiceUtilService(commerceVirtualOrderItemLocalService);
+		CommerceVirtualOrderItemLocalServiceUtil.setService(
+			commerceVirtualOrderItemLocalService);
 	}
 
 	/**
@@ -624,24 +623,6 @@ public abstract class CommerceVirtualOrderItemLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CommerceVirtualOrderItemLocalService
-			commerceVirtualOrderItemLocalService) {
-
-		try {
-			Field field =
-				CommerceVirtualOrderItemLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceVirtualOrderItemLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected CommerceVirtualOrderItemLocalService
 		commerceVirtualOrderItemLocalService;
 
@@ -655,18 +636,6 @@ public abstract class CommerceVirtualOrderItemLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceVirtualOrderItemLocalServiceBaseImpl.class);

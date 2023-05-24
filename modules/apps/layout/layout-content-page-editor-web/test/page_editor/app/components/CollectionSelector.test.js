@@ -20,10 +20,10 @@ import React from 'react';
 import {CollectionItemContextProvider} from '../../../../src/main/resources/META-INF/resources/page_editor/app/contexts/CollectionItemContext';
 import {StoreAPIContextProvider} from '../../../../src/main/resources/META-INF/resources/page_editor/app/contexts/StoreContext';
 import CollectionSelector from '../../../../src/main/resources/META-INF/resources/page_editor/common/components/CollectionSelector';
-import {openItemSelector} from '../../../../src/main/resources/META-INF/resources/page_editor/core/openItemSelector';
+import {openItemSelector} from '../../../../src/main/resources/META-INF/resources/page_editor/common/openItemSelector';
 
 jest.mock(
-	'../../../../src/main/resources/META-INF/resources/page_editor/core/openItemSelector',
+	'../../../../src/main/resources/META-INF/resources/page_editor/common/openItemSelector',
 	() => ({
 		openItemSelector: jest.fn(() => {}),
 	})
@@ -38,10 +38,6 @@ describe('CollectionSelector', () => {
 		const CUSTOM_COLLECTION_SELECTOR_URL = 'CUSTOM_COLLECTION_SELECTOR_URL';
 		const DEFAULT_ITEM_SELECTOR_URL = 'DEFAULT_ITEM_SELECTOR_URL';
 
-		Liferay.Util.sub.mockImplementation((langKey, args) =>
-			[langKey, ...args].join('-')
-		);
-
 		render(
 			<StoreAPIContextProvider dispatch={() => {}} getState={() => ({})}>
 				<CollectionItemContextProvider
@@ -51,7 +47,7 @@ describe('CollectionSelector', () => {
 				>
 					<CollectionSelector
 						itemSelectorURL={DEFAULT_ITEM_SELECTOR_URL}
-						label=""
+						label="something"
 						onCollectionSelect={() => {}}
 					/>
 				</CollectionItemContextProvider>
@@ -72,15 +68,11 @@ describe('CollectionSelector', () => {
 	it('uses passed item selector URL when not inside a collection item context', () => {
 		const DEFAULT_ITEM_SELECTOR_URL = 'DEFAULT_ITEM_SELECTOR_URL';
 
-		Liferay.Util.sub.mockImplementation((langKey, args) =>
-			[langKey, ...args].join('-')
-		);
-
 		render(
 			<StoreAPIContextProvider dispatch={() => {}} getState={() => ({})}>
 				<CollectionSelector
 					itemSelectorURL={DEFAULT_ITEM_SELECTOR_URL}
-					label=""
+					label="something"
 					onCollectionSelect={() => {}}
 				/>
 			</StoreAPIContextProvider>
@@ -98,10 +90,6 @@ describe('CollectionSelector', () => {
 	});
 
 	it('does not show collection prefilter label when the filter is not configured', () => {
-		Liferay.Util.sub.mockImplementation((langKey, args) =>
-			[langKey, ...args].join('-')
-		);
-
 		render(
 			<StoreAPIContextProvider dispatch={() => {}} getState={() => ({})}>
 				<CollectionSelector label="" onCollectionSelect={() => {}} />
@@ -109,15 +97,11 @@ describe('CollectionSelector', () => {
 		);
 
 		expect(
-			screen.queryByText('collection-prefiltered')
+			screen.queryByText('collection-filtered')
 		).not.toBeInTheDocument();
 	});
 
 	it('shows collection prefilter label when the filter is not configured', () => {
-		Liferay.Util.sub.mockImplementation((langKey, args) =>
-			[langKey, ...args].join('-')
-		);
-
 		render(
 			<StoreAPIContextProvider dispatch={() => {}} getState={() => ({})}>
 				<CollectionSelector
@@ -132,8 +116,6 @@ describe('CollectionSelector', () => {
 			</StoreAPIContextProvider>
 		);
 
-		expect(
-			screen.queryByText('collection-prefiltered')
-		).toBeInTheDocument();
+		expect(screen.queryByText('collection-filtered')).toBeInTheDocument();
 	});
 });

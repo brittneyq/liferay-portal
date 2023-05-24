@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Petteri Karttunen
  */
 @Component(
-	enabled = false, immediate = true,
+	enabled = false,
 	property = {
 		"panel.app.order:Integer=100",
 		"panel.category.key=" + SXPPanelCategoryKeys.CONTROL_PANEL_SEARCH_EXPERIENCES
@@ -41,6 +41,11 @@ import org.osgi.service.component.annotations.Reference;
 	service = PanelApp.class
 )
 public class SXPBlueprintAdminPanelApp extends BasePanelApp {
+
+	@Override
+	public Portlet getPortlet() {
+		return _portlet;
+	}
 
 	@Override
 	public String getPortletId() {
@@ -58,16 +63,12 @@ public class SXPBlueprintAdminPanelApp extends BasePanelApp {
 		return super.isShow(permissionChecker, group);
 	}
 
-	@Override
-	@Reference(
-		target = "(javax.portlet.name=" + SXPPortletKeys.SXP_BLUEPRINT_ADMIN + ")",
-		unbind = "-"
-	)
-	public void setPortlet(Portlet portlet) {
-		super.setPortlet(portlet);
-	}
-
 	@Reference
 	protected SearchEngineInformation searchEngineInformation;
+
+	@Reference(
+		target = "(javax.portlet.name=" + SXPPortletKeys.SXP_BLUEPRINT_ADMIN + ")"
+	)
+	private Portlet _portlet;
 
 }

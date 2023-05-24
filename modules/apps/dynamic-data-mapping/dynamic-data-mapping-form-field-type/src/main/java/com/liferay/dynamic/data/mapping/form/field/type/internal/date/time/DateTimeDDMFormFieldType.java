@@ -25,14 +25,13 @@ import org.osgi.service.component.annotations.Component;
  * @author Rodrigo Paulino
  */
 @Component(
-	immediate = true,
 	property = {
 		"ddm.form.field.type.description=date-time-field-type-description",
 		"ddm.form.field.type.display.order:Double=6.1",
 		"ddm.form.field.type.group=basic", "ddm.form.field.type.icon=date-time",
 		"ddm.form.field.type.label=date-and-time",
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE_TIME,
-		"ddm.form.field.type.scope=forms"
+		"ddm.form.field.type.scope=forms,journal"
 	},
 	service = DDMFormFieldType.class
 )

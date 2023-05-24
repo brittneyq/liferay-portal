@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.util.KeyValuePair;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 /**
  * @author Lino Alves
@@ -33,11 +32,11 @@ public interface TypeFacetPortletPreferences {
 	public static final String PREFERENCE_KEY_FREQUENCY_THRESHOLD =
 		"frequencyThreshold";
 
+	public static final String PREFERENCE_KEY_ORDER = "order";
+
 	public static final String PREFERENCE_KEY_PARAMETER_NAME = "parameterName";
 
-	public Optional<String[]> getAssetTypesArray();
-
-	public String getAssetTypesString();
+	public String getAssetTypes();
 
 	public List<KeyValuePair> getAvailableAssetTypes(
 		long companyId, Locale locale);
@@ -48,6 +47,8 @@ public interface TypeFacetPortletPreferences {
 	public String[] getCurrentAssetTypesArray(long companyId);
 
 	public int getFrequencyThreshold();
+
+	public String getOrder();
 
 	public String getParameterName();
 

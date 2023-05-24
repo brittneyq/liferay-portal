@@ -28,10 +28,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Cristina González
  */
-@Component(
-	immediate = true,
-	service = {Capability.class, MBRatingsExporterImporterCapability.class}
-)
+@Component(service = Capability.class)
 public class MBRatingsExporterImporterCapability implements Capability {
 
 	@Override

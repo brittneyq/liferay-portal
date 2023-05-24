@@ -43,7 +43,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
@@ -59,21 +58,20 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	configurationPid = "com.liferay.portal.security.sso.token.internal.configuration.TokenConfiguration",
-	configurationPolicy = ConfigurationPolicy.OPTIONAL,
+	configurationPid = "com.liferay.portal.security.sso.token.configuration.TokenConfiguration",
 	service = AutoLogin.class
 )
 public class TokenAutoLogin extends BaseAutoLogin {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_tokenRetrievers = ServiceTrackerMapFactory.openSingleValueMap(
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
 			bundleContext, TokenRetriever.class, "token.location");
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_tokenRetrievers.close();
+		_serviceTrackerMap.close();
 	}
 
 	@Override
@@ -84,21 +82,21 @@ public class TokenAutoLogin extends BaseAutoLogin {
 
 		long companyId = _portal.getCompanyId(httpServletRequest);
 
-		TokenConfiguration tokenCompanyServiceSettings =
+		TokenConfiguration tokenConfiguration =
 			_configurationProvider.getConfiguration(
 				TokenConfiguration.class,
 				new CompanyServiceSettingsLocator(
 					companyId, TokenConstants.SERVICE_NAME));
 
-		if (!tokenCompanyServiceSettings.enabled()) {
+		if (!tokenConfiguration.enabled()) {
 			return null;
 		}
 
-		String userTokenName = tokenCompanyServiceSettings.userTokenName();
+		String userTokenName = tokenConfiguration.userTokenName();
 
-		String tokenLocation = tokenCompanyServiceSettings.tokenLocation();
+		String tokenLocation = tokenConfiguration.tokenLocation();
 
-		TokenRetriever tokenRetriever = _tokenRetrievers.getService(
+		TokenRetriever tokenRetriever = _serviceTrackerMap.getService(
 			tokenLocation);
 
 		if (tokenRetriever == null) {
@@ -120,7 +118,7 @@ public class TokenAutoLogin extends BaseAutoLogin {
 			return null;
 		}
 
-		User user = _getUser(companyId, login, tokenCompanyServiceSettings);
+		User user = _getUser(companyId, login, tokenConfiguration);
 
 		addRedirect(httpServletRequest);
 
@@ -134,8 +132,7 @@ public class TokenAutoLogin extends BaseAutoLogin {
 	}
 
 	private User _getUser(
-			long companyId, String login,
-			TokenConfiguration tokenCompanyServiceSettings)
+			long companyId, String login, TokenConfiguration tokenConfiguration)
 		throws Exception {
 
 		User user = null;
@@ -144,7 +141,7 @@ public class TokenAutoLogin extends BaseAutoLogin {
 			companyId, PropsKeys.COMPANY_SECURITY_AUTH_TYPE,
 			PropsValues.COMPANY_SECURITY_AUTH_TYPE);
 
-		if (tokenCompanyServiceSettings.importFromLDAP()) {
+		if (tokenConfiguration.importFromLDAP()) {
 			try {
 				if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
 					user = _userImporter.importUser(
@@ -206,7 +203,7 @@ public class TokenAutoLogin extends BaseAutoLogin {
 	@Reference
 	private Portal _portal;
 
-	private ServiceTrackerMap<String, TokenRetriever> _tokenRetrievers;
+	private ServiceTrackerMap<String, TokenRetriever> _serviceTrackerMap;
 
 	@Reference
 	private UserImporter _userImporter;

@@ -66,8 +66,6 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -294,50 +292,23 @@ public abstract class CommercePriceModifierLocalServiceBaseImpl
 		return commercePriceModifierPersistence.fetchByUUID_G(uuid, groupId);
 	}
 
-	/**
-	 * Returns the commerce price modifier with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce price modifier's external reference code
-	 * @return the matching commerce price modifier, or <code>null</code> if a matching commerce price modifier could not be found
-	 */
 	@Override
 	public CommercePriceModifier
 		fetchCommercePriceModifierByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long companyId) {
 
-		return commercePriceModifierPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return commercePriceModifierPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommercePriceModifierByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public CommercePriceModifier fetchCommercePriceModifierByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchCommercePriceModifierByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the commerce price modifier with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce price modifier's external reference code
-	 * @return the matching commerce price modifier
-	 * @throws PortalException if a matching commerce price modifier could not be found
-	 */
 	@Override
 	public CommercePriceModifier
 			getCommercePriceModifierByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return commercePriceModifierPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return commercePriceModifierPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -674,7 +645,7 @@ public abstract class CommercePriceModifierLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommercePriceModifierLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -691,7 +662,8 @@ public abstract class CommercePriceModifierLocalServiceBaseImpl
 		commercePriceModifierLocalService =
 			(CommercePriceModifierLocalService)aopProxy;
 
-		_setLocalServiceUtilService(commercePriceModifierLocalService);
+		CommercePriceModifierLocalServiceUtil.setService(
+			commercePriceModifierLocalService);
 	}
 
 	/**
@@ -749,23 +721,6 @@ public abstract class CommercePriceModifierLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		CommercePriceModifierLocalService commercePriceModifierLocalService) {
-
-		try {
-			Field field =
-				CommercePriceModifierLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commercePriceModifierLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

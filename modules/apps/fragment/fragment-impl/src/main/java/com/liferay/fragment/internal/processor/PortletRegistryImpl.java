@@ -14,12 +14,11 @@
 
 package com.liferay.fragment.internal.processor;
 
-import com.liferay.fragment.contributor.PortletAliasRegistration;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -28,18 +27,16 @@ import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.render.PortletRenderParts;
 import com.liferay.portal.kernel.portlet.render.PortletRenderUtil;
 import com.liferay.portal.kernel.service.PortletLocalService;
-import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,18 +45,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 
 /**
  * @author Pavel Savinov
  */
-@Component(immediate = true, service = PortletRegistry.class)
+@Component(service = PortletRegistry.class)
 public class PortletRegistryImpl implements PortletRegistry {
 
 	@Override
@@ -70,7 +62,7 @@ public class PortletRegistryImpl implements PortletRegistry {
 
 		if (fragmentEntryLink.isTypePortlet()) {
 			try {
-				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+				JSONObject jsonObject = _jsonFactory.createJSONObject(
 					fragmentEntryLink.getEditableValues());
 
 				String portletId = jsonObject.getString("portletId");
@@ -126,12 +118,22 @@ public class PortletRegistryImpl implements PortletRegistry {
 
 	@Override
 	public List<String> getPortletAliases() {
-		return new ArrayList<>(_portletNames.keySet());
+		return new ArrayList<>(_aliasPortletNames.keySet());
 	}
 
 	@Override
 	public String getPortletName(String alias) {
-		return _portletNames.get(alias);
+		return _aliasPortletNames.get(alias);
+	}
+
+	@Override
+	public void registerAlias(String alias, String portletName) {
+		_aliasPortletNames.put(alias, portletName);
+	}
+
+	@Override
+	public void unregisterAlias(String alias) {
+		_aliasPortletNames.remove(alias);
 	}
 
 	@Override
@@ -148,25 +150,20 @@ public class PortletRegistryImpl implements PortletRegistry {
 			return;
 		}
 
-		Stream<String> stream = fragmentEntryLinkPortletIds.stream();
+		Set<Portlet> portlets = new HashSet<>();
 
-		List<Portlet> portlets = stream.map(
-			fragmentEntryLinkPortletId -> _portletLocalService.getPortletById(
-				fragmentEntryLinkPortletId)
-		).filter(
-			portlet -> {
-				if ((portlet == null) || !portlet.isActive() ||
-					portlet.isUndeployedPortlet()) {
+		for (String fragmentEntryLinkPortletId : fragmentEntryLinkPortletIds) {
+			Portlet portlet = _portletLocalService.getPortletById(
+				fragmentEntryLinkPortletId);
 
-					return false;
-				}
+			if ((portlet == null) || !portlet.isActive() ||
+				portlet.isUndeployedPortlet()) {
 
-				return true;
+				continue;
 			}
-		).distinct(
-		).collect(
-			Collectors.toList()
-		);
+
+			portlets.add(portlet);
+		}
 
 		for (Portlet portlet : portlets) {
 			try {
@@ -188,51 +185,16 @@ public class PortletRegistryImpl implements PortletRegistry {
 		}
 	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC,
-		target = "(com.liferay.fragment.entry.processor.portlet.alias=*)"
-	)
-	protected void setPortlet(
-		javax.portlet.Portlet jxPortlet, Map<String, Object> properties) {
-
-		String alias = MapUtil.getString(
-			properties, "com.liferay.fragment.entry.processor.portlet.alias");
-		String portletName = MapUtil.getString(
-			properties, "javax.portlet.name");
-
-		_portletNames.put(alias, portletName);
-
-		Bundle bundle = FrameworkUtil.getBundle(jxPortlet.getClass());
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		bundleContext.registerService(
-			PortletAliasRegistration.class,
-			new PortletAliasRegistration() {
-			},
-			HashMapDictionaryBuilder.<String, Object>put(
-				"com.liferay.fragment.entry.processor.portlet.alias", alias
-			).build());
-	}
-
-	protected void unsetPortlet(
-		javax.portlet.Portlet jxPortlet, Map<String, Object> properties) {
-
-		String alias = MapUtil.getString(
-			properties, "com.liferay.fragment.entry.processor.portlet.alias");
-		String portletName = MapUtil.getString(
-			properties, "javax.portlet.name");
-
-		_portletNames.remove(alias, portletName);
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortletRegistryImpl.class);
 
+	private final Map<String, String> _aliasPortletNames =
+		new ConcurrentHashMap<>();
+
+	@Reference
+	private JSONFactory _jsonFactory;
+
 	@Reference
 	private PortletLocalService _portletLocalService;
-
-	private final Map<String, String> _portletNames = new ConcurrentHashMap<>();
 
 }

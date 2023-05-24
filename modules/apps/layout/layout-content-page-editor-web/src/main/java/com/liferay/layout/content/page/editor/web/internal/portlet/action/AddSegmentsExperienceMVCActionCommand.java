@@ -26,7 +26,7 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocal
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -34,13 +34,11 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.model.SegmentsExperiment;
 import com.liferay.segments.model.SegmentsExperimentRel;
@@ -63,7 +61,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author David Arques
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/layout_content_page_editor/add_segments_experience"
@@ -77,40 +74,36 @@ public class AddSegmentsExperienceMVCActionCommand
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		SegmentsExperiment segmentsExperiment = _getSegmentsExperiment(
 			actionRequest);
+
+		long groupId = ParamUtil.getLong(actionRequest, "groupId");
+		long plid = ParamUtil.getLong(actionRequest, "plid");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			actionRequest);
 
 		SegmentsExperience segmentsExperience = _addSegmentsExperience(
-			actionRequest, _portal.getClassNameId(Layout.class),
-			themeDisplay.getPlid(), segmentsExperiment, serviceContext);
+			actionRequest, plid, segmentsExperiment, serviceContext);
 
 		long baseSegmentsExperienceId = _getBaseSegmentsExperienceId(
-			segmentsExperiment, themeDisplay);
+			plid, segmentsExperiment);
 
 		SegmentsExperienceUtil.copySegmentsExperienceData(
-			themeDisplay.getPlid(), _commentManager,
-			themeDisplay.getScopeGroupId(), _portletRegistry,
+			plid, _commentManager, groupId, _portletRegistry,
 			baseSegmentsExperienceId,
 			segmentsExperience.getSegmentsExperienceId(),
-			className -> serviceContext, themeDisplay.getUserId());
+			className -> serviceContext, _portal.getUserId(actionRequest));
 
 		JSONObject jsonObject = JSONUtil.put(
 			"fragmentEntryLinks",
 			_getFragmentEntryLinksJSONObject(
-				actionRequest, actionResponse, themeDisplay.getPlid(),
-				themeDisplay.getScopeGroupId(),
+				actionRequest, actionResponse, plid, groupId,
 				segmentsExperience.getSegmentsExperienceId())
 		).put(
 			"layoutData",
 			_getLayoutDataJSONObject(
-				themeDisplay.getPlid(), themeDisplay.getScopeGroupId(),
-				segmentsExperience.getSegmentsExperienceId())
+				plid, groupId, segmentsExperience.getSegmentsExperienceId())
 		).put(
 			"segmentsExperience",
 			SegmentsExperienceUtil.getSegmentsExperienceJSONObject(
@@ -127,11 +120,11 @@ public class AddSegmentsExperienceMVCActionCommand
 		jsonObject.put(
 			"segmentsExperimentRel",
 			_getSegmentsSegmentsExperimentRelJSONObject(
-				segmentsExperimentRel, themeDisplay.getLocale()));
+				segmentsExperimentRel, _portal.getLocale(actionRequest)));
 
 		_initializeDraftLayout(
-			themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
-			segmentsExperience, baseSegmentsExperienceId, serviceContext);
+			groupId, plid, segmentsExperience, baseSegmentsExperienceId,
+			serviceContext);
 
 		return jsonObject;
 	}
@@ -145,7 +138,7 @@ public class AddSegmentsExperienceMVCActionCommand
 	}
 
 	private SegmentsExperience _addSegmentsExperience(
-			ActionRequest actionRequest, long classNameId, long classPK,
+			ActionRequest actionRequest, long classPK,
 			SegmentsExperiment segmentsExperiment,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -157,7 +150,7 @@ public class AddSegmentsExperienceMVCActionCommand
 
 			return _segmentsExperienceService.appendSegmentsExperience(
 				serviceContext.getScopeGroupId(),
-				segmentsExperience.getSegmentsEntryId(), classNameId, classPK,
+				segmentsExperience.getSegmentsEntryId(), classPK,
 				Collections.singletonMap(
 					LocaleUtil.getSiteDefault(),
 					ParamUtil.getString(actionRequest, "name")),
@@ -166,8 +159,7 @@ public class AddSegmentsExperienceMVCActionCommand
 
 		return _segmentsExperienceService.addSegmentsExperience(
 			serviceContext.getScopeGroupId(),
-			ParamUtil.getLong(actionRequest, "segmentsEntryId"), classNameId,
-			classPK,
+			ParamUtil.getLong(actionRequest, "segmentsEntryId"), classPK,
 			Collections.singletonMap(
 				LocaleUtil.getSiteDefault(),
 				ParamUtil.getString(actionRequest, "name")),
@@ -187,11 +179,11 @@ public class AddSegmentsExperienceMVCActionCommand
 	}
 
 	private long _getBaseSegmentsExperienceId(
-		SegmentsExperiment segmentsExperiment, ThemeDisplay themeDisplay) {
+		long plid, SegmentsExperiment segmentsExperiment) {
 
 		if (segmentsExperiment == null) {
 			return _segmentsExperienceLocalService.
-				fetchDefaultSegmentsExperienceId(themeDisplay.getPlid());
+				fetchDefaultSegmentsExperienceId(plid);
 		}
 
 		return segmentsExperiment.getSegmentsExperienceId();
@@ -203,7 +195,7 @@ public class AddSegmentsExperienceMVCActionCommand
 		throws PortalException {
 
 		JSONObject fragmentEntryLinksJSONObject =
-			JSONFactoryUtil.createJSONObject();
+			_jsonFactory.createJSONObject();
 
 		List<FragmentEntryLink> fragmentEntryLinks =
 			_fragmentEntryLinkLocalService.
@@ -235,7 +227,7 @@ public class AddSegmentsExperienceMVCActionCommand
 			_layoutPageTemplateStructureLocalService.
 				fetchLayoutPageTemplateStructure(groupId, classPK, true);
 
-		return JSONFactoryUtil.createJSONObject(
+		return _jsonFactory.createJSONObject(
 			layoutPageTemplateStructure.getData(segmentsExperienceId));
 	}
 
@@ -301,6 +293,9 @@ public class AddSegmentsExperienceMVCActionCommand
 
 	@Reference
 	private FragmentEntryLinkManager _fragmentEntryLinkManager;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

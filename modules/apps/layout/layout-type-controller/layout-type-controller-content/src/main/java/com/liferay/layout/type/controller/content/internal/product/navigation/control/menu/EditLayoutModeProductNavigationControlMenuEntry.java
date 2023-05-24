@@ -44,6 +44,8 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.product.navigation.control.menu.BaseProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
+import com.liferay.segments.model.SegmentsExperience;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 import com.liferay.staging.StagingGroupHelper;
 
@@ -60,7 +62,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"product.navigation.control.menu.category.key=" + ProductNavigationControlMenuCategoryKeys.USER,
 		"product.navigation.control.menu.entry.order:Integer=50"
@@ -124,7 +125,8 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 					Collections.emptyMap(), layout.getMasterLayoutPlid(),
 					serviceContext);
 
-				draftLayout = _layoutCopyHelper.copyLayout(layout, draftLayout);
+				draftLayout = _layoutCopyHelper.copyLayoutContent(
+					layout, draftLayout);
 
 				_layoutLocalService.updateStatus(
 					draftLayout.getUserId(), draftLayout.getPlid(),
@@ -229,8 +231,17 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 			httpServletRequest, "segmentsExperienceId", -1);
 
 		if (segmentsExperienceId != -1) {
-			redirect = HttpComponentsUtil.setParameter(
-				redirect, "segmentsExperienceId", segmentsExperienceId);
+			SegmentsExperience segmentsExperience =
+				_segmentsExperienceLocalService.fetchSegmentsExperience(
+					segmentsExperienceId);
+
+			if ((segmentsExperience != null) &&
+				((layout.getPlid() == segmentsExperience.getPlid()) ||
+				 (layout.getClassPK() == segmentsExperience.getPlid()))) {
+
+				redirect = HttpComponentsUtil.setParameter(
+					redirect, "segmentsExperienceId", segmentsExperienceId);
+			}
 		}
 
 		return redirect;
@@ -259,6 +270,9 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 
 	@Reference
 	private Sites _sites;

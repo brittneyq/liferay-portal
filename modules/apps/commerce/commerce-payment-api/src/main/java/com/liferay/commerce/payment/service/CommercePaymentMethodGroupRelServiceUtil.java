@@ -101,6 +101,15 @@ public class CommercePaymentMethodGroupRelServiceUtil {
 	}
 
 	public static CommercePaymentMethodGroupRel
+			fetchCommercePaymentMethodGroupRel(
+				long commercePaymentMethodGroupRelId)
+		throws PortalException {
+
+		return getService().fetchCommercePaymentMethodGroupRel(
+			commercePaymentMethodGroupRelId);
+	}
+
+	public static CommercePaymentMethodGroupRel
 			fetchCommercePaymentMethodGroupRel(long groupId, String engineKey)
 		throws PortalException {
 
@@ -242,6 +251,12 @@ public class CommercePaymentMethodGroupRelServiceUtil {
 
 	public static CommercePaymentMethodGroupRelService getService() {
 		return _service;
+	}
+
+	public static void setService(
+		CommercePaymentMethodGroupRelService service) {
+
+		_service = service;
 	}
 
 	private static volatile CommercePaymentMethodGroupRelService _service;

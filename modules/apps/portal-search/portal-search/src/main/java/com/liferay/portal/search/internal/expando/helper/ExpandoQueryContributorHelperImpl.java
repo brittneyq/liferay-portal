@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
-import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -44,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author André de Oliveira
  */
-@Component(immediate = true, service = ExpandoQueryContributorHelper.class)
+@Component(service = ExpandoQueryContributorHelper.class)
 public class ExpandoQueryContributorHelperImpl
 	implements ExpandoQueryContributorHelper {
 
@@ -62,27 +61,6 @@ public class ExpandoQueryContributorHelperImpl
 		for (String className : classNames) {
 			contribute(className, booleanQuery, keywords, searchContext);
 		}
-	}
-
-	@Reference(unbind = "-")
-	public void setExpandoBridgeFactory(
-		ExpandoBridgeFactory expandoBridgeFactory) {
-
-		_expandoBridgeFactory = expandoBridgeFactory;
-	}
-
-	@Reference(unbind = "-")
-	public void setExpandoBridgeIndexer(
-		ExpandoBridgeIndexer expandoBridgeIndexer) {
-
-		_expandoBridgeIndexer = expandoBridgeIndexer;
-	}
-
-	@Reference(unbind = "-")
-	public void setExpandoColumnLocalService(
-		ExpandoColumnLocalService expandoColumnLocalService) {
-
-		_expandoColumnLocalService = expandoColumnLocalService;
 	}
 
 	protected void contribute(
@@ -138,8 +116,6 @@ public class ExpandoQueryContributorHelperImpl
 		}
 	}
 
-	protected Localization localization;
-
 	private Query _addTerm(
 		BooleanQuery booleanQuery, String fieldName, String keywords,
 		boolean like) {
@@ -182,30 +158,25 @@ public class ExpandoQueryContributorHelperImpl
 		return fieldName;
 	}
 
-	private Localization _getLocalization() {
-
-		// See LPS-72507
-
-		if (localization != null) {
-			return localization;
-		}
-
-		return LocalizationUtil.getLocalization();
-	}
-
 	private String _getLocalizedName(String name, Locale locale) {
 		if (locale == null) {
 			return name;
 		}
 
-		Localization localization = _getLocalization();
-
-		return localization.getLocalizedName(
+		return _localization.getLocalizedName(
 			name, LocaleUtil.toLanguageId(locale));
 	}
 
+	@Reference
 	private ExpandoBridgeFactory _expandoBridgeFactory;
+
+	@Reference
 	private ExpandoBridgeIndexer _expandoBridgeIndexer;
+
+	@Reference
 	private ExpandoColumnLocalService _expandoColumnLocalService;
+
+	@Reference
+	private Localization _localization;
 
 }

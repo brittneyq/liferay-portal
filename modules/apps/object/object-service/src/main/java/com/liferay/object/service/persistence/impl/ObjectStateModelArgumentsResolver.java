@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {ObjectStateModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.object.model.impl.ObjectStateImpl",
+		"table.name=ObjectState"
+	},
+	service = ArgumentsResolver.class
 )
 public class ObjectStateModelArgumentsResolver implements ArgumentsResolver {
 

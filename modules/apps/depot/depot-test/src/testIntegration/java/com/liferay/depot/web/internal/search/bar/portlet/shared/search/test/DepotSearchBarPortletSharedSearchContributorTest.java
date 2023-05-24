@@ -273,39 +273,34 @@ public class DepotSearchBarPortletSharedSearchContributorTest {
 
 			@Override
 			public SearchRequestBuilder getFederatedSearchRequestBuilder(
-				Optional<String> federatedSearchKeyOptional) {
+				String federatedSearchKey) {
 
 				return _searchRequestBuilderFactory.builder();
 			}
 
 			@Override
-			public Optional<String> getKeywordsParameterName() {
-				return Optional.empty();
+			public String getKeywordsParameterName() {
+				return null;
 			}
 
 			@Override
-			public Optional<Integer> getPaginationDelta() {
-				return Optional.empty();
+			public Integer getPaginationDelta() {
+				return null;
 			}
 
 			@Override
-			public Optional<String> getPaginationDeltaParameterName() {
-				return Optional.empty();
+			public String getPaginationDeltaParameterName() {
+				return null;
 			}
 
 			@Override
-			public Optional<Integer> getPaginationStart() {
-				return Optional.empty();
+			public Integer getPaginationStart() {
+				return null;
 			}
 
 			@Override
-			public Optional<String> getPaginationStartParameterName() {
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<String> getParameter71(String name) {
-				return Optional.empty();
+			public String getPaginationStartParameterName() {
+				return null;
 			}
 
 			@Override
@@ -319,18 +314,8 @@ public class DepotSearchBarPortletSharedSearchContributorTest {
 			}
 
 			@Override
-			public Optional<String[]> getParameterValues71(String name) {
-				return Optional.empty();
-			}
-
-			@Override
 			public String getPortletId() {
 				return null;
-			}
-
-			@Override
-			public Optional<PortletPreferences> getPortletPreferences71() {
-				return Optional.empty();
 			}
 
 			@Override
@@ -351,13 +336,13 @@ public class DepotSearchBarPortletSharedSearchContributorTest {
 			}
 
 			@Override
-			public Optional<String> getScope() {
+			public String getScope() {
 				return null;
 			}
 
 			@Override
-			public Optional<String> getScopeParameterName() {
-				return Optional.empty();
+			public String getScopeParameterName() {
+				return null;
 			}
 
 			@Override

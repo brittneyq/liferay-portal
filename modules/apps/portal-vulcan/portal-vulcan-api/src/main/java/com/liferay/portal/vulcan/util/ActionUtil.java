@@ -14,8 +14,12 @@
 
 package com.liferay.portal.vulcan.util;
 
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryServiceUtil;
 import com.liferay.oauth2.provider.scope.ScopeChecker;
 import com.liferay.oauth2.provider.scope.liferay.OAuth2ProviderScopeLiferayAccessControlContext;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -33,11 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
@@ -78,6 +79,21 @@ public class ActionUtil {
 			uriInfo);
 	}
 
+	public static Map<String, String> addAction(
+		String actionName, Class<?> clazz, Long id, String methodName,
+		ModelResourcePermission<?> modelResourcePermission, Long parameterId,
+		UriInfo uriInfo) {
+
+		try {
+			return _addAction(
+				actionName, clazz, id, methodName, modelResourcePermission,
+				null, null, parameterId, null, null, uriInfo);
+		}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *             #addAction(String, Class, Long, String, Object,
@@ -91,7 +107,7 @@ public class ActionUtil {
 
 		try {
 			return _addAction(
-				actionName, clazz, id, methodName, null, object, ownerId,
+				actionName, clazz, id, methodName, null, object, ownerId, id,
 				permissionName, siteId, uriInfo);
 		}
 		catch (Exception exception) {
@@ -107,7 +123,7 @@ public class ActionUtil {
 		try {
 			return _addAction(
 				actionName, clazz, id, methodName, modelResourcePermission,
-				object, null, null, null, uriInfo);
+				object, null, id, null, null, uriInfo);
 		}
 		catch (Exception exception) {
 			throw new RuntimeException(exception);
@@ -147,7 +163,8 @@ public class ActionUtil {
 	private static Map<String, String> _addAction(
 			String actionName, Class<?> clazz, Long id, String methodName,
 			ModelResourcePermission<?> modelResourcePermission, Object object,
-			Long ownerId, String permissionName, Long siteId, UriInfo uriInfo)
+			Long ownerId, Long parameterId, String permissionName, Long siteId,
+			UriInfo uriInfo)
 		throws Exception {
 
 		if (uriInfo == null) {
@@ -213,15 +230,10 @@ public class ActionUtil {
 			if (httpMethodName.equals("GET")) {
 				Class<?> returnType = method.getReturnType();
 
-				Stream<Method> stream = Arrays.stream(clazz.getMethods());
-
 				operation = GraphQLNamingUtil.getGraphQLPropertyName(
 					methodName, returnType.getName(),
-					stream.map(
-						Method::getName
-					).collect(
-						Collectors.toList()
-					));
+					TransformUtil.transformToList(
+						clazz.getMethods(), Method::getName));
 
 				type = "query";
 			}
@@ -248,7 +260,9 @@ public class ActionUtil {
 				).path(
 					clazz.getSuperclass(), methodName
 				).resolveTemplates(
-					_getParameterMap(clazz, id, methodName, siteId, uriInfo)
+					_getParameterMap(
+						clazz, parameterId, methodName, siteId, uriInfo),
+					false
 				).toTemplate();
 			}
 		).put(
@@ -320,25 +334,22 @@ public class ActionUtil {
 	}
 
 	private static Map<String, Object> _getParameterMap(
-		Class<?> clazz, Long id, String methodName, Long siteId,
-		UriInfo uriInfo) {
+			Class<?> clazz, Long id, String methodName, Long siteId,
+			UriInfo uriInfo)
+		throws PortalException {
+
+		Map<String, Object> parameterMap = new HashMap<>();
 
 		MultivaluedMap<String, String> pathParameters =
 			uriInfo.getPathParameters();
 
-		Set<Map.Entry<String, List<String>>> entrySet =
-			pathParameters.entrySet();
+		for (Map.Entry<String, List<String>> entry :
+				pathParameters.entrySet()) {
 
-		Stream<Map.Entry<String, List<String>>> stream = entrySet.stream();
+			List<String> value = entry.getValue();
 
-		Map<String, Object> parameterMap = stream.collect(
-			Collectors.toMap(
-				Map.Entry::getKey,
-				entry -> {
-					List<String> value = entry.getValue();
-
-					return value.get(0);
-				}));
+			parameterMap.put(entry.getKey(), value.get(0));
+		}
 
 		String firstParameterName = _getFirstParameterNameFromPath(
 			clazz.getSuperclass(), methodName);
@@ -347,7 +358,17 @@ public class ActionUtil {
 			return parameterMap;
 		}
 
-		if ((siteId != null) && Objects.equals(firstParameterName, "siteId")) {
+		if ((siteId != null) &&
+			Objects.equals(firstParameterName, "assetLibraryId")) {
+
+			DepotEntry depotEntry = DepotEntryServiceUtil.getGroupDepotEntry(
+				siteId);
+
+			parameterMap.put(firstParameterName, depotEntry.getDepotEntryId());
+		}
+		else if ((siteId != null) &&
+				 Objects.equals(firstParameterName, "siteId")) {
+
 			parameterMap.put(firstParameterName, siteId);
 		}
 		else {

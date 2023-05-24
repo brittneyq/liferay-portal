@@ -12,47 +12,31 @@
  * details.
  */
 
+import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
-import ClayLabel from '@clayui/label';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, {useContext, useState} from 'react';
 
-import FrontendDataSetContext from '../../FrontendDataSetContext';
+import ViewsContext from '../../views/ViewsContext';
+import {VIEWS_ACTION_TYPES} from '../../views/viewsReducer';
 import Filter from './filters/Filter';
 
 function FilterResume(props) {
-	const {setFilters} = useContext(FrontendDataSetContext);
+	const [{filters}, viewsDispatch] = useContext(ViewsContext);
 
 	const [open, setOpen] = useState(false);
 
-	const label = (
-		<ClayLabel
+	const button = (
+		<ClayButton
 			className={classNames(
-				'filter-resume component-label tbar-label mr-2',
-				props.disabled && 'disabled',
+				'filter-resume component-label tbar-label',
 				open && 'active'
 			)}
-			closeButtonProps={{
-				className: 'filter-resume-close',
-				disabled: props.disabled,
-				onClick: () => {
-					setFilters((filters) => {
-						return filters.map((filter) => ({
-							...filter,
-							...(filter.id === props.id
-								? {
-										active: false,
-										odataFilterString: undefined,
-										selectedData: undefined,
-								  }
-								: {}),
-						}));
-					});
-				},
-			}}
-			role="button"
+			disabled={props.disabled}
+			displayType="secondary"
+			size="sm"
 		>
 			<div className="filter-resume-content">
 				<ClayIcon
@@ -64,23 +48,51 @@ function FilterResume(props) {
 					{props.label}: {props.selectedItemsLabel}
 				</div>
 			</div>
-		</ClayLabel>
+		</ClayButton>
 	);
 
-	const dropDown = (
-		<ClayDropDown
-			active={open}
-			className="d-inline-flex"
-			onActiveChange={setOpen}
-			trigger={label}
-		>
-			<li className="dropdown-subheader">{props.label}</li>
+	const dropDownButtonGroup = (
+		<ClayButton.Group>
+			<ClayDropDown
+				active={open}
+				className="d-inline-flex"
+				onActiveChange={setOpen}
+				trigger={button}
+			>
+				<li className="dropdown-subheader">{props.label}</li>
 
-			<Filter {...props} />
-		</ClayDropDown>
+				<Filter {...props} />
+			</ClayDropDown>
+
+			<ClayButton
+				className="filter-resume-close"
+				disabled={props.disabled}
+				displayType="secondary"
+				monospaced
+				onClick={() =>
+					viewsDispatch({
+						type: VIEWS_ACTION_TYPES.UPDATE_FILTERS,
+						value: filters.map((filter) => ({
+							...filter,
+							...(filter.id === props.id
+								? {
+										active: false,
+										odataFilterString: undefined,
+										selectedData: undefined,
+								  }
+								: {}),
+						})),
+					})
+				}
+				size="sm"
+				title={Liferay.Language.get('remove-filter')}
+			>
+				<ClayIcon symbol="times-small" />
+			</ClayButton>
+		</ClayButton.Group>
 	);
 
-	return props.disabled ? label : dropDown;
+	return props.disabled ? button : dropDownButtonGroup;
 }
 
 FilterResume.propTypes = {

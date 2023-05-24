@@ -17,7 +17,7 @@ package com.liferay.object.exception;
 import com.liferay.portal.kernel.exception.PortalException;
 
 /**
- * @author Marco Leo
+ * @author Murilo Stodolni
  */
 public class ObjectActionExecutorKeyException extends PortalException {
 

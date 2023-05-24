@@ -18,7 +18,6 @@ import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTy
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 
 import java.util.Locale;
@@ -30,11 +29,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Feliphe Marinho
  */
 @Component(
-	immediate = true,
 	property = "object.field.business.type.key=" + ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT,
-	service = {
-		ObjectFieldBusinessType.class, RichTextObjectFieldBusinessType.class
-	}
+	service = ObjectFieldBusinessType.class
 )
 public class RichTextObjectFieldBusinessType
 	implements ObjectFieldBusinessType {
@@ -51,18 +47,12 @@ public class RichTextObjectFieldBusinessType
 
 	@Override
 	public String getDescription(Locale locale) {
-		return _language.get(
-			ResourceBundleUtil.getModuleAndPortalResourceBundle(
-				locale, getClass()),
-			"create-rich-text-content");
+		return _language.get(locale, "create-rich-text-content");
 	}
 
 	@Override
 	public String getLabel(Locale locale) {
-		return _language.get(
-			ResourceBundleUtil.getModuleAndPortalResourceBundle(
-				locale, getClass()),
-			"rich-text");
+		return _language.get(locale, "rich-text");
 	}
 
 	@Override

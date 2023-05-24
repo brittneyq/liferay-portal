@@ -17,7 +17,6 @@ package com.liferay.commerce.product.definitions.web.internal.frontend.data.set.
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
 import com.liferay.commerce.currency.model.CommerceMoney;
-import com.liferay.commerce.currency.model.CommerceMoneyFactory;
 import com.liferay.commerce.inventory.CPDefinitionInventoryEngine;
 import com.liferay.commerce.inventory.CPDefinitionInventoryEngineRegistry;
 import com.liferay.commerce.inventory.CommerceInventoryChecker;
@@ -49,7 +48,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
-import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +65,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "ddm.data.provider.instance.id=getCPInstanceOptionsValues",
 	service = DDMDataProvider.class
 )
@@ -200,13 +197,16 @@ public class CommerceProductInstanceOptionsValuesDataProvider
 					selectedCPDefinitionOptionValueRel.
 						getCPDefinitionOptionRel();
 
+				List<CPDefinitionOptionValueRel>
+					allowedCPDefinitionOptionValueRels =
+						_filterBySelectedCPDefinitionOptionValueRelIds(
+							cpDefinitionOptionRel);
+
 				outputs.add(
 					new Output(
 						cpDefinitionOptionRel.getKey(), "list",
 						_toSelectedCPDefinitionOptionValueRelKeyValuePairs(
-							cpDefinitionId,
-							cpDefinitionOptionRel.
-								getCPDefinitionOptionValueRels(),
+							cpDefinitionId, allowedCPDefinitionOptionValueRels,
 							selectedCPDefinitionOptionValueRel,
 							selectedCPDefinitionOptionValuesJSONArray,
 							selectedCPInstance, locale, commerceContext)));
@@ -218,27 +218,7 @@ public class CommerceProductInstanceOptionsValuesDataProvider
 				List<CPDefinitionOptionValueRel>
 					allowedCPDefinitionOptionValueRels =
 						_filterBySelectedCPDefinitionOptionValueRelIds(
-							cpDefinitionOptionRel,
-							selectedCPDefinitionOptionValueRels);
-
-				if (cpDefinitionOptionRel.isPriceContributor()) {
-					allowedCPDefinitionOptionValueRels =
-						_commerceInventoryChecker.filterByAvailability(
-							allowedCPDefinitionOptionValueRels);
-				}
-
-				if (cpDefinitionOptionRel.isSkuContributor()) {
-					allowedCPDefinitionOptionValueRels =
-						_cpDefinitionOptionValueRelLocalService.
-							filterByCPInstanceOptionValueRels(
-								allowedCPDefinitionOptionValueRels,
-								_cpInstanceOptionValueRelCommerceInventoryChecker.
-									filterByAvailability(
-										_cpInstanceOptionValueRelLocalService.
-											getCPDefinitionOptionRelCPInstanceOptionValueRels(
-												cpDefinitionOptionRel.
-													getCPDefinitionOptionRelId())));
-				}
+							cpDefinitionOptionRel);
 
 				String optionKey = cpDefinitionOptionRel.getKey();
 
@@ -371,23 +351,34 @@ public class CommerceProductInstanceOptionsValuesDataProvider
 
 	private List<CPDefinitionOptionValueRel>
 			_filterBySelectedCPDefinitionOptionValueRelIds(
-				CPDefinitionOptionRel cpDefinitionOptionRel,
-				List<CPDefinitionOptionValueRel>
-					skuCombinationCPDefinitionOptionValueRels)
+				CPDefinitionOptionRel cpDefinitionOptionRel)
 		throws PortalException {
 
-		if (skuCombinationCPDefinitionOptionValueRels.isEmpty()) {
-			return _cpInstanceHelper.getCPInstanceCPDefinitionOptionValueRels(
+		List<CPDefinitionOptionValueRel> allowedCPDefinitionOptionValueRels =
+			_cpInstanceHelper.getCPInstanceCPDefinitionOptionValueRels(
 				cpDefinitionOptionRel.getCPDefinitionId(),
 				cpDefinitionOptionRel.getCPDefinitionOptionRelId());
+
+		if (cpDefinitionOptionRel.isPriceContributor()) {
+			allowedCPDefinitionOptionValueRels =
+				_commerceInventoryChecker.filterByAvailability(
+					allowedCPDefinitionOptionValueRels);
 		}
 
-		return _cpInstanceHelper.filterCPDefinitionOptionValueRels(
-			cpDefinitionOptionRel.getCPDefinitionOptionRelId(),
-			ListUtil.toList(
-				skuCombinationCPDefinitionOptionValueRels,
-				CPDefinitionOptionValueRel.
-					CP_DEFINITION_OPTION_VALUE_REL_ID_ACCESSOR));
+		if (cpDefinitionOptionRel.isSkuContributor()) {
+			allowedCPDefinitionOptionValueRels =
+				_cpDefinitionOptionValueRelLocalService.
+					filterByCPInstanceOptionValueRels(
+						allowedCPDefinitionOptionValueRels,
+						_cpInstanceOptionValueRelCommerceInventoryChecker.
+							filterByAvailability(
+								_cpInstanceOptionValueRelLocalService.
+									getCPDefinitionOptionRelCPInstanceOptionValueRels(
+										cpDefinitionOptionRel.
+											getCPDefinitionOptionRelId())));
+		}
+
+		return allowedCPDefinitionOptionValueRels;
 	}
 
 	private CommerceContext _getCommerceContext(
@@ -652,9 +643,6 @@ public class CommerceProductInstanceOptionsValuesDataProvider
 		target = "(commerce.inventory.checker.target=CPDefinitionOptionValueRel)"
 	)
 	private CommerceInventoryChecker _commerceInventoryChecker;
-
-	@Reference
-	private CommerceMoneyFactory _commerceMoneyFactory;
 
 	@Reference
 	private CommerceProductPriceCalculation _commerceProductPriceCalculation;

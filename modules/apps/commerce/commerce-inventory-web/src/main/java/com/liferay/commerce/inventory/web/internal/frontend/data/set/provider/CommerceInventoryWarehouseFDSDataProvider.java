@@ -41,7 +41,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceInventoryFDSNames.INVENTORY_WAREHOUSES,
 	service = FDSDataProvider.class
 )
@@ -75,7 +74,8 @@ public class CommerceInventoryWarehouseFDSDataProvider
 				new Warehouse(
 					commerceInventoryWarehouseItem.
 						getCommerceInventoryWarehouseItemId(),
-					commerceInventoryWarehouse.getName(),
+					commerceInventoryWarehouse.getName(
+						_portal.getLocale(httpServletRequest)),
 					commerceInventoryWarehouseItem.getQuantity(),
 					commerceInventoryWarehouseItem.getReservedQuantity(),
 					_commerceInventoryReplenishmentItemService.

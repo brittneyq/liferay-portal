@@ -20,7 +20,6 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
-import com.liferay.commerce.product.util.CPInstanceHelper;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -41,7 +40,7 @@ import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.generic.MultiMatchQuery;
 import com.liferay.portal.kernel.search.generic.TermQueryImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -62,7 +61,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Marco Leo
  */
-@Component(enabled = false, immediate = true, service = Indexer.class)
+@Component(service = Indexer.class)
 public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 
 	public static final String CLASS_NAME = CPInstance.class.getName();
@@ -160,14 +159,14 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 			SearchContext searchContext)
 		throws Exception {
 
-		addSearchLocalizedTerm(
-			searchQuery, searchContext, Field.CONTENT, false);
-		addSearchLocalizedTerm(searchQuery, searchContext, Field.NAME, false);
-		addSearchTerm(searchQuery, searchContext, Field.ENTRY_CLASS_PK, false);
-		addSearchTerm(searchQuery, searchContext, Field.NAME, false);
-		addSearchTerm(searchQuery, searchContext, Field.USER_NAME, false);
 		addSearchTerm(
 			searchQuery, searchContext, CPField.EXTERNAL_REFERENCE_CODE, false);
+		addSearchLocalizedTerm(
+			searchQuery, searchContext, Field.CONTENT, false);
+		addSearchTerm(searchQuery, searchContext, Field.ENTRY_CLASS_PK, false);
+		addSearchTerm(searchQuery, searchContext, Field.NAME, false);
+		addSearchLocalizedTerm(searchQuery, searchContext, Field.NAME, false);
+		addSearchTerm(searchQuery, searchContext, Field.USER_NAME, false);
 
 		LinkedHashMap<String, Object> params =
 			(LinkedHashMap<String, Object>)searchContext.getAttribute("params");
@@ -229,12 +228,35 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 
 		Document document = getBaseModelDocument(CLASS_NAME, cpInstance);
 
+		document.addKeyword(
+			CPField.CP_DEFINITION_ID, cpInstance.getCPDefinitionId());
+		document.addKeyword(
+			CPField.CP_DEFINITION_STATUS, cpDefinition.getStatus());
+		document.addDateSortable(
+			CPField.DISPLAY_DATE, cpInstance.getDisplayDate());
+		document.addKeyword(
+			CPField.EXTERNAL_REFERENCE_CODE,
+			cpInstance.getExternalReferenceCode());
+		document.addText(
+			CPField.EXTERNAL_REFERENCE_CODE,
+			cpInstance.getExternalReferenceCode());
+		document.addKeyword(
+			CPField.HAS_CHILD_CP_DEFINITIONS,
+			_cpDefinitionLocalService.hasChildCPDefinitions(
+				cpDefinition.getCPDefinitionId()));
+		document.addKeyword(CPField.PUBLISHED, cpInstance.isPublished());
+		document.addKeyword(CPField.PURCHASABLE, cpInstance.isPurchasable());
+		document.addTextSortable(CPField.SKU, cpInstance.getSku());
+		document.addKeyword(CPField.UNSPSC, cpInstance.getUnspsc());
+		document.addText(Field.CONTENT, cpInstance.getSku());
+		document.addText(Field.NAME, cpDefinition.getName());
+
 		List<String> languageIds =
 			_cpDefinitionLocalService.getCPDefinitionLocalizationLanguageIds(
 				cpInstance.getCPDefinitionId());
 
 		String cpDefinitionDefaultLanguageId =
-			LocalizationUtil.getDefaultLanguageId(cpDefinition.getName());
+			_localization.getDefaultLanguageId(cpDefinition.getName());
 
 		for (String languageId : languageIds) {
 			String name = cpDefinition.getName(languageId);
@@ -245,34 +267,8 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 			}
 
 			document.addText(
-				LocalizationUtil.getLocalizedName(Field.NAME, languageId),
-				name);
+				_localization.getLocalizedName(Field.NAME, languageId), name);
 		}
-
-		document.addText(Field.NAME, cpDefinition.getName());
-
-		document.addText(
-			CPField.EXTERNAL_REFERENCE_CODE,
-			cpInstance.getExternalReferenceCode());
-
-		document.addText(Field.CONTENT, cpInstance.getSku());
-		document.addDateSortable(
-			CPField.DISPLAY_DATE, cpInstance.getDisplayDate());
-		document.addTextSortable(CPField.SKU, cpInstance.getSku());
-		document.addKeyword(
-			CPField.CP_DEFINITION_ID, cpInstance.getCPDefinitionId());
-		document.addKeyword(
-			CPField.CP_DEFINITION_STATUS, cpDefinition.getStatus());
-		document.addKeyword(CPField.PUBLISHED, cpInstance.isPublished());
-		document.addKeyword(CPField.PURCHASABLE, cpInstance.isPurchasable());
-		document.addKeyword(
-			CPField.EXTERNAL_REFERENCE_CODE,
-			cpInstance.getExternalReferenceCode());
-		document.addKeyword(
-			CPField.HAS_CHILD_CP_DEFINITIONS,
-			_cpDefinitionLocalService.hasChildCPDefinitions(
-				cpDefinition.getCPDefinitionId()));
-		document.addKeyword(CPField.UNSPSC, cpInstance.getUnspsc());
 
 		CommerceCatalog commerceCatalog = cpDefinition.getCommerceCatalog();
 
@@ -301,8 +297,7 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 	@Override
 	protected void doReindex(CPInstance cpInstance) throws Exception {
 		_indexWriterHelper.updateDocument(
-			getSearchEngineId(), cpInstance.getCompanyId(),
-			getDocument(cpInstance), isCommitImmediately());
+			cpInstance.getCompanyId(), getDocument(cpInstance));
 	}
 
 	@Override
@@ -337,7 +332,6 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 					}
 				}
 			});
-		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		indexableActionableDynamicQuery.performActions();
 	}
@@ -349,12 +343,12 @@ public class CPInstanceIndexer extends BaseIndexer<CPInstance> {
 	private CPDefinitionLocalService _cpDefinitionLocalService;
 
 	@Reference
-	private CPInstanceHelper _cpInstanceHelper;
-
-	@Reference
 	private CPInstanceLocalService _cpInstanceLocalService;
 
 	@Reference
 	private IndexWriterHelper _indexWriterHelper;
+
+	@Reference
+	private Localization _localization;
 
 }

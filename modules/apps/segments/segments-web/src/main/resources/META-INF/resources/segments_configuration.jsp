@@ -40,24 +40,18 @@ SegmentsCompanyConfigurationDisplayContext segmentsCompanyConfigurationDisplayCo
 		<liferay-ui:message key="segments-service-company-configuration-name" />
 
 		<c:if test="<%= segmentsCompanyConfigurationDisplayContext.isSegmentsCompanyConfigurationDefined() %>">
-			<liferay-ui:icon-menu
-				cssClass="float-right"
-				direction="right"
-				markupView="lexicon"
-				showWhenSingleIcon="<%= true %>"
-			>
-				<liferay-ui:icon
-					message="reset-default-values"
-					method="post"
-					url="<%= segmentsCompanyConfigurationDisplayContext.getDeleteConfigurationActionURL() %>"
-				/>
 
-				<liferay-ui:icon
-					message="export"
-					method="get"
-					url="<%= segmentsCompanyConfigurationDisplayContext.getExportConfigurationActionURL() %>"
-				/>
-			</liferay-ui:icon-menu>
+				<%
+				SegmentsCompanyConfigurationActionDropdownItemsProvider segmentsCompanyConfigurationActionDropdownItemsProvider = new SegmentsCompanyConfigurationActionDropdownItemsProvider(request, segmentsCompanyConfigurationDisplayContext);
+				%>
+
+				<div class="float-right">
+					<clay:dropdown-actions
+						aria-label='<%= LanguageUtil.get(request, "show-actions") %>'
+						dropdownItems="<%= segmentsCompanyConfigurationActionDropdownItemsProvider.getActionDropdownItems() %>"
+					/>
+				</div>
+
 		</c:if>
 	</h2>
 
@@ -70,7 +64,7 @@ SegmentsCompanyConfigurationDisplayContext segmentsCompanyConfigurationDisplayCo
 				defaultTitleDisabled="<%= true %>"
 				displayType="warning"
 			>
-				<strong><%= LanguageUtil.get(request, "segmentation-is-disabled-in-system-settings") %></strong>
+				<strong><liferay-ui:message key="segmentation-is-disabled-in-system-settings" /></strong>
 
 				<%
 				String segmentsConfigurationURL = segmentsCompanyConfigurationDisplayContext.getSegmentsCompanyConfigurationURL();
@@ -96,7 +90,7 @@ SegmentsCompanyConfigurationDisplayContext segmentsCompanyConfigurationDisplayCo
 				defaultTitleDisabled="<%= true %>"
 				displayType="warning"
 			>
-				<strong><%= LanguageUtil.get(request, "assign-roles-by-segment-is-disabled-in-system-settings") %></strong>
+				<strong><liferay-ui:message key="assign-roles-by-segment-is-disabled-in-system-settings" /></strong>
 
 				<%
 				String segmentsConfigurationURL = segmentsCompanyConfigurationDisplayContext.getSegmentsCompanyConfigurationURL();
@@ -106,9 +100,7 @@ SegmentsCompanyConfigurationDisplayContext segmentsCompanyConfigurationDisplayCo
 					<c:when test="<%= segmentsConfigurationURL != null %>">
 						<clay:link
 							href="<%= segmentsConfigurationURL %>"
-							label='<%=
-								LanguageUtil.get(request, "to-enable,-go-to-system-settings")
-%>'
+							label='<%= LanguageUtil.get(request, "to-enable,-go-to-system-settings") %>'
 						/>
 					</c:when>
 					<c:otherwise>
@@ -121,9 +113,12 @@ SegmentsCompanyConfigurationDisplayContext segmentsCompanyConfigurationDisplayCo
 		</c:if>
 
 		<c:if test="<%= !segmentsCompanyConfigurationDisplayContext.isSegmentsCompanyConfigurationDefined() %>">
-			<aui:alert closeable="<%= false %>" cssClass="c-mb-4" id="errorAlert" type="info">
-				<liferay-ui:message key="this-configuration-is-not-saved-yet.-the-values-shown-are-the-default" />
-			</aui:alert>
+			<clay:alert
+				cssClass="c-mb-4"
+				displayType="info"
+				id="errorAlert"
+				message="this-configuration-is-not-saved-yet.-the-values-shown-are-the-default"
+			/>
 		</c:if>
 
 		<div class="row <%= (!segmentsCompanyConfigurationDisplayContext.isRoleSegmentationEnabled() || !segmentsCompanyConfigurationDisplayContext.isSegmentationEnabled()) ? "c-mt-5" : "" %>">

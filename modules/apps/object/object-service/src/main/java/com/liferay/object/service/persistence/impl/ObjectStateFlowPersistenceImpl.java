@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -51,7 +50,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -79,7 +77,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @generated
  */
-@Component(service = {ObjectStateFlowPersistence.class, BasePersistence.class})
+@Component(service = ObjectStateFlowPersistence.class)
 public class ObjectStateFlowPersistenceImpl
 	extends BasePersistenceImpl<ObjectStateFlow>
 	implements ObjectStateFlowPersistence {
@@ -196,7 +194,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectStateFlow>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectStateFlow objectStateFlow : list) {
@@ -580,7 +578,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -739,7 +737,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectStateFlow>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectStateFlow objectStateFlow : list) {
@@ -1155,7 +1153,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1284,7 +1282,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByObjectFieldId, finderArgs);
+				_finderPathFetchByObjectFieldId, finderArgs, this);
 		}
 
 		if (result instanceof ObjectStateFlow) {
@@ -1389,7 +1387,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		Object[] finderArgs = new Object[] {objectFieldId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1875,7 +1873,7 @@ public class ObjectStateFlowPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectStateFlow>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1945,7 +1943,7 @@ public class ObjectStateFlowPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2063,30 +2061,14 @@ public class ObjectStateFlowPersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"objectFieldId"},
 			false);
 
-		_setObjectStateFlowUtilPersistence(this);
+		ObjectStateFlowUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setObjectStateFlowUtilPersistence(null);
+		ObjectStateFlowUtil.setPersistence(null);
 
 		entityCache.removeCache(ObjectStateFlowImpl.class.getName());
-	}
-
-	private void _setObjectStateFlowUtilPersistence(
-		ObjectStateFlowPersistence objectStateFlowPersistence) {
-
-		try {
-			Field field = ObjectStateFlowUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, objectStateFlowPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2154,9 +2136,5 @@ public class ObjectStateFlowPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private ObjectStateFlowModelArgumentsResolver
-		_objectStateFlowModelArgumentsResolver;
 
 }

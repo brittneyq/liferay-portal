@@ -58,6 +58,32 @@ public class NotificationTemplate implements Cloneable, Serializable {
 
 	protected Map<String, Map<String, String>> actions;
 
+	public String[] getAttachmentObjectFieldExternalReferenceCodes() {
+		return attachmentObjectFieldExternalReferenceCodes;
+	}
+
+	public void setAttachmentObjectFieldExternalReferenceCodes(
+		String[] attachmentObjectFieldExternalReferenceCodes) {
+
+		this.attachmentObjectFieldExternalReferenceCodes =
+			attachmentObjectFieldExternalReferenceCodes;
+	}
+
+	public void setAttachmentObjectFieldExternalReferenceCodes(
+		UnsafeSupplier<String[], Exception>
+			attachmentObjectFieldExternalReferenceCodesUnsafeSupplier) {
+
+		try {
+			attachmentObjectFieldExternalReferenceCodes =
+				attachmentObjectFieldExternalReferenceCodesUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String[] attachmentObjectFieldExternalReferenceCodes;
+
 	public Long[] getAttachmentObjectFieldIds() {
 		return attachmentObjectFieldIds;
 	}
@@ -81,25 +107,6 @@ public class NotificationTemplate implements Cloneable, Serializable {
 
 	protected Long[] attachmentObjectFieldIds;
 
-	public String getBcc() {
-		return bcc;
-	}
-
-	public void setBcc(String bcc) {
-		this.bcc = bcc;
-	}
-
-	public void setBcc(UnsafeSupplier<String, Exception> bccUnsafeSupplier) {
-		try {
-			bcc = bccUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected String bcc;
-
 	public Map<String, String> getBody() {
 		return body;
 	}
@@ -120,25 +127,6 @@ public class NotificationTemplate implements Cloneable, Serializable {
 	}
 
 	protected Map<String, String> body;
-
-	public String getCc() {
-		return cc;
-	}
-
-	public void setCc(String cc) {
-		this.cc = cc;
-	}
-
-	public void setCc(UnsafeSupplier<String, Exception> ccUnsafeSupplier) {
-		try {
-			cc = ccUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected String cc;
 
 	public Date getDateCreated() {
 		return dateCreated;
@@ -203,45 +191,55 @@ public class NotificationTemplate implements Cloneable, Serializable {
 
 	protected String description;
 
-	public String getFrom() {
-		return from;
+	public EditorType getEditorType() {
+		return editorType;
 	}
 
-	public void setFrom(String from) {
-		this.from = from;
+	public String getEditorTypeAsString() {
+		if (editorType == null) {
+			return null;
+		}
+
+		return editorType.toString();
 	}
 
-	public void setFrom(UnsafeSupplier<String, Exception> fromUnsafeSupplier) {
+	public void setEditorType(EditorType editorType) {
+		this.editorType = editorType;
+	}
+
+	public void setEditorType(
+		UnsafeSupplier<EditorType, Exception> editorTypeUnsafeSupplier) {
+
 		try {
-			from = fromUnsafeSupplier.get();
+			editorType = editorTypeUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected String from;
+	protected EditorType editorType;
 
-	public Map<String, String> getFromName() {
-		return fromName;
+	public String getExternalReferenceCode() {
+		return externalReferenceCode;
 	}
 
-	public void setFromName(Map<String, String> fromName) {
-		this.fromName = fromName;
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		this.externalReferenceCode = externalReferenceCode;
 	}
 
-	public void setFromName(
-		UnsafeSupplier<Map<String, String>, Exception> fromNameUnsafeSupplier) {
+	public void setExternalReferenceCode(
+		UnsafeSupplier<String, Exception> externalReferenceCodeUnsafeSupplier) {
 
 		try {
-			fromName = fromNameUnsafeSupplier.get();
+			externalReferenceCode = externalReferenceCodeUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected Map<String, String> fromName;
+	protected String externalReferenceCode;
 
 	public Long getId() {
 		return id;
@@ -303,6 +301,32 @@ public class NotificationTemplate implements Cloneable, Serializable {
 
 	protected Map<String, String> name_i18n;
 
+	public String getObjectDefinitionExternalReferenceCode() {
+		return objectDefinitionExternalReferenceCode;
+	}
+
+	public void setObjectDefinitionExternalReferenceCode(
+		String objectDefinitionExternalReferenceCode) {
+
+		this.objectDefinitionExternalReferenceCode =
+			objectDefinitionExternalReferenceCode;
+	}
+
+	public void setObjectDefinitionExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			objectDefinitionExternalReferenceCodeUnsafeSupplier) {
+
+		try {
+			objectDefinitionExternalReferenceCode =
+				objectDefinitionExternalReferenceCodeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String objectDefinitionExternalReferenceCode;
+
 	public Long getObjectDefinitionId() {
 		return objectDefinitionId;
 	}
@@ -323,6 +347,48 @@ public class NotificationTemplate implements Cloneable, Serializable {
 	}
 
 	protected Long objectDefinitionId;
+
+	public String getRecipientType() {
+		return recipientType;
+	}
+
+	public void setRecipientType(String recipientType) {
+		this.recipientType = recipientType;
+	}
+
+	public void setRecipientType(
+		UnsafeSupplier<String, Exception> recipientTypeUnsafeSupplier) {
+
+		try {
+			recipientType = recipientTypeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String recipientType;
+
+	public Object[] getRecipients() {
+		return recipients;
+	}
+
+	public void setRecipients(Object[] recipients) {
+		this.recipients = recipients;
+	}
+
+	public void setRecipients(
+		UnsafeSupplier<Object[], Exception> recipientsUnsafeSupplier) {
+
+		try {
+			recipients = recipientsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Object[] recipients;
 
 	public Map<String, String> getSubject() {
 		return subject;
@@ -345,26 +411,45 @@ public class NotificationTemplate implements Cloneable, Serializable {
 
 	protected Map<String, String> subject;
 
-	public Map<String, String> getTo() {
-		return to;
+	public String getType() {
+		return type;
 	}
 
-	public void setTo(Map<String, String> to) {
-		this.to = to;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public void setTo(
-		UnsafeSupplier<Map<String, String>, Exception> toUnsafeSupplier) {
-
+	public void setType(UnsafeSupplier<String, Exception> typeUnsafeSupplier) {
 		try {
-			to = toUnsafeSupplier.get();
+			type = typeUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected Map<String, String> to;
+	protected String type;
+
+	public String getTypeLabel() {
+		return typeLabel;
+	}
+
+	public void setTypeLabel(String typeLabel) {
+		this.typeLabel = typeLabel;
+	}
+
+	public void setTypeLabel(
+		UnsafeSupplier<String, Exception> typeLabelUnsafeSupplier) {
+
+		try {
+			typeLabel = typeLabelUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String typeLabel;
 
 	@Override
 	public NotificationTemplate clone() throws CloneNotSupportedException {
@@ -396,6 +481,39 @@ public class NotificationTemplate implements Cloneable, Serializable {
 
 	public String toString() {
 		return NotificationTemplateSerDes.toJSON(this);
+	}
+
+	public static enum EditorType {
+
+		FREE_MARKER("freeMarker"), RICH_TEXT("richText");
+
+		public static EditorType create(String value) {
+			for (EditorType editorType : values()) {
+				if (Objects.equals(editorType.getValue(), value) ||
+					Objects.equals(editorType.name(), value)) {
+
+					return editorType;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private EditorType(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }

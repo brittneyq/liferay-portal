@@ -29,9 +29,10 @@ import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
@@ -48,7 +49,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Diego Hu
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + AssetCategoriesAdminPortletKeys.ASSET_CATEGORIES_ADMIN,
 		"mvc.command.name=/asset_categories_admin/edit_asset_category"
@@ -66,10 +66,10 @@ public class EditAssetCategoryMVCActionCommand extends BaseMVCActionCommand {
 
 		long parentCategoryId = ParamUtil.getLong(
 			actionRequest, "parentCategoryId");
-		Map<Locale, String> titleMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> titleMap = _localization.getLocalizationMap(
 			actionRequest, "title");
-		Map<Locale, String> descriptionMap =
-			LocalizationUtil.getLocalizationMap(actionRequest, "description");
+		Map<Locale, String> descriptionMap = _localization.getLocalizationMap(
+			actionRequest, "description");
 		long vocabularyId = ParamUtil.getLong(actionRequest, "vocabularyId");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
@@ -82,6 +82,12 @@ public class EditAssetCategoryMVCActionCommand extends BaseMVCActionCommand {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+
+		String title = titleMap.get(themeDisplay.getLocale());
+
+		if (Validator.isBlank(title)) {
+			title = titleMap.get(themeDisplay.getSiteDefaultLocale());
+		}
 
 		AssetCategory category = null;
 
@@ -100,9 +106,7 @@ public class EditAssetCategoryMVCActionCommand extends BaseMVCActionCommand {
 				_language.format(
 					_portal.getHttpServletRequest(actionRequest),
 					"x-was-created-successfully",
-					new Object[] {
-						HtmlUtil.escape(titleMap.get(themeDisplay.getLocale()))
-					}));
+					new Object[] {HtmlUtil.escape(title)}));
 		}
 		else {
 
@@ -121,9 +125,7 @@ public class EditAssetCategoryMVCActionCommand extends BaseMVCActionCommand {
 				_language.format(
 					_portal.getHttpServletRequest(actionRequest),
 					"x-was-updated-successfully",
-					new Object[] {
-						HtmlUtil.escape(titleMap.get(themeDisplay.getLocale()))
-					}));
+					new Object[] {HtmlUtil.escape(title)}));
 		}
 
 		// Asset display page
@@ -166,6 +168,9 @@ public class EditAssetCategoryMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private Localization _localization;
 
 	@Reference
 	private Portal _portal;

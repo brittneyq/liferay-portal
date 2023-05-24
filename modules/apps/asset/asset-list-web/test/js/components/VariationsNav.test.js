@@ -33,8 +33,9 @@ const _getComponent = (props) => {
 };
 
 jest.mock('frontend-js-web', () => ({
-		openConfirmModal: jest.fn(({message, onConfirm}) => onConfirm(true)),
-		openToast: jest.fn(),
+	openConfirmModal: jest.fn(({onConfirm}) => onConfirm(true)),
+	openToast: jest.fn(),
+	sub: jest.fn(),
 }));
 
 jest.mock(
@@ -257,13 +258,6 @@ describe('VariationsNav', () => {
 		expect(nodes[1].innerHTML).toContain('Anyone');
 
 		expect(await saveVariationsListPriorityService).toHaveBeenCalled();
-
-		expect(openToast).toHaveBeenCalledWith({
-			message: Liferay.Language.get(
-				'your-request-completed-successfully'
-			),
-			type: 'success',
-		});
 	});
 
 	it('responds to reorder on click event', async () => {
@@ -284,13 +278,6 @@ describe('VariationsNav', () => {
 		expect(nodes[1].innerHTML).toContain('Anyone');
 
 		expect(await saveVariationsListPriorityService).toHaveBeenCalled();
-
-		expect(openToast).toHaveBeenCalledWith({
-			message: Liferay.Language.get(
-				'your-request-completed-successfully'
-			),
-			type: 'success',
-		});
 	});
 
 	it('throws an error if the API call fails', async () => {

@@ -14,27 +14,34 @@ import Button from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {ArrayHelpers} from 'formik';
 
+import LiferayPicklist from '../../../../../../common/interfaces/liferayPicklist';
 import MDFRequestActivity from '../../../../../../common/interfaces/mdfRequestActivity';
 import ActivityPanel from '../../../../components/ActivityPanel';
 import getNewActivity from '../../utils/getNewActivity';
 
 interface IProps {
 	activities: MDFRequestActivity[];
-	isValid: boolean;
+	currency: LiferayPicklist;
+
+	hasActivityErrorsByIndex: (index: number) => boolean;
 	onAdd: () => void;
-	overallCampaign: string;
+	onEdit: (index: number) => void;
+	onRemove: (index: number) => void;
+	overallCampaignName: string;
 }
 
 const Listing = ({
 	activities,
-	isValid,
+	currency,
+	hasActivityErrorsByIndex,
 	onAdd,
-	overallCampaign,
+	onEdit,
+	onRemove,
+	overallCampaignName,
 	push,
-	remove,
 }: IProps & ArrayHelpers) => {
 	const handleOnAdd = () => {
-		push(getNewActivity());
+		push(getNewActivity(currency));
 
 		onAdd();
 	};
@@ -46,20 +53,27 @@ const Listing = ({
 					activities.map((activity, index) => (
 						<ActivityPanel
 							activity={activity}
+							hasErrors={hasActivityErrorsByIndex(index)}
 							key={index}
-							onRemove={() => remove(index)}
-							overallCampaign={overallCampaign}
+							onEdit={() => onEdit(index)}
+							onRemove={() => onRemove(index)}
+							overallCampaignName={overallCampaignName}
 						/>
 					))}
 
-				{!activities.length && !isValid && (
+				{!activities.length && (
 					<ClayAlert displayType="info" title="Info:">
 						No entries were found
 					</ClayAlert>
 				)}
 			</div>
 
-			<Button className="d-flex" onClick={handleOnAdd} outline small>
+			<Button
+				className="align-items-center d-flex"
+				onClick={handleOnAdd}
+				outline
+				small
+			>
 				<span className="inline-item inline-item-before">
 					<ClayIcon symbol="plus" />
 				</span>

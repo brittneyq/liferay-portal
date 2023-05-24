@@ -18,6 +18,7 @@ import {
 	openConfirmModal,
 	openModal,
 	openSelectionModal,
+	openToast,
 	sub,
 } from 'frontend-js-web';
 
@@ -25,12 +26,14 @@ import {collectDigitalSignature} from './digital-signature/DigitalSignatureUtil'
 
 export default function propsTransformer({
 	additionalProps: {
+		bulkPermissionsConfiguration: {defaultModelClassName, permissionsURLs},
 		collectDigitalSignaturePortlet,
 		downloadEntryURL,
 		editEntryURL,
 		folderConfiguration,
 		openViewMoreFileEntryTypesURL,
-		permissionsURL,
+		selectAssetTagsURL,
+		selectExtensionURL,
 		selectFileEntryTypeURL,
 		selectFolderURL,
 		trashEnabled,
@@ -175,6 +178,87 @@ export default function propsTransformer({
 		);
 	};
 
+	const filterByCategory = (categoriesFilterURL) => {
+		openSelectionModal({
+			buttonAddLabel: Liferay.Language.get('select'),
+			height: '70vh',
+			multiple: true,
+			selectEventName: `${portletNamespace}selectedAssetCategory`,
+			size: 'md',
+			title: Liferay.Language.get('filter-by-categories'),
+			url: categoriesFilterURL,
+		});
+	};
+
+	const filterByDocumentType = () => {
+		openSelectionModal({
+			onSelect(selectedItem) {
+				if (selectedItem) {
+					const url = addParams(
+						`${portletNamespace}fileEntryTypeId=${selectedItem.value}`,
+						viewFileEntryTypeURL
+					);
+					navigate(url);
+				}
+			},
+			selectEventName: `${portletNamespace}selectFileEntryType`,
+			title: Liferay.Language.get('select-document-type'),
+			url: selectFileEntryTypeURL,
+		});
+	};
+
+	const filterByExtension = (extensionsFilterURL) => {
+		openSelectionModal({
+			buttonAddLabel: Liferay.Language.get('select'),
+			height: '70vh',
+			multiple: true,
+			onSelect(selectedItem) {
+				if (selectedItem) {
+					const url = selectedItem.reduce(
+						(acc, item) =>
+							addParams(
+								`${portletNamespace}extension=${item}`,
+								acc
+							),
+						selectExtensionURL
+					);
+
+					navigate(url);
+				}
+			},
+			selectEventName: `${portletNamespace}selectedFileExtension`,
+			size: 'md',
+			title: Liferay.Language.get('filter-by-extension'),
+			url: extensionsFilterURL,
+		});
+	};
+
+	const filterByTag = (tagsFilterURL) => {
+		openSelectionModal({
+			buttonAddLabel: Liferay.Language.get('select'),
+			height: '70vh',
+			multiple: true,
+			onSelect: (selectedItem) => {
+				if (selectedItem) {
+					const url = selectedItem.reduce(
+						(acc, item) =>
+							addParams(
+								`${portletNamespace}assetTagId=${item.value}`,
+								acc
+							),
+						selectAssetTagsURL
+					);
+
+					navigate(url);
+				}
+			},
+			selectEventName: `${portletNamespace}selectedAssetTag`,
+			size: 'lg',
+			title: Liferay.Language.get('filter-by-tags'),
+			url: tagsFilterURL,
+		});
+	};
+
 	const move = () => {
 		const searchContainer = Liferay.SearchContainer.get(
 			otherProps.searchContainerId
@@ -234,7 +318,36 @@ export default function propsTransformer({
 	};
 
 	const permissions = () => {
-		const keys = getAllSelectedElements().get('value');
+		const map = new Map();
+
+		getAllSelectedElements().each((element) => {
+			const modelClassName =
+				element.getData('modelclassname') ?? defaultModelClassName;
+
+			map.set(modelClassName, [
+				...(map.get(modelClassName) ?? []),
+				element.get('value'),
+			]);
+		});
+
+		if (map.size > 1) {
+			openToast({
+				message: Liferay.Language.get(
+					'it-is-not-possible-to-simultaneously-change-the-permissions-of-different-asset-types'
+				),
+				title: Liferay.Language.get('error'),
+				type: 'danger',
+			});
+
+			return;
+		}
+
+		const [
+			selectedModelClassName,
+			selectedFileEntries,
+		] = map.entries()?.next().value;
+
+		const permissionsURL = permissionsURLs[selectedModelClassName];
 
 		const url = new URL(permissionsURL);
 
@@ -244,7 +357,7 @@ export default function propsTransformer({
 				{
 					[`_${url.searchParams.get(
 						'p_p_id'
-					)}_resourcePrimKey`]: keys.join(','),
+					)}_resourcePrimKey`]: selectedFileEntries.join(','),
 				},
 				permissionsURL
 			),
@@ -288,21 +401,17 @@ export default function propsTransformer({
 			}
 		},
 		onFilterDropdownItemClick(event, {item}) {
-			if (item?.data?.action === 'openDocumentTypesSelector') {
-				openSelectionModal({
-					onSelect(selectedItem) {
-						if (selectedItem) {
-							const url = addParams(
-								`${portletNamespace}fileEntryTypeId=${selectedItem.value}`,
-								viewFileEntryTypeURL
-							);
-							navigate(url);
-						}
-					},
-					selectEventName: `${portletNamespace}selectFileEntryType`,
-					title: Liferay.Language.get('select-document-type'),
-					url: selectFileEntryTypeURL,
-				});
+			if (item?.data?.action === 'openCategoriesSelector') {
+				filterByCategory(item?.data?.categoriesFilterURL);
+			}
+			else if (item?.data?.action === 'openDocumentTypesSelector') {
+				filterByDocumentType();
+			}
+			else if (item?.data?.action === 'openExtensionSelector') {
+				filterByExtension(item?.data?.extensionsFilterURL);
+			}
+			else if (item?.data?.action === 'openTagsSelector') {
+				filterByTag(item?.data?.tagsFilterURL);
 			}
 		},
 		onShowMoreButtonClick() {

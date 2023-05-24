@@ -40,6 +40,16 @@ public class CTProcessServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.change.tracking.service.impl.CTProcessServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static List<CTProcess> getCTProcesses(
+			long companyId, long userId, String keywords, int status, int type,
+			int start, int end, OrderByComparator<CTProcess> orderByComparator)
+		throws PortalException {
+
+		return getService().getCTProcesses(
+			companyId, userId, keywords, status, type, start, end,
+			orderByComparator);
+	}
+
+	public static List<CTProcess> getCTProcesses(
 			long companyId, long userId, String keywords, int status, int start,
 			int end, OrderByComparator<CTProcess> orderByComparator)
 		throws PortalException {
@@ -55,6 +65,13 @@ public class CTProcessServiceUtil {
 			companyId, userId, keywords, status);
 	}
 
+	public static int getCTProcessesCount(
+		long companyId, long userId, String keywords, int status, int type) {
+
+		return getService().getCTProcessesCount(
+			companyId, userId, keywords, status, type);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
@@ -66,6 +83,10 @@ public class CTProcessServiceUtil {
 
 	public static CTProcessService getService() {
 		return _service;
+	}
+
+	public static void setService(CTProcessService service) {
+		_service = service;
 	}
 
 	private static volatile CTProcessService _service;

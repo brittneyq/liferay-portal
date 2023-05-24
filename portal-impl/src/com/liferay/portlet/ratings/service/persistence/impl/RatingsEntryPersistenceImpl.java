@@ -52,7 +52,6 @@ import com.liferay.ratings.kernel.service.persistence.RatingsEntryUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -196,7 +195,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsEntry>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (RatingsEntry ratingsEntry : list) {
@@ -585,7 +584,8 @@ public class RatingsEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -750,7 +750,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsEntry>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (RatingsEntry ratingsEntry : list) {
@@ -1173,7 +1173,8 @@ public class RatingsEntryPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1343,7 +1344,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsEntry>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (RatingsEntry ratingsEntry : list) {
@@ -1741,7 +1742,8 @@ public class RatingsEntryPersistenceImpl
 
 			finderArgs = new Object[] {classNameId, classPK};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1929,7 +1931,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsEntry>)FinderCacheUtil.getResult(
-				_finderPathWithPaginationFindByU_C_C, finderArgs);
+				_finderPathWithPaginationFindByU_C_C, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (RatingsEntry ratingsEntry : list) {
@@ -2137,7 +2139,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByU_C_C, finderArgs);
+				_finderPathFetchByU_C_C, finderArgs, this);
 		}
 
 		if (result instanceof RatingsEntry) {
@@ -2252,7 +2254,8 @@ public class RatingsEntryPersistenceImpl
 
 			finderArgs = new Object[] {userId, classNameId, classPK};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2330,7 +2333,7 @@ public class RatingsEntryPersistenceImpl
 			};
 
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByU_C_C, finderArgs);
+				_finderPathWithPaginationCountByU_C_C, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2545,7 +2548,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsEntry>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (RatingsEntry ratingsEntry : list) {
@@ -2965,7 +2968,8 @@ public class RatingsEntryPersistenceImpl
 
 			finderArgs = new Object[] {classNameId, classPK, score};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3622,7 +3626,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<RatingsEntry>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3698,7 +3702,7 @@ public class RatingsEntryPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3950,29 +3954,13 @@ public class RatingsEntryPersistenceImpl
 			},
 			new String[] {"classNameId", "classPK", "score"}, false);
 
-		_setRatingsEntryUtilPersistence(this);
+		RatingsEntryUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setRatingsEntryUtilPersistence(null);
+		RatingsEntryUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(RatingsEntryImpl.class.getName());
-	}
-
-	private void _setRatingsEntryUtilPersistence(
-		RatingsEntryPersistence ratingsEntryPersistence) {
-
-		try {
-			Field field = RatingsEntryUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, ratingsEntryPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_RATINGSENTRY =

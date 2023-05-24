@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -63,6 +62,16 @@ public class WorkflowDefinitionSerDes {
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ssXX");
+
+		if (workflowDefinition.getActions() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(workflowDefinition.getActions()));
+		}
 
 		if (workflowDefinition.getActive() != null) {
 			if (sb.length() > 1) {
@@ -132,6 +141,16 @@ public class WorkflowDefinitionSerDes {
 			sb.append(_escape(workflowDefinition.getDescription()));
 
 			sb.append("\"");
+		}
+
+		if (workflowDefinition.getId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"id\": ");
+
+			sb.append(workflowDefinition.getId());
 		}
 
 		if (workflowDefinition.getName() != null) {
@@ -253,6 +272,13 @@ public class WorkflowDefinitionSerDes {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ssXX");
 
+		if (workflowDefinition.getActions() == null) {
+			map.put("actions", null);
+		}
+		else {
+			map.put("actions", String.valueOf(workflowDefinition.getActions()));
+		}
+
 		if (workflowDefinition.getActive() == null) {
 			map.put("active", null);
 		}
@@ -294,6 +320,13 @@ public class WorkflowDefinitionSerDes {
 			map.put(
 				"description",
 				String.valueOf(workflowDefinition.getDescription()));
+		}
+
+		if (workflowDefinition.getId() == null) {
+			map.put("id", null);
+		}
+		else {
+			map.put("id", String.valueOf(workflowDefinition.getId()));
 		}
 
 		if (workflowDefinition.getName() == null) {
@@ -363,7 +396,14 @@ public class WorkflowDefinitionSerDes {
 			WorkflowDefinition workflowDefinition, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "active")) {
+			if (Objects.equals(jsonParserFieldName, "actions")) {
+				if (jsonParserFieldValue != null) {
+					workflowDefinition.setActions(
+						(Map)WorkflowDefinitionSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "active")) {
 				if (jsonParserFieldValue != null) {
 					workflowDefinition.setActive((Boolean)jsonParserFieldValue);
 				}
@@ -391,6 +431,12 @@ public class WorkflowDefinitionSerDes {
 						(String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "id")) {
+				if (jsonParserFieldValue != null) {
+					workflowDefinition.setId(
+						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
 				if (jsonParserFieldValue != null) {
 					workflowDefinition.setName((String)jsonParserFieldValue);
@@ -398,14 +444,17 @@ public class WorkflowDefinitionSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "nodes")) {
 				if (jsonParserFieldValue != null) {
-					workflowDefinition.setNodes(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> NodeSerDes.toDTO((String)object)
-						).toArray(
-							size -> new Node[size]
-						));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					Node[] nodesArray = new Node[jsonParserFieldValues.length];
+
+					for (int i = 0; i < nodesArray.length; i++) {
+						nodesArray[i] = NodeSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					workflowDefinition.setNodes(nodesArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "title")) {
@@ -422,14 +471,18 @@ public class WorkflowDefinitionSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "transitions")) {
 				if (jsonParserFieldValue != null) {
-					workflowDefinition.setTransitions(
-						Stream.of(
-							toStrings((Object[])jsonParserFieldValue)
-						).map(
-							object -> TransitionSerDes.toDTO((String)object)
-						).toArray(
-							size -> new Transition[size]
-						));
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					Transition[] transitionsArray =
+						new Transition[jsonParserFieldValues.length];
+
+					for (int i = 0; i < transitionsArray.length; i++) {
+						transitionsArray[i] = TransitionSerDes.toDTO(
+							(String)jsonParserFieldValues[i]);
+					}
+
+					workflowDefinition.setTransitions(transitionsArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "version")) {

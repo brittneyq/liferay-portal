@@ -19,7 +19,7 @@ import com.liferay.commerce.product.service.CPAttachmentFileEntryService;
 import com.liferay.commerce.product.service.CPAttachmentFileEntryServiceUtil;
 import com.liferay.commerce.product.service.persistence.CPAttachmentFileEntryFinder;
 import com.liferay.commerce.product.service.persistence.CPAttachmentFileEntryPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -30,11 +30,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
-
-import java.lang.reflect.Field;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the cp attachment file entry remote service.
@@ -49,131 +49,32 @@ import javax.sql.DataSource;
  */
 public abstract class CPAttachmentFileEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements CPAttachmentFileEntryService, IdentifiableOSGiService {
+	implements AopService, CPAttachmentFileEntryService,
+			   IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CPAttachmentFileEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>CPAttachmentFileEntryServiceUtil</code>.
 	 */
-
-	/**
-	 * Returns the cp attachment file entry local service.
-	 *
-	 * @return the cp attachment file entry local service
-	 */
-	public
-		com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService
-			getCPAttachmentFileEntryLocalService() {
-
-		return cpAttachmentFileEntryLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CPAttachmentFileEntryServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the cp attachment file entry local service.
-	 *
-	 * @param cpAttachmentFileEntryLocalService the cp attachment file entry local service
-	 */
-	public void setCPAttachmentFileEntryLocalService(
-		com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService
-			cpAttachmentFileEntryLocalService) {
-
-		this.cpAttachmentFileEntryLocalService =
-			cpAttachmentFileEntryLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CPAttachmentFileEntryService.class, IdentifiableOSGiService.class
+		};
 	}
 
-	/**
-	 * Returns the cp attachment file entry remote service.
-	 *
-	 * @return the cp attachment file entry remote service
-	 */
-	public CPAttachmentFileEntryService getCPAttachmentFileEntryService() {
-		return cpAttachmentFileEntryService;
-	}
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		cpAttachmentFileEntryService = (CPAttachmentFileEntryService)aopProxy;
 
-	/**
-	 * Sets the cp attachment file entry remote service.
-	 *
-	 * @param cpAttachmentFileEntryService the cp attachment file entry remote service
-	 */
-	public void setCPAttachmentFileEntryService(
-		CPAttachmentFileEntryService cpAttachmentFileEntryService) {
-
-		this.cpAttachmentFileEntryService = cpAttachmentFileEntryService;
-	}
-
-	/**
-	 * Returns the cp attachment file entry persistence.
-	 *
-	 * @return the cp attachment file entry persistence
-	 */
-	public CPAttachmentFileEntryPersistence
-		getCPAttachmentFileEntryPersistence() {
-
-		return cpAttachmentFileEntryPersistence;
-	}
-
-	/**
-	 * Sets the cp attachment file entry persistence.
-	 *
-	 * @param cpAttachmentFileEntryPersistence the cp attachment file entry persistence
-	 */
-	public void setCPAttachmentFileEntryPersistence(
-		CPAttachmentFileEntryPersistence cpAttachmentFileEntryPersistence) {
-
-		this.cpAttachmentFileEntryPersistence =
-			cpAttachmentFileEntryPersistence;
-	}
-
-	/**
-	 * Returns the cp attachment file entry finder.
-	 *
-	 * @return the cp attachment file entry finder
-	 */
-	public CPAttachmentFileEntryFinder getCPAttachmentFileEntryFinder() {
-		return cpAttachmentFileEntryFinder;
-	}
-
-	/**
-	 * Sets the cp attachment file entry finder.
-	 *
-	 * @param cpAttachmentFileEntryFinder the cp attachment file entry finder
-	 */
-	public void setCPAttachmentFileEntryFinder(
-		CPAttachmentFileEntryFinder cpAttachmentFileEntryFinder) {
-
-		this.cpAttachmentFileEntryFinder = cpAttachmentFileEntryFinder;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		_setServiceUtilService(cpAttachmentFileEntryService);
-	}
-
-	public void destroy() {
-		_setServiceUtilService(null);
+		CPAttachmentFileEntryServiceUtil.setService(
+			cpAttachmentFileEntryService);
 	}
 
 	/**
@@ -219,42 +120,20 @@ public abstract class CPAttachmentFileEntryServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CPAttachmentFileEntryService cpAttachmentFileEntryService) {
-
-		try {
-			Field field =
-				CPAttachmentFileEntryServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpAttachmentFileEntryService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(
-		type = com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService.class
-	)
+	@Reference
 	protected
 		com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService
 			cpAttachmentFileEntryLocalService;
 
-	@BeanReference(type = CPAttachmentFileEntryService.class)
 	protected CPAttachmentFileEntryService cpAttachmentFileEntryService;
 
-	@BeanReference(type = CPAttachmentFileEntryPersistence.class)
+	@Reference
 	protected CPAttachmentFileEntryPersistence cpAttachmentFileEntryPersistence;
 
-	@BeanReference(type = CPAttachmentFileEntryFinder.class)
+	@Reference
 	protected CPAttachmentFileEntryFinder cpAttachmentFileEntryFinder;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 

@@ -15,7 +15,6 @@
 package com.liferay.journal.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.MVCCModel;
@@ -395,19 +394,18 @@ public interface JournalArticleModel
 	public void setUrlTitle(String urlTitle);
 
 	/**
-	 * Returns the ddm structure key of this journal article.
+	 * Returns the ddm structure ID of this journal article.
 	 *
-	 * @return the ddm structure key of this journal article
+	 * @return the ddm structure ID of this journal article
 	 */
-	@AutoEscape
-	public String getDDMStructureKey();
+	public long getDDMStructureId();
 
 	/**
-	 * Sets the ddm structure key of this journal article.
+	 * Sets the ddm structure ID of this journal article.
 	 *
-	 * @param DDMStructureKey the ddm structure key of this journal article
+	 * @param DDMStructureId the ddm structure ID of this journal article
 	 */
-	public void setDDMStructureKey(String DDMStructureKey);
+	public void setDDMStructureId(long DDMStructureId);
 
 	/**
 	 * Returns the ddm template key of this journal article.
@@ -665,15 +663,6 @@ public interface JournalArticleModel
 	public void setStatusDate(Date statusDate);
 
 	/**
-	 * Returns the trash entry created when this journal article was moved to the Recycle Bin. The trash entry may belong to one of the ancestors of this journal article.
-	 *
-	 * @return the trash entry created when this journal article was moved to the Recycle Bin
-	 */
-	@Override
-	public com.liferay.trash.kernel.model.TrashEntry getTrashEntry()
-		throws PortalException;
-
-	/**
 	 * Returns the class primary key of the trash entry for this journal article.
 	 *
 	 * @return the class primary key of the trash entry for this journal article
@@ -688,20 +677,6 @@ public interface JournalArticleModel
 	 */
 	@Override
 	public boolean isInTrash();
-
-	/**
-	 * Returns <code>true</code> if the parent of this journal article is in the Recycle Bin.
-	 *
-	 * @return <code>true</code> if the parent of this journal article is in the Recycle Bin; <code>false</code> otherwise
-	 */
-	@Override
-	public boolean isInTrashContainer();
-
-	@Override
-	public boolean isInTrashExplicitly();
-
-	@Override
-	public boolean isInTrashImplicitly();
 
 	/**
 	 * Returns <code>true</code> if this journal article is approved.
@@ -769,5 +744,9 @@ public interface JournalArticleModel
 
 	@Override
 	public JournalArticle cloneWithOriginalValues();
+
+	public default String toXmlString() {
+		return null;
+	}
 
 }

@@ -14,9 +14,8 @@
 
 package com.liferay.talend.runtime;
 
-import java.util.Optional;
-
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -27,16 +26,12 @@ import javax.json.JsonValue;
 public class LiferayRequestContentAggregatorSink extends LiferaySink {
 
 	@Override
-	public Optional<JsonObject> doPatchRequest(
-		String resourceURL, JsonValue jsonValue) {
-
+	public JsonObject doPatchRequest(String resourceURL, JsonValue jsonValue) {
 		return _processRequest(resourceURL, jsonValue);
 	}
 
 	@Override
-	public Optional<JsonObject> doPostRequest(
-		String resourceURL, JsonValue jsonValue) {
-
+	public JsonObject doPostRequest(String resourceURL, JsonValue jsonValue) {
 		return _processRequest(resourceURL, jsonValue);
 	}
 
@@ -48,7 +43,7 @@ public class LiferayRequestContentAggregatorSink extends LiferaySink {
 		return _outputResourceURL;
 	}
 
-	private Optional<JsonObject> _processRequest(
+	private JsonObject _processRequest(
 		String resourceURL, JsonValue jsonValue) {
 
 		_outputResourceURL = resourceURL;
@@ -61,12 +56,19 @@ public class LiferayRequestContentAggregatorSink extends LiferaySink {
 				jsonValue.asJsonObject());
 		}
 		else {
+			JsonArray jsonArray = jsonValue.asJsonArray();
+
+			JsonValue jsonArrayJsonValue = jsonArray.get(0);
+
+			jsonObjectBuilder = Json.createObjectBuilder(
+				jsonArrayJsonValue.asJsonObject());
+
 			jsonObjectBuilder.add("iterable", jsonValue);
 		}
 
 		jsonObjectBuilder.add("success", "true");
 
-		return Optional.of(jsonObjectBuilder.build());
+		return jsonObjectBuilder.build();
 	}
 
 	private JsonValue _outputJsonValue;

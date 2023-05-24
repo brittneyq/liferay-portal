@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.staging.StagingGroupHelper;
 import com.liferay.style.book.constants.StyleBookPortletKeys;
 
 import org.osgi.service.component.annotations.Component;
@@ -31,7 +30,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"panel.app.order:Integer=200",
 		"panel.category.key=" + PanelCategoryKeys.SITE_ADMINISTRATION_DESIGN
@@ -39,6 +37,11 @@ import org.osgi.service.component.annotations.Reference;
 	service = PanelApp.class
 )
 public class StyleBookPanelApp extends BasePanelApp {
+
+	@Override
+	public Portlet getPortlet() {
+		return _portlet;
+	}
 
 	@Override
 	public String getPortletId() {
@@ -56,16 +59,9 @@ public class StyleBookPanelApp extends BasePanelApp {
 		return super.isShow(permissionChecker, group);
 	}
 
-	@Override
 	@Reference(
-		target = "(javax.portlet.name=" + StyleBookPortletKeys.STYLE_BOOK + ")",
-		unbind = "-"
+		target = "(javax.portlet.name=" + StyleBookPortletKeys.STYLE_BOOK + ")"
 	)
-	public void setPortlet(Portlet portlet) {
-		super.setPortlet(portlet);
-	}
-
-	@Reference
-	private StagingGroupHelper _stagingGroupHelper;
+	private Portlet _portlet;
 
 }

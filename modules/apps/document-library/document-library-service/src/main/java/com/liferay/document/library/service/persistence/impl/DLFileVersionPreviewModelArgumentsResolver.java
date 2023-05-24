@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		DLFileVersionPreviewModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.document.library.model.impl.DLFileVersionPreviewImpl",
+		"table.name=DLFileVersionPreview"
+	},
+	service = ArgumentsResolver.class
 )
 public class DLFileVersionPreviewModelArgumentsResolver
 	implements ArgumentsResolver {

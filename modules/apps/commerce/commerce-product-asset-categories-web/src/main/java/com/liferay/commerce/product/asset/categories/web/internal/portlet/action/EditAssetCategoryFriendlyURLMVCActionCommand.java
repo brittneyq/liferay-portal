@@ -28,7 +28,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -47,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  */
 @Component(
-	enabled = false, immediate = true,
 	property = {
 		"javax.portlet.name=" + CommerceProductAssetCategoriesPortletKeys.ASSET_CATEGORIES_ADMIN,
 		"mvc.command.name=/commerce_product_asset_categories/edit_asset_category_friendly_url"
@@ -67,7 +66,7 @@ public class EditAssetCategoryFriendlyURLMVCActionCommand
 		AssetCategory assetCategory = _assetCategoryService.getCategory(
 			categoryId);
 
-		Map<Locale, String> urlTitleMap = LocalizationUtil.getLocalizationMap(
+		Map<Locale, String> urlTitleMap = _localization.getLocalizationMap(
 			actionRequest, "urlTitleMapAsXML");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
@@ -118,7 +117,7 @@ public class EditAssetCategoryFriendlyURLMVCActionCommand
 
 				urlTitle = _friendlyURLEntryLocalService.getUniqueUrlTitle(
 					assetCategory.getGroupId(), classNameId,
-					assetCategory.getCategoryId(), urlTitle);
+					assetCategory.getCategoryId(), urlTitle, null);
 
 				newUrlTitleMap.put(LocaleUtil.toLanguageId(locale), urlTitle);
 			}
@@ -135,6 +134,9 @@ public class EditAssetCategoryFriendlyURLMVCActionCommand
 
 	@Reference
 	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
+
+	@Reference
+	private Localization _localization;
 
 	@Reference
 	private Portal _portal;

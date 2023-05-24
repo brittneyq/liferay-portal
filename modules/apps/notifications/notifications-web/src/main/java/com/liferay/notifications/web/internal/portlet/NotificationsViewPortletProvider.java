@@ -32,7 +32,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.portal.kernel.model.UserNotificationEvent",
 	service = ViewPortletProvider.class
 )
@@ -60,7 +59,7 @@ public class NotificationsViewPortletProvider
 	}
 
 	@Reference(
-		target = "(&(javax.portlet.name=" + NotificationsPortletKeys.NOTIFICATIONS + ")(!(depot.panel.app.wrapper=*)))"
+		target = "(javax.portlet.name=" + NotificationsPortletKeys.NOTIFICATIONS + ")"
 	)
 	private PanelApp _panelApp;
 

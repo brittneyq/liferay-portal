@@ -16,6 +16,7 @@ import ClayModal, {useModal} from '@clayui/modal';
 import React from 'react';
 
 const KEY_LABEL = Liferay.Browser?.isMac() ? '⌘' : 'Ctrl';
+const OPTION_KEY_LABEL = Liferay.Browser?.isMac() ? '⌥' : 'Alt';
 
 export default function ShortcutModal({onCloseModal}) {
 	const {observer} = useModal({onClose: () => onCloseModal()});
@@ -37,12 +38,12 @@ export default function ShortcutModal({onCloseModal}) {
 
 				<KeyboardShorcut
 					description={Liferay.Language.get('move-fragment-up')}
-					keyCombinations={['↑']}
+					keyCombinations={[OPTION_KEY_LABEL, '⇧', '↑']}
 				/>
 
 				<KeyboardShorcut
 					description={Liferay.Language.get('move-fragment-down')}
-					keyCombinations={['↓']}
+					keyCombinations={[OPTION_KEY_LABEL, '⇧', '↓']}
 				/>
 
 				<KeyboardShorcut
@@ -63,16 +64,20 @@ export default function ShortcutModal({onCloseModal}) {
 				/>
 
 				<p className="sheet-subtitle text-secondary">
+					{Liferay.Language.get('selection')}
+				</p>
+
+				<KeyboardShorcut
+					description={Liferay.Language.get('select-parent')}
+					keyCombinations={['⇧', 'Enter']}
+				/>
+
+				<p className="sheet-subtitle text-secondary">
 					{Liferay.Language.get('view')}
 				</p>
 
 				<KeyboardShorcut
-					description={Liferay.Language.get('hide-sidebars')}
-					keyCombinations={[KEY_LABEL, '⇧', '.']}
-				/>
-
-				<KeyboardShorcut
-					description={Liferay.Language.get('show-sidebars')}
+					description={Liferay.Language.get('toggle-sidebars')}
 					keyCombinations={[KEY_LABEL, '⇧', '.']}
 				/>
 			</ClayModal.Body>

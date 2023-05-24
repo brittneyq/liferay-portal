@@ -22,20 +22,20 @@ const Timers = ({setContentName, setErrors}) => {
 	]);
 
 	useEffect(() => {
-		const serializebleSections = timerSections.filter(
+		const serializableSections = timerSections.filter(
 			(section) =>
 				section.duration &&
 				section.durationScale &&
 				section.timerActions
 		);
 		let taskTimers;
-		if (serializebleSections.length !== 0) {
+		if (serializableSections.length !== 0) {
 			taskTimers = {
-				blocking: serializebleSections.map(
+				blocking: serializableSections.map(
 					({recurrence, recurrenceScale}) =>
 						recurrence && recurrenceScale ? 'false' : 'true'
 				),
-				delay: serializebleSections.map(
+				delay: serializableSections.map(
 					({
 						duration,
 						durationScale,
@@ -54,11 +54,11 @@ const Timers = ({setContentName, setErrors}) => {
 						return delay;
 					}
 				),
-				description: serializebleSections.map(
+				description: serializableSections.map(
 					({description}) => description
 				),
-				name: serializebleSections.map(({name}) => name),
-				reassignments: serializebleSections.map(({timerActions}) => {
+				name: serializableSections.map(({name}) => name),
+				reassignments: serializableSections.map(({timerActions}) => {
 					const filteredTimerActions = timerActions.filter(
 						({actionType}) => actionType === 'reassignments'
 					);
@@ -124,7 +124,7 @@ const Timers = ({setContentName, setErrors}) => {
 
 					return {};
 				}),
-				timerActions: serializebleSections.map(({timerActions}) => {
+				timerActions: serializableSections.map(({timerActions}) => {
 					const filteredTimerActions = timerActions.filter(
 						({actionType}) => actionType === 'timerActions'
 					);
@@ -144,19 +144,21 @@ const Timers = ({setContentName, setErrors}) => {
 							script: filteredTimerActions.map(
 								({script}) => script
 							),
+							scriptLanguage: filteredTimerActions.map(
+								({scriptLanguage}) => scriptLanguage
+							),
 						};
 					}
 
 					return {};
 				}),
 
-				timerNotifications: serializebleSections.map(() => ({})),
+				timerNotifications: serializableSections.map(() => ({})),
 			};
 		}
 		else {
 			taskTimers = null;
 		}
-
 		setSelectedItem((previousItem) => ({
 			...previousItem,
 			data: {...previousItem.data, taskTimers},
@@ -251,6 +253,9 @@ const Timers = ({setContentName, setErrors}) => {
 				section.script = data.find((entry) => entry[0] === 'script')[1][
 					index
 				];
+				section.scriptLanguage = data.find(
+					(entry) => entry[0] === 'scriptLanguage'
+				)[1][index];
 				sections.push(section);
 			}
 		}
@@ -260,7 +265,7 @@ const Timers = ({setContentName, setErrors}) => {
 
 	useEffect(() => {
 		if (selectedItem.data.taskTimers?.delay) {
-			const desserializedSections = [];
+			const deserializedSections = [];
 
 			for (
 				let index = 0;
@@ -289,10 +294,10 @@ const Timers = ({setContentName, setErrors}) => {
 						selectedItem.data.taskTimers.delay[index].scale[1];
 				}
 
-				desserializedSections.push(section);
+				deserializedSections.push(section);
 			}
 
-			setTimerSections(desserializedSections);
+			setTimerSections(deserializedSections);
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps

@@ -123,6 +123,8 @@ public class PhonePersistenceTest {
 
 		newPhone.setMvccVersion(RandomTestUtil.nextLong());
 
+		newPhone.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newPhone.setUuid(RandomTestUtil.randomString());
 
 		newPhone.setCompanyId(RandomTestUtil.nextLong());
@@ -143,7 +145,7 @@ public class PhonePersistenceTest {
 
 		newPhone.setExtension(RandomTestUtil.randomString());
 
-		newPhone.setTypeId(RandomTestUtil.nextLong());
+		newPhone.setListTypeId(RandomTestUtil.nextLong());
 
 		newPhone.setPrimary(RandomTestUtil.randomBoolean());
 
@@ -154,6 +156,8 @@ public class PhonePersistenceTest {
 
 		Assert.assertEquals(
 			existingPhone.getMvccVersion(), newPhone.getMvccVersion());
+		Assert.assertEquals(
+			existingPhone.getCtCollectionId(), newPhone.getCtCollectionId());
 		Assert.assertEquals(existingPhone.getUuid(), newPhone.getUuid());
 		Assert.assertEquals(existingPhone.getPhoneId(), newPhone.getPhoneId());
 		Assert.assertEquals(
@@ -173,7 +177,8 @@ public class PhonePersistenceTest {
 		Assert.assertEquals(existingPhone.getNumber(), newPhone.getNumber());
 		Assert.assertEquals(
 			existingPhone.getExtension(), newPhone.getExtension());
-		Assert.assertEquals(existingPhone.getTypeId(), newPhone.getTypeId());
+		Assert.assertEquals(
+			existingPhone.getListTypeId(), newPhone.getListTypeId());
 		Assert.assertEquals(existingPhone.isPrimary(), newPhone.isPrimary());
 	}
 
@@ -260,10 +265,11 @@ public class PhonePersistenceTest {
 
 	protected OrderByComparator<Phone> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"Phone", "mvccVersion", true, "uuid", true, "phoneId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "classNameId", true, "classPK", true,
-			"number", true, "extension", true, "typeId", true, "primary", true);
+			"Phone", "mvccVersion", true, "ctCollectionId", true, "uuid", true,
+			"phoneId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true, "classNameId", true,
+			"classPK", true, "number", true, "extension", true, "listTypeId",
+			true, "primary", true);
 	}
 
 	@Test
@@ -471,6 +477,8 @@ public class PhonePersistenceTest {
 
 		phone.setMvccVersion(RandomTestUtil.nextLong());
 
+		phone.setCtCollectionId(RandomTestUtil.nextLong());
+
 		phone.setUuid(RandomTestUtil.randomString());
 
 		phone.setCompanyId(RandomTestUtil.nextLong());
@@ -491,7 +499,7 @@ public class PhonePersistenceTest {
 
 		phone.setExtension(RandomTestUtil.randomString());
 
-		phone.setTypeId(RandomTestUtil.nextLong());
+		phone.setListTypeId(RandomTestUtil.nextLong());
 
 		phone.setPrimary(RandomTestUtil.randomBoolean());
 

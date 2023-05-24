@@ -46,7 +46,6 @@ import com.liferay.portal.model.impl.CompanyModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -153,7 +152,7 @@ public class CompanyPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByWebId, finderArgs);
+				_finderPathFetchByWebId, finderArgs, this);
 		}
 
 		if (result instanceof Company) {
@@ -254,7 +253,8 @@ public class CompanyPersistenceImpl
 
 		Object[] finderArgs = new Object[] {webId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -374,7 +374,7 @@ public class CompanyPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByMx, finderArgs);
+				_finderPathFetchByMx, finderArgs, this);
 		}
 
 		if (result instanceof Company) {
@@ -490,7 +490,8 @@ public class CompanyPersistenceImpl
 
 		Object[] finderArgs = new Object[] {mx};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -607,7 +608,7 @@ public class CompanyPersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByLogoId, finderArgs);
+				_finderPathFetchByLogoId, finderArgs, this);
 		}
 
 		if (result instanceof Company) {
@@ -710,7 +711,8 @@ public class CompanyPersistenceImpl
 
 		Object[] finderArgs = new Object[] {logoId};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1199,7 +1201,7 @@ public class CompanyPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<Company>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1269,7 +1271,7 @@ public class CompanyPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -1366,28 +1368,13 @@ public class CompanyPersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"logoId"},
 			false);
 
-		_setCompanyUtilPersistence(this);
+		CompanyUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setCompanyUtilPersistence(null);
+		CompanyUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(CompanyImpl.class.getName());
-	}
-
-	private void _setCompanyUtilPersistence(
-		CompanyPersistence companyPersistence) {
-
-		try {
-			Field field = CompanyUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, companyPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_COMPANY =

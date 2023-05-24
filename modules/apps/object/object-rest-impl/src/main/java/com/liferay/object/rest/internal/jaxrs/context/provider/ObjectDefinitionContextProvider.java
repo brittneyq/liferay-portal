@@ -16,10 +16,8 @@ package com.liferay.object.rest.internal.jaxrs.context.provider;
 
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.internal.deployer.ObjectDefinitionDeployerImpl;
+import com.liferay.object.rest.internal.jaxrs.context.provider.util.ObjectContextProviderUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringUtil;
-
-import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.ext.Provider;
 
@@ -43,20 +41,8 @@ public class ObjectDefinitionContextProvider
 
 	@Override
 	public ObjectDefinition createContext(Message message) {
-		long companyId = _portal.getCompanyId(
-			(HttpServletRequest)message.getContextualProperty("HTTP.REQUEST"));
-
-		String restContextPath = (String)message.getContextualProperty(
-			"org.apache.cxf.message.Message.BASE_PATH");
-
-		restContextPath = restContextPath.substring(
-			restContextPath.indexOf("/o/"));
-
-		restContextPath = StringUtil.removeFirst(restContextPath, "/o");
-		restContextPath = StringUtil.replaceLast(restContextPath, '/', "");
-
-		return _objectDefinitionDeployerImpl.getObjectDefinition(
-			companyId, restContextPath);
+		return ObjectContextProviderUtil.getObjectDefinition(
+			message, _objectDefinitionDeployerImpl, _portal);
 	}
 
 	private final ObjectDefinitionDeployerImpl _objectDefinitionDeployerImpl;

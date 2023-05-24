@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {KBArticleModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.knowledge.base.model.impl.KBArticleImpl",
+		"table.name=KBArticle"
+	},
+	service = ArgumentsResolver.class
 )
 public class KBArticleModelArgumentsResolver implements ArgumentsResolver {
 

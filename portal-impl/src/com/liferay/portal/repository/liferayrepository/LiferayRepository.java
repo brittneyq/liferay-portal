@@ -172,14 +172,14 @@ public class LiferayRepository
 
 	@Override
 	public Folder addFolder(
-			long userId, long parentFolderId, String name, String description,
-			ServiceContext serviceContext)
+			String externalReferenceCode, long userId, long parentFolderId,
+			String name, String description, ServiceContext serviceContext)
 		throws PortalException {
 
 		boolean mountPoint = ParamUtil.getBoolean(serviceContext, "mountPoint");
 
 		DLFolder dlFolder = dlFolderService.addFolder(
-			getGroupId(), getRepositoryId(), mountPoint,
+			externalReferenceCode, getGroupId(), getRepositoryId(), mountPoint,
 			toFolderId(parentFolderId), name, description, serviceContext);
 
 		return new LiferayFolder(dlFolder);
@@ -543,6 +543,16 @@ public class LiferayRepository
 	}
 
 	@Override
+	public Folder getFolderByExternalReferenceCode(String externalReferenceCode)
+		throws PortalException {
+
+		DLFolder dlFolder = dlFolderService.getDLFolderByExternalReferenceCode(
+			externalReferenceCode, getGroupId());
+
+		return new LiferayFolder(dlFolder);
+	}
+
+	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountfolders, int start,
 			int end, OrderByComparator<Folder> orderByComparator)
@@ -866,8 +876,6 @@ public class LiferayRepository
 		else {
 			indexer = IndexerRegistryUtil.getIndexer(DLFileEntry.class);
 		}
-
-		searchContext.setSearchEngineId(indexer.getSearchEngineId());
 
 		return indexer.search(searchContext);
 	}

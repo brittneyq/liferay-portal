@@ -238,86 +238,109 @@ public class KaleoProcessModelImpl
 	public Map<String, Function<KaleoProcess, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<KaleoProcess, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<KaleoProcess, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<KaleoProcess, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<KaleoProcess, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<KaleoProcess, Object>>();
-		Map<String, BiConsumer<KaleoProcess, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<KaleoProcess, ?>>();
+		private static final Map<String, Function<KaleoProcess, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put("uuid", KaleoProcess::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid", (BiConsumer<KaleoProcess, String>)KaleoProcess::setUuid);
-		attributeGetterFunctions.put(
-			"kaleoProcessId", KaleoProcess::getKaleoProcessId);
-		attributeSetterBiConsumers.put(
-			"kaleoProcessId",
-			(BiConsumer<KaleoProcess, Long>)KaleoProcess::setKaleoProcessId);
-		attributeGetterFunctions.put("groupId", KaleoProcess::getGroupId);
-		attributeSetterBiConsumers.put(
-			"groupId",
-			(BiConsumer<KaleoProcess, Long>)KaleoProcess::setGroupId);
-		attributeGetterFunctions.put("companyId", KaleoProcess::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<KaleoProcess, Long>)KaleoProcess::setCompanyId);
-		attributeGetterFunctions.put("userId", KaleoProcess::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId", (BiConsumer<KaleoProcess, Long>)KaleoProcess::setUserId);
-		attributeGetterFunctions.put("userName", KaleoProcess::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<KaleoProcess, String>)KaleoProcess::setUserName);
-		attributeGetterFunctions.put("createDate", KaleoProcess::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<KaleoProcess, Date>)KaleoProcess::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate", KaleoProcess::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<KaleoProcess, Date>)KaleoProcess::setModifiedDate);
-		attributeGetterFunctions.put(
-			"DDLRecordSetId", KaleoProcess::getDDLRecordSetId);
-		attributeSetterBiConsumers.put(
-			"DDLRecordSetId",
-			(BiConsumer<KaleoProcess, Long>)KaleoProcess::setDDLRecordSetId);
-		attributeGetterFunctions.put(
-			"DDMTemplateId", KaleoProcess::getDDMTemplateId);
-		attributeSetterBiConsumers.put(
-			"DDMTemplateId",
-			(BiConsumer<KaleoProcess, Long>)KaleoProcess::setDDMTemplateId);
-		attributeGetterFunctions.put(
-			"workflowDefinitionName", KaleoProcess::getWorkflowDefinitionName);
-		attributeSetterBiConsumers.put(
-			"workflowDefinitionName",
-			(BiConsumer<KaleoProcess, String>)
-				KaleoProcess::setWorkflowDefinitionName);
-		attributeGetterFunctions.put(
-			"workflowDefinitionVersion",
-			KaleoProcess::getWorkflowDefinitionVersion);
-		attributeSetterBiConsumers.put(
-			"workflowDefinitionVersion",
-			(BiConsumer<KaleoProcess, Integer>)
-				KaleoProcess::setWorkflowDefinitionVersion);
+		static {
+			Map<String, Function<KaleoProcess, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap<String, Function<KaleoProcess, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put("uuid", KaleoProcess::getUuid);
+			attributeGetterFunctions.put(
+				"kaleoProcessId", KaleoProcess::getKaleoProcessId);
+			attributeGetterFunctions.put("groupId", KaleoProcess::getGroupId);
+			attributeGetterFunctions.put(
+				"companyId", KaleoProcess::getCompanyId);
+			attributeGetterFunctions.put("userId", KaleoProcess::getUserId);
+			attributeGetterFunctions.put("userName", KaleoProcess::getUserName);
+			attributeGetterFunctions.put(
+				"createDate", KaleoProcess::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", KaleoProcess::getModifiedDate);
+			attributeGetterFunctions.put(
+				"DDLRecordSetId", KaleoProcess::getDDLRecordSetId);
+			attributeGetterFunctions.put(
+				"DDMTemplateId", KaleoProcess::getDDMTemplateId);
+			attributeGetterFunctions.put(
+				"workflowDefinitionName",
+				KaleoProcess::getWorkflowDefinitionName);
+			attributeGetterFunctions.put(
+				"workflowDefinitionVersion",
+				KaleoProcess::getWorkflowDefinitionVersion);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<KaleoProcess, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<KaleoProcess, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap<String, BiConsumer<KaleoProcess, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"uuid",
+				(BiConsumer<KaleoProcess, String>)KaleoProcess::setUuid);
+			attributeSetterBiConsumers.put(
+				"kaleoProcessId",
+				(BiConsumer<KaleoProcess, Long>)
+					KaleoProcess::setKaleoProcessId);
+			attributeSetterBiConsumers.put(
+				"groupId",
+				(BiConsumer<KaleoProcess, Long>)KaleoProcess::setGroupId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<KaleoProcess, Long>)KaleoProcess::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<KaleoProcess, Long>)KaleoProcess::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<KaleoProcess, String>)KaleoProcess::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<KaleoProcess, Date>)KaleoProcess::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<KaleoProcess, Date>)KaleoProcess::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"DDLRecordSetId",
+				(BiConsumer<KaleoProcess, Long>)
+					KaleoProcess::setDDLRecordSetId);
+			attributeSetterBiConsumers.put(
+				"DDMTemplateId",
+				(BiConsumer<KaleoProcess, Long>)KaleoProcess::setDDMTemplateId);
+			attributeSetterBiConsumers.put(
+				"workflowDefinitionName",
+				(BiConsumer<KaleoProcess, String>)
+					KaleoProcess::setWorkflowDefinitionName);
+			attributeSetterBiConsumers.put(
+				"workflowDefinitionVersion",
+				(BiConsumer<KaleoProcess, Integer>)
+					KaleoProcess::setWorkflowDefinitionVersion);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -873,37 +896,6 @@ public class KaleoProcessModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<KaleoProcess, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<KaleoProcess, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<KaleoProcess, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((KaleoProcess)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, KaleoProcess>
@@ -930,8 +922,9 @@ public class KaleoProcessModelImpl
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
-		Function<KaleoProcess, Object> function = _attributeGetterFunctions.get(
-			columnName);
+		Function<KaleoProcess, Object> function =
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

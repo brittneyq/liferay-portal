@@ -24,22 +24,19 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
@@ -79,7 +76,15 @@ public class DispatchTriggerDisplayContext extends BaseDisplayContext {
 	public CreationMenu getCreationMenu() {
 		CreationMenu creationMenu = new CreationMenu();
 
-		for (String dispatchTaskExecutorType : getDispatchTaskExecutorTypes()) {
+		for (String dispatchTaskExecutorType :
+				_dispatchTaskExecutorRegistry.getDispatchTaskExecutorTypes()) {
+
+			if (_dispatchTaskExecutorRegistry.isHiddenInUI(
+					dispatchTaskExecutorType)) {
+
+				continue;
+			}
+
 			creationMenu.addDropdownItem(
 				dropdownItem -> {
 					dropdownItem.setHref(
@@ -111,19 +116,6 @@ public class DispatchTriggerDisplayContext extends BaseDisplayContext {
 			locale,
 			_dispatchTaskExecutorRegistry.fetchDispatchTaskExecutorName(
 				dispatchTaskExecutorType));
-	}
-
-	public Set<String> getDispatchTaskExecutorTypes() {
-		Set<String> dispatchTaskExecutorTypes =
-			_dispatchTaskExecutorRegistry.getDispatchTaskExecutorTypes();
-
-		Stream<String> stream = dispatchTaskExecutorTypes.parallelStream();
-
-		return stream.filter(
-			type -> !_dispatchTaskExecutorRegistry.isHiddenInUI(type)
-		).collect(
-			Collectors.toSet()
-		);
 	}
 
 	public DispatchTrigger getDispatchTrigger() {

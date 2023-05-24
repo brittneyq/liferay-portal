@@ -25,14 +25,12 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
-import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.web.internal.configuration.JournalWebConfiguration;
 import com.liferay.journal.web.internal.security.permission.resource.JournalFolderPermission;
 import com.liferay.journal.web.internal.util.JournalUtil;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -48,6 +46,7 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -228,12 +227,10 @@ public class JournalManagementToolbarDisplayContext
 			"trashEnabled", _isTrashEnabled()
 		).put(
 			"viewDDMStructureArticlesURL",
-			PortletURLBuilder.createRenderURL(
-				liferayPortletResponse
+			PortletURLBuilder.create(
+				getPortletURL()
 			).setNavigation(
 				"structure"
-			).setParameter(
-				"folderId", JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID
 			).buildString()
 		).build();
 	}
@@ -246,8 +243,6 @@ public class JournalManagementToolbarDisplayContext
 			StringPool.BLANK
 		).setNavigation(
 			StringPool.BLANK
-		).setParameter(
-			"ddmStructureKey", StringPool.BLANK
 		).setParameter(
 			"orderByCol", StringPool.BLANK
 		).setParameter(
@@ -356,8 +351,6 @@ public class JournalManagementToolbarDisplayContext
 							currentURLObj, liferayPortletResponse)
 					).setNavigation(
 						(String)null
-					).setParameter(
-						"ddmStructureKey", (String)null
 					).buildString());
 
 				labelItem.setCloseable(true);
@@ -577,8 +570,7 @@ public class JournalManagementToolbarDisplayContext
 							).setRedirect(
 								PortalUtil.getCurrentURL(httpServletRequest)
 							).setParameter(
-								"ddmStructureKey",
-								ddmStructure.getStructureKey()
+								"ddmStructureId", ddmStructure.getStructureId()
 							).setParameter(
 								"folderId", _journalDisplayContext.getFolderId()
 							).setParameter(
@@ -600,7 +592,7 @@ public class JournalManagementToolbarDisplayContext
 
 						if (ArrayUtil.contains(
 								_journalDisplayContext.getAddMenuFavItems(),
-								ddmStructure.getStructureKey())) {
+								ddmStructure.getStructureId())) {
 
 							addFavoriteDropdownItem(unsafeConsumer);
 						}

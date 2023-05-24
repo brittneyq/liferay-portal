@@ -60,8 +60,7 @@ public class LayoutPageTemplateStructureWrapper
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("classNameId", getClassNameId());
-		attributes.put("classPK", getClassPK());
+		attributes.put("plid", getPlid());
 
 		return attributes;
 	}
@@ -129,52 +128,16 @@ public class LayoutPageTemplateStructureWrapper
 			setModifiedDate(modifiedDate);
 		}
 
-		Long classNameId = (Long)attributes.get("classNameId");
+		Long plid = (Long)attributes.get("plid");
 
-		if (classNameId != null) {
-			setClassNameId(classNameId);
-		}
-
-		Long classPK = (Long)attributes.get("classPK");
-
-		if (classPK != null) {
-			setClassPK(classPK);
+		if (plid != null) {
+			setPlid(plid);
 		}
 	}
 
 	@Override
 	public LayoutPageTemplateStructure cloneWithOriginalValues() {
 		return wrap(model.cloneWithOriginalValues());
-	}
-
-	/**
-	 * Returns the fully qualified class name of this layout page template structure.
-	 *
-	 * @return the fully qualified class name of this layout page template structure
-	 */
-	@Override
-	public String getClassName() {
-		return model.getClassName();
-	}
-
-	/**
-	 * Returns the class name ID of this layout page template structure.
-	 *
-	 * @return the class name ID of this layout page template structure
-	 */
-	@Override
-	public long getClassNameId() {
-		return model.getClassNameId();
-	}
-
-	/**
-	 * Returns the class pk of this layout page template structure.
-	 *
-	 * @return the class pk of this layout page template structure
-	 */
-	@Override
-	public long getClassPK() {
-		return model.getClassPK();
 	}
 
 	/**
@@ -262,6 +225,11 @@ public class LayoutPageTemplateStructureWrapper
 		return model.getMvccVersion();
 	}
 
+	/**
+	 * Returns the plid of this layout page template structure.
+	 *
+	 * @return the plid of this layout page template structure
+	 */
 	@Override
 	public long getPlid() {
 		return model.getPlid();
@@ -320,31 +288,6 @@ public class LayoutPageTemplateStructureWrapper
 	@Override
 	public void persist() {
 		model.persist();
-	}
-
-	@Override
-	public void setClassName(String className) {
-		model.setClassName(className);
-	}
-
-	/**
-	 * Sets the class name ID of this layout page template structure.
-	 *
-	 * @param classNameId the class name ID of this layout page template structure
-	 */
-	@Override
-	public void setClassNameId(long classNameId) {
-		model.setClassNameId(classNameId);
-	}
-
-	/**
-	 * Sets the class pk of this layout page template structure.
-	 *
-	 * @param classPK the class pk of this layout page template structure
-	 */
-	@Override
-	public void setClassPK(long classPK) {
-		model.setClassPK(classPK);
 	}
 
 	/**
@@ -420,6 +363,16 @@ public class LayoutPageTemplateStructureWrapper
 	}
 
 	/**
+	 * Sets the plid of this layout page template structure.
+	 *
+	 * @param plid the plid of this layout page template structure
+	 */
+	@Override
+	public void setPlid(long plid) {
+		model.setPlid(plid);
+	}
+
+	/**
 	 * Sets the primary key of this layout page template structure.
 	 *
 	 * @param primaryKey the primary key of this layout page template structure
@@ -467,6 +420,11 @@ public class LayoutPageTemplateStructureWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public String toXmlString() {
+		return model.toXmlString();
 	}
 
 	@Override

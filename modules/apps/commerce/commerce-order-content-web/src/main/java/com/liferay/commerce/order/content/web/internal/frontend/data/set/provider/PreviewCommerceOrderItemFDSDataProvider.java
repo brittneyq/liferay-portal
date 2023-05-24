@@ -18,14 +18,12 @@ import com.liferay.commerce.configuration.CommerceOrderImporterDateFormatConfigu
 import com.liferay.commerce.constants.CommerceConstants;
 import com.liferay.commerce.currency.model.CommerceMoney;
 import com.liferay.commerce.currency.util.CommercePriceFormatter;
-import com.liferay.commerce.order.CommerceOrderValidatorRegistry;
 import com.liferay.commerce.order.content.web.internal.constants.CommerceOrderFDSNames;
 import com.liferay.commerce.order.content.web.internal.model.PreviewOrderItem;
 import com.liferay.commerce.order.importer.item.CommerceOrderImporterItem;
 import com.liferay.commerce.order.importer.type.CommerceOrderImporterType;
 import com.liferay.commerce.order.importer.type.CommerceOrderImporterTypeRegistry;
 import com.liferay.commerce.price.CommerceOrderItemPrice;
-import com.liferay.commerce.price.CommerceOrderPriceCalculation;
 import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
@@ -34,6 +32,7 @@ import com.liferay.commerce.service.CommerceOrderService;
 import com.liferay.frontend.data.set.provider.FDSDataProvider;
 import com.liferay.frontend.data.set.provider.search.FDSKeywords;
 import com.liferay.frontend.data.set.provider.search.FDSPagination;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.math.BigDecimal;
 
@@ -72,7 +70,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceOrderFDSNames.PREVIEW_ORDER_ITEMS,
 	service = FDSDataProvider.class
 )
@@ -91,7 +88,7 @@ public class PreviewCommerceOrderItemFDSDataProvider
 
 		try {
 			_commerceOrderImporterItems = _getCommerceOrderImporterItems(
-				httpServletRequest);
+				httpServletRequest, fdsPagination);
 		}
 		finally {
 			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
@@ -164,15 +161,32 @@ public class PreviewCommerceOrderItemFDSDataProvider
 			FDSKeywords fdsKeywords, HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		int itemsCount = 0;
+		try {
+			CommerceOrderImporterType commerceOrderImporterType =
+				_commerceOrderImporterTypeRegistry.getCommerceOrderImporterType(
+					ParamUtil.getString(
+						httpServletRequest, "commerceOrderImporterTypeKey"));
 
-		if (_commerceOrderImporterItems != null) {
-			itemsCount = _commerceOrderImporterItems.size();
+			if (commerceOrderImporterType == null) {
+				return 0;
+			}
+
+			Object commerceOrderImporterItem =
+				commerceOrderImporterType.getCommerceOrderImporterItem(
+					httpServletRequest);
+
+			if (commerceOrderImporterItem == null) {
+				return 0;
+			}
+
+			return commerceOrderImporterType.getCommerceOrderImporterItemsCount(
+				commerceOrderImporterItem);
+		}
+		catch (Exception exception) {
+			_log.error(exception);
 		}
 
-		_commerceOrderImporterItems = null;
-
-		return itemsCount;
+		return 0;
 	}
 
 	private String _formatFinalPrice(
@@ -265,7 +279,7 @@ public class PreviewCommerceOrderItemFDSDataProvider
 	}
 
 	private List<CommerceOrderImporterItem> _getCommerceOrderImporterItems(
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, FDSPagination fdsPagination) {
 
 		try {
 			CommerceOrderImporterType commerceOrderImporterType =
@@ -288,7 +302,7 @@ public class PreviewCommerceOrderItemFDSDataProvider
 			return commerceOrderImporterType.getCommerceOrderImporterItems(
 				_commerceOrderService.getCommerceOrder(
 					ParamUtil.getLong(httpServletRequest, "commerceOrderId")),
-				commerceOrderImporterItem);
+				fdsPagination, commerceOrderImporterItem);
 		}
 		catch (Exception exception) {
 			_log.error(exception);
@@ -342,13 +356,7 @@ public class PreviewCommerceOrderItemFDSDataProvider
 		_commerceOrderImporterTypeRegistry;
 
 	@Reference
-	private CommerceOrderPriceCalculation _commerceOrderPriceCalculation;
-
-	@Reference
 	private CommerceOrderService _commerceOrderService;
-
-	@Reference
-	private CommerceOrderValidatorRegistry _commerceOrderValidatorRegistry;
 
 	@Reference
 	private CommercePriceFormatter _commercePriceFormatter;

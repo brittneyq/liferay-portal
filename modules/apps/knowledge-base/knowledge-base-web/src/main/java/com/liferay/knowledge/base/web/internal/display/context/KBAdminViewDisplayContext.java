@@ -19,9 +19,9 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -91,6 +91,8 @@ public class KBAdminViewDisplayContext {
 					"parentResourceClassNameId", parentResourceClassNameId
 				).setParameter(
 					"parentResourcePrimKey", parentResourcePrimKey
+				).setParameter(
+					"selectedItemId", parentResourcePrimKey
 				).buildString());
 		}
 		else {
@@ -109,6 +111,8 @@ public class KBAdminViewDisplayContext {
 					"parentResourceClassNameId", parentResourceClassNameId
 				).setParameter(
 					"parentResourcePrimKey", parentResourcePrimKey
+				).setParameter(
+					"selectedItemId", parentResourcePrimKey
 				).buildString());
 		}
 	}

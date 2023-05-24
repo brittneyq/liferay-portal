@@ -15,6 +15,7 @@
 package com.liferay.commerce.payment.internal.engine;
 
 import com.liferay.commerce.constants.CommerceOrderConstants;
+import com.liferay.commerce.constants.CommerceOrderPaymentConstants;
 import com.liferay.commerce.constants.CommerceSubscriptionEntryConstants;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
@@ -48,10 +49,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luca Pellizzon
  * @author Alessio Antonio Rendina
  */
-@Component(
-	enabled = false, immediate = true,
-	service = CommerceSubscriptionEngine.class
-)
+@Component(service = CommerceSubscriptionEngine.class)
 public class CommerceSubscriptionEngineImpl
 	implements CommerceSubscriptionEngine {
 
@@ -231,7 +229,7 @@ public class CommerceSubscriptionEngineImpl
 			StringPool.BLANK);
 
 		if (commercePaymentResult.getNewPaymentStatus() ==
-				CommerceOrderConstants.PAYMENT_STATUS_PAID) {
+				CommerceOrderPaymentConstants.STATUS_COMPLETED) {
 
 			PermissionChecker permissionChecker =
 				PermissionThreadLocal.getPermissionChecker();

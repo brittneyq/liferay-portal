@@ -16,6 +16,7 @@ package com.liferay.knowledge.base.service;
 
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBArticleSearchDisplay;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -46,6 +47,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -63,7 +65,8 @@ public interface KBArticleService extends BaseService {
 			String externalReferenceCode, String portletId,
 			long parentResourceClassNameId, long parentResourcePrimKey,
 			String title, String urlTitle, String content, String description,
-			String sourceURL, String[] sections, String[] selectedFileNames,
+			String[] sections, String sourceURL, Date expirationDate,
+			Date reviewDate, String[] selectedFileNames,
 			ServiceContext serviceContext)
 		throws PortalException;
 
@@ -78,6 +81,9 @@ public interface KBArticleService extends BaseService {
 			String tempFolderName, InputStream inputStream, String mimeType)
 		throws PortalException;
 
+	public int countKBArticlesByKeywords(
+		long groupId, String keywords, int status);
+
 	public KBArticle deleteKBArticle(long resourcePrimKey)
 		throws PortalException;
 
@@ -87,6 +93,10 @@ public interface KBArticleService extends BaseService {
 	public void deleteTempAttachment(
 			long groupId, long resourcePrimKey, String fileName,
 			String tempFolderName)
+		throws PortalException;
+
+	public KBArticle expireKBArticle(
+			long resourcePrimKey, ServiceContext serviceContext)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -132,8 +142,8 @@ public interface KBArticleService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public String getGroupKBArticlesRSS(
-			int status, int rssDelta, String rssDisplayStyle, String rssFormat,
-			ThemeDisplay themeDisplay)
+			int status, int max, String type, double version,
+			String displayStyle, ThemeDisplay themeDisplay)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -148,8 +158,8 @@ public interface KBArticleService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public String getKBArticleRSS(
-			long resourcePrimKey, int status, int rssDelta,
-			String rssDisplayStyle, String rssFormat, ThemeDisplay themeDisplay)
+			long resourcePrimKey, int status, int max, String type,
+			double version, String displayStyle, ThemeDisplay themeDisplay)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -166,6 +176,10 @@ public interface KBArticleService extends BaseService {
 	public List<KBArticle> getKBArticles(
 		long groupId, long[] resourcePrimKeys, int status,
 		OrderByComparator<KBArticle> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBArticle> getKBArticlesByKeywords(
+		long groupId, String keywords, int status, int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getKBArticlesCount(
@@ -248,9 +262,9 @@ public interface KBArticleService extends BaseService {
 
 	public KBArticle updateKBArticle(
 			long resourcePrimKey, String title, String content,
-			String description, String sourceURL, String[] sections,
-			String[] selectedFileNames, long[] removeFileEntryIds,
-			ServiceContext serviceContext)
+			String description, String[] sections, String sourceURL,
+			Date expirationDate, Date reviewDate, String[] selectedFileNames,
+			long[] removeFileEntryIds, ServiceContext serviceContext)
 		throws PortalException;
 
 	public void updateKBArticlesPriorities(

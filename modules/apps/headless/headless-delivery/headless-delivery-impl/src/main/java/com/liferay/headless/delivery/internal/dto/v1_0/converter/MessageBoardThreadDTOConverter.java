@@ -30,10 +30,10 @@ import com.liferay.headless.delivery.internal.dto.v1_0.util.TaxonomyCategoryBrie
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBMessageLocalService;
-import com.liferay.message.boards.service.MBMessageService;
 import com.liferay.message.boards.service.MBStatsUserLocalService;
 import com.liferay.message.boards.service.MBThreadFlagLocalService;
 import com.liferay.message.boards.settings.MBGroupServiceSettings;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -45,15 +45,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.util.TransformUtil;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
 import com.liferay.subscription.service.SubscriptionLocalService;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -63,7 +56,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "dto.class.name=com.liferay.message.boards.model.MBThread",
-	service = {DTOConverter.class, MessageBoardThreadDTOConverter.class}
+	service = DTOConverter.class
 )
 public class MessageBoardThreadDTOConverter
 	implements DTOConverter<MBThread, MessageBoardThread> {
@@ -92,7 +85,7 @@ public class MessageBoardThreadDTOConverter
 						MBMessage.class.getName(), mbMessage.getMessageId()));
 				articleBody = mbMessage.getBody();
 				creator = CreatorUtil.toCreator(
-					_portal, dtoConverterContext.getUriInfoOptional(), user);
+					_portal, dtoConverterContext.getUriInfo(), user);
 				customFields = CustomFieldsUtil.toCustomFields(
 					dtoConverterContext.isAcceptAllLanguages(),
 					MBMessage.class.getName(), mbMessage.getMessageId(),
@@ -101,21 +94,18 @@ public class MessageBoardThreadDTOConverter
 				dateModified = mbMessage.getModifiedDate();
 				encodingFormat = mbMessage.getFormat();
 				friendlyUrlPath = mbMessage.getUrlSubject();
-				hasValidAnswer = Stream.of(
+				hasValidAnswer = ListUtil.exists(
 					_mbMessageLocalService.getChildMessages(
 						mbMessage.getMessageId(),
-						WorkflowConstants.STATUS_APPROVED)
-				).flatMap(
-					List::stream
-				).anyMatch(
-					MBMessage::isAnswer
-				);
+						WorkflowConstants.STATUS_APPROVED),
+					MBMessage::isAnswer);
 				headline = mbMessage.getSubject();
 				id = mbThread.getThreadId();
 				keywords = ListUtil.toArray(
 					_assetTagLocalService.getTags(
 						MBMessage.class.getName(), mbMessage.getMessageId()),
 					AssetTag.NAME_ACCESSOR);
+				lastPostDate = mbThread.getLastPostDate();
 				locked = mbThread.isLocked();
 				messageBoardRootMessageId = mbThread.getRootMessageId();
 				messageBoardSectionId = mbMessage.getCategoryId();
@@ -152,18 +142,15 @@ public class MessageBoardThreadDTOConverter
 				setCreatorStatistics(
 					() -> {
 						if (mbMessage.isAnonymous() || (user == null) ||
-							user.isDefaultUser()) {
+							user.isGuestUser()) {
 
 							return null;
 						}
 
-						Optional<UriInfo> uriInfoOptional =
-							dtoConverterContext.getUriInfoOptional();
-
 						return CreatorStatisticsUtil.toCreatorStatistics(
 							mbMessage.getGroupId(), languageId,
 							_mbStatsUserLocalService,
-							uriInfoOptional.orElse(null), user);
+							dtoConverterContext.getUriInfo(), user);
 					});
 			}
 		};
@@ -176,9 +163,9 @@ public class MessageBoardThreadDTOConverter
 		MBGroupServiceSettings mbGroupServiceSettings =
 			MBGroupServiceSettings.getInstance(siteId);
 
-		String[] priorities = mbGroupServiceSettings.getPriorities(languageId);
+		for (String priorityString :
+				mbGroupServiceSettings.getPriorities(languageId)) {
 
-		for (String priorityString : priorities) {
 			String[] parts = StringUtil.split(priorityString, StringPool.PIPE);
 
 			if (priority == GetterUtil.getDouble(parts[2])) {
@@ -203,9 +190,6 @@ public class MessageBoardThreadDTOConverter
 
 	@Reference
 	private MBMessageLocalService _mbMessageLocalService;
-
-	@Reference
-	private MBMessageService _mbMessageService;
 
 	@Reference
 	private MBStatsUserLocalService _mbStatsUserLocalService;

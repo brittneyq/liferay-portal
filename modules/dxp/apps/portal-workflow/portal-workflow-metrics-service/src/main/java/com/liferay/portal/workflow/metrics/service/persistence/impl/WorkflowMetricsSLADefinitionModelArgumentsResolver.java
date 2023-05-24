@@ -33,11 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		WorkflowMetricsSLADefinitionModelArgumentsResolver.class,
-		ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.portal.workflow.metrics.model.impl.WorkflowMetricsSLADefinitionImpl",
+		"table.name=WMSLADefinition"
+	},
+	service = ArgumentsResolver.class
 )
 public class WorkflowMetricsSLADefinitionModelArgumentsResolver
 	implements ArgumentsResolver {

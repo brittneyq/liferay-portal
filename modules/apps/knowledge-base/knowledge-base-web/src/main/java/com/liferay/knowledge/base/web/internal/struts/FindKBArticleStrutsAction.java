@@ -23,7 +23,6 @@ import com.liferay.knowledge.base.service.KBArticleLocalService;
 import com.liferay.knowledge.base.service.KBFolderLocalService;
 import com.liferay.knowledge.base.util.AdminHelper;
 import com.liferay.knowledge.base.web.internal.security.permission.resource.KBArticlePermission;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -34,6 +33,7 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -70,7 +70,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Peter Shin
  */
 @Component(
-	immediate = true, property = "path=/knowledge_base/find_kb_article",
+	property = "path=/knowledge_base/find_kb_article",
 	service = StrutsAction.class
 )
 public class FindKBArticleStrutsAction implements StrutsAction {
@@ -368,7 +368,7 @@ public class FindKBArticleStrutsAction implements StrutsAction {
 				httpServletRequest, portletId, plid,
 				PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
-			"/knowledge_base/view_article"
+			"/knowledge_base/view_kb_article"
 		).setParameter(
 			"resourcePrimKey",
 			_getResourcePrimKey(

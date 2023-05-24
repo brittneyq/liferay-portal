@@ -18,6 +18,8 @@ import com.liferay.adaptive.media.exception.AMRuntimeException;
 import com.liferay.document.library.kernel.store.DLStoreRequest;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 
@@ -28,19 +30,33 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = ImageStorage.class)
+@Component(service = ImageStorage.class)
 public class ImageStorage {
 
 	public void delete(FileVersion fileVersion, String configurationUuid) {
-		DLStoreUtil.deleteDirectory(
-			fileVersion.getCompanyId(), CompanyConstants.SYSTEM,
-			AMStoreUtil.getFileVersionPath(fileVersion, configurationUuid));
+		try {
+			DLStoreUtil.deleteDirectory(
+				fileVersion.getCompanyId(), CompanyConstants.SYSTEM,
+				AMStoreUtil.getFileVersionPath(fileVersion, configurationUuid));
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException);
+			}
+		}
 	}
 
 	public void delete(long companyId, String configurationUuid) {
-		DLStoreUtil.deleteDirectory(
-			companyId, CompanyConstants.SYSTEM,
-			getConfigurationEntryPath(configurationUuid));
+		try {
+			DLStoreUtil.deleteDirectory(
+				companyId, CompanyConstants.SYSTEM,
+				getConfigurationEntryPath(configurationUuid));
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException);
+			}
+		}
 	}
 
 	public InputStream getContentInputStream(
@@ -51,6 +67,22 @@ public class ImageStorage {
 				fileVersion, configurationUuid);
 
 			return DLStoreUtil.getFileAsStream(
+				fileVersion.getCompanyId(), CompanyConstants.SYSTEM,
+				fileVersionPath);
+		}
+		catch (PortalException portalException) {
+			throw new AMRuntimeException.IOException(portalException);
+		}
+	}
+
+	public boolean hasContent(
+		FileVersion fileVersion, String configurationUuid) {
+
+		try {
+			String fileVersionPath = AMStoreUtil.getFileVersionPath(
+				fileVersion, configurationUuid);
+
+			return DLStoreUtil.hasFile(
 				fileVersion.getCompanyId(), CompanyConstants.SYSTEM,
 				fileVersionPath);
 		}
@@ -88,5 +120,7 @@ public class ImageStorage {
 	protected String getConfigurationEntryPath(String configurationUuid) {
 		return String.format("adaptive/%s", configurationUuid);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(ImageStorage.class);
 
 }

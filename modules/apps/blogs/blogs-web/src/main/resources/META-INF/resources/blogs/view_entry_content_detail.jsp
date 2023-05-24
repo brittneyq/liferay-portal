@@ -124,7 +124,7 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 
 						String entryUserURL = StringPool.BLANK;
 
-						if ((entryUser != null) && !entryUser.isDefaultUser() && !user.isDefaultUser()) {
+						if ((entryUser != null) && !entryUser.isGuestUser() && !user.isGuestUser()) {
 							entryUserURL = entryUser.getDisplayURL(themeDisplay);
 						}
 						%>
@@ -248,7 +248,13 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 							<liferay-asset:asset-tags-summary
 								className="<%= BlogsEntry.class.getName() %>"
 								classPK="<%= entry.getEntryId() %>"
-								portletURL="<%= renderResponse.createRenderURL() %>"
+								portletURL='<%=
+									PortletURLBuilder.createRenderURL(
+										renderResponse
+									).setRedirect(
+										ParamUtil.getString(request, "redirect")
+									).buildPortletURL()
+								%>'
 							/>
 						</div>
 					</clay:col>

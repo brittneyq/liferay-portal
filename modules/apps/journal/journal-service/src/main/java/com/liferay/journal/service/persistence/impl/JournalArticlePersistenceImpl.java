@@ -40,7 +40,6 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -56,7 +55,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
@@ -90,7 +88,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {JournalArticlePersistence.class, BasePersistence.class})
+@Component(service = JournalArticlePersistence.class)
 public class JournalArticlePersistenceImpl
 	extends BasePersistenceImpl<JournalArticle>
 	implements JournalArticlePersistence {
@@ -214,7 +212,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -591,7 +589,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {resourcePrimKey};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -733,7 +731,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -1125,7 +1123,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1261,7 +1259,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof JournalArticle) {
@@ -1381,7 +1379,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1553,7 +1551,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -1978,7 +1976,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2141,7 +2139,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -2839,7 +2837,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3031,7 +3029,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -3399,7 +3397,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3442,72 +3440,71 @@ public class JournalArticlePersistenceImpl
 	private static final String _FINDER_COLUMN_COMPANYID_COMPANYID_2 =
 		"journalArticle.companyId = ?";
 
-	private FinderPath _finderPathWithPaginationFindByDDMStructureKey;
-	private FinderPath _finderPathWithoutPaginationFindByDDMStructureKey;
-	private FinderPath _finderPathCountByDDMStructureKey;
-	private FinderPath _finderPathWithPaginationCountByDDMStructureKey;
+	private FinderPath _finderPathWithPaginationFindByDDMStructureId;
+	private FinderPath _finderPathWithoutPaginationFindByDDMStructureId;
+	private FinderPath _finderPathCountByDDMStructureId;
 
 	/**
-	 * Returns all the journal articles where DDMStructureKey = &#63;.
+	 * Returns all the journal articles where DDMStructureId = &#63;.
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByDDMStructureKey(String DDMStructureKey) {
-		return findByDDMStructureKey(
-			DDMStructureKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	public List<JournalArticle> findByDDMStructureId(long DDMStructureId) {
+		return findByDDMStructureId(
+			DDMStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
 	/**
-	 * Returns a range of all the journal articles where DDMStructureKey = &#63;.
+	 * Returns a range of all the journal articles where DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @return the range of matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String DDMStructureKey, int start, int end) {
+	public List<JournalArticle> findByDDMStructureId(
+		long DDMStructureId, int start, int end) {
 
-		return findByDDMStructureKey(DDMStructureKey, start, end, null);
+		return findByDDMStructureId(DDMStructureId, start, end, null);
 	}
 
 	/**
-	 * Returns an ordered range of all the journal articles where DDMStructureKey = &#63;.
+	 * Returns an ordered range of all the journal articles where DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the ordered range of matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String DDMStructureKey, int start, int end,
+	public List<JournalArticle> findByDDMStructureId(
+		long DDMStructureId, int start, int end,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
-		return findByDDMStructureKey(
-			DDMStructureKey, start, end, orderByComparator, true);
+		return findByDDMStructureId(
+			DDMStructureId, start, end, orderByComparator, true);
 	}
 
 	/**
-	 * Returns an ordered range of all the journal articles where DDMStructureKey = &#63;.
+	 * Returns an ordered range of all the journal articles where DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
@@ -3515,12 +3512,10 @@ public class JournalArticlePersistenceImpl
 	 * @return the ordered range of matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String DDMStructureKey, int start, int end,
+	public List<JournalArticle> findByDDMStructureId(
+		long DDMStructureId, int start, int end,
 		OrderByComparator<JournalArticle> orderByComparator,
 		boolean useFinderCache) {
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			JournalArticle.class);
@@ -3532,14 +3527,14 @@ public class JournalArticlePersistenceImpl
 			(orderByComparator == null)) {
 
 			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByDDMStructureKey;
-				finderArgs = new Object[] {DDMStructureKey};
+				finderPath = _finderPathWithoutPaginationFindByDDMStructureId;
+				finderArgs = new Object[] {DDMStructureId};
 			}
 		}
 		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByDDMStructureKey;
+			finderPath = _finderPathWithPaginationFindByDDMStructureId;
 			finderArgs = new Object[] {
-				DDMStructureKey, start, end, orderByComparator
+				DDMStructureId, start, end, orderByComparator
 			};
 		}
 
@@ -3547,13 +3542,11 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
-					if (!DDMStructureKey.equals(
-							journalArticle.getDDMStructureKey())) {
-
+					if (DDMStructureId != journalArticle.getDDMStructureId()) {
 						list = null;
 
 						break;
@@ -3575,16 +3568,7 @@ public class JournalArticlePersistenceImpl
 
 			sb.append(_SQL_SELECT_JOURNALARTICLE_WHERE);
 
-			boolean bindDDMStructureKey = false;
-
-			if (DDMStructureKey.isEmpty()) {
-				sb.append(_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_3);
-			}
-			else {
-				bindDDMStructureKey = true;
-
-				sb.append(_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_2);
-			}
+			sb.append(_FINDER_COLUMN_DDMSTRUCTUREID_DDMSTRUCTUREID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
@@ -3605,9 +3589,7 @@ public class JournalArticlePersistenceImpl
 
 				QueryPos queryPos = QueryPos.getInstance(query);
 
-				if (bindDDMStructureKey) {
-					queryPos.add(DDMStructureKey);
-				}
+				queryPos.add(DDMStructureId);
 
 				list = (List<JournalArticle>)QueryUtil.list(
 					query, getDialect(), start, end);
@@ -3630,21 +3612,21 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the first journal article in the ordered set where DDMStructureKey = &#63;.
+	 * Returns the first journal article in the ordered set where DDMStructureId = &#63;.
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching journal article
 	 * @throws NoSuchArticleException if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle findByDDMStructureKey_First(
-			String DDMStructureKey,
+	public JournalArticle findByDDMStructureId_First(
+			long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
 
-		JournalArticle journalArticle = fetchByDDMStructureKey_First(
-			DDMStructureKey, orderByComparator);
+		JournalArticle journalArticle = fetchByDDMStructureId_First(
+			DDMStructureId, orderByComparator);
 
 		if (journalArticle != null) {
 			return journalArticle;
@@ -3654,8 +3636,8 @@ public class JournalArticlePersistenceImpl
 
 		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		sb.append("DDMStructureKey=");
-		sb.append(DDMStructureKey);
+		sb.append("DDMStructureId=");
+		sb.append(DDMStructureId);
 
 		sb.append("}");
 
@@ -3663,19 +3645,19 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the first journal article in the ordered set where DDMStructureKey = &#63;.
+	 * Returns the first journal article in the ordered set where DDMStructureId = &#63;.
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching journal article, or <code>null</code> if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle fetchByDDMStructureKey_First(
-		String DDMStructureKey,
+	public JournalArticle fetchByDDMStructureId_First(
+		long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
-		List<JournalArticle> list = findByDDMStructureKey(
-			DDMStructureKey, 0, 1, orderByComparator);
+		List<JournalArticle> list = findByDDMStructureId(
+			DDMStructureId, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -3685,21 +3667,21 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the last journal article in the ordered set where DDMStructureKey = &#63;.
+	 * Returns the last journal article in the ordered set where DDMStructureId = &#63;.
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching journal article
 	 * @throws NoSuchArticleException if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle findByDDMStructureKey_Last(
-			String DDMStructureKey,
+	public JournalArticle findByDDMStructureId_Last(
+			long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
 
-		JournalArticle journalArticle = fetchByDDMStructureKey_Last(
-			DDMStructureKey, orderByComparator);
+		JournalArticle journalArticle = fetchByDDMStructureId_Last(
+			DDMStructureId, orderByComparator);
 
 		if (journalArticle != null) {
 			return journalArticle;
@@ -3709,8 +3691,8 @@ public class JournalArticlePersistenceImpl
 
 		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		sb.append("DDMStructureKey=");
-		sb.append(DDMStructureKey);
+		sb.append("DDMStructureId=");
+		sb.append(DDMStructureId);
 
 		sb.append("}");
 
@@ -3718,25 +3700,25 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the last journal article in the ordered set where DDMStructureKey = &#63;.
+	 * Returns the last journal article in the ordered set where DDMStructureId = &#63;.
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching journal article, or <code>null</code> if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle fetchByDDMStructureKey_Last(
-		String DDMStructureKey,
+	public JournalArticle fetchByDDMStructureId_Last(
+		long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
-		int count = countByDDMStructureKey(DDMStructureKey);
+		int count = countByDDMStructureId(DDMStructureId);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<JournalArticle> list = findByDDMStructureKey(
-			DDMStructureKey, count - 1, count, orderByComparator);
+		List<JournalArticle> list = findByDDMStructureId(
+			DDMStructureId, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -3746,21 +3728,19 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the journal articles before and after the current journal article in the ordered set where DDMStructureKey = &#63;.
+	 * Returns the journal articles before and after the current journal article in the ordered set where DDMStructureId = &#63;.
 	 *
 	 * @param id the primary key of the current journal article
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next journal article
 	 * @throws NoSuchArticleException if a journal article with the primary key could not be found
 	 */
 	@Override
-	public JournalArticle[] findByDDMStructureKey_PrevAndNext(
-			long id, String DDMStructureKey,
+	public JournalArticle[] findByDDMStructureId_PrevAndNext(
+			long id, long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		JournalArticle journalArticle = findByPrimaryKey(id);
 
@@ -3771,14 +3751,14 @@ public class JournalArticlePersistenceImpl
 
 			JournalArticle[] array = new JournalArticleImpl[3];
 
-			array[0] = getByDDMStructureKey_PrevAndNext(
-				session, journalArticle, DDMStructureKey, orderByComparator,
+			array[0] = getByDDMStructureId_PrevAndNext(
+				session, journalArticle, DDMStructureId, orderByComparator,
 				true);
 
 			array[1] = journalArticle;
 
-			array[2] = getByDDMStructureKey_PrevAndNext(
-				session, journalArticle, DDMStructureKey, orderByComparator,
+			array[2] = getByDDMStructureId_PrevAndNext(
+				session, journalArticle, DDMStructureId, orderByComparator,
 				false);
 
 			return array;
@@ -3791,8 +3771,8 @@ public class JournalArticlePersistenceImpl
 		}
 	}
 
-	protected JournalArticle getByDDMStructureKey_PrevAndNext(
-		Session session, JournalArticle journalArticle, String DDMStructureKey,
+	protected JournalArticle getByDDMStructureId_PrevAndNext(
+		Session session, JournalArticle journalArticle, long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator, boolean previous) {
 
 		StringBundler sb = null;
@@ -3808,16 +3788,7 @@ public class JournalArticlePersistenceImpl
 
 		sb.append(_SQL_SELECT_JOURNALARTICLE_WHERE);
 
-		boolean bindDDMStructureKey = false;
-
-		if (DDMStructureKey.isEmpty()) {
-			sb.append(_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_3);
-		}
-		else {
-			bindDDMStructureKey = true;
-
-			sb.append(_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_2);
-		}
+		sb.append(_FINDER_COLUMN_DDMSTRUCTUREID_DDMSTRUCTUREID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
@@ -3888,9 +3859,7 @@ public class JournalArticlePersistenceImpl
 
 		QueryPos queryPos = QueryPos.getInstance(query);
 
-		if (bindDDMStructureKey) {
-			queryPos.add(DDMStructureKey);
-		}
+		queryPos.add(DDMStructureId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
@@ -3912,229 +3881,15 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns all the journal articles where DDMStructureKey = any &#63;.
+	 * Removes all the journal articles where DDMStructureId = &#63; from the database.
 	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param DDMStructureKeys the ddm structure keys
-	 * @return the matching journal articles
+	 * @param DDMStructureId the ddm structure ID
 	 */
 	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String[] DDMStructureKeys) {
-
-		return findByDDMStructureKey(
-			DDMStructureKeys, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal articles where DDMStructureKey = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param DDMStructureKeys the ddm structure keys
-	 * @param start the lower bound of the range of journal articles
-	 * @param end the upper bound of the range of journal articles (not inclusive)
-	 * @return the range of matching journal articles
-	 */
-	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String[] DDMStructureKeys, int start, int end) {
-
-		return findByDDMStructureKey(DDMStructureKeys, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal articles where DDMStructureKey = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param DDMStructureKeys the ddm structure keys
-	 * @param start the lower bound of the range of journal articles
-	 * @param end the upper bound of the range of journal articles (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal articles
-	 */
-	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String[] DDMStructureKeys, int start, int end,
-		OrderByComparator<JournalArticle> orderByComparator) {
-
-		return findByDDMStructureKey(
-			DDMStructureKeys, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal articles where DDMStructureKey = &#63;, optionally using the finder cache.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param DDMStructureKeys the ddm structure keys
-	 * @param start the lower bound of the range of journal articles
-	 * @param end the upper bound of the range of journal articles (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param useFinderCache whether to use the finder cache
-	 * @return the ordered range of matching journal articles
-	 */
-	@Override
-	public List<JournalArticle> findByDDMStructureKey(
-		String[] DDMStructureKeys, int start, int end,
-		OrderByComparator<JournalArticle> orderByComparator,
-		boolean useFinderCache) {
-
-		if (DDMStructureKeys == null) {
-			DDMStructureKeys = new String[0];
-		}
-		else if (DDMStructureKeys.length > 1) {
-			for (int i = 0; i < DDMStructureKeys.length; i++) {
-				DDMStructureKeys[i] = Objects.toString(DDMStructureKeys[i], "");
-			}
-
-			DDMStructureKeys = ArrayUtil.sortedUnique(DDMStructureKeys);
-		}
-
-		if (DDMStructureKeys.length == 1) {
-			return findByDDMStructureKey(
-				DDMStructureKeys[0], start, end, orderByComparator);
-		}
-
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			JournalArticle.class);
-
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache && productionMode) {
-				finderArgs = new Object[] {StringUtil.merge(DDMStructureKeys)};
-			}
-		}
-		else if (useFinderCache && productionMode) {
-			finderArgs = new Object[] {
-				StringUtil.merge(DDMStructureKeys), start, end,
-				orderByComparator
-			};
-		}
-
-		List<JournalArticle> list = null;
-
-		if (useFinderCache && productionMode) {
-			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByDDMStructureKey, finderArgs);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (JournalArticle journalArticle : list) {
-					if (!ArrayUtil.contains(
-							DDMStructureKeys,
-							journalArticle.getDDMStructureKey())) {
-
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_SELECT_JOURNALARTICLE_WHERE);
-
-			if (DDMStructureKeys.length > 0) {
-				sb.append("(");
-
-				for (int i = 0; i < DDMStructureKeys.length; i++) {
-					String DDMStructureKey = DDMStructureKeys[i];
-
-					if (DDMStructureKey.isEmpty()) {
-						sb.append(
-							_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_3);
-					}
-					else {
-						sb.append(
-							_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_2);
-					}
-
-					if ((i + 1) < DDMStructureKeys.length) {
-						sb.append(WHERE_OR);
-					}
-				}
-
-				sb.append(")");
-			}
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
-			}
-			else {
-				sb.append(JournalArticleModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				for (String DDMStructureKey : DDMStructureKeys) {
-					if ((DDMStructureKey != null) &&
-						!DDMStructureKey.isEmpty()) {
-
-						queryPos.add(DDMStructureKey);
-					}
-				}
-
-				list = (List<JournalArticle>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache && productionMode) {
-					finderCache.putResult(
-						_finderPathWithPaginationFindByDDMStructureKey,
-						finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
-	}
-
-	/**
-	 * Removes all the journal articles where DDMStructureKey = &#63; from the database.
-	 *
-	 * @param DDMStructureKey the ddm structure key
-	 */
-	@Override
-	public void removeByDDMStructureKey(String DDMStructureKey) {
+	public void removeByDDMStructureId(long DDMStructureId) {
 		for (JournalArticle journalArticle :
-				findByDDMStructureKey(
-					DDMStructureKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				findByDDMStructureId(
+					DDMStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 					null)) {
 
 			remove(journalArticle);
@@ -4142,15 +3897,13 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the number of journal articles where DDMStructureKey = &#63;.
+	 * Returns the number of journal articles where DDMStructureId = &#63;.
 	 *
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the number of matching journal articles
 	 */
 	@Override
-	public int countByDDMStructureKey(String DDMStructureKey) {
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
-
+	public int countByDDMStructureId(long DDMStructureId) {
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			JournalArticle.class);
 
@@ -4160,11 +3913,11 @@ public class JournalArticlePersistenceImpl
 		Long count = null;
 
 		if (productionMode) {
-			finderPath = _finderPathCountByDDMStructureKey;
+			finderPath = _finderPathCountByDDMStructureId;
 
-			finderArgs = new Object[] {DDMStructureKey};
+			finderArgs = new Object[] {DDMStructureId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4172,16 +3925,7 @@ public class JournalArticlePersistenceImpl
 
 			sb.append(_SQL_COUNT_JOURNALARTICLE_WHERE);
 
-			boolean bindDDMStructureKey = false;
-
-			if (DDMStructureKey.isEmpty()) {
-				sb.append(_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_3);
-			}
-			else {
-				bindDDMStructureKey = true;
-
-				sb.append(_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_2);
-			}
+			sb.append(_FINDER_COLUMN_DDMSTRUCTUREID_DDMSTRUCTUREID_2);
 
 			String sql = sb.toString();
 
@@ -4194,9 +3938,7 @@ public class JournalArticlePersistenceImpl
 
 				QueryPos queryPos = QueryPos.getInstance(query);
 
-				if (bindDDMStructureKey) {
-					queryPos.add(DDMStructureKey);
-				}
+				queryPos.add(DDMStructureId);
 
 				count = (Long)query.uniqueResult();
 
@@ -4215,115 +3957,8 @@ public class JournalArticlePersistenceImpl
 		return count.intValue();
 	}
 
-	/**
-	 * Returns the number of journal articles where DDMStructureKey = any &#63;.
-	 *
-	 * @param DDMStructureKeys the ddm structure keys
-	 * @return the number of matching journal articles
-	 */
-	@Override
-	public int countByDDMStructureKey(String[] DDMStructureKeys) {
-		if (DDMStructureKeys == null) {
-			DDMStructureKeys = new String[0];
-		}
-		else if (DDMStructureKeys.length > 1) {
-			for (int i = 0; i < DDMStructureKeys.length; i++) {
-				DDMStructureKeys[i] = Objects.toString(DDMStructureKeys[i], "");
-			}
-
-			DDMStructureKeys = ArrayUtil.sortedUnique(DDMStructureKeys);
-		}
-
-		boolean productionMode = ctPersistenceHelper.isProductionMode(
-			JournalArticle.class);
-
-		Object[] finderArgs = null;
-
-		Long count = null;
-
-		if (productionMode) {
-			finderArgs = new Object[] {StringUtil.merge(DDMStructureKeys)};
-
-			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByDDMStructureKey, finderArgs);
-		}
-
-		if (count == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_COUNT_JOURNALARTICLE_WHERE);
-
-			if (DDMStructureKeys.length > 0) {
-				sb.append("(");
-
-				for (int i = 0; i < DDMStructureKeys.length; i++) {
-					String DDMStructureKey = DDMStructureKeys[i];
-
-					if (DDMStructureKey.isEmpty()) {
-						sb.append(
-							_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_3);
-					}
-					else {
-						sb.append(
-							_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_2);
-					}
-
-					if ((i + 1) < DDMStructureKeys.length) {
-						sb.append(WHERE_OR);
-					}
-				}
-
-				sb.append(")");
-			}
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				for (String DDMStructureKey : DDMStructureKeys) {
-					if ((DDMStructureKey != null) &&
-						!DDMStructureKey.isEmpty()) {
-
-						queryPos.add(DDMStructureKey);
-					}
-				}
-
-				count = (Long)query.uniqueResult();
-
-				if (productionMode) {
-					finderCache.putResult(
-						_finderPathWithPaginationCountByDDMStructureKey,
-						finderArgs, count);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
-	}
-
-	private static final String
-		_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_2 =
-			"journalArticle.DDMStructureKey = ?";
-
-	private static final String
-		_FINDER_COLUMN_DDMSTRUCTUREKEY_DDMSTRUCTUREKEY_3 =
-			"(journalArticle.DDMStructureKey IS NULL OR journalArticle.DDMStructureKey = '')";
+	private static final String _FINDER_COLUMN_DDMSTRUCTUREID_DDMSTRUCTUREID_2 =
+		"journalArticle.DDMStructureId = ?";
 
 	private FinderPath _finderPathWithPaginationFindByDDMTemplateKey;
 	private FinderPath _finderPathWithoutPaginationFindByDDMTemplateKey;
@@ -4429,7 +4064,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -4832,7 +4467,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {DDMTemplateKey};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4993,7 +4628,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -5391,7 +5026,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {layoutUuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -5550,7 +5185,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -5923,7 +5558,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {smallImageId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -6075,7 +5710,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -6475,7 +6110,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {resourcePrimKey, indexable};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -6633,7 +6268,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -7115,7 +6750,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByR_ST, finderArgs);
+				_finderPathWithPaginationFindByR_ST, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -7235,7 +6870,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {resourcePrimKey, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -7308,7 +6943,7 @@ public class JournalArticlePersistenceImpl
 			};
 
 			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByR_ST, finderArgs);
+				_finderPathWithPaginationCountByR_ST, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -7479,7 +7114,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -8224,7 +7859,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, userId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -8439,7 +8074,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -9243,7 +8878,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, externalReferenceCode};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -9480,7 +9115,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -10455,7 +10090,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByG_F, finderArgs);
+				_finderPathWithPaginationFindByG_F, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -10574,7 +10209,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, folderId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -10645,7 +10280,7 @@ public class JournalArticlePersistenceImpl
 			finderArgs = new Object[] {groupId, StringUtil.merge(folderIds)};
 
 			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_F, finderArgs);
+				_finderPathWithPaginationCountByG_F, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -10942,7 +10577,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -11741,7 +11376,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, articleId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -11979,7 +11614,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -12778,7 +12413,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, urlTitle};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -12908,78 +12543,78 @@ public class JournalArticlePersistenceImpl
 	private static final String _FINDER_COLUMN_G_UT_URLTITLE_3 =
 		"(journalArticle.urlTitle IS NULL OR journalArticle.urlTitle = '')";
 
-	private FinderPath _finderPathWithPaginationFindByG_DDMSK;
-	private FinderPath _finderPathWithoutPaginationFindByG_DDMSK;
-	private FinderPath _finderPathCountByG_DDMSK;
+	private FinderPath _finderPathWithPaginationFindByG_DDMSI;
+	private FinderPath _finderPathWithoutPaginationFindByG_DDMSI;
+	private FinderPath _finderPathCountByG_DDMSI;
 
 	/**
-	 * Returns all the journal articles where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns all the journal articles where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByG_DDMSK(
-		long groupId, String DDMStructureKey) {
+	public List<JournalArticle> findByG_DDMSI(
+		long groupId, long DDMStructureId) {
 
-		return findByG_DDMSK(
-			groupId, DDMStructureKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+		return findByG_DDMSI(
+			groupId, DDMStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 			null);
 	}
 
 	/**
-	 * Returns a range of all the journal articles where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns a range of all the journal articles where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @return the range of matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByG_DDMSK(
-		long groupId, String DDMStructureKey, int start, int end) {
+	public List<JournalArticle> findByG_DDMSI(
+		long groupId, long DDMStructureId, int start, int end) {
 
-		return findByG_DDMSK(groupId, DDMStructureKey, start, end, null);
+		return findByG_DDMSI(groupId, DDMStructureId, start, end, null);
 	}
 
 	/**
-	 * Returns an ordered range of all the journal articles where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns an ordered range of all the journal articles where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the ordered range of matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByG_DDMSK(
-		long groupId, String DDMStructureKey, int start, int end,
+	public List<JournalArticle> findByG_DDMSI(
+		long groupId, long DDMStructureId, int start, int end,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
-		return findByG_DDMSK(
-			groupId, DDMStructureKey, start, end, orderByComparator, true);
+		return findByG_DDMSI(
+			groupId, DDMStructureId, start, end, orderByComparator, true);
 	}
 
 	/**
-	 * Returns an ordered range of all the journal articles where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns an ordered range of all the journal articles where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
@@ -12987,12 +12622,10 @@ public class JournalArticlePersistenceImpl
 	 * @return the ordered range of matching journal articles
 	 */
 	@Override
-	public List<JournalArticle> findByG_DDMSK(
-		long groupId, String DDMStructureKey, int start, int end,
+	public List<JournalArticle> findByG_DDMSI(
+		long groupId, long DDMStructureId, int start, int end,
 		OrderByComparator<JournalArticle> orderByComparator,
 		boolean useFinderCache) {
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			JournalArticle.class);
@@ -13004,14 +12637,14 @@ public class JournalArticlePersistenceImpl
 			(orderByComparator == null)) {
 
 			if (useFinderCache && productionMode) {
-				finderPath = _finderPathWithoutPaginationFindByG_DDMSK;
-				finderArgs = new Object[] {groupId, DDMStructureKey};
+				finderPath = _finderPathWithoutPaginationFindByG_DDMSI;
+				finderArgs = new Object[] {groupId, DDMStructureId};
 			}
 		}
 		else if (useFinderCache && productionMode) {
-			finderPath = _finderPathWithPaginationFindByG_DDMSK;
+			finderPath = _finderPathWithPaginationFindByG_DDMSI;
 			finderArgs = new Object[] {
-				groupId, DDMStructureKey, start, end, orderByComparator
+				groupId, DDMStructureId, start, end, orderByComparator
 			};
 		}
 
@@ -13019,13 +12652,13 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
 					if ((groupId != journalArticle.getGroupId()) ||
-						!DDMStructureKey.equals(
-							journalArticle.getDDMStructureKey())) {
+						(DDMStructureId !=
+							journalArticle.getDDMStructureId())) {
 
 						list = null;
 
@@ -13048,18 +12681,9 @@ public class JournalArticlePersistenceImpl
 
 			sb.append(_SQL_SELECT_JOURNALARTICLE_WHERE);
 
-			sb.append(_FINDER_COLUMN_G_DDMSK_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_DDMSI_GROUPID_2);
 
-			boolean bindDDMStructureKey = false;
-
-			if (DDMStructureKey.isEmpty()) {
-				sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3);
-			}
-			else {
-				bindDDMStructureKey = true;
-
-				sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2);
-			}
+			sb.append(_FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
@@ -13082,9 +12706,7 @@ public class JournalArticlePersistenceImpl
 
 				queryPos.add(groupId);
 
-				if (bindDDMStructureKey) {
-					queryPos.add(DDMStructureKey);
-				}
+				queryPos.add(DDMStructureId);
 
 				list = (List<JournalArticle>)QueryUtil.list(
 					query, getDialect(), start, end);
@@ -13107,22 +12729,22 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the first journal article in the ordered set where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the first journal article in the ordered set where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching journal article
 	 * @throws NoSuchArticleException if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle findByG_DDMSK_First(
-			long groupId, String DDMStructureKey,
+	public JournalArticle findByG_DDMSI_First(
+			long groupId, long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
 
-		JournalArticle journalArticle = fetchByG_DDMSK_First(
-			groupId, DDMStructureKey, orderByComparator);
+		JournalArticle journalArticle = fetchByG_DDMSI_First(
+			groupId, DDMStructureId, orderByComparator);
 
 		if (journalArticle != null) {
 			return journalArticle;
@@ -13135,8 +12757,8 @@ public class JournalArticlePersistenceImpl
 		sb.append("groupId=");
 		sb.append(groupId);
 
-		sb.append(", DDMStructureKey=");
-		sb.append(DDMStructureKey);
+		sb.append(", DDMStructureId=");
+		sb.append(DDMStructureId);
 
 		sb.append("}");
 
@@ -13144,20 +12766,20 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the first journal article in the ordered set where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the first journal article in the ordered set where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching journal article, or <code>null</code> if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle fetchByG_DDMSK_First(
-		long groupId, String DDMStructureKey,
+	public JournalArticle fetchByG_DDMSI_First(
+		long groupId, long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
-		List<JournalArticle> list = findByG_DDMSK(
-			groupId, DDMStructureKey, 0, 1, orderByComparator);
+		List<JournalArticle> list = findByG_DDMSI(
+			groupId, DDMStructureId, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -13167,22 +12789,22 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the last journal article in the ordered set where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the last journal article in the ordered set where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching journal article
 	 * @throws NoSuchArticleException if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle findByG_DDMSK_Last(
-			long groupId, String DDMStructureKey,
+	public JournalArticle findByG_DDMSI_Last(
+			long groupId, long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
 
-		JournalArticle journalArticle = fetchByG_DDMSK_Last(
-			groupId, DDMStructureKey, orderByComparator);
+		JournalArticle journalArticle = fetchByG_DDMSI_Last(
+			groupId, DDMStructureId, orderByComparator);
 
 		if (journalArticle != null) {
 			return journalArticle;
@@ -13195,8 +12817,8 @@ public class JournalArticlePersistenceImpl
 		sb.append("groupId=");
 		sb.append(groupId);
 
-		sb.append(", DDMStructureKey=");
-		sb.append(DDMStructureKey);
+		sb.append(", DDMStructureId=");
+		sb.append(DDMStructureId);
 
 		sb.append("}");
 
@@ -13204,26 +12826,26 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the last journal article in the ordered set where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the last journal article in the ordered set where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching journal article, or <code>null</code> if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle fetchByG_DDMSK_Last(
-		long groupId, String DDMStructureKey,
+	public JournalArticle fetchByG_DDMSI_Last(
+		long groupId, long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
-		int count = countByG_DDMSK(groupId, DDMStructureKey);
+		int count = countByG_DDMSI(groupId, DDMStructureId);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<JournalArticle> list = findByG_DDMSK(
-			groupId, DDMStructureKey, count - 1, count, orderByComparator);
+		List<JournalArticle> list = findByG_DDMSI(
+			groupId, DDMStructureId, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -13233,22 +12855,20 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the journal articles before and after the current journal article in the ordered set where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the journal articles before and after the current journal article in the ordered set where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param id the primary key of the current journal article
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next journal article
 	 * @throws NoSuchArticleException if a journal article with the primary key could not be found
 	 */
 	@Override
-	public JournalArticle[] findByG_DDMSK_PrevAndNext(
-			long id, long groupId, String DDMStructureKey,
+	public JournalArticle[] findByG_DDMSI_PrevAndNext(
+			long id, long groupId, long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		JournalArticle journalArticle = findByPrimaryKey(id);
 
@@ -13259,14 +12879,14 @@ public class JournalArticlePersistenceImpl
 
 			JournalArticle[] array = new JournalArticleImpl[3];
 
-			array[0] = getByG_DDMSK_PrevAndNext(
-				session, journalArticle, groupId, DDMStructureKey,
+			array[0] = getByG_DDMSI_PrevAndNext(
+				session, journalArticle, groupId, DDMStructureId,
 				orderByComparator, true);
 
 			array[1] = journalArticle;
 
-			array[2] = getByG_DDMSK_PrevAndNext(
-				session, journalArticle, groupId, DDMStructureKey,
+			array[2] = getByG_DDMSI_PrevAndNext(
+				session, journalArticle, groupId, DDMStructureId,
 				orderByComparator, false);
 
 			return array;
@@ -13279,9 +12899,9 @@ public class JournalArticlePersistenceImpl
 		}
 	}
 
-	protected JournalArticle getByG_DDMSK_PrevAndNext(
+	protected JournalArticle getByG_DDMSI_PrevAndNext(
 		Session session, JournalArticle journalArticle, long groupId,
-		String DDMStructureKey,
+		long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator, boolean previous) {
 
 		StringBundler sb = null;
@@ -13297,18 +12917,9 @@ public class JournalArticlePersistenceImpl
 
 		sb.append(_SQL_SELECT_JOURNALARTICLE_WHERE);
 
-		sb.append(_FINDER_COLUMN_G_DDMSK_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_DDMSI_GROUPID_2);
 
-		boolean bindDDMStructureKey = false;
-
-		if (DDMStructureKey.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3);
-		}
-		else {
-			bindDDMStructureKey = true;
-
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2);
-		}
+		sb.append(_FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
@@ -13381,9 +12992,7 @@ public class JournalArticlePersistenceImpl
 
 		queryPos.add(groupId);
 
-		if (bindDDMStructureKey) {
-			queryPos.add(DDMStructureKey);
-		}
+		queryPos.add(DDMStructureId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
@@ -13405,66 +13014,64 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns all the journal articles that the user has permission to view where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns all the journal articles that the user has permission to view where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the matching journal articles that the user has permission to view
 	 */
 	@Override
-	public List<JournalArticle> filterFindByG_DDMSK(
-		long groupId, String DDMStructureKey) {
+	public List<JournalArticle> filterFindByG_DDMSI(
+		long groupId, long DDMStructureId) {
 
-		return filterFindByG_DDMSK(
-			groupId, DDMStructureKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+		return filterFindByG_DDMSI(
+			groupId, DDMStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 			null);
 	}
 
 	/**
-	 * Returns a range of all the journal articles that the user has permission to view where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns a range of all the journal articles that the user has permission to view where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @return the range of matching journal articles that the user has permission to view
 	 */
 	@Override
-	public List<JournalArticle> filterFindByG_DDMSK(
-		long groupId, String DDMStructureKey, int start, int end) {
+	public List<JournalArticle> filterFindByG_DDMSI(
+		long groupId, long DDMStructureId, int start, int end) {
 
-		return filterFindByG_DDMSK(groupId, DDMStructureKey, start, end, null);
+		return filterFindByG_DDMSI(groupId, DDMStructureId, start, end, null);
 	}
 
 	/**
-	 * Returns an ordered range of all the journal articles that the user has permissions to view where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns an ordered range of all the journal articles that the user has permissions to view where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalArticleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param start the lower bound of the range of journal articles
 	 * @param end the upper bound of the range of journal articles (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the ordered range of matching journal articles that the user has permission to view
 	 */
 	@Override
-	public List<JournalArticle> filterFindByG_DDMSK(
-		long groupId, String DDMStructureKey, int start, int end,
+	public List<JournalArticle> filterFindByG_DDMSI(
+		long groupId, long DDMStructureId, int start, int end,
 		OrderByComparator<JournalArticle> orderByComparator) {
 
 		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_DDMSK(
-				groupId, DDMStructureKey, start, end, orderByComparator);
+			return findByG_DDMSI(
+				groupId, DDMStructureId, start, end, orderByComparator);
 		}
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		StringBundler sb = null;
 
@@ -13484,18 +13091,9 @@ public class JournalArticlePersistenceImpl
 				_FILTER_SQL_SELECT_JOURNALARTICLE_NO_INLINE_DISTINCT_WHERE_1);
 		}
 
-		sb.append(_FINDER_COLUMN_G_DDMSK_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_DDMSI_GROUPID_2);
 
-		boolean bindDDMStructureKey = false;
-
-		if (DDMStructureKey.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3);
-		}
-		else {
-			bindDDMStructureKey = true;
-
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2);
-		}
+		sb.append(_FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2);
 
 		if (!getDB().isSupportsInlineDistinct()) {
 			sb.append(
@@ -13545,9 +13143,7 @@ public class JournalArticlePersistenceImpl
 
 			queryPos.add(groupId);
 
-			if (bindDDMStructureKey) {
-				queryPos.add(DDMStructureKey);
-			}
+			queryPos.add(DDMStructureId);
 
 			return (List<JournalArticle>)QueryUtil.list(
 				sqlQuery, getDialect(), start, end);
@@ -13561,27 +13157,25 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the journal articles before and after the current journal article in the ordered set of journal articles that the user has permission to view where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the journal articles before and after the current journal article in the ordered set of journal articles that the user has permission to view where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param id the primary key of the current journal article
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next journal article
 	 * @throws NoSuchArticleException if a journal article with the primary key could not be found
 	 */
 	@Override
-	public JournalArticle[] filterFindByG_DDMSK_PrevAndNext(
-			long id, long groupId, String DDMStructureKey,
+	public JournalArticle[] filterFindByG_DDMSI_PrevAndNext(
+			long id, long groupId, long DDMStructureId,
 			OrderByComparator<JournalArticle> orderByComparator)
 		throws NoSuchArticleException {
 
 		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_DDMSK_PrevAndNext(
-				id, groupId, DDMStructureKey, orderByComparator);
+			return findByG_DDMSI_PrevAndNext(
+				id, groupId, DDMStructureId, orderByComparator);
 		}
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		JournalArticle journalArticle = findByPrimaryKey(id);
 
@@ -13592,14 +13186,14 @@ public class JournalArticlePersistenceImpl
 
 			JournalArticle[] array = new JournalArticleImpl[3];
 
-			array[0] = filterGetByG_DDMSK_PrevAndNext(
-				session, journalArticle, groupId, DDMStructureKey,
+			array[0] = filterGetByG_DDMSI_PrevAndNext(
+				session, journalArticle, groupId, DDMStructureId,
 				orderByComparator, true);
 
 			array[1] = journalArticle;
 
-			array[2] = filterGetByG_DDMSK_PrevAndNext(
-				session, journalArticle, groupId, DDMStructureKey,
+			array[2] = filterGetByG_DDMSI_PrevAndNext(
+				session, journalArticle, groupId, DDMStructureId,
 				orderByComparator, false);
 
 			return array;
@@ -13612,9 +13206,9 @@ public class JournalArticlePersistenceImpl
 		}
 	}
 
-	protected JournalArticle filterGetByG_DDMSK_PrevAndNext(
+	protected JournalArticle filterGetByG_DDMSI_PrevAndNext(
 		Session session, JournalArticle journalArticle, long groupId,
-		String DDMStructureKey,
+		long DDMStructureId,
 		OrderByComparator<JournalArticle> orderByComparator, boolean previous) {
 
 		StringBundler sb = null;
@@ -13636,18 +13230,9 @@ public class JournalArticlePersistenceImpl
 				_FILTER_SQL_SELECT_JOURNALARTICLE_NO_INLINE_DISTINCT_WHERE_1);
 		}
 
-		sb.append(_FINDER_COLUMN_G_DDMSK_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_DDMSI_GROUPID_2);
 
-		boolean bindDDMStructureKey = false;
-
-		if (DDMStructureKey.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3);
-		}
-		else {
-			bindDDMStructureKey = true;
-
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2);
-		}
+		sb.append(_FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2);
 
 		if (!getDB().isSupportsInlineDistinct()) {
 			sb.append(
@@ -13757,9 +13342,7 @@ public class JournalArticlePersistenceImpl
 
 		queryPos.add(groupId);
 
-		if (bindDDMStructureKey) {
-			queryPos.add(DDMStructureKey);
-		}
+		queryPos.add(DDMStructureId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
@@ -13781,16 +13364,16 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Removes all the journal articles where groupId = &#63; and DDMStructureKey = &#63; from the database.
+	 * Removes all the journal articles where groupId = &#63; and DDMStructureId = &#63; from the database.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 */
 	@Override
-	public void removeByG_DDMSK(long groupId, String DDMStructureKey) {
+	public void removeByG_DDMSI(long groupId, long DDMStructureId) {
 		for (JournalArticle journalArticle :
-				findByG_DDMSK(
-					groupId, DDMStructureKey, QueryUtil.ALL_POS,
+				findByG_DDMSI(
+					groupId, DDMStructureId, QueryUtil.ALL_POS,
 					QueryUtil.ALL_POS, null)) {
 
 			remove(journalArticle);
@@ -13798,16 +13381,14 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the number of journal articles where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the number of journal articles where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the number of matching journal articles
 	 */
 	@Override
-	public int countByG_DDMSK(long groupId, String DDMStructureKey) {
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
-
+	public int countByG_DDMSI(long groupId, long DDMStructureId) {
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			JournalArticle.class);
 
@@ -13817,11 +13398,11 @@ public class JournalArticlePersistenceImpl
 		Long count = null;
 
 		if (productionMode) {
-			finderPath = _finderPathCountByG_DDMSK;
+			finderPath = _finderPathCountByG_DDMSI;
 
-			finderArgs = new Object[] {groupId, DDMStructureKey};
+			finderArgs = new Object[] {groupId, DDMStructureId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -13829,18 +13410,9 @@ public class JournalArticlePersistenceImpl
 
 			sb.append(_SQL_COUNT_JOURNALARTICLE_WHERE);
 
-			sb.append(_FINDER_COLUMN_G_DDMSK_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_DDMSI_GROUPID_2);
 
-			boolean bindDDMStructureKey = false;
-
-			if (DDMStructureKey.isEmpty()) {
-				sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3);
-			}
-			else {
-				bindDDMStructureKey = true;
-
-				sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2);
-			}
+			sb.append(_FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2);
 
 			String sql = sb.toString();
 
@@ -13855,9 +13427,7 @@ public class JournalArticlePersistenceImpl
 
 				queryPos.add(groupId);
 
-				if (bindDDMStructureKey) {
-					queryPos.add(DDMStructureKey);
-				}
+				queryPos.add(DDMStructureId);
 
 				count = (Long)query.uniqueResult();
 
@@ -13877,36 +13447,25 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the number of journal articles that the user has permission to view where groupId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the number of journal articles that the user has permission to view where groupId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the number of matching journal articles that the user has permission to view
 	 */
 	@Override
-	public int filterCountByG_DDMSK(long groupId, String DDMStructureKey) {
+	public int filterCountByG_DDMSI(long groupId, long DDMStructureId) {
 		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_DDMSK(groupId, DDMStructureKey);
+			return countByG_DDMSI(groupId, DDMStructureId);
 		}
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		StringBundler sb = new StringBundler(3);
 
 		sb.append(_FILTER_SQL_COUNT_JOURNALARTICLE_WHERE);
 
-		sb.append(_FINDER_COLUMN_G_DDMSK_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_DDMSI_GROUPID_2);
 
-		boolean bindDDMStructureKey = false;
-
-		if (DDMStructureKey.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3);
-		}
-		else {
-			bindDDMStructureKey = true;
-
-			sb.append(_FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2);
-		}
+		sb.append(_FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2);
 
 		String sql = InlineSQLHelperUtil.replacePermissionCheck(
 			sb.toString(), JournalArticle.class.getName(),
@@ -13926,9 +13485,7 @@ public class JournalArticlePersistenceImpl
 
 			queryPos.add(groupId);
 
-			if (bindDDMStructureKey) {
-				queryPos.add(DDMStructureKey);
-			}
+			queryPos.add(DDMStructureId);
 
 			Long count = (Long)sqlQuery.uniqueResult();
 
@@ -13942,14 +13499,11 @@ public class JournalArticlePersistenceImpl
 		}
 	}
 
-	private static final String _FINDER_COLUMN_G_DDMSK_GROUPID_2 =
+	private static final String _FINDER_COLUMN_G_DDMSI_GROUPID_2 =
 		"journalArticle.groupId = ? AND ";
 
-	private static final String _FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_2 =
-		"journalArticle.DDMStructureKey = ?";
-
-	private static final String _FINDER_COLUMN_G_DDMSK_DDMSTRUCTUREKEY_3 =
-		"(journalArticle.DDMStructureKey IS NULL OR journalArticle.DDMStructureKey = '')";
+	private static final String _FINDER_COLUMN_G_DDMSI_DDMSTRUCTUREID_2 =
+		"journalArticle.DDMStructureId = ?";
 
 	private FinderPath _finderPathWithPaginationFindByG_DDMTK;
 	private FinderPath _finderPathWithoutPaginationFindByG_DDMTK;
@@ -14062,7 +13616,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -14864,7 +14418,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, DDMTemplateKey};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -15102,7 +14656,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -15902,7 +15456,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, layoutUuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -16129,7 +15683,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -17183,7 +16737,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByG_NotL, finderArgs);
+				_finderPathWithPaginationFindByG_NotL, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -17320,7 +16874,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, layoutUuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -17406,7 +16960,7 @@ public class JournalArticlePersistenceImpl
 			finderArgs = new Object[] {groupId, StringUtil.merge(layoutUuids)};
 
 			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_NotL, finderArgs);
+				_finderPathWithPaginationCountByG_NotL, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -17748,7 +17302,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -18493,7 +18047,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -18702,7 +18256,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -19101,7 +18655,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {companyId, version};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -19257,7 +18811,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -19656,7 +19210,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {companyId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -19801,7 +19355,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -20200,7 +19754,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {companyId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -20345,7 +19899,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -20767,7 +20321,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {_getTime(displayDate), status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -20949,7 +20503,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -21460,7 +21014,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByR_I_S, finderArgs);
+				_finderPathWithPaginationFindByR_I_S, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -21591,7 +21145,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {resourcePrimKey, indexable, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -21671,7 +21225,7 @@ public class JournalArticlePersistenceImpl
 			};
 
 			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByR_I_S, finderArgs);
+				_finderPathWithPaginationCountByR_I_S, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -21857,7 +21411,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -22641,7 +22195,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, userId, classNameId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -22846,7 +22400,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByG_ERC_V, finderArgs);
+				_finderPathFetchByG_ERC_V, finderArgs, this);
 		}
 
 		if (result instanceof JournalArticle) {
@@ -22979,7 +22533,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, externalReferenceCode, version};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -23164,7 +22718,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -24192,7 +23746,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByG_F_ST, finderArgs);
+				_finderPathWithPaginationFindByG_F_ST, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -24319,7 +23873,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, folderId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -24397,7 +23951,7 @@ public class JournalArticlePersistenceImpl
 			};
 
 			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_F_ST, finderArgs);
+				_finderPathWithPaginationCountByG_F_ST, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -24719,7 +24273,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -25503,7 +25057,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, classNameId, classPK};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -25620,25 +25174,25 @@ public class JournalArticlePersistenceImpl
 	private static final String _FINDER_COLUMN_G_C_C_CLASSPK_2 =
 		"journalArticle.classPK = ?";
 
-	private FinderPath _finderPathFetchByG_C_DDMSK;
-	private FinderPath _finderPathCountByG_C_DDMSK;
+	private FinderPath _finderPathFetchByG_C_DDMSI;
+	private FinderPath _finderPathCountByG_C_DDMSI;
 
 	/**
-	 * Returns the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureKey = &#63; or throws a <code>NoSuchArticleException</code> if it could not be found.
+	 * Returns the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureId = &#63; or throws a <code>NoSuchArticleException</code> if it could not be found.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the matching journal article
 	 * @throws NoSuchArticleException if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle findByG_C_DDMSK(
-			long groupId, long classNameId, String DDMStructureKey)
+	public JournalArticle findByG_C_DDMSI(
+			long groupId, long classNameId, long DDMStructureId)
 		throws NoSuchArticleException {
 
-		JournalArticle journalArticle = fetchByG_C_DDMSK(
-			groupId, classNameId, DDMStructureKey);
+		JournalArticle journalArticle = fetchByG_C_DDMSI(
+			groupId, classNameId, DDMStructureId);
 
 		if (journalArticle == null) {
 			StringBundler sb = new StringBundler(8);
@@ -25651,8 +25205,8 @@ public class JournalArticlePersistenceImpl
 			sb.append(", classNameId=");
 			sb.append(classNameId);
 
-			sb.append(", DDMStructureKey=");
-			sb.append(DDMStructureKey);
+			sb.append(", DDMStructureId=");
+			sb.append(DDMStructureId);
 
 			sb.append("}");
 
@@ -25667,35 +25221,33 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Returns the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 * Returns the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the matching journal article, or <code>null</code> if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle fetchByG_C_DDMSK(
-		long groupId, long classNameId, String DDMStructureKey) {
+	public JournalArticle fetchByG_C_DDMSI(
+		long groupId, long classNameId, long DDMStructureId) {
 
-		return fetchByG_C_DDMSK(groupId, classNameId, DDMStructureKey, true);
+		return fetchByG_C_DDMSI(groupId, classNameId, DDMStructureId, true);
 	}
 
 	/**
-	 * Returns the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureKey = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 * Returns the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching journal article, or <code>null</code> if a matching journal article could not be found
 	 */
 	@Override
-	public JournalArticle fetchByG_C_DDMSK(
-		long groupId, long classNameId, String DDMStructureKey,
+	public JournalArticle fetchByG_C_DDMSI(
+		long groupId, long classNameId, long DDMStructureId,
 		boolean useFinderCache) {
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
 
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			JournalArticle.class);
@@ -25703,14 +25255,14 @@ public class JournalArticlePersistenceImpl
 		Object[] finderArgs = null;
 
 		if (useFinderCache && productionMode) {
-			finderArgs = new Object[] {groupId, classNameId, DDMStructureKey};
+			finderArgs = new Object[] {groupId, classNameId, DDMStructureId};
 		}
 
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByG_C_DDMSK, finderArgs);
+				_finderPathFetchByG_C_DDMSI, finderArgs, this);
 		}
 
 		if (result instanceof JournalArticle) {
@@ -25718,8 +25270,7 @@ public class JournalArticlePersistenceImpl
 
 			if ((groupId != journalArticle.getGroupId()) ||
 				(classNameId != journalArticle.getClassNameId()) ||
-				!Objects.equals(
-					DDMStructureKey, journalArticle.getDDMStructureKey())) {
+				(DDMStructureId != journalArticle.getDDMStructureId())) {
 
 				result = null;
 			}
@@ -25730,20 +25281,11 @@ public class JournalArticlePersistenceImpl
 
 			sb.append(_SQL_SELECT_JOURNALARTICLE_WHERE);
 
-			sb.append(_FINDER_COLUMN_G_C_DDMSK_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_C_DDMSI_GROUPID_2);
 
-			sb.append(_FINDER_COLUMN_G_C_DDMSK_CLASSNAMEID_2);
+			sb.append(_FINDER_COLUMN_G_C_DDMSI_CLASSNAMEID_2);
 
-			boolean bindDDMStructureKey = false;
-
-			if (DDMStructureKey.isEmpty()) {
-				sb.append(_FINDER_COLUMN_G_C_DDMSK_DDMSTRUCTUREKEY_3);
-			}
-			else {
-				bindDDMStructureKey = true;
-
-				sb.append(_FINDER_COLUMN_G_C_DDMSK_DDMSTRUCTUREKEY_2);
-			}
+			sb.append(_FINDER_COLUMN_G_C_DDMSI_DDMSTRUCTUREID_2);
 
 			String sql = sb.toString();
 
@@ -25760,16 +25302,14 @@ public class JournalArticlePersistenceImpl
 
 				queryPos.add(classNameId);
 
-				if (bindDDMStructureKey) {
-					queryPos.add(DDMStructureKey);
-				}
+				queryPos.add(DDMStructureId);
 
 				List<JournalArticle> list = query.list();
 
 				if (list.isEmpty()) {
 					if (useFinderCache && productionMode) {
 						finderCache.putResult(
-							_finderPathFetchByG_C_DDMSK, finderArgs, list);
+							_finderPathFetchByG_C_DDMSI, finderArgs, list);
 					}
 				}
 				else {
@@ -25779,12 +25319,12 @@ public class JournalArticlePersistenceImpl
 						if (_log.isWarnEnabled()) {
 							if (!productionMode || !useFinderCache) {
 								finderArgs = new Object[] {
-									groupId, classNameId, DDMStructureKey
+									groupId, classNameId, DDMStructureId
 								};
 							}
 
 							_log.warn(
-								"JournalArticlePersistenceImpl.fetchByG_C_DDMSK(long, long, String, boolean) with parameters (" +
+								"JournalArticlePersistenceImpl.fetchByG_C_DDMSI(long, long, long, boolean) with parameters (" +
 									StringUtil.merge(finderArgs) +
 										") yields a result set with more than 1 result. This violates the logical unique restriction. There is no order guarantee on which result is returned by this finder.");
 						}
@@ -25814,37 +25354,35 @@ public class JournalArticlePersistenceImpl
 	}
 
 	/**
-	 * Removes the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureKey = &#63; from the database.
+	 * Removes the journal article where groupId = &#63; and classNameId = &#63; and DDMStructureId = &#63; from the database.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the journal article that was removed
 	 */
 	@Override
-	public JournalArticle removeByG_C_DDMSK(
-			long groupId, long classNameId, String DDMStructureKey)
+	public JournalArticle removeByG_C_DDMSI(
+			long groupId, long classNameId, long DDMStructureId)
 		throws NoSuchArticleException {
 
-		JournalArticle journalArticle = findByG_C_DDMSK(
-			groupId, classNameId, DDMStructureKey);
+		JournalArticle journalArticle = findByG_C_DDMSI(
+			groupId, classNameId, DDMStructureId);
 
 		return remove(journalArticle);
 	}
 
 	/**
-	 * Returns the number of journal articles where groupId = &#63; and classNameId = &#63; and DDMStructureKey = &#63;.
+	 * Returns the number of journal articles where groupId = &#63; and classNameId = &#63; and DDMStructureId = &#63;.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param DDMStructureKey the ddm structure key
+	 * @param DDMStructureId the ddm structure ID
 	 * @return the number of matching journal articles
 	 */
 	@Override
-	public int countByG_C_DDMSK(
-		long groupId, long classNameId, String DDMStructureKey) {
-
-		DDMStructureKey = Objects.toString(DDMStructureKey, "");
+	public int countByG_C_DDMSI(
+		long groupId, long classNameId, long DDMStructureId) {
 
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			JournalArticle.class);
@@ -25855,11 +25393,11 @@ public class JournalArticlePersistenceImpl
 		Long count = null;
 
 		if (productionMode) {
-			finderPath = _finderPathCountByG_C_DDMSK;
+			finderPath = _finderPathCountByG_C_DDMSI;
 
-			finderArgs = new Object[] {groupId, classNameId, DDMStructureKey};
+			finderArgs = new Object[] {groupId, classNameId, DDMStructureId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -25867,20 +25405,11 @@ public class JournalArticlePersistenceImpl
 
 			sb.append(_SQL_COUNT_JOURNALARTICLE_WHERE);
 
-			sb.append(_FINDER_COLUMN_G_C_DDMSK_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_C_DDMSI_GROUPID_2);
 
-			sb.append(_FINDER_COLUMN_G_C_DDMSK_CLASSNAMEID_2);
+			sb.append(_FINDER_COLUMN_G_C_DDMSI_CLASSNAMEID_2);
 
-			boolean bindDDMStructureKey = false;
-
-			if (DDMStructureKey.isEmpty()) {
-				sb.append(_FINDER_COLUMN_G_C_DDMSK_DDMSTRUCTUREKEY_3);
-			}
-			else {
-				bindDDMStructureKey = true;
-
-				sb.append(_FINDER_COLUMN_G_C_DDMSK_DDMSTRUCTUREKEY_2);
-			}
+			sb.append(_FINDER_COLUMN_G_C_DDMSI_DDMSTRUCTUREID_2);
 
 			String sql = sb.toString();
 
@@ -25897,9 +25426,7 @@ public class JournalArticlePersistenceImpl
 
 				queryPos.add(classNameId);
 
-				if (bindDDMStructureKey) {
-					queryPos.add(DDMStructureKey);
-				}
+				queryPos.add(DDMStructureId);
 
 				count = (Long)query.uniqueResult();
 
@@ -25918,17 +25445,14 @@ public class JournalArticlePersistenceImpl
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_G_C_DDMSK_GROUPID_2 =
+	private static final String _FINDER_COLUMN_G_C_DDMSI_GROUPID_2 =
 		"journalArticle.groupId = ? AND ";
 
-	private static final String _FINDER_COLUMN_G_C_DDMSK_CLASSNAMEID_2 =
+	private static final String _FINDER_COLUMN_G_C_DDMSI_CLASSNAMEID_2 =
 		"journalArticle.classNameId = ? AND ";
 
-	private static final String _FINDER_COLUMN_G_C_DDMSK_DDMSTRUCTUREKEY_2 =
-		"journalArticle.DDMStructureKey = ?";
-
-	private static final String _FINDER_COLUMN_G_C_DDMSK_DDMSTRUCTUREKEY_3 =
-		"(journalArticle.DDMStructureKey IS NULL OR journalArticle.DDMStructureKey = '')";
+	private static final String _FINDER_COLUMN_G_C_DDMSI_DDMSTRUCTUREID_2 =
+		"journalArticle.DDMStructureId = ?";
 
 	private FinderPath _finderPathWithPaginationFindByG_C_DDMTK;
 	private FinderPath _finderPathWithoutPaginationFindByG_C_DDMTK;
@@ -26051,7 +25575,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -26895,7 +26419,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, classNameId, DDMTemplateKey};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -27155,7 +26679,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -27995,7 +27519,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, classNameId, layoutUuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -28228,7 +27752,8 @@ public class JournalArticlePersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByG_A_V, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByG_A_V, finderArgs, this);
 		}
 
 		if (result instanceof JournalArticle) {
@@ -28357,7 +27882,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, articleId, version};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -28544,7 +28069,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -29637,7 +29162,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				_finderPathWithPaginationFindByG_A_ST, finderArgs);
+				_finderPathWithPaginationFindByG_A_ST, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -29777,7 +29302,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, articleId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -29868,7 +29393,7 @@ public class JournalArticlePersistenceImpl
 			};
 
 			count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_A_ST, finderArgs);
+				_finderPathWithPaginationCountByG_A_ST, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -30221,7 +29746,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -31057,7 +30582,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, articleId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -31316,7 +30841,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -32151,7 +31676,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, urlTitle, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -32406,7 +31931,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -32827,7 +32352,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {companyId, version, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -32994,7 +32519,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (JournalArticle journalArticle : list) {
@@ -33819,7 +33344,7 @@ public class JournalArticlePersistenceImpl
 
 			finderArgs = new Object[] {groupId, folderId, classNameId, status};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -33996,10 +33521,10 @@ public class JournalArticlePersistenceImpl
 			journalArticle);
 
 		finderCache.putResult(
-			_finderPathFetchByG_C_DDMSK,
+			_finderPathFetchByG_C_DDMSI,
 			new Object[] {
 				journalArticle.getGroupId(), journalArticle.getClassNameId(),
-				journalArticle.getDDMStructureKey()
+				journalArticle.getDDMStructureId()
 			},
 			journalArticle);
 
@@ -34109,13 +33634,13 @@ public class JournalArticlePersistenceImpl
 		args = new Object[] {
 			journalArticleModelImpl.getGroupId(),
 			journalArticleModelImpl.getClassNameId(),
-			journalArticleModelImpl.getDDMStructureKey()
+			journalArticleModelImpl.getDDMStructureId()
 		};
 
 		finderCache.putResult(
-			_finderPathCountByG_C_DDMSK, args, Long.valueOf(1));
+			_finderPathCountByG_C_DDMSI, args, Long.valueOf(1));
 		finderCache.putResult(
-			_finderPathFetchByG_C_DDMSK, args, journalArticleModelImpl);
+			_finderPathFetchByG_C_DDMSI, args, journalArticleModelImpl);
 
 		args = new Object[] {
 			journalArticleModelImpl.getGroupId(),
@@ -34612,7 +34137,7 @@ public class JournalArticlePersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<JournalArticle>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -34688,7 +34213,7 @@ public class JournalArticlePersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -34796,7 +34321,7 @@ public class JournalArticlePersistenceImpl
 		ctStrictColumnNames.add("articleId");
 		ctStrictColumnNames.add("version");
 		ctStrictColumnNames.add("urlTitle");
-		ctStrictColumnNames.add("DDMStructureKey");
+		ctStrictColumnNames.add("DDMStructureId");
 		ctStrictColumnNames.add("DDMTemplateKey");
 		ctStrictColumnNames.add("defaultLanguageId");
 		ctStrictColumnNames.add("layoutUuid");
@@ -34952,28 +34477,23 @@ public class JournalArticlePersistenceImpl
 			new String[] {Long.class.getName()}, new String[] {"companyId"},
 			false);
 
-		_finderPathWithPaginationFindByDDMStructureKey = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMStructureKey",
+		_finderPathWithPaginationFindByDDMStructureId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMStructureId",
 			new String[] {
-				String.class.getName(), Integer.class.getName(),
+				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			},
-			new String[] {"DDMStructureKey"}, true);
+			new String[] {"DDMStructureId"}, true);
 
-		_finderPathWithoutPaginationFindByDDMStructureKey = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByDDMStructureKey",
-			new String[] {String.class.getName()},
-			new String[] {"DDMStructureKey"}, true);
+		_finderPathWithoutPaginationFindByDDMStructureId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByDDMStructureId",
+			new String[] {Long.class.getName()},
+			new String[] {"DDMStructureId"}, true);
 
-		_finderPathCountByDDMStructureKey = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByDDMStructureKey",
-			new String[] {String.class.getName()},
-			new String[] {"DDMStructureKey"}, false);
-
-		_finderPathWithPaginationCountByDDMStructureKey = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByDDMStructureKey",
-			new String[] {String.class.getName()},
-			new String[] {"DDMStructureKey"}, false);
+		_finderPathCountByDDMStructureId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByDDMStructureId",
+			new String[] {Long.class.getName()},
+			new String[] {"DDMStructureId"}, false);
 
 		_finderPathWithPaginationFindByDDMTemplateKey = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMTemplateKey",
@@ -35172,24 +34692,24 @@ public class JournalArticlePersistenceImpl
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"groupId", "urlTitle"}, false);
 
-		_finderPathWithPaginationFindByG_DDMSK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_DDMSK",
+		_finderPathWithPaginationFindByG_DDMSI = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_DDMSI",
 			new String[] {
-				Long.class.getName(), String.class.getName(),
+				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
 				OrderByComparator.class.getName()
 			},
-			new String[] {"groupId", "DDMStructureKey"}, true);
+			new String[] {"groupId", "DDMStructureId"}, true);
 
-		_finderPathWithoutPaginationFindByG_DDMSK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_DDMSK",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "DDMStructureKey"}, true);
+		_finderPathWithoutPaginationFindByG_DDMSI = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_DDMSI",
+			new String[] {Long.class.getName(), Long.class.getName()},
+			new String[] {"groupId", "DDMStructureId"}, true);
 
-		_finderPathCountByG_DDMSK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_DDMSK",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "DDMStructureKey"}, false);
+		_finderPathCountByG_DDMSI = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_DDMSI",
+			new String[] {Long.class.getName(), Long.class.getName()},
+			new String[] {"groupId", "DDMStructureId"}, false);
 
 		_finderPathWithPaginationFindByG_DDMTK = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_DDMTK",
@@ -35457,21 +34977,19 @@ public class JournalArticlePersistenceImpl
 			},
 			new String[] {"groupId", "classNameId", "classPK"}, false);
 
-		_finderPathFetchByG_C_DDMSK = new FinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_C_DDMSK",
+		_finderPathFetchByG_C_DDMSI = new FinderPath(
+			FINDER_CLASS_NAME_ENTITY, "fetchByG_C_DDMSI",
 			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
+				Long.class.getName(), Long.class.getName(), Long.class.getName()
 			},
-			new String[] {"groupId", "classNameId", "DDMStructureKey"}, true);
+			new String[] {"groupId", "classNameId", "DDMStructureId"}, true);
 
-		_finderPathCountByG_C_DDMSK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_DDMSK",
+		_finderPathCountByG_C_DDMSI = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_DDMSI",
 			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
+				Long.class.getName(), Long.class.getName(), Long.class.getName()
 			},
-			new String[] {"groupId", "classNameId", "DDMStructureKey"}, false);
+			new String[] {"groupId", "classNameId", "DDMStructureId"}, false);
 
 		_finderPathWithPaginationFindByG_C_DDMTK = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_DDMTK",
@@ -35659,30 +35177,14 @@ public class JournalArticlePersistenceImpl
 			new String[] {"groupId", "folderId", "classNameId", "status"},
 			false);
 
-		_setJournalArticleUtilPersistence(this);
+		JournalArticleUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setJournalArticleUtilPersistence(null);
+		JournalArticleUtil.setPersistence(null);
 
 		entityCache.removeCache(JournalArticleImpl.class.getName());
-	}
-
-	private void _setJournalArticleUtilPersistence(
-		JournalArticlePersistence journalArticlePersistence) {
-
-		try {
-			Field field = JournalArticleUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, journalArticlePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -35784,9 +35286,5 @@ public class JournalArticlePersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private JournalArticleModelArgumentsResolver
-		_journalArticleModelArgumentsResolver;
 
 }

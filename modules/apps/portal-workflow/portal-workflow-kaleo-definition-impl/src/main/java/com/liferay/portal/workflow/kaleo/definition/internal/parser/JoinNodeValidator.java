@@ -16,6 +16,7 @@ package com.liferay.portal.workflow.kaleo.definition.internal.parser;
 
 import com.liferay.portal.workflow.kaleo.definition.Definition;
 import com.liferay.portal.workflow.kaleo.definition.Join;
+import com.liferay.portal.workflow.kaleo.definition.NodeType;
 import com.liferay.portal.workflow.kaleo.definition.exception.KaleoDefinitionValidationException;
 import com.liferay.portal.workflow.kaleo.definition.parser.NodeValidator;
 
@@ -25,10 +26,13 @@ import org.osgi.service.component.annotations.Component;
  * @author Michael C. Han
  * @author Marcellus Tavares
  */
-@Component(
-	immediate = true, property = "node.type=JOIN", service = NodeValidator.class
-)
+@Component(service = NodeValidator.class)
 public class JoinNodeValidator extends BaseNodeValidator<Join> {
+
+	@Override
+	public NodeType getNodeType() {
+		return NodeType.JOIN;
+	}
 
 	@Override
 	protected void doValidate(Definition definition, Join join)

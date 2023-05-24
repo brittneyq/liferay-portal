@@ -44,5 +44,3 @@ export const COLORS = [
 ];
 
 export const DEFAULT_COLOR = '#CDCED9';
-
-export const OPEN_PANEL_VALUE = 'open';

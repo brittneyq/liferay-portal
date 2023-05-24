@@ -28,11 +28,9 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -51,7 +49,7 @@ public class EditDisplayPageMenuDisplayContext {
 		_layoutDisplayPageObjectProvider =
 			(LayoutDisplayPageObjectProvider<?>)httpServletRequest.getAttribute(
 				LayoutDisplayPageWebKeys.LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER);
-		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
 
@@ -82,12 +80,10 @@ public class EditDisplayPageMenuDisplayContext {
 
 				dropdownItem.setHref(editLayoutURL);
 
-				ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-					"content.Language", _themeDisplay.getLocale(), getClass());
-
 				dropdownItem.setLabel(
 					LanguageUtil.get(
-						resourceBundle, "edit-display-page-template"));
+						_themeDisplay.getLocale(),
+						"edit-display-page-template"));
 			}
 		).build();
 	}

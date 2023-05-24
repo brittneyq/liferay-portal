@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -77,7 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @generated
  */
-@Component(service = {ObjectLayoutBoxPersistence.class, BasePersistence.class})
+@Component(service = ObjectLayoutBoxPersistence.class)
 public class ObjectLayoutBoxPersistenceImpl
 	extends BasePersistenceImpl<ObjectLayoutBox>
 	implements ObjectLayoutBoxPersistence {
@@ -194,7 +192,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayoutBox>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayoutBox objectLayoutBox : list) {
@@ -578,7 +576,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -737,7 +735,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayoutBox>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayoutBox objectLayoutBox : list) {
@@ -1153,7 +1151,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1316,7 +1314,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayoutBox>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayoutBox objectLayoutBox : list) {
@@ -1686,7 +1684,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		Object[] finderArgs = new Object[] {objectLayoutTabId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2155,7 +2153,7 @@ public class ObjectLayoutBoxPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayoutBox>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2225,7 +2223,7 @@ public class ObjectLayoutBoxPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2351,30 +2349,14 @@ public class ObjectLayoutBoxPersistenceImpl
 			"countByObjectLayoutTabId", new String[] {Long.class.getName()},
 			new String[] {"objectLayoutTabId"}, false);
 
-		_setObjectLayoutBoxUtilPersistence(this);
+		ObjectLayoutBoxUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setObjectLayoutBoxUtilPersistence(null);
+		ObjectLayoutBoxUtil.setPersistence(null);
 
 		entityCache.removeCache(ObjectLayoutBoxImpl.class.getName());
-	}
-
-	private void _setObjectLayoutBoxUtilPersistence(
-		ObjectLayoutBoxPersistence objectLayoutBoxPersistence) {
-
-		try {
-			Field field = ObjectLayoutBoxUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, objectLayoutBoxPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -2442,9 +2424,5 @@ public class ObjectLayoutBoxPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private ObjectLayoutBoxModelArgumentsResolver
-		_objectLayoutBoxModelArgumentsResolver;
 
 }

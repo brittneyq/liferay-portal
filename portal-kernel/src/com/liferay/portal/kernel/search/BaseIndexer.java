@@ -54,7 +54,6 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.RegionServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -96,7 +95,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	public void delete(long companyId, String uid) throws SearchException {
 		try {
 			IndexWriterHelperUtil.deleteDocument(
-				getSearchEngineId(), companyId, uid, _commitImmediately);
+				companyId, uid, _commitImmediately);
 		}
 		catch (SearchException searchException) {
 			throw searchException;
@@ -154,7 +153,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 			Document document = doGetDocument(object);
 
 			for (IndexerPostProcessor indexerPostProcessor :
-					_indexerPostProcessors) {
+					IndexerRegistryUtil.getIndexerPostProcessors(this)) {
 
 				indexerPostProcessor.postProcessDocument(document, object);
 			}
@@ -196,8 +195,6 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		throws SearchException {
 
 		try {
-			searchContext.setSearchEngineId(getSearchEngineId());
-
 			resetFullQuery(searchContext);
 
 			String[] fullQueryEntryClassNames =
@@ -223,9 +220,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 
 			_addPreFilters(
 				fullQueryBooleanFilter,
-				_getEntryClassNameIndexerMap(
-					entryClassNames, searchContext.getSearchEngineId()),
-				searchContext);
+				_getEntryClassNameIndexerMap(entryClassNames), searchContext);
 
 			BooleanQuery fullQuery = createFullQuery(
 				fullQueryBooleanFilter, searchContext);
@@ -244,49 +239,15 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 
 	@Override
 	public IndexerPostProcessor[] getIndexerPostProcessors() {
-		return _indexerPostProcessors;
+		List<IndexerPostProcessor> indexerPostProcessors =
+			IndexerRegistryUtil.getIndexerPostProcessors(this);
+
+		return indexerPostProcessors.toArray(new IndexerPostProcessor[0]);
 	}
 
 	@Override
 	public String[] getSearchClassNames() {
 		return new String[] {getClassName()};
-	}
-
-	@Override
-	public String getSearchEngineId() {
-		if (_searchEngineId != null) {
-			return _searchEngineId;
-		}
-
-		Class<?> clazz = getClass();
-
-		String searchEngineId = GetterUtil.getString(
-			PropsUtil.get(
-				PropsKeys.INDEX_SEARCH_ENGINE_ID,
-				new com.liferay.portal.kernel.configuration.Filter(
-					clazz.getName())));
-
-		if (Validator.isNotNull(searchEngineId)) {
-			SearchEngine searchEngine = SearchEngineHelperUtil.getSearchEngine(
-				searchEngineId);
-
-			if (searchEngine != null) {
-				_searchEngineId = searchEngineId;
-			}
-		}
-
-		if (_searchEngineId == null) {
-			_searchEngineId = SearchEngineHelperUtil.getDefaultSearchEngineId();
-		}
-
-		if (_log.isDebugEnabled()) {
-			_log.debug(
-				StringBundler.concat(
-					"Search engine ID for ", clazz.getName(), " is ",
-					searchEngineId));
-		}
-
-		return _searchEngineId;
 	}
 
 	/**
@@ -319,7 +280,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 				document, locale, snippet, portletRequest, portletResponse);
 
 			for (IndexerPostProcessor indexerPostProcessor :
-					_indexerPostProcessors) {
+					IndexerRegistryUtil.getIndexerPostProcessors(this)) {
 
 				indexerPostProcessor.postProcessSummary(
 					summary, document, locale, snippet);
@@ -435,19 +396,6 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	public void postProcessSearchQuery(
 			BooleanQuery searchQuery, SearchContext searchContext)
 		throws Exception {
-	}
-
-	@Override
-	public void registerIndexerPostProcessor(
-		IndexerPostProcessor indexerPostProcessor) {
-
-		List<IndexerPostProcessor> indexerPostProcessorsList =
-			ListUtil.fromArray(_indexerPostProcessors);
-
-		indexerPostProcessorsList.add(indexerPostProcessor);
-
-		_indexerPostProcessors = indexerPostProcessorsList.toArray(
-			new IndexerPostProcessor[0]);
 	}
 
 	@Override
@@ -609,8 +557,6 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		queryConfig.setQueryIndexingEnabled(false);
 		queryConfig.setQuerySuggestionEnabled(false);
 
-		searchContext.setSearchEngineId(getSearchEngineId());
-
 		BooleanQuery fullQuery = getFullQuery(searchContext);
 
 		fullQuery.setQueryConfig(queryConfig);
@@ -629,19 +575,6 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 
 	public void setSelectAllLocales(boolean selectAllLocales) {
 		_selectAllLocales = selectAllLocales;
-	}
-
-	@Override
-	public void unregisterIndexerPostProcessor(
-		IndexerPostProcessor indexerPostProcessor) {
-
-		List<IndexerPostProcessor> indexerPostProcessorsList =
-			ListUtil.fromArray(_indexerPostProcessors);
-
-		indexerPostProcessorsList.remove(indexerPostProcessor);
-
-		_indexerPostProcessors = indexerPostProcessorsList.toArray(
-			new IndexerPostProcessor[0]);
 	}
 
 	protected void addDefaultHighlightFieldNames(QueryConfig queryConfig) {
@@ -1069,7 +1002,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		postProcessFullQuery(fullBooleanQuery, searchContext);
 
 		for (IndexerPostProcessor indexerPostProcessor :
-				_indexerPostProcessors) {
+				IndexerRegistryUtil.getIndexerPostProcessors(this)) {
 
 			indexerPostProcessor.postProcessFullQuery(
 				fullBooleanQuery, searchContext);
@@ -1122,7 +1055,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		}
 
 		IndexWriterHelperUtil.deleteDocument(
-			getSearchEngineId(), companyId, uid, _commitImmediately);
+			companyId, uid, _commitImmediately);
 	}
 
 	protected void deleteDocument(long companyId, String field1, String field2)
@@ -1133,8 +1066,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		document.addUID(getClassName(), field1, field2);
 
 		IndexWriterHelperUtil.deleteDocument(
-			getSearchEngineId(), companyId, document.get(Field.UID),
-			_commitImmediately);
+			companyId, document.get(Field.UID), _commitImmediately);
 	}
 
 	protected abstract void doDelete(T object) throws Exception;
@@ -1178,8 +1110,6 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 
 	protected Hits doSearch(SearchContext searchContext)
 		throws SearchException {
-
-		searchContext.setSearchEngineId(getSearchEngineId());
 
 		Query fullQuery = getFullQuery(searchContext);
 
@@ -1247,7 +1177,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		}
 
 		for (DocumentContributor<?> documentContributor :
-				_getDocumentContributors()) {
+				_documentContributors) {
 
 			DocumentContributor<Object> objectDocumentContributor =
 				(DocumentContributor<Object>)documentContributor;
@@ -1511,25 +1441,8 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 			queryBooleanFilter, entryClassNameIndexerMap, searchContext);
 	}
 
-	private ServiceTrackerList<DocumentContributor<?>>
-		_getDocumentContributors() {
-
-		if (_documentContributors == null) {
-			synchronized (this) {
-				if (_documentContributors == null) {
-					_documentContributors = ServiceTrackerListFactory.open(
-						SystemBundleUtil.getBundleContext(),
-						(Class<DocumentContributor<?>>)
-							(Class<?>)DocumentContributor.class);
-				}
-			}
-		}
-
-		return _documentContributors;
-	}
-
 	private Map<String, Indexer<?>> _getEntryClassNameIndexerMap(
-		String[] entryClassNames, String searchEngineId) {
+		String[] entryClassNames) {
 
 		Map<String, Indexer<?>> entryClassNameIndexerMap =
 			new LinkedHashMap<>();
@@ -1537,9 +1450,7 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 		for (String entryClassName : entryClassNames) {
 			Indexer<?> indexer = IndexerRegistryUtil.getIndexer(entryClassName);
 
-			if ((indexer == null) ||
-				!searchEngineId.equals(indexer.getSearchEngineId())) {
-
+			if (indexer == null) {
 				continue;
 			}
 
@@ -1623,14 +1534,13 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	private String[] _defaultSelectedFieldNames;
 	private String[] _defaultSelectedLocalizedFieldNames;
 	private final Document _document = new DocumentImpl();
-	private volatile ServiceTrackerList<DocumentContributor<?>>
-		_documentContributors;
+	private final ServiceTrackerList<DocumentContributor<?>>
+		_documentContributors = ServiceTrackerListFactory.open(
+			SystemBundleUtil.getBundleContext(),
+			(Class<DocumentContributor<?>>)(Class<?>)DocumentContributor.class);
 	private boolean _filterSearch;
 	private Boolean _indexerEnabled;
-	private IndexerPostProcessor[] _indexerPostProcessors =
-		new IndexerPostProcessor[0];
 	private boolean _permissionAware;
-	private String _searchEngineId;
 	private boolean _selectAllLocales;
 	private boolean _stagingAware = true;
 

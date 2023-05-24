@@ -18,6 +18,7 @@ import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 
@@ -30,18 +31,16 @@ import org.osgi.service.component.annotations.Deactivate;
  * @author Marco Leo
  * @author Brian Wing Shun Chan
  */
-@Component(
-	immediate = true, service = ObjectRelatedModelsProviderRegistry.class
-)
+@Component(service = ObjectRelatedModelsProviderRegistry.class)
 public class ObjectRelatedModelsProviderRegistryImpl
 	implements ObjectRelatedModelsProviderRegistry {
 
 	@Override
 	public ObjectRelatedModelsProvider getObjectRelatedModelsProvider(
-			String className, String type)
+			String className, long companyId, String type)
 		throws PortalException {
 
-		String key = _getKey(className, type);
+		String key = _getKey(className, companyId, type);
 
 		ObjectRelatedModelsProvider objectRelatedModelsProvider =
 			_serviceTrackerMap.getService(key);
@@ -65,6 +64,7 @@ public class ObjectRelatedModelsProviderRegistryImpl
 				emitter.emit(
 					_getKey(
 						objectRelatedModelsProvider.getClassName(),
+						objectRelatedModelsProvider.getCompanyId(),
 						objectRelatedModelsProvider.
 							getObjectRelationshipType()));
 			});
@@ -75,8 +75,9 @@ public class ObjectRelatedModelsProviderRegistryImpl
 		_serviceTrackerMap.close();
 	}
 
-	private String _getKey(String className, String type) {
-		return className + StringPool.POUND + type;
+	private String _getKey(String className, long companyId, String type) {
+		return StringBundler.concat(
+			className, StringPool.POUND, companyId, StringPool.POUND, type);
 	}
 
 	private ServiceTrackerMap<String, ObjectRelatedModelsProvider>

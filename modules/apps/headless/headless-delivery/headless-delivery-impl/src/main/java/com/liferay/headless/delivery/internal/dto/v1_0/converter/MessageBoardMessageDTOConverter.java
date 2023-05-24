@@ -29,7 +29,9 @@ import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBMessageLocalService;
 import com.liferay.message.boards.service.MBMessageService;
 import com.liferay.message.boards.service.MBStatsUserLocalService;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -39,10 +41,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
-import java.util.Optional;
-
-import javax.ws.rs.core.UriInfo;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -51,7 +49,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "dto.class.name=com.liferay.message.boards.model.MBMessage",
-	service = {DTOConverter.class, MessageBoardMessageDTOConverter.class}
+	service = DTOConverter.class
 )
 public class MessageBoardMessageDTOConverter
 	implements DTOConverter<MBMessage, MessageBoardMessage> {
@@ -68,7 +66,9 @@ public class MessageBoardMessageDTOConverter
 		MBMessage mbMessage = _mbMessageService.getMessage(
 			(Long)dtoConverterContext.getId());
 
-		User user = _userLocalService.fetchUser(mbMessage.getUserId());
+		Company company = _companyLocalService.getCompany(
+			mbMessage.getCompanyId());
+		User user = _userLocalService.getUser(mbMessage.getUserId());
 
 		return new MessageBoardMessage() {
 			{
@@ -87,6 +87,7 @@ public class MessageBoardMessageDTOConverter
 				encodingFormat = mbMessage.getFormat();
 				externalReferenceCode = mbMessage.getExternalReferenceCode();
 				friendlyUrlPath = mbMessage.getUrlSubject();
+				hasCompanyMx = company.hasCompanyMx(user.getEmailAddress());
 				headline = mbMessage.getSubject();
 				id = mbMessage.getMessageId();
 				keywords = ListUtil.toArray(
@@ -95,6 +96,7 @@ public class MessageBoardMessageDTOConverter
 					AssetTag.NAME_ACCESSOR);
 				messageBoardSectionId = mbMessage.getCategoryId();
 				messageBoardThreadId = mbMessage.getThreadId();
+				modified = mbMessage.getMvccVersion() > 1;
 				numberOfMessageBoardAttachments =
 					mbMessage.getAttachmentsFileEntriesCount();
 				numberOfMessageBoardMessages =
@@ -121,25 +123,21 @@ public class MessageBoardMessageDTOConverter
 						}
 
 						return CreatorUtil.toCreator(
-							_portal, dtoConverterContext.getUriInfoOptional(),
-							user);
+							_portal, dtoConverterContext.getUriInfo(), user);
 					});
 				setCreatorStatistics(
 					() -> {
 						if (mbMessage.isAnonymous() || (user == null) ||
-							user.isDefaultUser()) {
+							user.isGuestUser()) {
 
 							return null;
 						}
-
-						Optional<UriInfo> uriInfoOptional =
-							dtoConverterContext.getUriInfoOptional();
 
 						return CreatorStatisticsUtil.toCreatorStatistics(
 							mbMessage.getGroupId(),
 							String.valueOf(dtoConverterContext.getLocale()),
 							_mbStatsUserLocalService,
-							uriInfoOptional.orElse(null), user);
+							dtoConverterContext.getUriInfo(), user);
 					});
 				setParentMessageBoardMessageId(
 					() -> {
@@ -161,6 +159,9 @@ public class MessageBoardMessageDTOConverter
 
 	@Reference
 	private AssetTagLocalService _assetTagLocalService;
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
 
 	@Reference
 	private MBMessageLocalService _mbMessageLocalService;

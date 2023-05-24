@@ -80,7 +80,7 @@ public class WebsiteModelImpl
 		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
 		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
 		{"classNameId", Types.BIGINT}, {"classPK", Types.BIGINT},
-		{"url", Types.VARCHAR}, {"typeId", Types.BIGINT},
+		{"url", Types.VARCHAR}, {"listTypeId", Types.BIGINT},
 		{"primary_", Types.BOOLEAN}, {"lastPublishDate", Types.TIMESTAMP}
 	};
 
@@ -99,13 +99,13 @@ public class WebsiteModelImpl
 		TABLE_COLUMNS_MAP.put("classNameId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("classPK", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("url", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("typeId", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("listTypeId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("primary_", Types.BOOLEAN);
 		TABLE_COLUMNS_MAP.put("lastPublishDate", Types.TIMESTAMP);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table Website (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,websiteId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,url STRING null,typeId LONG,primary_ BOOLEAN,lastPublishDate DATE null)";
+		"create table Website (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,websiteId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,url STRING null,listTypeId LONG,primary_ BOOLEAN,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table Website";
 
@@ -261,76 +261,97 @@ public class WebsiteModelImpl
 	public Map<String, Function<Website, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<Website, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<Website, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<Website, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<Website, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<Website, Object>>();
-		Map<String, BiConsumer<Website, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<Website, ?>>();
+		private static final Map<String, Function<Website, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put("mvccVersion", Website::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion", (BiConsumer<Website, Long>)Website::setMvccVersion);
-		attributeGetterFunctions.put("uuid", Website::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid", (BiConsumer<Website, String>)Website::setUuid);
-		attributeGetterFunctions.put("websiteId", Website::getWebsiteId);
-		attributeSetterBiConsumers.put(
-			"websiteId", (BiConsumer<Website, Long>)Website::setWebsiteId);
-		attributeGetterFunctions.put("companyId", Website::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId", (BiConsumer<Website, Long>)Website::setCompanyId);
-		attributeGetterFunctions.put("userId", Website::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId", (BiConsumer<Website, Long>)Website::setUserId);
-		attributeGetterFunctions.put("userName", Website::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName", (BiConsumer<Website, String>)Website::setUserName);
-		attributeGetterFunctions.put("createDate", Website::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate", (BiConsumer<Website, Date>)Website::setCreateDate);
-		attributeGetterFunctions.put("modifiedDate", Website::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<Website, Date>)Website::setModifiedDate);
-		attributeGetterFunctions.put("classNameId", Website::getClassNameId);
-		attributeSetterBiConsumers.put(
-			"classNameId", (BiConsumer<Website, Long>)Website::setClassNameId);
-		attributeGetterFunctions.put("classPK", Website::getClassPK);
-		attributeSetterBiConsumers.put(
-			"classPK", (BiConsumer<Website, Long>)Website::setClassPK);
-		attributeGetterFunctions.put("url", Website::getUrl);
-		attributeSetterBiConsumers.put(
-			"url", (BiConsumer<Website, String>)Website::setUrl);
-		attributeGetterFunctions.put("typeId", Website::getTypeId);
-		attributeSetterBiConsumers.put(
-			"typeId", (BiConsumer<Website, Long>)Website::setTypeId);
-		attributeGetterFunctions.put("primary", Website::getPrimary);
-		attributeSetterBiConsumers.put(
-			"primary", (BiConsumer<Website, Boolean>)Website::setPrimary);
-		attributeGetterFunctions.put(
-			"lastPublishDate", Website::getLastPublishDate);
-		attributeSetterBiConsumers.put(
-			"lastPublishDate",
-			(BiConsumer<Website, Date>)Website::setLastPublishDate);
+		static {
+			Map<String, Function<Website, Object>> attributeGetterFunctions =
+				new LinkedHashMap<String, Function<Website, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", Website::getMvccVersion);
+			attributeGetterFunctions.put("uuid", Website::getUuid);
+			attributeGetterFunctions.put("websiteId", Website::getWebsiteId);
+			attributeGetterFunctions.put("companyId", Website::getCompanyId);
+			attributeGetterFunctions.put("userId", Website::getUserId);
+			attributeGetterFunctions.put("userName", Website::getUserName);
+			attributeGetterFunctions.put("createDate", Website::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", Website::getModifiedDate);
+			attributeGetterFunctions.put(
+				"classNameId", Website::getClassNameId);
+			attributeGetterFunctions.put("classPK", Website::getClassPK);
+			attributeGetterFunctions.put("url", Website::getUrl);
+			attributeGetterFunctions.put("listTypeId", Website::getListTypeId);
+			attributeGetterFunctions.put("primary", Website::getPrimary);
+			attributeGetterFunctions.put(
+				"lastPublishDate", Website::getLastPublishDate);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<Website, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<Website, ?>> attributeSetterBiConsumers =
+				new LinkedHashMap<String, BiConsumer<Website, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<Website, Long>)Website::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"uuid", (BiConsumer<Website, String>)Website::setUuid);
+			attributeSetterBiConsumers.put(
+				"websiteId", (BiConsumer<Website, Long>)Website::setWebsiteId);
+			attributeSetterBiConsumers.put(
+				"companyId", (BiConsumer<Website, Long>)Website::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId", (BiConsumer<Website, Long>)Website::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName", (BiConsumer<Website, String>)Website::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<Website, Date>)Website::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<Website, Date>)Website::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"classNameId",
+				(BiConsumer<Website, Long>)Website::setClassNameId);
+			attributeSetterBiConsumers.put(
+				"classPK", (BiConsumer<Website, Long>)Website::setClassPK);
+			attributeSetterBiConsumers.put(
+				"url", (BiConsumer<Website, String>)Website::setUrl);
+			attributeSetterBiConsumers.put(
+				"listTypeId",
+				(BiConsumer<Website, Long>)Website::setListTypeId);
+			attributeSetterBiConsumers.put(
+				"primary", (BiConsumer<Website, Boolean>)Website::setPrimary);
+			attributeSetterBiConsumers.put(
+				"lastPublishDate",
+				(BiConsumer<Website, Date>)Website::setLastPublishDate);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -604,17 +625,17 @@ public class WebsiteModelImpl
 
 	@JSON
 	@Override
-	public long getTypeId() {
-		return _typeId;
+	public long getListTypeId() {
+		return _listTypeId;
 	}
 
 	@Override
-	public void setTypeId(long typeId) {
+	public void setListTypeId(long listTypeId) {
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
 
-		_typeId = typeId;
+		_listTypeId = listTypeId;
 	}
 
 	@JSON
@@ -737,7 +758,7 @@ public class WebsiteModelImpl
 		websiteImpl.setClassNameId(getClassNameId());
 		websiteImpl.setClassPK(getClassPK());
 		websiteImpl.setUrl(getUrl());
-		websiteImpl.setTypeId(getTypeId());
+		websiteImpl.setListTypeId(getListTypeId());
 		websiteImpl.setPrimary(isPrimary());
 		websiteImpl.setLastPublishDate(getLastPublishDate());
 
@@ -768,7 +789,8 @@ public class WebsiteModelImpl
 			this.<Long>getColumnOriginalValue("classNameId"));
 		websiteImpl.setClassPK(this.<Long>getColumnOriginalValue("classPK"));
 		websiteImpl.setUrl(this.<String>getColumnOriginalValue("url"));
-		websiteImpl.setTypeId(this.<Long>getColumnOriginalValue("typeId"));
+		websiteImpl.setListTypeId(
+			this.<Long>getColumnOriginalValue("listTypeId"));
 		websiteImpl.setPrimary(
 			this.<Boolean>getColumnOriginalValue("primary_"));
 		websiteImpl.setLastPublishDate(
@@ -902,7 +924,7 @@ public class WebsiteModelImpl
 			websiteCacheModel.url = null;
 		}
 
-		websiteCacheModel.typeId = getTypeId();
+		websiteCacheModel.listTypeId = getListTypeId();
 
 		websiteCacheModel.primary = isPrimary();
 
@@ -967,37 +989,6 @@ public class WebsiteModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<Website, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<Website, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<Website, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((Website)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, Website>
@@ -1019,15 +1010,16 @@ public class WebsiteModelImpl
 	private long _classNameId;
 	private long _classPK;
 	private String _url;
-	private long _typeId;
+	private long _listTypeId;
 	private boolean _primary;
 	private Date _lastPublishDate;
 
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
-		Function<Website, Object> function = _attributeGetterFunctions.get(
-			columnName);
+		Function<Website, Object> function =
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(
@@ -1063,7 +1055,7 @@ public class WebsiteModelImpl
 		_columnOriginalValues.put("classNameId", _classNameId);
 		_columnOriginalValues.put("classPK", _classPK);
 		_columnOriginalValues.put("url", _url);
-		_columnOriginalValues.put("typeId", _typeId);
+		_columnOriginalValues.put("listTypeId", _listTypeId);
 		_columnOriginalValues.put("primary_", _primary);
 		_columnOriginalValues.put("lastPublishDate", _lastPublishDate);
 	}
@@ -1112,7 +1104,7 @@ public class WebsiteModelImpl
 
 		columnBitmasks.put("url", 1024L);
 
-		columnBitmasks.put("typeId", 2048L);
+		columnBitmasks.put("listTypeId", 2048L);
 
 		columnBitmasks.put("primary_", 4096L);
 

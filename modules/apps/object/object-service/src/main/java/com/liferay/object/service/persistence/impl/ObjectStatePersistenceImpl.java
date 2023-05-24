@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -51,7 +50,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
@@ -79,7 +77,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @generated
  */
-@Component(service = {ObjectStatePersistence.class, BasePersistence.class})
+@Component(service = ObjectStatePersistence.class)
 public class ObjectStatePersistenceImpl
 	extends BasePersistenceImpl<ObjectState> implements ObjectStatePersistence {
 
@@ -195,7 +193,7 @@ public class ObjectStatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectState>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectState objectState : list) {
@@ -575,7 +573,7 @@ public class ObjectStatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -734,7 +732,7 @@ public class ObjectStatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectState>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectState objectState : list) {
@@ -1147,7 +1145,7 @@ public class ObjectStatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1307,7 +1305,7 @@ public class ObjectStatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectState>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectState objectState : list) {
@@ -1671,7 +1669,7 @@ public class ObjectStatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {listTypeEntryId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1812,7 +1810,7 @@ public class ObjectStatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectState>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectState objectState : list) {
@@ -2179,7 +2177,7 @@ public class ObjectStatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {objectStateFlowId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -2298,7 +2296,7 @@ public class ObjectStatePersistenceImpl
 
 		if (useFinderCache) {
 			result = finderCache.getResult(
-				_finderPathFetchByLTEI_OSFI, finderArgs);
+				_finderPathFetchByLTEI_OSFI, finderArgs, this);
 		}
 
 		if (result instanceof ObjectState) {
@@ -2415,7 +2413,7 @@ public class ObjectStatePersistenceImpl
 
 		Object[] finderArgs = new Object[] {listTypeEntryId, objectStateFlowId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2904,7 +2902,7 @@ public class ObjectStatePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectState>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2974,7 +2972,7 @@ public class ObjectStatePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -3128,30 +3126,14 @@ public class ObjectStatePersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"listTypeEntryId", "objectStateFlowId"}, false);
 
-		_setObjectStateUtilPersistence(this);
+		ObjectStateUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setObjectStateUtilPersistence(null);
+		ObjectStateUtil.setPersistence(null);
 
 		entityCache.removeCache(ObjectStateImpl.class.getName());
-	}
-
-	private void _setObjectStateUtilPersistence(
-		ObjectStatePersistence objectStatePersistence) {
-
-		try {
-			Field field = ObjectStateUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, objectStatePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3219,9 +3201,5 @@ public class ObjectStatePersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private ObjectStateModelArgumentsResolver
-		_objectStateModelArgumentsResolver;
 
 }

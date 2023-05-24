@@ -38,12 +38,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marko Cikos
  */
 @Component(
-	immediate = true,
 	property = "ddm.form.field.type.name=" + DDMFormFieldTypeConstants.RICH_TEXT,
-	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		RichTextDDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class RichTextDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {

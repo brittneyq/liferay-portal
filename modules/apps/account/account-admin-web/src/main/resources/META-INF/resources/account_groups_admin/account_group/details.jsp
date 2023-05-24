@@ -42,7 +42,7 @@ renderResponse.setTitle((accountGroupDisplay.getAccountGroupId() == 0) ? Languag
 
 	<liferay-frontend:edit-form-body>
 		<h2 class="sheet-title">
-			<%= LanguageUtil.get(request, "information") %>
+			<liferay-ui:message key="information" />
 		</h2>
 
 		<aui:input label="account-group-name" name="name" />
@@ -54,11 +54,13 @@ renderResponse.setTitle((accountGroupDisplay.getAccountGroupId() == 0) ? Languag
 		<aui:field-wrapper cssClass="form-group lfr-input-text-container">
 			<aui:input name="description" type="textarea" value="<%= accountGroupDisplay.getDescription() %>" />
 		</aui:field-wrapper>
+
+		<liferay-util:include page="/account_groups_admin/account_group/custom_fields.jsp" servletContext="<%= application %>" />
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
-		<aui:button type="submit" />
-
-		<aui:button href="<%= backURL %>" type="cancel" />
+		<liferay-frontend:edit-form-buttons
+			redirect="<%= backURL %>"
+		/>
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>

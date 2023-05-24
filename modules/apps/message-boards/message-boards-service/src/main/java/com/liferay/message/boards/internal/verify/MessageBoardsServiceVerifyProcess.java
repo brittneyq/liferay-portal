@@ -23,12 +23,11 @@ import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.verify.VerifyAuditedModel;
@@ -43,29 +42,18 @@ import org.osgi.service.component.annotations.Reference;
  * @author     Zsolt Berentey
  * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
-@Component(
-	immediate = true,
-	property = "verify.process.name=com.liferay.message.boards.service",
-	service = VerifyProcess.class
-)
+@Component(service = VerifyProcess.class)
 @Deprecated
 public class MessageBoardsServiceVerifyProcess extends VerifyProcess {
 
 	@Override
 	protected void doVerify() throws Exception {
-		if (GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-157670"))) {
+		if (FeatureFlagManagerUtil.isEnabled("LPS-157670")) {
 			updateStagedPortletNames();
 			verifyAuditedModels();
 		}
 
 		verifyGroupedModels();
-	}
-
-	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.message.boards.service)(&(release.schema.version>=6.0.0)(!(release.schema.version>=7.0.0))))",
-		unbind = "-"
-	)
-	protected void setRelease(Release release) {
 	}
 
 	protected void updateStagedPortletNames() throws PortalException {
@@ -131,6 +119,11 @@ public class MessageBoardsServiceVerifyProcess extends VerifyProcess {
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference(
+		target = "(&(release.bundle.symbolic.name=com.liferay.message.boards.service)(&(release.schema.version>=6.0.0)(!(release.schema.version>=7.0.0))))"
+	)
+	private Release _release;
 
 	@Reference
 	private Staging _staging;

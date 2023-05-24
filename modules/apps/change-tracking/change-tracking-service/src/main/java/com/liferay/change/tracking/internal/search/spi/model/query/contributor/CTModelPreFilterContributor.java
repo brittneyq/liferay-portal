@@ -52,7 +52,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author André de Oliveira
  */
 @Component(
-	immediate = true,
 	property = {"indexer.class.name=ALL", "indexer.clauses.mandatory=true"},
 	service = ModelPreFilterContributor.class
 )
@@ -73,7 +72,7 @@ public class CTModelPreFilterContributor implements ModelPreFilterContributor {
 			searchContext.getAttribute(
 				"com.liferay.change.tracking.filter.ctCollectionId"));
 
-		if (Objects.equals("ALL", ctCollectionIdString)) {
+		if (Objects.equals(ctCollectionIdString, "ALL")) {
 			return;
 		}
 

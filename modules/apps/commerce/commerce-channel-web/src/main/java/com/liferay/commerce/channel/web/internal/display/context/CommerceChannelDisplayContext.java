@@ -14,9 +14,8 @@
 
 package com.liferay.commerce.channel.web.internal.display.context;
 
-import com.liferay.commerce.account.configuration.CommerceAccountGroupServiceConfiguration;
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
 import com.liferay.commerce.channel.web.internal.display.context.helper.CommerceChannelRequestHelper;
+import com.liferay.commerce.configuration.CommerceAccountGroupServiceConfiguration;
 import com.liferay.commerce.configuration.CommerceOrderCheckoutConfiguration;
 import com.liferay.commerce.configuration.CommerceOrderFieldsConfiguration;
 import com.liferay.commerce.configuration.CommerceOrderImporterDateFormatConfiguration;
@@ -43,7 +42,6 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.file.criterion.FileItemSelectorCriterion;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowDefinitionLinkException;
@@ -59,6 +57,7 @@ import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
@@ -486,6 +485,13 @@ public class CommerceChannelDisplayContext
 		return commerceOrderCheckoutConfiguration.hideShippingPriceZero();
 	}
 
+	public boolean isRequestQuoteEnabled() throws PortalException {
+		CommerceOrderFieldsConfiguration commerceOrderFieldsConfiguration =
+			_getCommerceOrderFieldsConfiguration();
+
+		return commerceOrderFieldsConfiguration.requestQuoteEnabled();
+	}
+
 	public boolean isShowPurchaseOrderNumber() throws PortalException {
 		CommerceChannel commerceChannel = getCommerceChannel();
 
@@ -514,7 +520,7 @@ public class CommerceChannelDisplayContext
 				CommerceAccountGroupServiceConfiguration.class,
 				new GroupServiceSettingsLocator(
 					commerceChannel.getGroupId(),
-					CommerceAccountConstants.SERVICE_NAME));
+					CommerceConstants.SERVICE_NAME_COMMERCE_ACCOUNT));
 
 		return _commerceAccountGroupServiceConfiguration;
 	}

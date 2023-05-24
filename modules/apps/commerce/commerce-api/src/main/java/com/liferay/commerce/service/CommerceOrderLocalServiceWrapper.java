@@ -432,34 +432,14 @@ public class CommerceOrderLocalServiceWrapper
 			commerceAccountId, groupId, userId, orderStatus);
 	}
 
-	/**
-	 * Returns the commerce order with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce order's external reference code
-	 * @return the matching commerce order, or <code>null</code> if a matching commerce order could not be found
-	 */
 	@Override
 	public com.liferay.commerce.model.CommerceOrder
 		fetchCommerceOrderByExternalReferenceCode(
-			long companyId, String externalReferenceCode) {
+			String externalReferenceCode, long companyId) {
 
 		return _commerceOrderLocalService.
 			fetchCommerceOrderByExternalReferenceCode(
-				companyId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCommerceOrderByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.commerce.model.CommerceOrder
-		fetchCommerceOrderByReferenceCode(
-			long companyId, String externalReferenceCode) {
-
-		return _commerceOrderLocalService.fetchCommerceOrderByReferenceCode(
-			companyId, externalReferenceCode);
+				externalReferenceCode, companyId);
 	}
 
 	/**
@@ -499,23 +479,15 @@ public class CommerceOrderLocalServiceWrapper
 		return _commerceOrderLocalService.getCommerceOrder(commerceOrderId);
 	}
 
-	/**
-	 * Returns the commerce order with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the commerce order's external reference code
-	 * @return the matching commerce order
-	 * @throws PortalException if a matching commerce order could not be found
-	 */
 	@Override
 	public com.liferay.commerce.model.CommerceOrder
 			getCommerceOrderByExternalReferenceCode(
-				long companyId, String externalReferenceCode)
+				String externalReferenceCode, long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceOrderLocalService.
 			getCommerceOrderByExternalReferenceCode(
-				companyId, externalReferenceCode);
+				externalReferenceCode, companyId);
 	}
 
 	/**
@@ -603,6 +575,20 @@ public class CommerceOrderLocalServiceWrapper
 		return _commerceOrderLocalService.getCommerceOrders(
 			companyId, groupId, commerceAccountIds, keywords, orderStatuses,
 			excludeOrderStatus, start, end);
+	}
+
+	@Override
+	public java.util.List<com.liferay.commerce.model.CommerceOrder>
+			getCommerceOrders(
+				long companyId, long groupId, long[] commerceAccountIds,
+				String keywords, int[] orderStatuses,
+				boolean excludeOrderStatus, int start, int end,
+				com.liferay.portal.kernel.search.Sort sort)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _commerceOrderLocalService.getCommerceOrders(
+			companyId, groupId, commerceAccountIds, keywords, orderStatuses,
+			excludeOrderStatus, start, end, sort);
 	}
 
 	@Override
@@ -796,13 +782,13 @@ public class CommerceOrderLocalServiceWrapper
 
 	@Override
 	public void mergeGuestCommerceOrder(
-			long guestCommerceOrderId, long userCommerceOrderId,
+			long userId, long guestCommerceOrderId, long userCommerceOrderId,
 			com.liferay.commerce.context.CommerceContext commerceContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_commerceOrderLocalService.mergeGuestCommerceOrder(
-			guestCommerceOrderId, userCommerceOrderId, commerceContext,
+			userId, guestCommerceOrderId, userCommerceOrderId, commerceContext,
 			serviceContext);
 	}
 
@@ -1211,12 +1197,11 @@ public class CommerceOrderLocalServiceWrapper
 	@Override
 	public com.liferay.commerce.model.CommerceOrder updateStatus(
 			long userId, long commerceOrderId, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext,
 			java.util.Map<String, java.io.Serializable> workflowContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _commerceOrderLocalService.updateStatus(
-			userId, commerceOrderId, status, serviceContext, workflowContext);
+			userId, commerceOrderId, status, workflowContext);
 	}
 
 	@Override

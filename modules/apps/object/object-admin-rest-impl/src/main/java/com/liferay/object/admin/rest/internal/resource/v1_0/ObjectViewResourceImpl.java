@@ -18,10 +18,11 @@ import com.liferay.object.admin.rest.dto.v1_0.ObjectView;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectViewColumn;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectViewFilterColumn;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectViewSortColumn;
-import com.liferay.object.admin.rest.internal.dto.v1_0.converter.ObjectViewDTOConverter;
+import com.liferay.object.admin.rest.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.object.admin.rest.resource.v1_0.ObjectViewResource;
 import com.liferay.object.admin.rest.resource.v1_0.util.NameMapUtil;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectViewService;
 import com.liferay.object.service.persistence.ObjectViewColumnPersistence;
 import com.liferay.object.service.persistence.ObjectViewFilterColumnPersistence;
@@ -30,7 +31,10 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
+import com.liferay.portal.vulcan.fields.NestedField;
+import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
@@ -45,15 +49,37 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/object-view.properties",
-	scope = ServiceScope.PROTOTYPE, service = ObjectViewResource.class
+	scope = ServiceScope.PROTOTYPE,
+	service = {NestedFieldSupport.class, ObjectViewResource.class}
 )
-public class ObjectViewResourceImpl extends BaseObjectViewResourceImpl {
+public class ObjectViewResourceImpl
+	extends BaseObjectViewResourceImpl implements NestedFieldSupport {
 
 	@Override
 	public void deleteObjectView(Long objectViewId) throws Exception {
 		_objectViewService.deleteObjectView(objectViewId);
 	}
 
+	@Override
+	public Page<ObjectView>
+			getObjectDefinitionByExternalReferenceCodeObjectViewsPage(
+				String externalReferenceCode, String search,
+				Pagination pagination)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					externalReferenceCode, contextUser.getCompanyId());
+
+		return getObjectDefinitionObjectViewsPage(
+			objectDefinition.getObjectDefinitionId(), search, pagination);
+	}
+
+	@NestedField(
+		parentClass = com.liferay.object.admin.rest.dto.v1_0.ObjectDefinition.class,
+		value = "objectViews"
+	)
 	@Override
 	public Page<ObjectView> getObjectDefinitionObjectViewsPage(
 			Long objectDefinitionId, String search, Pagination pagination)
@@ -66,10 +92,25 @@ public class ObjectViewResourceImpl extends BaseObjectViewResourceImpl {
 					ActionKeys.UPDATE, "postObjectDefinitionObjectView",
 					ObjectDefinition.class.getName(), objectDefinitionId)
 			).put(
+				"createBatch",
+				addAction(
+					ActionKeys.UPDATE, "postObjectDefinitionObjectViewBatch",
+					ObjectDefinition.class.getName(), objectDefinitionId)
+			).put(
+				"deleteBatch",
+				addAction(
+					ActionKeys.DELETE, "deleteObjectViewBatch",
+					ObjectDefinition.class.getName(), null)
+			).put(
 				"get",
 				addAction(
 					ActionKeys.VIEW, "getObjectDefinitionObjectViewsPage",
 					ObjectDefinition.class.getName(), objectDefinitionId)
+			).put(
+				"updateBatch",
+				addAction(
+					ActionKeys.UPDATE, "putObjectViewBatch",
+					ObjectDefinition.class.getName(), null)
 			).build(),
 			booleanQuery -> {
 			},
@@ -92,6 +133,20 @@ public class ObjectViewResourceImpl extends BaseObjectViewResourceImpl {
 	@Override
 	public ObjectView getObjectView(Long objectViewId) throws Exception {
 		return _toObjectView(_objectViewService.getObjectView(objectViewId));
+	}
+
+	@Override
+	public ObjectView postObjectDefinitionByExternalReferenceCodeObjectView(
+			String externalReferenceCode, ObjectView objectView)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					externalReferenceCode, contextCompany.getCompanyId());
+
+		return postObjectDefinitionObjectView(
+			objectDefinition.getObjectDefinitionId(), objectView);
 	}
 
 	@Override
@@ -238,10 +293,14 @@ public class ObjectViewResourceImpl extends BaseObjectViewResourceImpl {
 	}
 
 	@Reference
-	private ObjectViewColumnPersistence _objectViewColumnPersistence;
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
-	private ObjectViewDTOConverter _objectViewDTOConverter;
+	private ObjectViewColumnPersistence _objectViewColumnPersistence;
+
+	@Reference(target = DTOConverterConstants.OBJECT_VIEW_DTO_CONVERTER)
+	private DTOConverter<com.liferay.object.model.ObjectView, ObjectView>
+		_objectViewDTOConverter;
 
 	@Reference
 	private ObjectViewFilterColumnPersistence

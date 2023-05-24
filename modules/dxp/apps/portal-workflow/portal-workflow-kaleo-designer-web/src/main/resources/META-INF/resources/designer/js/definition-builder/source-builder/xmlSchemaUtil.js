@@ -207,8 +207,19 @@ function getLocationValue(field, context) {
 										i < itemAttributes.length;
 										i++
 									) {
-										childContent[itemAttributes[i].name] =
-											itemAttributes[i].value;
+										if (
+											!childContent[
+												itemAttributes[i].name
+											]
+										) {
+											childContent[
+												itemAttributes[i].name
+											] = [];
+										}
+
+										childContent[
+											itemAttributes[i].name
+										].push(itemAttributes[i].value);
 									}
 								}
 							}
@@ -227,10 +238,22 @@ function getLocationValue(field, context) {
 								}
 
 								if (childContent[item.tagName]) {
-									childContent[item.tagName] = [
-										childContent[item.tagName],
-										itemContent,
-									];
+									if (
+										Array.isArray(
+											childContent[item.tagName]
+										)
+									) {
+										childContent[item.tagName] = [
+											...childContent[item.tagName],
+											itemContent,
+										];
+									}
+									else {
+										childContent[item.tagName] = [
+											childContent[item.tagName],
+											itemContent,
+										];
+									}
 								}
 								else {
 									childContent[item.tagName] = itemContent;
@@ -238,6 +261,7 @@ function getLocationValue(field, context) {
 							}
 						}
 					}
+
 					content.push(childContent);
 				}
 

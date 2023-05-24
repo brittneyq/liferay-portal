@@ -14,10 +14,14 @@
 
 package com.liferay.object.rest.internal.resource.v1_0;
 
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResource;
+import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResourceProvider;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+
+import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -35,11 +39,10 @@ import javax.ws.rs.core.UriInfo;
 public class OpenAPIResourceImpl {
 
 	public OpenAPIResourceImpl(
-		long objectDefinitionId,
-		ObjectEntryOpenAPIResource objectEntryOpenAPIResource) {
+		ObjectEntryOpenAPIResourceProvider objectEntryOpenAPIResourceProvider) {
 
-		_objectDefinitionId = objectDefinitionId;
-		_objectEntryOpenAPIResource = objectEntryOpenAPIResource;
+		_objectEntryOpenAPIResourceProvider =
+			objectEntryOpenAPIResourceProvider;
 	}
 
 	@GET
@@ -48,12 +51,22 @@ public class OpenAPIResourceImpl {
 	public Response getOpenAPI(@PathParam("type") String type)
 		throws Exception {
 
-		return _objectEntryOpenAPIResource.getOpenAPI(
-			_objectDefinitionId, type, _uriInfo);
+		ObjectEntryOpenAPIResource objectEntryOpenAPIResource =
+			_objectEntryOpenAPIResourceProvider.getObjectEntryOpenAPIResource(
+				_objectDefinition);
+
+		return objectEntryOpenAPIResource.getOpenAPI(
+			_httpServletRequest, type, _uriInfo);
 	}
 
-	private final long _objectDefinitionId;
-	private final ObjectEntryOpenAPIResource _objectEntryOpenAPIResource;
+	@Context
+	private HttpServletRequest _httpServletRequest;
+
+	@Context
+	private ObjectDefinition _objectDefinition;
+
+	private final ObjectEntryOpenAPIResourceProvider
+		_objectEntryOpenAPIResourceProvider;
 
 	@Context
 	private UriInfo _uriInfo;

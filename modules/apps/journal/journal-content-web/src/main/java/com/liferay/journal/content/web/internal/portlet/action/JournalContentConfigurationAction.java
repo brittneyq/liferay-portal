@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.trash.TrashHelper;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -52,7 +53,6 @@ import javax.portlet.PortletConfig;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -65,7 +65,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Raymond Augé
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + JournalContentPortletKeys.JOURNAL_CONTENT,
 	service = ConfigurationAction.class
 )
@@ -99,7 +98,8 @@ public class JournalContentConfigurationAction
 		try {
 			JournalContentDisplayContext.create(
 				portletRequest, portletResponse, _CLASS_NAME_ID,
-				_ddmTemplateModelResourcePermission, _itemSelector);
+				_ddmTemplateModelResourcePermission, _itemSelector,
+				_trashHelper);
 		}
 		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
@@ -140,15 +140,6 @@ public class JournalContentConfigurationAction
 		_addDDMTemplateLinks(actionRequest);
 
 		super.processAction(portletConfig, actionRequest, actionResponse);
-	}
-
-	@Override
-	@Reference(
-		target = "(osgi.web.symbolicname=com.liferay.journal.content.web)",
-		unbind = "-"
-	)
-	public void setServletContext(ServletContext servletContext) {
-		super.setServletContext(servletContext);
 	}
 
 	private void _addDDMTemplateLinks(ActionRequest actionRequest)
@@ -272,5 +263,8 @@ public class JournalContentConfigurationAction
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private TrashHelper _trashHelper;
 
 }

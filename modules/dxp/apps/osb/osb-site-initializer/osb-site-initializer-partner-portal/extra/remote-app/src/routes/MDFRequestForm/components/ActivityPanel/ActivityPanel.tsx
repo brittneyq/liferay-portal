@@ -12,7 +12,9 @@
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayPanel from '@clayui/panel';
 import classNames from 'classnames';
+import {useFormikContext} from 'formik';
 
+import MDFRequest from '../../../../common/interfaces/mdfRequest';
 import MDFRequestActivity from '../../../../common/interfaces/mdfRequestActivity';
 import getIntlNumberFormat from '../../../../common/utils/getIntlNumberFormat';
 
@@ -20,20 +22,29 @@ interface IProps {
 	activity: MDFRequestActivity;
 	children?: React.ReactNode;
 	detail?: boolean;
+	hasErrors?: boolean;
+	onEdit?: () => void;
 	onRemove?: () => void;
-	overallCampaign: string;
+	overallCampaignName: string;
 }
 
 const ActivityPanel = ({
 	activity,
 	children,
 	detail,
+	hasErrors,
+	onEdit,
 	onRemove,
-	overallCampaign,
+	overallCampaignName,
 }: IProps) => {
+	const {values} = useFormikContext<MDFRequest>();
+
 	return (
 		<ClayPanel
-			className="border-brand-primary-lighten-4"
+			className={classNames({
+				'border-brand-primary-lighten-4': !hasErrors,
+				'border-danger': hasErrors,
+			})}
 			collapsable={detail}
 			displayTitle={
 				<ClayPanel.Title
@@ -43,22 +54,35 @@ const ActivityPanel = ({
 					})}
 				>
 					<div className="d-flex justify-content-between">
-						<div>
+						<div className="text-truncate">
 							<div className="mb-1 text-neutral-7 text-paragraph-sm">
-								{overallCampaign}
+								{overallCampaignName}
 							</div>
 
-							<h5 className="mb-1">{activity.name}</h5>
+							<h5 className="mb-1 text-truncate">
+								{activity.name}
+							</h5>
 						</div>
 
-						{!detail && (
-							<ClayButtonWithIcon
-								displayType={null}
-								onClick={onRemove}
-								small
-								symbol="trash"
-							/>
-						)}
+						<div className="ml-5">
+							{!detail && (
+								<div className="d-flex">
+									<ClayButtonWithIcon
+										displayType={null}
+										onClick={onEdit}
+										small
+										symbol="pencil"
+									/>
+
+									<ClayButtonWithIcon
+										displayType={null}
+										onClick={onRemove}
+										small
+										symbol="trash"
+									/>
+								</div>
+							)}
+						</div>
 					</div>
 
 					<div className="align-items-center d-flex justify-content-between">
@@ -66,8 +90,8 @@ const ActivityPanel = ({
 							MDF Requested:
 						</div>
 
-						<h5 className="mr-4">
-							{getIntlNumberFormat().format(
+						<h5 className="mr-2">
+							{getIntlNumberFormat(values.currency).format(
 								activity.mdfRequestAmount
 							)}
 						</h5>

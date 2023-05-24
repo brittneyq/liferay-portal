@@ -42,7 +42,6 @@ import com.liferay.portal.model.impl.ClassNameModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
@@ -146,7 +145,7 @@ public class ClassNamePersistenceImpl
 
 		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByValue, finderArgs);
+				_finderPathFetchByValue, finderArgs, this);
 		}
 
 		if (result instanceof ClassName) {
@@ -249,7 +248,8 @@ public class ClassNamePersistenceImpl
 
 		Object[] finderArgs = new Object[] {value};
 
-		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		Long count = (Long)FinderCacheUtil.getResult(
+			finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -692,7 +692,7 @@ public class ClassNamePersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ClassName>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -762,7 +762,7 @@ public class ClassNamePersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -837,28 +837,13 @@ public class ClassNamePersistenceImpl
 			new String[] {String.class.getName()}, new String[] {"value"},
 			false);
 
-		_setClassNameUtilPersistence(this);
+		ClassNameUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setClassNameUtilPersistence(null);
+		ClassNameUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(ClassNameImpl.class.getName());
-	}
-
-	private void _setClassNameUtilPersistence(
-		ClassNamePersistence classNamePersistence) {
-
-		try {
-			Field field = ClassNameUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, classNamePersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_CLASSNAME =

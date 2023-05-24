@@ -33,7 +33,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Lino Alves
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + CategoryFacetPortletKeys.CATEGORY_FACET,
 	service = PortletSharedSearchContributor.class
 )
@@ -60,6 +59,8 @@ public class CategoryFacetPortletSharedSearchContributor
 				_toLongArray(
 					portletSharedSearchSettings.getParameterValues(
 						categoryFacetPortletPreferences.getParameterName()))
+			).vocabularyIds(
+				categoryFacetPortletPreferences.getVocabularyIds()
 			));
 	}
 

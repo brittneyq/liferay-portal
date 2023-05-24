@@ -19,24 +19,27 @@ import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.commerce.product.model.CPDefinition;
+import com.liferay.commerce.product.model.CPDefinitionOptionRel;
+import com.liferay.commerce.product.model.CPDefinitionSpecificationOptionValue;
+import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
 import com.liferay.commerce.product.service.CommerceChannelRelLocalService;
 import com.liferay.commerce.product.type.CPType;
-import com.liferay.commerce.product.type.CPTypeServicesTracker;
+import com.liferay.commerce.product.type.CPTypeRegistry;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
 import com.liferay.headless.commerce.machine.learning.dto.v1_0.Product;
 import com.liferay.headless.commerce.machine.learning.dto.v1_0.ProductOption;
 import com.liferay.headless.commerce.machine.learning.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.machine.learning.dto.v1_0.Sku;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -45,9 +48,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Riccardo Ferrari
  */
 @Component(
-	enabled = false,
 	property = "dto.class.name=com.liferay.commerce.product.model.CPDefinition",
-	service = {DTOConverter.class, ProductDTOConverter.class}
+	service = DTOConverter.class
 )
 public class ProductDTOConverter
 	implements DTOConverter<CPDefinition, Product> {
@@ -76,7 +78,7 @@ public class ProductDTOConverter
 
 		CommerceCatalog commerceCatalog = cpDefinition.getCommerceCatalog();
 		CProduct cProduct = cpDefinition.getCProduct();
-		CPType cpType = _cpTypeServicesTracker.getCPType(
+		CPType cpType = _cpTypeRegistry.getCPType(
 			cpDefinition.getProductTypeName());
 		ExpandoBridge expandoBridge = cpDefinition.getExpandoBridge();
 
@@ -160,15 +162,24 @@ public class ProductDTOConverter
 	private CPDefinitionLocalService _cpDefinitionLocalService;
 
 	@Reference
-	private CPTypeServicesTracker _cpTypeServicesTracker;
+	private CPTypeRegistry _cpTypeRegistry;
 
-	@Reference
-	private ProductOptionDTOConverter _productOptionDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.machine.learning.internal.dto.v1_0.converter.ProductOptionDTOConverter)"
+	)
+	private DTOConverter<CPDefinitionOptionRel, ProductOption>
+		_productOptionDTOConverter;
 
-	@Reference
-	private ProductSpecificationDTOConverter _productSpecificationDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.machine.learning.internal.dto.v1_0.converter.ProductSpecificationDTOConverter)"
+	)
+	private DTOConverter
+		<CPDefinitionSpecificationOptionValue, ProductSpecification>
+			_productSpecificationDTOConverter;
 
-	@Reference
-	private SkuDTOConverter _skuDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.machine.learning.internal.dto.v1_0.converter.SkuDTOConverter)"
+	)
+	private DTOConverter<CPInstance, Sku> _skuDTOConverter;
 
 }

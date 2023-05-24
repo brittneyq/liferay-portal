@@ -32,8 +32,8 @@ import com.liferay.jenkins.results.parser.failure.message.generator.StartupFailu
 import com.liferay.jenkins.results.parser.test.clazz.FunctionalTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.JUnitTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
+import com.liferay.jenkins.results.parser.test.clazz.TestClassMethod;
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
-import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +42,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
@@ -51,6 +54,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
+
+import org.json.JSONObject;
 
 /**
  * @author Michael Hashimoto
@@ -89,16 +94,31 @@ public class DownstreamBuild extends BaseBuild {
 	public long getAverageDuration() {
 		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
 
+		if (axisTestClassGroup == null) {
+			return 0L;
+		}
+
 		return axisTestClassGroup.getAverageDuration();
 	}
 
 	public long getAverageOverheadDuration() {
 		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
 
-		BatchTestClassGroup batchTestClassGroup =
-			axisTestClassGroup.getBatchTestClassGroup();
+		if (axisTestClassGroup == null) {
+			return 0L;
+		}
 
-		return batchTestClassGroup.getAverageOverheadDuration();
+		return axisTestClassGroup.getAverageOverheadDuration();
+	}
+
+	public long getAverageTotalTestDuration() {
+		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
+
+		if (axisTestClassGroup == null) {
+			return 0L;
+		}
+
+		return axisTestClassGroup.getAverageTotalTestDuration();
 	}
 
 	public String getAxisName() {
@@ -180,6 +200,14 @@ public class DownstreamBuild extends BaseBuild {
 		if (result.equals("ABORTED")) {
 			messageElement.add(
 				Dom4JUtil.toCodeSnippetElement("Build was aborted"));
+
+			List<Element> untestedElements = getTestResultGitHubElements(
+				getUniqueFailureTestResults(), true);
+
+			if (!untestedElements.isEmpty()) {
+				Dom4JUtil.getOrderedListElement(
+					untestedElements, messageElement, 3);
+			}
 		}
 
 		if (result.equals("FAILURE")) {
@@ -187,6 +215,14 @@ public class DownstreamBuild extends BaseBuild {
 
 			if (failureMessageElement != null) {
 				messageElement.add(failureMessageElement);
+			}
+
+			List<Element> untestedElements = getTestResultGitHubElements(
+				getUniqueFailureTestResults(), true);
+
+			if (!untestedElements.isEmpty()) {
+				Dom4JUtil.getOrderedListElement(
+					untestedElements, messageElement, 3);
 			}
 		}
 
@@ -197,10 +233,11 @@ public class DownstreamBuild extends BaseBuild {
 
 		if (result.equals("UNSTABLE")) {
 			List<Element> failureElements = getTestResultGitHubElements(
-				getUniqueFailureTestResults());
+				getUniqueFailureTestResults(), true);
 
 			List<Element> upstreamJobFailureElements =
-				getTestResultGitHubElements(getUpstreamJobFailureTestResults());
+				getTestResultGitHubElements(
+					getUpstreamJobFailureTestResults(), false);
 
 			if (!upstreamJobFailureElements.isEmpty()) {
 				upstreamJobFailureMessageElement = messageElement.createCopy();
@@ -220,42 +257,49 @@ public class DownstreamBuild extends BaseBuild {
 		return messageElement;
 	}
 
-	public long getOverheadDuration() {
-		long overheadDuration = getDuration() - getTestExecutionDuration();
+	public Map<String, List<String>> getTestClassMethodsMap() {
+		String batchName = getBatchName();
 
-		if (overheadDuration <= 0L) {
-			return 0L;
+		if (!batchName.contains("integration") && !batchName.contains("unit")) {
+			return Collections.emptyMap();
 		}
 
-		return overheadDuration;
-	}
+		Map<String, List<String>> testClassMethodsMap = new HashMap<>();
 
-	public long getTestExecutionDuration() {
-		StopWatchRecordsGroup stopWatchRecordsGroup =
-			getStopWatchRecordsGroup();
+		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
 
-		if (stopWatchRecordsGroup != null) {
-			long duration = getStopWatchRecordDuration(
-				"test.execution.duration");
+		if ((axisTestClassGroup == null) ||
+			!axisTestClassGroup.hasTestClasses()) {
 
-			if (duration > 0L) {
-				return duration;
-			}
+			return testClassMethodsMap;
 		}
 
-		long testExecutionDuration = 0L;
+		List<TestClass> testClasses = axisTestClassGroup.getTestClasses();
 
-		for (TestResult testResult : getTestResults(null)) {
-			long testDuration = testResult.getDuration();
-
-			if (testDuration < 0L) {
+		for (TestClass testClass : testClasses) {
+			if (!(testClass instanceof JUnitTestClass)) {
 				continue;
 			}
 
-			testExecutionDuration += testDuration;
+			JUnitTestClass jUnitTestClass = (JUnitTestClass)testClass;
+
+			List<String> methodNames = new ArrayList<>();
+
+			for (TestClassMethod testClassMethod :
+					testClass.getTestClassMethods()) {
+
+				String testMethodName = testClassMethod.getName();
+
+				if (!methodNames.contains(testMethodName)) {
+					methodNames.add(testClassMethod.getName());
+				}
+			}
+
+			testClassMethodsMap.put(
+				jUnitTestClass.getTestClassName(), methodNames);
 		}
 
-		return testExecutionDuration;
+		return testClassMethodsMap;
 	}
 
 	@Override
@@ -289,7 +333,92 @@ public class DownstreamBuild extends BaseBuild {
 			}
 		}
 
+		for (TestResult untestedTestResult : getUntestedTestResults()) {
+			if (untestedTestResult.isUniqueFailure()) {
+				uniqueFailureTestResults.add(untestedTestResult);
+			}
+		}
+
 		return uniqueFailureTestResults;
+	}
+
+	public Map<String, List<String>> getUntestedTestClassMethodsMap() {
+		Map<String, List<String>> untestedTestClassMethodsMap =
+			getTestClassMethodsMap();
+
+		if (untestedTestClassMethodsMap.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		List<TestResult> testResults = getTestResults();
+
+		if (testResults.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		for (TestResult testResult : testResults) {
+			String testResultClassName = testResult.getClassName();
+
+			if (untestedTestClassMethodsMap.containsKey(testResultClassName)) {
+				List<String> testClassMethods = untestedTestClassMethodsMap.get(
+					testResultClassName);
+
+				testClassMethods.remove(testResult.getTestName());
+
+				untestedTestClassMethodsMap.put(
+					testResultClassName, testClassMethods);
+			}
+		}
+
+		return untestedTestClassMethodsMap;
+	}
+
+	public List<TestResult> getUntestedTestResults() {
+		Map<String, List<String>> untestedTestsMap =
+			getUntestedTestClassMethodsMap();
+
+		if (untestedTestsMap.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<TestResult> untestedTestResults = new ArrayList<>();
+
+		for (Map.Entry<String, List<String>> entry :
+				untestedTestsMap.entrySet()) {
+
+			List<String> testClassMethods = entry.getValue();
+
+			if (testClassMethods.isEmpty()) {
+				continue;
+			}
+
+			for (String methodName : testClassMethods) {
+				JSONObject caseJSONObject = new JSONObject();
+
+				String testClassName = entry.getKey();
+
+				caseJSONObject.put(
+					"className", testClassName
+				).put(
+					"duration", 0
+				).put(
+					"errorDetails", "This test was untested."
+				).put(
+					"errorStackTrace", ""
+				).put(
+					"name", methodName
+				).put(
+					"status", "UNTESTED"
+				).put(
+					"testName", methodName
+				);
+
+				untestedTestResults.add(
+					TestResultFactory.newTestResult(this, caseJSONObject));
+			}
+		}
+
+		return untestedTestResults;
 	}
 
 	@Override
@@ -303,6 +432,12 @@ public class DownstreamBuild extends BaseBuild {
 
 			if (!testResult.isUniqueFailure()) {
 				upstreamFailureTestResults.add(testResult);
+			}
+		}
+
+		for (TestResult untestedTestResult : getUntestedTestResults()) {
+			if (!untestedTestResult.isUniqueFailure()) {
+				upstreamFailureTestResults.add(untestedTestResult);
 			}
 		}
 
@@ -364,6 +499,14 @@ public class DownstreamBuild extends BaseBuild {
 		return warningMessages;
 	}
 
+	public synchronized void update() {
+		super.update();
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(getResult())) {
+			setStatus("completed");
+		}
+	}
+
 	protected DownstreamBuild(String url, TopLevelBuild topLevelBuild) {
 		super(url, topLevelBuild);
 	}
@@ -379,6 +522,12 @@ public class DownstreamBuild extends BaseBuild {
 	}
 
 	protected List<Element> getJenkinsReportBuildDurationsElements() {
+		String urlSuffix = "buildDurationsElements";
+
+		if (archiveFileExists(urlSuffix)) {
+			return getArchiveFileElements(urlSuffix);
+		}
+
 		List<Element> jenkinsReportTableRowElements = new ArrayList<>();
 
 		Element buildDurationsHeaderElement = Dom4JUtil.getNewElement("tr");
@@ -387,6 +536,7 @@ public class DownstreamBuild extends BaseBuild {
 
 		childStopWatchRows.add("build-duration-names");
 		childStopWatchRows.add("build-duration-values");
+		childStopWatchRows.add("build-overhead-duration-values");
 		childStopWatchRows.add("build-test-duration-values");
 
 		buildDurationsHeaderElement.addAttribute(
@@ -443,14 +593,6 @@ public class DownstreamBuild extends BaseBuild {
 		Dom4JUtil.getNewElement("th", durationNamesElement, "Duration (est)");
 		Dom4JUtil.getNewElement("th", durationNamesElement, "Duration (+/-)");
 
-		if (overheadIncluded) {
-			Dom4JUtil.getNewElement("th", durationNamesElement, "Overhead");
-			Dom4JUtil.getNewElement(
-				"th", durationNamesElement, "Overhead (est)");
-			Dom4JUtil.getNewElement(
-				"th", durationNamesElement, "Overhead (+/-)");
-		}
-
 		jenkinsReportTableRowElements.add(durationNamesElement);
 
 		Element durationValuesElement = Dom4JUtil.getNewElement("tr");
@@ -460,7 +602,7 @@ public class DownstreamBuild extends BaseBuild {
 		durationValuesElement.addAttribute("style", "display: none;");
 
 		Element durationValuesDataElement = Dom4JUtil.getNewElement(
-			"td", durationValuesElement, "Full Build");
+			"td", durationValuesElement, "Total Duration");
 
 		durationValuesDataElement.addAttribute("style", style);
 
@@ -477,85 +619,79 @@ public class DownstreamBuild extends BaseBuild {
 			"td", durationValuesElement,
 			getDiffDurationString(duration - averageDuration));
 
-		if (overheadIncluded) {
-			long overheadDuration = getOverheadDuration();
-			long averageOverheadDuration = getAverageOverheadDuration();
-
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				JenkinsResultsParserUtil.toDurationString(overheadDuration));
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				JenkinsResultsParserUtil.toDurationString(
-					averageOverheadDuration));
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				getDiffDurationString(
-					overheadDuration - averageOverheadDuration));
-		}
-
 		jenkinsReportTableRowElements.add(durationValuesElement);
 
 		if (!overheadIncluded) {
+			archiveFileElements(urlSuffix, jenkinsReportTableRowElements);
+
 			return jenkinsReportTableRowElements;
 		}
 
-		Element testDurationsValuesElement = Dom4JUtil.getNewElement("tr");
+		Element totalTestDurationValuesElement = Dom4JUtil.getNewElement("tr");
 
-		testDurationsValuesElement.addAttribute(
+		totalTestDurationValuesElement.addAttribute(
 			"id", hashCode() + "-build-test-duration-values");
-		testDurationsValuesElement.addAttribute("style", "display: none;");
+		totalTestDurationValuesElement.addAttribute("style", "display: none;");
 
-		Element testDurationValuesDataElement = Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement, "Total Test Durations");
+		Element totalTestDurationsValuesDataElement = Dom4JUtil.getNewElement(
+			"td", totalTestDurationValuesElement, "Total Test Durations");
 
-		testDurationValuesDataElement.addAttribute("style", style);
+		totalTestDurationsValuesDataElement.addAttribute("style", style);
 
-		long totalBuildTestDurations = 0L;
-		long totalBuildTestOverheadDurations = 0L;
+		long totalTestDuration = 0L;
 
 		for (TestResult testResult : getTestResults()) {
-			totalBuildTestDurations += testResult.getDuration();
-			totalBuildTestOverheadDurations += testResult.getOverheadDuration();
+			totalTestDuration += testResult.getDuration();
 		}
 
-		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
+		long averageTotalTestDuration = getAverageTotalTestDuration();
 
-		long averageBuildTestDurations = 0L;
-		long averageBuildTestOverheadDurations = 0L;
+		Dom4JUtil.getNewElement(
+			"td", totalTestDurationValuesElement,
+			JenkinsResultsParserUtil.toDurationString(totalTestDuration));
+		Dom4JUtil.getNewElement(
+			"td", totalTestDurationValuesElement,
+			JenkinsResultsParserUtil.toDurationString(
+				averageTotalTestDuration));
+		Dom4JUtil.getNewElement(
+			"td", totalTestDurationValuesElement,
+			getDiffDurationString(
+				totalTestDuration - averageTotalTestDuration));
 
-		for (TestClass testClass : axisTestClassGroup.getTestClasses()) {
-			averageBuildTestDurations += testClass.getAverageDuration();
-			averageBuildTestOverheadDurations +=
-				testClass.getAverageOverheadDuration();
+		jenkinsReportTableRowElements.add(totalTestDurationValuesElement);
+
+		Element overheadDurationValuesElement = Dom4JUtil.getNewElement("tr");
+
+		overheadDurationValuesElement.addAttribute(
+			"id", hashCode() + "-build-overhead-duration-values");
+		overheadDurationValuesElement.addAttribute("style", "display: none;");
+
+		Element overheadDurationValuesDataElement = Dom4JUtil.getNewElement(
+			"td", overheadDurationValuesElement, "Overhead Duration");
+
+		overheadDurationValuesDataElement.addAttribute("style", style);
+
+		long overheadDuration = duration - totalTestDuration;
+
+		if (overheadDuration <= 0L) {
+			overheadDuration = 0L;
 		}
 
-		Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement,
-			JenkinsResultsParserUtil.toDurationString(totalBuildTestDurations));
-		Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement,
-			JenkinsResultsParserUtil.toDurationString(
-				averageBuildTestDurations));
-		Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement,
-			getDiffDurationString(
-				totalBuildTestDurations - averageBuildTestDurations));
-		Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement,
-			JenkinsResultsParserUtil.toDurationString(
-				totalBuildTestOverheadDurations));
-		Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement,
-			JenkinsResultsParserUtil.toDurationString(
-				averageBuildTestOverheadDurations));
-		Dom4JUtil.getNewElement(
-			"td", testDurationsValuesElement,
-			getDiffDurationString(
-				totalBuildTestOverheadDurations -
-					averageBuildTestOverheadDurations));
+		long averageOverheadDuration = getAverageOverheadDuration();
 
-		jenkinsReportTableRowElements.add(testDurationsValuesElement);
+		Dom4JUtil.getNewElement(
+			"td", overheadDurationValuesElement,
+			JenkinsResultsParserUtil.toDurationString(overheadDuration));
+		Dom4JUtil.getNewElement(
+			"td", overheadDurationValuesElement,
+			JenkinsResultsParserUtil.toDurationString(averageOverheadDuration));
+		Dom4JUtil.getNewElement(
+			"td", overheadDurationValuesElement,
+			getDiffDurationString(overheadDuration - averageOverheadDuration));
+
+		jenkinsReportTableRowElements.add(overheadDurationValuesElement);
+
+		archiveFileElements(urlSuffix, jenkinsReportTableRowElements);
 
 		return jenkinsReportTableRowElements;
 	}
@@ -569,7 +705,13 @@ public class DownstreamBuild extends BaseBuild {
 			!batchName.startsWith("modules-unit") &&
 			!batchName.startsWith("unit")) {
 
-			return new ArrayList<>();
+			return Collections.emptyList();
+		}
+
+		String urlSuffix = "testDurationsElements";
+
+		if (archiveFileExists(urlSuffix)) {
+			return getArchiveFileElements(urlSuffix);
 		}
 
 		List<Element> jenkinsReportTableRowElements = new ArrayList<>();
@@ -616,113 +758,98 @@ public class DownstreamBuild extends BaseBuild {
 		Dom4JUtil.getNewElement("th", durationNamesElement, "Duration");
 		Dom4JUtil.getNewElement("th", durationNamesElement, "Duration (est)");
 		Dom4JUtil.getNewElement("th", durationNamesElement, "Duration (+/-)");
-		Dom4JUtil.getNewElement("th", durationNamesElement, "Overhead");
-		Dom4JUtil.getNewElement("th", durationNamesElement, "Overhead (est)");
-		Dom4JUtil.getNewElement("th", durationNamesElement, "Overhead (+/-)");
 
 		jenkinsReportTableRowElements.add(durationNamesElement);
 
 		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
 
-		List<TestClass> testClasses = axisTestClassGroup.getTestClasses();
+		if (axisTestClassGroup != null) {
+			List<TestClass> testClasses = axisTestClassGroup.getTestClasses();
 
-		for (int i = 0; i < testClasses.size(); i++) {
-			TestClass testClass = testClasses.get(i);
+			for (int i = 0; i < testClasses.size(); i++) {
+				TestClass testClass = testClasses.get(i);
 
-			TestClassResult testClassResult = null;
+				TestClassResult testClassResult = null;
 
-			String testClassName = null;
+				String testClassName = null;
 
-			long duration = 0L;
-			long overheadDuration = 0L;
+				long duration = 0L;
 
-			if (testClass instanceof JUnitTestClass) {
-				JUnitTestClass jUnitTestClass = (JUnitTestClass)testClass;
+				if (testClass instanceof JUnitTestClass) {
+					JUnitTestClass jUnitTestClass = (JUnitTestClass)testClass;
 
-				testClassName = jUnitTestClass.getTestClassName();
+					testClassName = jUnitTestClass.getTestClassName();
 
-				testClassResult = getTestClassResult(testClassName);
+					testClassResult = getTestClassResult(testClassName);
 
-				if (testClassResult != null) {
-					duration = testClassResult.getDuration();
-					overheadDuration = testClassResult.getOverheadDuration();
-				}
-			}
-			else if (testClass instanceof FunctionalTestClass) {
-				FunctionalTestClass functionalTestClass =
-					(FunctionalTestClass)testClass;
-
-				testClassName = functionalTestClass.getTestClassMethodName();
-
-				testClassResult = getTestClassResult(
-					"com.liferay.poshi.runner.PoshiRunner");
-
-				if (testClassResult != null) {
-					for (TestResult testResult :
-							testClassResult.getTestResults()) {
-
-						String testMethodName = "test[" + testClassName + "]";
-
-						if (!Objects.equals(
-								testMethodName, testResult.getTestName())) {
-
-							continue;
-						}
-
-						duration = testResult.getDuration();
-						overheadDuration = testResult.getOverheadDuration();
-
-						break;
+					if (testClassResult != null) {
+						duration = testClassResult.getDuration();
 					}
 				}
+				else if (testClass instanceof FunctionalTestClass) {
+					FunctionalTestClass functionalTestClass =
+						(FunctionalTestClass)testClass;
+
+					testClassName =
+						functionalTestClass.getTestClassMethodName();
+
+					testClassResult = getTestClassResult(
+						"com.liferay.poshi.runner.PoshiRunner");
+
+					if (testClassResult != null) {
+						for (TestResult testResult :
+								testClassResult.getTestResults()) {
+
+							String testMethodName =
+								"test[" + testClassName + "]";
+
+							if (!Objects.equals(
+									testMethodName, testResult.getTestName())) {
+
+								continue;
+							}
+
+							duration = testResult.getDuration();
+
+							break;
+						}
+					}
+				}
+
+				Element durationValuesElement = Dom4JUtil.getNewElement("tr");
+
+				childStopWatchRows.add("test-duration-values-" + i);
+
+				durationValuesElement.addAttribute(
+					"id", hashCode() + "-test-duration-values-" + i);
+				durationValuesElement.addAttribute("style", "display: none;");
+
+				Element durationValuesDataElement = Dom4JUtil.getNewElement(
+					"td", durationValuesElement, testClassName);
+
+				durationValuesDataElement.addAttribute("style", style);
+
+				long averageDuration = testClass.getAverageDuration();
+
+				Dom4JUtil.getNewElement(
+					"td", durationValuesElement,
+					JenkinsResultsParserUtil.toDurationString(duration));
+				Dom4JUtil.getNewElement(
+					"td", durationValuesElement,
+					JenkinsResultsParserUtil.toDurationString(averageDuration));
+				Dom4JUtil.getNewElement(
+					"td", durationValuesElement,
+					getDiffDurationString(duration - averageDuration));
+
+				jenkinsReportTableRowElements.add(durationValuesElement);
 			}
-
-			Element durationValuesElement = Dom4JUtil.getNewElement("tr");
-
-			childStopWatchRows.add("test-duration-values-" + i);
-
-			durationValuesElement.addAttribute(
-				"id", hashCode() + "-test-duration-values-" + i);
-			durationValuesElement.addAttribute("style", "display: none;");
-
-			Element durationValuesDataElement = Dom4JUtil.getNewElement(
-				"td", durationValuesElement, testClassName);
-
-			durationValuesDataElement.addAttribute("style", style);
-
-			long averageDuration = testClass.getAverageDuration();
-
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				JenkinsResultsParserUtil.toDurationString(duration));
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				JenkinsResultsParserUtil.toDurationString(averageDuration));
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				getDiffDurationString(duration - averageDuration));
-
-			long averageOverheadDuration =
-				testClass.getAverageOverheadDuration();
-
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				JenkinsResultsParserUtil.toDurationString(overheadDuration));
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				JenkinsResultsParserUtil.toDurationString(
-					averageOverheadDuration));
-			Dom4JUtil.getNewElement(
-				"td", durationValuesElement,
-				getDiffDurationString(
-					overheadDuration - averageOverheadDuration));
-
-			jenkinsReportTableRowElements.add(durationValuesElement);
 		}
 
 		testDurationsHeaderElement.addAttribute(
 			"child-stopwatch-rows",
 			JenkinsResultsParserUtil.join(",", childStopWatchRows));
+
+		archiveFileElements(urlSuffix, jenkinsReportTableRowElements);
 
 		return jenkinsReportTableRowElements;
 	}
@@ -752,15 +879,52 @@ public class DownstreamBuild extends BaseBuild {
 	}
 
 	protected List<Element> getTestResultGitHubElements(
-		List<TestResult> testResults) {
+		List<TestResult> testResults, boolean uniqueFailures) {
 
 		List<Element> testResultGitHubElements = new ArrayList<>();
 
+		List<TestClassResult> testClassResults = new ArrayList<>();
+
 		for (TestResult testResult : testResults) {
-			testResultGitHubElements.add(testResult.getGitHubElement());
+			if (testResult instanceof PoshiJUnitTestResult) {
+				testResultGitHubElements.add(testResult.getGitHubElement());
+
+				continue;
+			}
+
+			TestClassResult testClassResult = testResult.getTestClassResult();
+
+			if (testClassResult == null) {
+				testResultGitHubElements.add(testResult.getGitHubElement());
+
+				continue;
+			}
+
+			if (testClassResults.contains(testClassResult)) {
+				continue;
+			}
+
+			Element gitHubElement = testClassResult.getGitHubElement(
+				uniqueFailures);
+
+			if (gitHubElement == null) {
+				continue;
+			}
+
+			testResultGitHubElements.add(gitHubElement);
+
+			testClassResults.add(testClassResult);
 		}
 
 		return testResultGitHubElements;
+	}
+
+	protected void setResult(String result) {
+		this.result = result;
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(result)) {
+			setStatus("running");
+		}
 	}
 
 	private static final FailureMessageGenerator[] _FAILURE_MESSAGE_GENERATORS =

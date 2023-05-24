@@ -85,10 +85,10 @@ public class DLFileEntryLocalServiceWrapper
 	}
 
 	@Override
-	public void checkFileEntries(long checkInterval)
+	public void checkFileEntries(long companyId, long checkInterval)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_dlFileEntryLocalService.checkFileEntries(checkInterval);
+		_dlFileEntryLocalService.checkFileEntries(companyId, checkInterval);
 	}
 
 	@Override
@@ -166,26 +166,26 @@ public class DLFileEntryLocalServiceWrapper
 
 	@Override
 	public DLFileEntry copyFileEntry(
-			long userId, long groupId, long repositoryId, long fileEntryId,
-			long destFolderId,
+			long userId, long groupId, long repositoryId,
+			long sourceFileEntryId, long targetFolderId, String fileName,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryLocalService.copyFileEntry(
-			userId, groupId, repositoryId, fileEntryId, destFolderId,
-			serviceContext);
+			userId, groupId, repositoryId, sourceFileEntryId, targetFolderId,
+			fileName, serviceContext);
 	}
 
 	@Override
 	public void copyFileEntryMetadata(
 			long companyId, long fileEntryTypeId, long fileEntryId,
-			long fromFileVersionId, long toFileVersionId,
+			long sourceFileVersionId, long targetFileVersionId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_dlFileEntryLocalService.copyFileEntryMetadata(
-			companyId, fileEntryTypeId, fileEntryId, fromFileVersionId,
-			toFileVersionId, serviceContext);
+			companyId, fileEntryTypeId, fileEntryId, sourceFileVersionId,
+			targetFileVersionId, serviceContext);
 	}
 
 	/**
@@ -431,31 +431,12 @@ public class DLFileEntryLocalServiceWrapper
 		return _dlFileEntryLocalService.fetchDLFileEntry(fileEntryId);
 	}
 
-	/**
-	 * Returns the document library file entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the document library file entry's external reference code
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
 	@Override
 	public DLFileEntry fetchDLFileEntryByExternalReferenceCode(
-		long groupId, String externalReferenceCode) {
+		String externalReferenceCode, long groupId) {
 
 		return _dlFileEntryLocalService.fetchDLFileEntryByExternalReferenceCode(
-			groupId, externalReferenceCode);
-	}
-
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchDLFileEntryByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public DLFileEntry fetchDLFileEntryByReferenceCode(
-		long groupId, String externalReferenceCode) {
-
-		return _dlFileEntryLocalService.fetchDLFileEntryByReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -613,21 +594,13 @@ public class DLFileEntryLocalServiceWrapper
 		return _dlFileEntryLocalService.getDLFileEntry(fileEntryId);
 	}
 
-	/**
-	 * Returns the document library file entry with the matching external reference code and group.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param externalReferenceCode the document library file entry's external reference code
-	 * @return the matching document library file entry
-	 * @throws PortalException if a matching document library file entry could not be found
-	 */
 	@Override
 	public DLFileEntry getDLFileEntryByExternalReferenceCode(
-			long groupId, String externalReferenceCode)
+			String externalReferenceCode, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryLocalService.getDLFileEntryByExternalReferenceCode(
-			groupId, externalReferenceCode);
+			externalReferenceCode, groupId);
 	}
 
 	/**
@@ -754,6 +727,14 @@ public class DLFileEntryLocalServiceWrapper
 		long folderId, String name) {
 
 		return _dlFileEntryLocalService.getFileEntries(folderId, name);
+	}
+
+	@Override
+	public java.util.List<DLFileEntry> getFileEntriesByClassNameIdAndTreePath(
+		long classNameId, String treePath) {
+
+		return _dlFileEntryLocalService.getFileEntriesByClassNameIdAndTreePath(
+			classNameId, treePath);
 	}
 
 	@Override

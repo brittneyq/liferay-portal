@@ -26,15 +26,16 @@ import com.liferay.commerce.currency.service.CommerceCurrencyService;
 import com.liferay.commerce.currency.util.CommercePriceFormatter;
 import com.liferay.commerce.currency.util.ExchangeRateProviderRegistry;
 import com.liferay.commerce.currency.web.internal.util.CommerceCurrencyUtil;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
 import com.liferay.portal.kernel.settings.SystemSettingsLocator;
@@ -195,8 +196,11 @@ public class CommerceCurrenciesDisplayContext {
 	}
 
 	public String getRoundingModeLabel(String roundingModeName) {
-		return StringUtil.replace(
-			roundingModeName, CharPool.UNDERLINE, CharPool.SPACE);
+		return LanguageUtil.get(
+			PortalUtil.getLocale(_renderRequest),
+			StringUtil.replace(
+				StringUtil.toLowerCase(roundingModeName), CharPool.UNDERLINE,
+				CharPool.DASH));
 	}
 
 	public SearchContainer<CommerceCurrency> getSearchContainer()

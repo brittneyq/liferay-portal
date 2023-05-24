@@ -15,8 +15,12 @@
 package com.liferay.notification.internal.search.spi.model.index.contributor;
 
 import com.liferay.notification.model.NotificationQueueEntry;
+import com.liferay.notification.model.NotificationRecipient;
+import com.liferay.notification.util.NotificationRecipientSettingUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
+
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -24,7 +28,6 @@ import org.osgi.service.component.annotations.Component;
  * @author Paulo Albuquerque
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.notification.model.NotificationQueueEntry",
 	service = ModelDocumentContributor.class
 )
@@ -35,17 +38,22 @@ public class NotificationQueueEntryModelDocumentContributor
 	public void contribute(
 		Document document, NotificationQueueEntry notificationQueueEntry) {
 
-		document.addKeyword("fromName", notificationQueueEntry.getFromName());
-		document.addText("fromName", notificationQueueEntry.getFrom());
+		NotificationRecipient notificationRecipient =
+			notificationQueueEntry.getNotificationRecipient();
+
+		Map<String, Object> notificationRecipientSettingsMap =
+			NotificationRecipientSettingUtil.toMap(
+				notificationRecipient.getNotificationRecipientSettings());
+
+		document.addKeyword(
+			"fromName",
+			String.valueOf(notificationRecipientSettingsMap.get("fromName")));
+		document.addText(
+			"fromName",
+			String.valueOf(notificationRecipientSettingsMap.get("from")));
 
 		document.addKeyword("subject", notificationQueueEntry.getSubject());
 		document.addText("subject", notificationQueueEntry.getSubject());
-
-		document.addKeyword("toName", notificationQueueEntry.getToName());
-		document.addText("toName", notificationQueueEntry.getToName());
-
-		document.addKeyword("triggerBy", notificationQueueEntry.getToName());
-		document.addText("triggerBy", notificationQueueEntry.getToName());
 	}
 
 }

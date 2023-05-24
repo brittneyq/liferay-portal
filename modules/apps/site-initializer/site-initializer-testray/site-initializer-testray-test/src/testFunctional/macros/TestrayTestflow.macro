@@ -1,9 +1,189 @@
 definition {
 
-	macro assertStatusTasks {
+	@summary = "This macro add a task via UI."
+	macro addTask {
+		Click(locator1 = "Button#PLUS");
+
+		TestrayTestflow.editBreadcrumb(
+			build = ${selectBuild},
+			project = ${selectProject},
+			routine = ${selectRoutine});
+
+		Button.click(button = "Analyze");
+
+		if (isSet(taskName)) {
+			Type(
+				locator1 = "TestrayManage#NEW_OPTION_NAME",
+				value1 = ${taskName});
+		}
+
+		if (isSet(checkCaseType)) {
+			Click(
+				key_checkboxOption = ${checkCaseType},
+				locator1 = "Checkbox#ENABLE_CHECKBOX_VIA_SPAN");
+		}
+
+		Button.click(button = "Assign Users");
+
+		if (isSet(userName)) {
+			Click.clickAtNotVisible(
+				key_checkboxOption = ${userName},
+				locator1 = "Checkbox#SPECIFIC_CHECKBOX_IN_TABLE");
+		}
+
+		Button.click(button = "Select Users");
+
+		Testray.checkSuccessAlertAppearsAndDisappears();
+
+		Button.click(button = "Save");
+	}
+
+	@summary = "This macro assert that a task is assigned to a specific user."
+	macro assertAssignTask {
 		AssertElementPresent(
-			key_value = "${key_value}",
-			locator1 = "TestrayTestflow#STATUS_TASKS");
+			key_email = ${email},
+			key_userName = ${userName},
+			locator1 = "TestrayTestflow#ASSIGN_INFORMATIONS");
+	}
+
+	@summary = "This macro assert that the status specific appears on a specific page."
+	macro assertStatus {
+		AssertElementPresent(
+			key_label = ${label},
+			key_status = ${status},
+			locator1 = "TestrayTestflow#TESTFLOW_STATUS");
+	}
+
+	@summary = "This macro assert the task details in the table."
+	macro assertTaskDetails {
+		AssertElementPresent(
+			key_build = ${build},
+			key_project = ${project},
+			key_routine = ${routine},
+			key_status = ${status},
+			key_taskName = ${taskName},
+			locator1 = "TestrayTestflow#TASK_DETAILS");
+	}
+
+	@summary = "This macro select a user."
+	macro assignUsers {
+		SelectFrame(locator1 = "Testray#MODAL_BODY");
+
+		Testray.goToProjectPage(projectName = ${userName});
+
+		Alert.viewSuccessMessage();
+	}
+
+	@summary = "This macro edit the breadcrumb."
+	macro editBreadcrumb {
+		Click(locator1 = "TestrayTestflow#BREADCRUMB_EDIT");
+
+		Type(
+			locator1 = "TestrayTestflow#BREADCRUMB_EDIT",
+			value1 = ${project});
+
+		if (isSet(project)) {
+			Click(locator1 = "TestrayTestflow#BREADCRUMB_SELECT_OPTIONS");
+		}
+
+		Type(
+			locator1 = "TestrayTestflow#BREADCRUMB_EDIT",
+			value1 = ${routine});
+
+		if (isSet(routine)) {
+			Click(locator1 = "TestrayTestflow#BREADCRUMB_SELECT_OPTIONS");
+		}
+
+		Type(
+			locator1 = "TestrayTestflow#BREADCRUMB_EDIT",
+			value1 = ${build});
+
+		if (isSet(build)) {
+			Click(locator1 = "TestrayTestflow#BREADCRUMB_SELECT_OPTIONS");
+		}
+	}
+
+	@summary = "This macro edit the status."
+	macro editStatus {
+		Select(
+			locator1 = "TestrayTestflow#SELECT_STATUS_CASE_RESULTS",
+			value1 = ${selectStatus});
+
+		if (isSet(issues)) {
+			Type(
+				locator1 = "TestrayTestflow#INPUT_ISSUES",
+				value1 = ${issues});
+		}
+
+		if (isSet(comment)) {
+			Type(
+				locator1 = "TestrayTestflow#INPUT_COMMENT",
+				value1 = ${comment});
+		}
+
+		Button.click(button = "Save");
+	}
+
+	@summary = "This macro edit a task."
+	macro editTask {
+		Button.click(button = "Edit Task");
+
+		if (isSet(taskName)) {
+			Type(
+				locator1 = "TestrayManage#NEW_OPTION_NAME",
+				value1 = ${taskName});
+		}
+
+		if (isSet(userName)) {
+			Button.click(button = "Assign Users");
+
+			Click.clickAtNotVisible(
+				key_checkboxOption = ${userName},
+				locator1 = "Checkbox#SPECIFIC_CHECKBOX_IN_TABLE");
+
+			Button.click(button = "Select Users");
+
+			Testray.checkSuccessAlertAppearsAndDisappears();
+		}
+
+		Button.click(button = "Save");
+	}
+
+	@summary = "This macro go to task."
+	macro goToTask {
+		Click(
+			key_projectName = ${taskName},
+			locator1 = "Testray#ITEM_NAME");
+	}
+
+	@summary = "This macro go to TestFlow in the sidebar."
+	macro goToTestflow {
+		Click(locator1 = "TestrayTestflow#TESTFLOW_SIDEBAR");
+	}
+
+	@summary = "This macro select the options in the task."
+	macro taskOptions {
+		if (isSet(taskName)) {
+			Type(
+				locator1 = "TestrayManage#NEW_OPTION_NAME",
+				value1 = ${taskName});
+		}
+
+		Button.click(button = "Save");
+	}
+
+	@summary = "This macro assert that avatar icon is not present."
+	macro userAvatarNotPresent {
+		AssertElementNotPresent(
+			label = ${label},
+			locator1 = "TestrayTestflow#USER_AVATAR_IMAGE");
+	}
+
+	@summary = "This macro assert that avatar icon is present."
+	macro userAvatarPresent {
+		AssertElementPresent(
+			label = ${label},
+			locator1 = "TestrayTestflow#USER_AVATAR_IMAGE");
 	}
 
 }

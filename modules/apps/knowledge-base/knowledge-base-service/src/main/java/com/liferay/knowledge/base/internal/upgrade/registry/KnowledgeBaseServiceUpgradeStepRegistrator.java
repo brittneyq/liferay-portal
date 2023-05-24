@@ -14,25 +14,28 @@
 
 package com.liferay.knowledge.base.internal.upgrade.registry;
 
+import com.liferay.document.library.kernel.store.Store;
 import com.liferay.knowledge.base.internal.upgrade.v2_0_2.KBArticleUpgradeProcess;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBArticleTable;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBCommentTable;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBFolderTable;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBTemplateTable;
+import com.liferay.knowledge.base.internal.upgrade.v4_4_0.KBGroupServiceConfigurationUpgradeProcess;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.service.CompanyLocalService;
-import com.liferay.portal.kernel.settings.SettingsFactory;
+import com.liferay.portal.kernel.settings.SettingsLocatorHelper;
 import com.liferay.portal.kernel.upgrade.BaseExternalReferenceCodeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.BaseSQLServerDatetimeUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
 import com.liferay.portal.kernel.upgrade.ViewCountUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
-import com.liferay.portlet.documentlibrary.store.StoreFactory;
 import com.liferay.view.count.service.ViewCountEntryLocalService;
 
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -74,16 +77,14 @@ public class KnowledgeBaseServiceUpgradeStepRegistrator
 		registry.register(
 			"1.1.0", "1.2.0",
 			UpgradeProcessFactory.dropColumns("KBArticle", "kbTemplateId"),
-			new com.liferay.knowledge.base.internal.upgrade.v1_2_0.
-				KBStructureUpgradeProcess(),
+			UpgradeProcessFactory.dropTables("KBStructure"),
 			UpgradeProcessFactory.dropColumns(
 				"KBTemplate", "engineType", "cacheable"));
 
 		registry.register(
 			"1.2.0", "1.3.0",
 			new com.liferay.knowledge.base.internal.upgrade.v1_3_0.
-				KBAttachmentsUpgradeProcess(
-					_companyLocalService, _storeFactory.getStore()),
+				KBAttachmentsUpgradeProcess(_companyLocalService, _store),
 			new com.liferay.knowledge.base.internal.upgrade.v1_3_0.
 				UpgradePortletPreferences());
 
@@ -132,7 +133,7 @@ public class KnowledgeBaseServiceUpgradeStepRegistrator
 		registry.register(
 			"2.0.0", "2.0.1",
 			new com.liferay.knowledge.base.internal.upgrade.v2_0_1.
-				UpgradePortletSettings(_settingsFactory));
+				UpgradePortletSettings(_settingsLocatorHelper));
 
 		registry.register("2.0.1", "2.0.2", new KBArticleUpgradeProcess());
 
@@ -149,7 +150,7 @@ public class KnowledgeBaseServiceUpgradeStepRegistrator
 			new MVCCVersionUpgradeProcess() {
 
 				@Override
-				protected String[] getModuleTableNames() {
+				protected String[] getTableNames() {
 					return new String[] {
 						"KBArticle", "KBComment", "KBFolder", "KBTemplate"
 					};
@@ -176,25 +177,37 @@ public class KnowledgeBaseServiceUpgradeStepRegistrator
 				}
 
 			});
-	}
 
-	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
-	protected void setModuleServiceLifecycle(
-		ModuleServiceLifecycle moduleServiceLifecycle) {
-	}
+		registry.register(
+			"4.2.0", "4.3.0",
+			UpgradeProcessFactory.addColumns(
+				"KBArticle", "expirationDate DATE null",
+				"reviewDate DATE null"));
 
-	@Reference(unbind = "-")
-	protected void setSettingsFactory(SettingsFactory settingsFactory) {
-		_settingsFactory = settingsFactory;
+		registry.register(
+			"4.3.0", "4.4.0",
+			new KBGroupServiceConfigurationUpgradeProcess(_configurationAdmin));
+
+		registry.register(
+			"4.4.0", "4.5.0",
+			new CTModelUpgradeProcess(
+				"KBArticle", "KBComment", "KBFolder", "KBTemplate"));
 	}
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
 
-	private SettingsFactory _settingsFactory;
+	@Reference
+	private ConfigurationAdmin _configurationAdmin;
 
-	@Reference(target = "(dl.store.impl.enabled=true)")
-	private StoreFactory _storeFactory;
+	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
+	private ModuleServiceLifecycle _moduleServiceLifecycle;
+
+	@Reference
+	private SettingsLocatorHelper _settingsLocatorHelper;
+
+	@Reference(target = "(default=true)")
+	private Store _store;
 
 	/**
 	 * See LPS-101085. The ViewCount table needs to exist.

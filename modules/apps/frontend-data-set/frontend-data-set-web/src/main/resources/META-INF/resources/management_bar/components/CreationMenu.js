@@ -21,8 +21,11 @@ import FrontendDataSetContext from '../../FrontendDataSetContext';
 import {triggerAction} from '../../utils/actionItems/index';
 
 function CreationMenu({primaryItems}) {
-	const [active, setActive] = useState(false);
 	const frontendDataSetContext = useContext(FrontendDataSetContext);
+
+	const {loadData} = frontendDataSetContext;
+
+	const [active, setActive] = useState(false);
 
 	return (
 		primaryItems?.length > 0 && (
@@ -34,8 +37,10 @@ function CreationMenu({primaryItems}) {
 							onActiveChange={setActive}
 							trigger={
 								<ClayButtonWithIcon
+									aria-label={Liferay.Language.get('new')}
 									className="nav-btn nav-btn-monospaced"
 									symbol="plus"
+									title={Liferay.Language.get('new')}
 								/>
 							}
 						>
@@ -45,11 +50,19 @@ function CreationMenu({primaryItems}) {
 										key={i}
 										onClick={(event) => {
 											event.preventDefault();
+
 											setActive(false);
-											triggerAction(
-												item,
-												frontendDataSetContext
-											);
+
+											item.onClick?.({
+												loadData,
+											});
+
+											if (item.href || item.target) {
+												triggerAction(
+													item,
+													frontendDataSetContext
+												);
+											}
 										}}
 									>
 										{item.label}
@@ -59,16 +72,28 @@ function CreationMenu({primaryItems}) {
 						</ClayDropDown>
 					) : (
 						<ClayButtonWithIcon
+							aria-label={
+								primaryItems[0].label ??
+								Liferay.Language.get('new')
+							}
 							className="nav-btn nav-btn-monospaced"
 							data-tooltip-align="top"
-							onClick={() =>
-								triggerAction(
-									primaryItems[0],
-									frontendDataSetContext
-								)
-							}
+							onClick={() => {
+								const item = primaryItems[0];
+
+								item.onClick?.({
+									loadData,
+								});
+
+								if (item.href || item.target) {
+									triggerAction(item, frontendDataSetContext);
+								}
+							}}
 							symbol="plus"
-							title={primaryItems[0].label}
+							title={
+								primaryItems[0].label ??
+								Liferay.Language.get('new')
+							}
 						/>
 					)}
 				</li>
@@ -80,15 +105,17 @@ function CreationMenu({primaryItems}) {
 CreationMenu.propTypes = {
 	primaryItems: PropTypes.arrayOf(
 		PropTypes.shape({
-			href: PropTypes.string.isRequired,
-			label: PropTypes.string.isRequired,
+			href: PropTypes.string,
+			label: PropTypes.string,
+			onClick: PropTypes.func,
 			target: PropTypes.oneOf(['modal', 'sidePanel', 'event', 'link']),
 		})
 	).isRequired,
 	secondaryItems: PropTypes.arrayOf(
 		PropTypes.shape({
-			href: PropTypes.string.isRequired,
-			label: PropTypes.string.isRequired,
+			href: PropTypes.string,
+			label: PropTypes.string,
+			onClick: PropTypes.func,
 			target: PropTypes.oneOf(['modal', 'sidePanel', 'event', 'link']),
 		})
 	),

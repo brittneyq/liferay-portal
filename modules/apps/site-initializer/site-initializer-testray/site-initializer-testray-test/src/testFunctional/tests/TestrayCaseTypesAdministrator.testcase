@@ -1,103 +1,189 @@
 @component-name = "portal-solutions"
 definition {
 
+	property custom.properties = "feature.flag.LPS-163118=true";
 	property osgi.modules.includes = "site-initializer-testray";
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 	property testray.main.component.name = "Site Initializer Testray";
 
+	var caseType = "Case Type 1";
+	var testSiteName = "Testray 2";
+
 	setUp {
-		TestCase.setUpPortalInstance();
+		task ("Login and create a Testray Site") {
+			TestCase.setUpPortalInstance();
 
-		User.firstLoginPG();
+			User.firstLoginPG();
 
-		Testray.createTestraySite(siteName = "Testray 2");
-
-		Refresh();
+			Testray.addTestraySite(siteName = ${testSiteName});
+		}
 	}
 
 	tearDown {
+		Testray.testrayApisTearDown();
+
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		TestrayManage.deleteAllCasesTypes();
-
-		Testray.tearDownCP();
-
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 	}
 
-	@description = "This is a test for LPS-156676 - Verify if the Administrator can Add Case Types"
-	@priority = "5"
+	@description = "Story ID: LPS-146938 | Test Summary: Verify if the Administrator can Add Case Types"
+	@priority = 5
 	test AdminCanAddCaseTypes {
-		task ("Go to Case Types on Manage Sidebar and change pagination") {
-			ApplicationsMenu.gotoSite(site = "Testray 2");
+		property test.name.skip.portal.instance = "TestrayCaseTypesAdministrator#AdminCanAddCaseTypes";
+
+		task ("When I create a Case Type") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
 
 			TestrayLayout.clickManageOnSidebar();
 
 			TestrayManage.selectOptionsManage(itemValue = "Case Types");
 
-			Testray.changePaginationInModal(
-				numberItems = "20",
-				valuePagination = "150");
+			TestrayManage.createNewCaseTypes(caseName = ${caseType});
 		}
 
-		task ("Create a new Case Type and assert it was created") {
-			TestrayManage.createNewCaseTypes(caseName = "Case_Type");
+		task ("Then I assert that the newly created 'Case Type' is present in the list") {
+			Testray.assertItemName(text = ${caseType});
+		}
 
-			Testray.assertItemName(key_name = "Case_Type");
+		task ("Delete object") {
+			JSONTestrayAPI.deleteObjectViaAPI(
+				object = "casetypes",
+				objectName = ${caseType});
 		}
 	}
 
-	@description = "This is a test for LPS-156679 - Verify that as an Administrator I can delete Case Types"
-	@priority = "5"
+	@description = "Story ID: LPS-146938 | Test Summary: Verify that as an Administrator I can delete Case Types"
+	@priority = 5
 	test AdminCanDeleteCaseTypes {
-		task ("Go to Case Types on Manage Sidebar and change pagination") {
-			ApplicationsMenu.gotoSite(site = "Testray 2");
+		property test.name.skip.portal.instance = "TestrayCaseTypesAdministrator#AdminCanDeleteCaseTypes";
+
+		task ("Given that I create a 'Case Type' via API") {
+			JSONTestray.addCaseType(caseType = ${caseType});
+		}
+
+		task ("When I go to the manage menu") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
 
 			TestrayLayout.clickManageOnSidebar();
+		}
 
+		task ("And I select the system 'Case Types' option") {
 			TestrayManage.selectOptionsManage(itemValue = "Case Types");
 
 			Testray.changePaginationInModal(
-				numberItems = "20",
-				valuePagination = "150");
+				numberItems = 20,
+				valuePagination = 150);
 		}
 
-		task ("Create a new Case Type, Delete it and asserts that it has been deleted") {
-			TestrayManage.createNewCaseTypes(caseName = "Case_Type");
+		task ("When I delete a Case Type") {
+			TestrayManage.deleteCasesTypes(valueName = ${caseType});
+		}
 
-			TestrayManage.deleteCasesTypes(valueName = "Case_Type");
-
-			Testray.assertItemNotPresent(key_name = "Case_Type");
+		task ("Then I shouldn't be able to see the same in the list") {
+			Testray.assertItemNotPresent(text = ${caseType});
 		}
 	}
 
-	@description = "This is a test for LPS-156681 - Verify if the Administrator can Edit Case Types"
-	@priority = "5"
+	@description = "Story ID: LPS-146938 | Test Summary: Verify if the Administrator can Edit Case Types"
+	@priority = 5
 	test AdminCanEditCaseTypes {
-		task ("Go to Case Types on Manage Sidebar and change pagination") {
-			ApplicationsMenu.gotoSite(site = "Testray 2");
+		property test.name.skip.portal.instance = "TestrayCaseTypesAdministrator#AdminCanEditCaseTypes";
+
+		task ("Given that I create a 'Case Type' via API") {
+			JSONTestray.addCaseType(caseType = ${caseType});
+		}
+
+		task ("When I go to the manage menu") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
 
 			TestrayLayout.clickManageOnSidebar();
+		}
 
+		task ("And I select the system 'Case Types' option") {
 			TestrayManage.selectOptionsManage(itemValue = "Case Types");
 
 			Testray.changePaginationInModal(
-				numberItems = "20",
-				valuePagination = "150");
+				numberItems = 20,
+				valuePagination = 150);
 		}
 
-		task ("Create a new Case Type, Edit Case Type and asserts that it has been edited") {
-			TestrayManage.createNewCaseTypes(caseName = "Case_Type");
-
+		task ("And I edit the name of the Case Type") {
 			TestrayManage.editNewName(
-				valueName = "Case_Type",
-				valueType = "Case_Type_Edited");
+				valueName = ${caseType},
+				valueType = "Case Type Edited");
+		}
 
-			Testray.assertItemName(key_name = "Case_Type_Edited");
+		task ("Then I assert that the name has been changed in the list") {
+			Testray.assertItemName(text = "Case Type Edited");
+		}
+
+		task ("Delete object") {
+			JSONTestrayAPI.deleteObjectViaAPI(
+				object = "casetypes",
+				objectName = "Case Type Edited");
+		}
+	}
+
+	@description = "Story ID: LPS-165582 | Test Summary: Verify if as an Administrator I should not be able to add a duplicate cases types"
+	@priority = 3
+	test AdminCanNotAddDuplicateCasesTypes {
+		property test.name.skip.portal.instance = "TestrayCaseTypesAdministrator#AdminCanNotAddDuplicateCasesTypes";
+
+		task ("Given that I create a 'Case Type' via API") {
+			JSONTestray.addCaseType(caseType = ${caseType});
+		}
+
+		task ("When I go to the manage menu") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			TestrayLayout.clickManageOnSidebar();
+		}
+
+		task ("And I select the system 'Case Types' option") {
+			TestrayManage.selectOptionsManage(itemValue = "Case Types");
+
+			Testray.changePaginationInModal(
+				numberItems = 20,
+				valuePagination = 150);
+		}
+
+		task ("When I try to create a new Case Type with an existing title") {
+			TestrayManage.createNewCaseTypes(caseName = ${caseType});
+		}
+
+		task ("Then an error message is shown") {
+			Alert.viewErrorMessage(errorMessage = "The Case Type name already exists");
+		}
+	}
+
+	@description = "Story ID: LPS-146938 | Test Summary: Verify that the user can not create a case type if all the required fields are not filled in"
+	@priority = 2
+	test AdminCanViewRequiredField {
+		property test.name.skip.portal.instance = "TestrayCaseTypesAdministrator#AdminCanViewRequiredField";
+
+		task ("When I go to the manage menu") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			TestrayLayout.clickManageOnSidebar();
+		}
+
+		task ("Create a new Case Type and assert message of required field") {
+			TestrayManage.selectOptionsManage(itemValue = "Case Types");
+
+			Testray.changePaginationInModal(
+				numberItems = 20,
+				valuePagination = 150);
+
+			TestrayManage.createNewCaseTypes(caseName = "");
+
+			Testray.viewErrorMessage(
+				fieldLabel = "Name",
+				warningMessage = "name is a required field");
 		}
 	}
 

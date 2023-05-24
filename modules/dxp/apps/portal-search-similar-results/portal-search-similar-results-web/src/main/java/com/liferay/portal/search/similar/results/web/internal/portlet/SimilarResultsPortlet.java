@@ -49,6 +49,7 @@ import java.util.Optional;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
+import javax.portlet.PortletPreferences;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -61,7 +62,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Kevin Tan
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-similar-results",
@@ -107,15 +107,16 @@ public class SimilarResultsPortlet extends MVCPortlet {
 		SimilarResultsDisplayContext similarResultsDisplayContext =
 			_createSimilarResultsDisplayContext(renderRequest);
 
+		Optional<PortletPreferences> portletPreferencesOptional =
+			portletSharedSearchResponse.getPortletPreferences(renderRequest);
+
 		SimilarResultsPortletPreferences similarResultsPortletPreferences =
 			new SimilarResultsPortletPreferencesImpl(
-				portletSharedSearchResponse.getPortletPreferences(
-					renderRequest));
+				portletPreferencesOptional.orElse(null));
 
 		SearchResponse searchResponse =
 			portletSharedSearchResponse.getFederatedSearchResponse(
-				Optional.of(
-					similarResultsPortletPreferences.getFederatedSearchKey()));
+				similarResultsPortletPreferences.getFederatedSearchKey());
 
 		if (searchResponse == null) {
 			return similarResultsDisplayContext;
@@ -138,19 +139,13 @@ public class SimilarResultsPortlet extends MVCPortlet {
 
 		similarResultsDisplayContext.setDocuments(legacyDocuments);
 
-		ThemeDisplay themeDisplay = portletSharedSearchResponse.getThemeDisplay(
-			renderRequest);
-
-		Optional<SimilarResultsRoute> optional =
-			similarResultsContributorsRegistry.detectRoute(
-				_portal.getCurrentURL(renderRequest));
-
-		SimilarResultsRoute similarResultsRoute = optional.orElse(null);
-
 		similarResultsDisplayContext.setSimilarResultsDocumentDisplayContexts(
 			_buildSimilarResultsDocumentDisplayContexts(
-				legacyDocuments, similarResultsRoute, renderRequest,
-				renderResponse, themeDisplay));
+				legacyDocuments,
+				similarResultsContributorsRegistry.detectRoute(
+					_portal.getCurrentURL(renderRequest)),
+				renderRequest, renderResponse,
+				portletSharedSearchResponse.getThemeDisplay(renderRequest)));
 
 		return similarResultsDisplayContext;
 	}

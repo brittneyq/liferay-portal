@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,7 +49,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.Date;
@@ -77,7 +75,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marco Leo
  * @generated
  */
-@Component(service = {ObjectLayoutPersistence.class, BasePersistence.class})
+@Component(service = ObjectLayoutPersistence.class)
 public class ObjectLayoutPersistenceImpl
 	extends BasePersistenceImpl<ObjectLayout>
 	implements ObjectLayoutPersistence {
@@ -194,7 +192,7 @@ public class ObjectLayoutPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayout>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayout objectLayout : list) {
@@ -574,7 +572,7 @@ public class ObjectLayoutPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -733,7 +731,7 @@ public class ObjectLayoutPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayout>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayout objectLayout : list) {
@@ -1147,7 +1145,7 @@ public class ObjectLayoutPersistenceImpl
 
 		Object[] finderArgs = new Object[] {uuid, companyId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -1310,7 +1308,7 @@ public class ObjectLayoutPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayout>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayout objectLayout : list) {
@@ -1677,7 +1675,7 @@ public class ObjectLayoutPersistenceImpl
 
 		Object[] finderArgs = new Object[] {objectDefinitionId};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(2);
@@ -1830,7 +1828,7 @@ public class ObjectLayoutPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayout>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ObjectLayout objectLayout : list) {
@@ -2229,7 +2227,7 @@ public class ObjectLayoutPersistenceImpl
 			objectDefinitionId, defaultObjectLayout
 		};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs);
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
 			StringBundler sb = new StringBundler(3);
@@ -2695,7 +2693,7 @@ public class ObjectLayoutPersistenceImpl
 
 		if (useFinderCache) {
 			list = (List<ObjectLayout>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2765,7 +2763,7 @@ public class ObjectLayoutPersistenceImpl
 	@Override
 	public int countAll() {
 		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY);
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -2910,30 +2908,14 @@ public class ObjectLayoutPersistenceImpl
 			new String[] {Long.class.getName(), Boolean.class.getName()},
 			new String[] {"objectDefinitionId", "defaultObjectLayout"}, false);
 
-		_setObjectLayoutUtilPersistence(this);
+		ObjectLayoutUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setObjectLayoutUtilPersistence(null);
+		ObjectLayoutUtil.setPersistence(null);
 
 		entityCache.removeCache(ObjectLayoutImpl.class.getName());
-	}
-
-	private void _setObjectLayoutUtilPersistence(
-		ObjectLayoutPersistence objectLayoutPersistence) {
-
-		try {
-			Field field = ObjectLayoutUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, objectLayoutPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3001,9 +2983,5 @@ public class ObjectLayoutPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private ObjectLayoutModelArgumentsResolver
-		_objectLayoutModelArgumentsResolver;
 
 }

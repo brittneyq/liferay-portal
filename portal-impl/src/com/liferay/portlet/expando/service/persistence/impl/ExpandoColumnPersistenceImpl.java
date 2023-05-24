@@ -52,7 +52,6 @@ import com.liferay.portlet.expando.model.impl.ExpandoColumnModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -195,7 +194,7 @@ public class ExpandoColumnPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<ExpandoColumn>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoColumn expandoColumn : list) {
@@ -894,7 +893,8 @@ public class ExpandoColumnPersistenceImpl
 
 			finderArgs = new Object[] {tableId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1119,7 +1119,7 @@ public class ExpandoColumnPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<ExpandoColumn>)FinderCacheUtil.getResult(
-				_finderPathWithPaginationFindByT_N, finderArgs);
+				_finderPathWithPaginationFindByT_N, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoColumn expandoColumn : list) {
@@ -1289,7 +1289,7 @@ public class ExpandoColumnPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByT_N, finderArgs);
+				_finderPathFetchByT_N, finderArgs, this);
 		}
 
 		if (result instanceof ExpandoColumn) {
@@ -1409,7 +1409,8 @@ public class ExpandoColumnPersistenceImpl
 
 			finderArgs = new Object[] {tableId, name};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1495,7 +1496,7 @@ public class ExpandoColumnPersistenceImpl
 			finderArgs = new Object[] {tableId, StringUtil.merge(names)};
 
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByT_N, finderArgs);
+				_finderPathWithPaginationCountByT_N, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2312,7 +2313,7 @@ public class ExpandoColumnPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<ExpandoColumn>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -2388,7 +2389,7 @@ public class ExpandoColumnPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -2566,29 +2567,13 @@ public class ExpandoColumnPersistenceImpl
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"tableId", "name"}, false);
 
-		_setExpandoColumnUtilPersistence(this);
+		ExpandoColumnUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setExpandoColumnUtilPersistence(null);
+		ExpandoColumnUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(ExpandoColumnImpl.class.getName());
-	}
-
-	private void _setExpandoColumnUtilPersistence(
-		ExpandoColumnPersistence expandoColumnPersistence) {
-
-		try {
-			Field field = ExpandoColumnUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, expandoColumnPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_EXPANDOCOLUMN =

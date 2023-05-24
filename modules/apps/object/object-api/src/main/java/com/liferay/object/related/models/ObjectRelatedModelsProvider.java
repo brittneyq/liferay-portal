@@ -29,7 +29,7 @@ public interface ObjectRelatedModelsProvider<T extends BaseModel<T>> {
 
 	public void deleteRelatedModel(
 			long userId, long groupId, long objectRelationshipId,
-			long primaryKey)
+			long primaryKey, String deletionType)
 		throws PortalException;
 
 	public void disassociateRelatedModels(
@@ -38,6 +38,8 @@ public interface ObjectRelatedModelsProvider<T extends BaseModel<T>> {
 		throws PortalException;
 
 	public String getClassName();
+
+	public long getCompanyId();
 
 	public String getObjectRelationshipType();
 

@@ -78,7 +78,7 @@ public class ObjectDefinitionCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(63);
+		StringBundler sb = new StringBundler(69);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -118,6 +118,12 @@ public class ObjectDefinitionCacheModel
 		sb.append(enableCategorization);
 		sb.append(", enableComments=");
 		sb.append(enableComments);
+		sb.append(", enableLocalization=");
+		sb.append(enableLocalization);
+		sb.append(", enableObjectEntryHistory=");
+		sb.append(enableObjectEntryHistory);
+		sb.append(", modifiable=");
+		sb.append(modifiable);
 		sb.append(", name=");
 		sb.append(name);
 		sb.append(", panelAppOrder=");
@@ -224,6 +230,10 @@ public class ObjectDefinitionCacheModel
 
 		objectDefinitionImpl.setEnableCategorization(enableCategorization);
 		objectDefinitionImpl.setEnableComments(enableComments);
+		objectDefinitionImpl.setEnableLocalization(enableLocalization);
+		objectDefinitionImpl.setEnableObjectEntryHistory(
+			enableObjectEntryHistory);
+		objectDefinitionImpl.setModifiable(modifiable);
 
 		if (name == null) {
 			objectDefinitionImpl.setName("");
@@ -324,6 +334,12 @@ public class ObjectDefinitionCacheModel
 		enableCategorization = objectInput.readBoolean();
 
 		enableComments = objectInput.readBoolean();
+
+		enableLocalization = objectInput.readBoolean();
+
+		enableObjectEntryHistory = objectInput.readBoolean();
+
+		modifiable = objectInput.readBoolean();
 		name = objectInput.readUTF();
 		panelAppOrder = objectInput.readUTF();
 		panelCategoryKey = objectInput.readUTF();
@@ -411,6 +427,12 @@ public class ObjectDefinitionCacheModel
 
 		objectOutput.writeBoolean(enableComments);
 
+		objectOutput.writeBoolean(enableLocalization);
+
+		objectOutput.writeBoolean(enableObjectEntryHistory);
+
+		objectOutput.writeBoolean(modifiable);
+
 		if (name == null) {
 			objectOutput.writeUTF("");
 		}
@@ -495,6 +517,9 @@ public class ObjectDefinitionCacheModel
 	public String className;
 	public boolean enableCategorization;
 	public boolean enableComments;
+	public boolean enableLocalization;
+	public boolean enableObjectEntryHistory;
+	public boolean modifiable;
 	public String name;
 	public String panelAppOrder;
 	public String panelCategoryKey;

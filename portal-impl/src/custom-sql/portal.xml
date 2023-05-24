@@ -791,44 +791,6 @@
 				[$SCOPE$]
 		]]>
 	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.countByGroupRoleAndTeamRole">
-		<![CDATA[
-			SELECT
-				COUNT(Role_.roleId) AS COUNT_VALUE
-			FROM
-				Role_
-			WHERE
-				(Role_.companyId = ?) AND
-				(
-					(
-						(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-						(LOWER(Role_.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-						(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
-					)
-					[$EXCLUDED_NAMES$]
-					[$TYPE$]
-				) OR
-				(
-					(Role_.classNameId = ?) AND
-					(Role_.roleId != ?) AND
-					(
-						Role_.classPK IN
-							(
-								SELECT
-									Team.teamId
-								FROM
-									Team
-								WHERE
-									(groupId = ?) AND
-									(
-										(LOWER(Team.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-										(LOWER(Team.description) LIKE ? [$AND_OR_NULL_CHECK$])
-									)
-							)
-					)
-				)
-		]]>
-	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.countByC_N_D_T">
 		<![CDATA[
 			SELECT
@@ -866,62 +828,30 @@
 				[$TYPE$]
 		]]>
 	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.findByGroupRoleAndTeamRole">
+	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.findByC_N_D_T">
 		<![CDATA[
 			SELECT
 				{Role_.*}
 			FROM
 				Role_
 			WHERE
-				(Role_.companyId = ?) AND
+				Role_.roleId IN
 				(
-					(
-						(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-						(LOWER(Role_.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-						(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
-					)
-					[$EXCLUDED_NAMES$]
+					SELECT
+						DISTINCT Role_.roleId
+					FROM
+						Role_
+					[$JOIN$]
+					WHERE
+						[$WHERE$]
+						(Role_.companyId = ?) AND
+						(Role_.classNameId = [$CLASS_NAME_ID$]) AND
+						(
+							(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+							(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
+						)
 					[$TYPE$]
-				) OR
-				(
-					(Role_.classNameId = ?) AND
-					(Role_.roleId != ?) AND
-					(
-						Role_.classPK IN
-							(
-								SELECT
-									Team.teamId
-								FROM
-									Team
-								WHERE
-									(groupId = ?) AND
-									(
-										(LOWER(Team.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-										(LOWER(Team.description) LIKE ? [$AND_OR_NULL_CHECK$])
-									)
-							)
-					)
 				)
-			ORDER BY
-				Role_.name ASC
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.findByC_N_D_T">
-		<![CDATA[
-			SELECT
-				DISTINCT {Role_.*}
-			FROM
-				Role_
-			[$JOIN$]
-			WHERE
-				[$WHERE$]
-				(Role_.companyId = ?) AND
-				(Role_.classNameId = [$CLASS_NAME_ID$]) AND
-				(
-					(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-					(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
-				)
-				[$TYPE$]
 			ORDER BY
 				Role_.name ASC
 		]]>
@@ -929,20 +859,28 @@
 	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.findByC_N_T_D_T">
 		<![CDATA[
 			SELECT
-				DISTINCT {Role_.*}
+				{Role_.*}
 			FROM
 				Role_
-			[$JOIN$]
 			WHERE
-				[$WHERE$]
-				(Role_.companyId = ?) AND
-				(Role_.classNameId = [$CLASS_NAME_ID$]) AND
+				Role_.roleId IN
 				(
-					(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-					(LOWER(Role_.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
-					(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
+					SELECT
+						DISTINCT Role_.roleId
+					FROM
+						Role_
+					[$JOIN$]
+					WHERE
+						[$WHERE$]
+						(Role_.companyId = ?) AND
+						(Role_.classNameId = [$CLASS_NAME_ID$]) AND
+						(
+							(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+							(LOWER(Role_.title) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
+							(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
+						)
+					[$TYPE$]
 				)
-				[$TYPE$]
 			ORDER BY
 				Role_.name ASC
 		]]>
@@ -1110,7 +1048,7 @@
 				(SocialRelation.userId1 = ?) AND
 				(SocialRelation.type_ [$SOCIAL_RELATION_TYPE_COMPARATOR$] ?) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.status = ?)
 		]]>
 	</sql>
@@ -1136,7 +1074,7 @@
 				AnnouncementsDelivery ON
 					(AnnouncementsDelivery.userId = User_.userId) AND
 					(AnnouncementsDelivery.type_ = ?) AND
-					(User_.defaultUser = [$FALSE$])
+					(User_.type_ = 1)
 			WHERE
 				AnnouncementsDelivery.userId IS NULL
 		]]>
@@ -1153,7 +1091,7 @@
 					(Group_.classNameId = [$CLASS_NAME_ID_COM.LIFERAY.PORTAL.MODEL.USER$]) AND
 					(Group_.classPK = User_.userId)
 			WHERE
-				(defaultUser = [$FALSE$]) AND
+				(User_.type_ = 1) AND
 				(Group_.classPK IS NULL)
 		]]>
 	</sql>
@@ -1170,7 +1108,7 @@
 				(SocialRelation.userId1 = ?) AND
 				(SocialRelation.type_ [$SOCIAL_RELATION_TYPE_COMPARATOR$] ?) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.status = ?)
 		]]>
 	</sql>
@@ -1186,7 +1124,7 @@
 			WHERE
 				(Users_Groups.groupId IN [$GROUP_ID$]) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.status = ?)
 		]]>
 	</sql>
@@ -1205,7 +1143,7 @@
 			WHERE
 				(Groups_Orgs.groupId IN [$GROUP_ID$]) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.status = ?)
 		]]>
 	</sql>
@@ -1224,7 +1162,7 @@
 			WHERE
 				(Group_.groupId IN [$GROUP_ID$]) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.status = ?)
 		]]>
 	</sql>
@@ -1240,7 +1178,7 @@
 			WHERE
 				(Users_Orgs.organizationId = ?) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.userId > ?)
 			ORDER BY
 				User_.userId ASC
@@ -1261,7 +1199,7 @@
 			WHERE
 				(Groups_UserGroups.groupId IN [$GROUP_ID$]) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.status = ?)
 		]]>
 	</sql>
@@ -1277,7 +1215,7 @@
 			WHERE
 				(Users_UserGroups.userGroupId = ?) AND
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(User_.userId > ?)
 			ORDER BY
 				User_.userId ASC
@@ -1293,7 +1231,7 @@
 			WHERE
 				[$WHERE$]
 				(User_.companyId = ?) AND
-				(User_.defaultUser = ?) AND
+				(User_.type_ = 1) AND
 				(
 					(LOWER(User_.firstName) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
 					(LOWER(User_.middleName) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]

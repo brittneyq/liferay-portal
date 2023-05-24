@@ -43,7 +43,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.discount.model.CommerceDiscountRule",
 	service = AopService.class
 )
@@ -70,7 +69,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		User user = _userLocalService.getUser(serviceContext.getUserId());
 
-		validate(type);
+		_validate(type);
 
 		long commerceDiscountRuleId = counterLocalService.increment();
 
@@ -96,7 +95,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		// Commerce discount
 
-		reindexCommerceDiscount(commerceDiscountId);
+		_reindexCommerceDiscount(commerceDiscountId);
 
 		return commerceDiscountRule;
 	}
@@ -113,7 +112,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		// Commerce discount
 
-		reindexCommerceDiscount(commerceDiscountRule.getCommerceDiscountId());
+		_reindexCommerceDiscount(commerceDiscountRule.getCommerceDiscountId());
 
 		return commerceDiscountRule;
 	}
@@ -191,7 +190,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 			commerceDiscountRulePersistence.findByPrimaryKey(
 				commerceDiscountRuleId);
 
-		validate(type);
+		_validate(type);
 
 		commerceDiscountRule.setType(type);
 
@@ -207,7 +206,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		// Commerce discount
 
-		reindexCommerceDiscount(commerceDiscountRule.getCommerceDiscountId());
+		_reindexCommerceDiscount(commerceDiscountRule.getCommerceDiscountId());
 
 		return commerceDiscountRule;
 	}
@@ -224,7 +223,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 			commerceDiscountRulePersistence.findByPrimaryKey(
 				commerceDiscountRuleId);
 
-		validate(type);
+		_validate(type);
 
 		commerceDiscountRule.setName(name);
 		commerceDiscountRule.setType(type);
@@ -241,12 +240,12 @@ public class CommerceDiscountRuleLocalServiceImpl
 
 		// Commerce discount
 
-		reindexCommerceDiscount(commerceDiscountRule.getCommerceDiscountId());
+		_reindexCommerceDiscount(commerceDiscountRule.getCommerceDiscountId());
 
 		return commerceDiscountRule;
 	}
 
-	protected void reindexCommerceDiscount(long commerceDiscountId)
+	private void _reindexCommerceDiscount(long commerceDiscountId)
 		throws PortalException {
 
 		CommerceDiscount commerceDiscount =
@@ -258,7 +257,7 @@ public class CommerceDiscountRuleLocalServiceImpl
 		indexer.reindex(commerceDiscount);
 	}
 
-	protected void validate(String type) throws PortalException {
+	private void _validate(String type) throws PortalException {
 		CommerceDiscountRuleType commerceDiscountRuleType =
 			_commerceDiscountRuleTypeRegistry.getCommerceDiscountRuleType(type);
 

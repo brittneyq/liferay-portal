@@ -18,13 +18,13 @@ import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorCons
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
-import com.liferay.layout.content.page.editor.web.internal.util.ContentUtil;
+import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -51,7 +51,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/layout_content_page_editor/update_collection_display_config"
@@ -74,10 +73,9 @@ public class UpdateCollectionDisplayConfigMVCActionCommand
 		String itemConfig = ParamUtil.getString(actionRequest, "itemConfig");
 		String itemId = ParamUtil.getString(actionRequest, "itemId");
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
-		JSONArray fragmentEntryLinksJSONArray =
-			JSONFactoryUtil.createJSONArray();
+		JSONArray fragmentEntryLinksJSONArray = _jsonFactory.createJSONArray();
 
 		List<FragmentEntryLink> fragmentEntryLinks = new ArrayList<>(
 			_fragmentEntryLinkLocalService.
@@ -99,9 +97,8 @@ public class UpdateCollectionDisplayConfigMVCActionCommand
 				segmentsExperienceId);
 
 		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
-			JSONObject editableValuesJSONObject =
-				JSONFactoryUtil.createJSONObject(
-					fragmentEntryLink.getEditableValues());
+			JSONObject editableValuesJSONObject = _jsonFactory.createJSONObject(
+				fragmentEntryLink.getEditableValues());
 
 			String configuration = editableValuesJSONObject.getString(
 				FragmentEntryProcessorConstants.
@@ -168,10 +165,10 @@ public class UpdateCollectionDisplayConfigMVCActionCommand
 					themeDisplay.getScopeGroupId(), segmentsExperienceId,
 					themeDisplay.getPlid(),
 					curLayoutStructure -> curLayoutStructure.updateItemConfig(
-						JSONFactoryUtil.createJSONObject(itemConfig), itemId))
+						_jsonFactory.createJSONObject(itemConfig), itemId))
 			).put(
 				"pageContents",
-				ContentUtil.getPageContentsJSONArray(
+				_contentManager.getPageContentsJSONArray(
 					_portal.getHttpServletRequest(actionRequest),
 					_portal.getHttpServletResponse(actionResponse),
 					themeDisplay.getPlid(), segmentsExperienceId)
@@ -205,10 +202,16 @@ public class UpdateCollectionDisplayConfigMVCActionCommand
 		UpdateCollectionDisplayConfigMVCActionCommand.class);
 
 	@Reference
+	private ContentManager _contentManager;
+
+	@Reference
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
 
 	@Reference
 	private FragmentEntryLinkManager _fragmentEntryLinkManager;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

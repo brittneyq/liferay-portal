@@ -83,8 +83,16 @@ public class TestrayProject {
 				_testrayServer.getHTTPAuthorization());
 
 			if (jsonObject.has("data")) {
-				return new TestrayProductVersion(
-					this, jsonObject.getJSONObject("data"));
+				TestrayProductVersion newTestrayProductVersion =
+					new TestrayProductVersion(
+						this, jsonObject.getJSONObject("data"));
+
+				_testrayProductVersionsByID.put(
+					newTestrayProductVersion.getID(), newTestrayProductVersion);
+				_testrayProductVersionsByName.put(
+					testrayProductVersionName, newTestrayProductVersion);
+
+				return newTestrayProductVersion;
 			}
 
 			throw new RuntimeException("Failed to create a product version");
@@ -138,8 +146,8 @@ public class TestrayProject {
 		return _jsonObject.getString("description");
 	}
 
-	public int getID() {
-		return _jsonObject.getInt("testrayProjectId");
+	public long getID() {
+		return _jsonObject.getLong("testrayProjectId");
 	}
 
 	public String getName() {
@@ -147,7 +155,7 @@ public class TestrayProject {
 	}
 
 	public TestrayProductVersion getTestrayProductVersionByID(
-		int productVersionID) {
+		long productVersionID) {
 
 		_initTestrayProductVersions();
 
@@ -162,7 +170,7 @@ public class TestrayProject {
 		return _testrayProductVersionsByName.get(productVersionName);
 	}
 
-	public TestrayRoutine getTestrayRoutineByID(int routineID) {
+	public TestrayRoutine getTestrayRoutineByID(long routineID) {
 		_initTestrayRoutines();
 
 		return _testrayRoutinesByID.get(routineID);
@@ -291,9 +299,9 @@ public class TestrayProject {
 	private static final int _DELTA = 25;
 
 	private final JSONObject _jsonObject;
-	private Map<Integer, TestrayProductVersion> _testrayProductVersionsByID;
+	private Map<Long, TestrayProductVersion> _testrayProductVersionsByID;
 	private Map<String, TestrayProductVersion> _testrayProductVersionsByName;
-	private Map<Integer, TestrayRoutine> _testrayRoutinesByID;
+	private Map<Long, TestrayRoutine> _testrayRoutinesByID;
 	private Map<String, TestrayRoutine> _testrayRoutinesByName;
 	private final TestrayServer _testrayServer;
 	private final URL _url;

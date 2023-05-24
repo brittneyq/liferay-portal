@@ -30,8 +30,6 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
 
-import java.lang.reflect.Field;
-
 import javax.sql.DataSource;
 
 import org.osgi.service.component.annotations.Deactivate;
@@ -60,7 +58,7 @@ public abstract class CPDefinitionVirtualSettingServiceBaseImpl
 	 */
 	@Deactivate
 	protected void deactivate() {
-		_setServiceUtilService(null);
+		CPDefinitionVirtualSettingServiceUtil.setService(null);
 	}
 
 	@Override
@@ -76,7 +74,8 @@ public abstract class CPDefinitionVirtualSettingServiceBaseImpl
 		cpDefinitionVirtualSettingService =
 			(CPDefinitionVirtualSettingService)aopProxy;
 
-		_setServiceUtilService(cpDefinitionVirtualSettingService);
+		CPDefinitionVirtualSettingServiceUtil.setService(
+			cpDefinitionVirtualSettingService);
 	}
 
 	/**
@@ -122,23 +121,6 @@ public abstract class CPDefinitionVirtualSettingServiceBaseImpl
 		}
 	}
 
-	private void _setServiceUtilService(
-		CPDefinitionVirtualSettingService cpDefinitionVirtualSettingService) {
-
-		try {
-			Field field =
-				CPDefinitionVirtualSettingServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpDefinitionVirtualSettingService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	@Reference
 	protected com.liferay.commerce.product.type.virtual.service.
 		CPDefinitionVirtualSettingLocalService
@@ -154,25 +136,6 @@ public abstract class CPDefinitionVirtualSettingServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameService
-		classNameService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserService userService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPDefinitionVirtualSettingServiceBaseImpl.class);

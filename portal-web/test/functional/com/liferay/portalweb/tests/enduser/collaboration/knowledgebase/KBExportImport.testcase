@@ -14,7 +14,7 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 		else {
@@ -22,7 +22,55 @@ definition {
 		}
 	}
 
-	@priority = "5"
+	@description = "This test ensures that users can import article via center pane button."
+	@e2etest
+	@priority = 5
+	test CanImportArticleViaCenterPaneButton {
+		property portal.acceptance = "true";
+
+		KBAdmin.openKBAdmin(siteURLKey = "guest");
+
+		KBArticle.openPageTreePanel(section = "Folders and Articles");
+
+		KBArticle.importCP(
+			centerPaneButton = "true",
+			kbZipFile = "KBArticlesWithMetadata.zip");
+
+		KBArticle.viewArticleThroughPageTreePanel(kbArticleTitle = "Knowledge Base Article Parent Title 1");
+
+		KBArticle.viewArticleThroughPageTreePanel(kbArticleTitle = "Knowledge Base Article Parent Title 2");
+
+		LexiconEntry.viewEntryName(rowEntry = "Knowledge Base Article Parent Title 1");
+
+		LexiconEntry.viewEntryName(rowEntry = "Knowledge Base Article Parent Title 2");
+	}
+
+	@description = "This test ensures that users can import content to a KB folder rom the navigation pane."
+	@priority = 5
+	test CanImportArticleViaNavigationPane {
+		JSONKnowledgeBase.addkBFolder(
+			groupName = "Guest",
+			kbFolderName = "KB Folder");
+
+		KBAdmin.openKBAdmin(siteURLKey = "guest");
+
+		KBArticle.openPageTreePanel(section = "Folders and Articles");
+
+		KBArticle.importCP(
+			kbFolderName = "KB Folder",
+			kbZipFile = "KBArticlesWithMetadata.zip",
+			navigationPane = "true");
+
+		KBAdmin.openKBAdmin(siteURLKey = "guest");
+
+		KBFolder.gotoCP(kbFolderName = "KB Folder");
+
+		LexiconEntry.viewEntryName(rowEntry = "Knowledge Base Article Parent Title 1");
+
+		LexiconEntry.viewEntryName(rowEntry = "Knowledge Base Article Parent Title 2");
+	}
+
+	@priority = 5
 	@refactorneeded
 	test DeleteImportedArticles {
 		JSONLayout.addPublicLayout(
@@ -30,7 +78,7 @@ definition {
 			layoutName = "Knowledge Base Display Page");
 
 		JSONLayout.addWidgetToPublicLayout(
-			column = "1",
+			column = 1,
 			groupName = "Guest",
 			layoutName = "Knowledge Base Display Page",
 			widgetName = "Knowledge Base Display");
@@ -45,11 +93,11 @@ definition {
 
 		KBArticle.gotoKBArticleViaKBDisplayHierarchyNavigationPG(kbArticleTitle = "Knowledge Base Article Parent Title 1");
 
-		KBArticle.viewParentArticleHierarchyViaKBDisplayPG(kbArticleTitle = "Knowledge Base Article Parent Title");
+		KBDisplayWidget.viewParentArticleHierarchyViaKBDisplayPG(kbArticleTitle = "Knowledge Base Article Parent Title");
 
-		KBArticle.viewChildArticleHierarchyViaKBDisplayPG(kbArticleTitle = "Knowledge Base Article Parent Title 1");
+		KBDisplayWidget.viewChildArticleHierarchyViaKBDisplayPG(kbArticleTitle = "Knowledge Base Article Parent Title 1");
 
-		KBArticle.viewChildArticleHierarchyViaKBDisplayPG(kbArticleTitle = "Knowledge Base Article Parent Title 2");
+		KBDisplayWidget.viewChildArticleHierarchyViaKBDisplayPG(kbArticleTitle = "Knowledge Base Article Parent Title 2");
 
 		KBAdmin.openKBAdmin(siteURLKey = "guest");
 
@@ -58,17 +106,17 @@ definition {
 		KBArticle.deleteCP();
 	}
 
-	@priority = "4"
+	@priority = 4
 	@refactorneeded
 	test ViewImportedKBArticleWithImagesAsKBAttachments {
-		JSONGroup.addGroup(groupName = "Site Name");
+		HeadlessSite.addSite(siteName = "Site Name");
 
 		JSONLayout.addPublicLayout(
 			groupName = "Site Name",
 			layoutName = "Knowledge Base Display Page");
 
 		JSONLayout.addWidgetToPublicLayout(
-			column = "1",
+			column = 1,
 			groupName = "Site Name",
 			layoutName = "Knowledge Base Display Page",
 			widgetName = "Knowledge Base Display");
@@ -77,7 +125,9 @@ definition {
 
 		KBArticle.importCP(
 			applyNumericalPrefix = "true",
-			kbZipFile = "KBArticlesWithMetadata.zip");
+			kbFolderName = "Home",
+			kbZipFile = "KBArticlesWithMetadata.zip",
+			navigationPane = "true");
 
 		Navigator.openSitePage(
 			pageName = "Knowledge Base Display Page",
@@ -102,7 +152,7 @@ definition {
 		KBArticle.viewAttachmentCP(kbArticleTitle = "Knowledge Base Article Parent Title 2 Child 2");
 	}
 
-	@priority = "4"
+	@priority = 4
 	@refactorneeded
 	test ViewImportedKBArticleWithSourceURLMetadata {
 		property test.name.skip.portal.instance = "KBExportImport#ViewImportedKBArticleWithSourceURLMetadata";
@@ -112,7 +162,7 @@ definition {
 			layoutName = "Knowledge Base Display Page");
 
 		JSONLayout.addWidgetToPublicLayout(
-			column = "1",
+			column = 1,
 			groupName = "Guest",
 			layoutName = "Knowledge Base Display Page",
 			widgetName = "Knowledge Base Display");

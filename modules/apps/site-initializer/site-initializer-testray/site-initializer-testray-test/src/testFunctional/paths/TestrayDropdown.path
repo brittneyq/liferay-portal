@@ -16,6 +16,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SELECT_PROJECT_DIRECTORY</td>
+	<td>//div[contains(@class, 'dropdown-menu show')]//span[contains(text(),'${key_project}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DROPDOWN_PROJECT_DIRECTORY</td>
+	<td>//div[contains(@class, 'align-items-center')]//div[contains(@class, 'align-items-center')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>OPTIONS_SIDEBAR</td>
 	<td>//span[contains(text(),'${key_itemvalue}')]</td>
 	<td></td>
@@ -25,9 +35,19 @@
 	<td>//div[contains(@class, 'dropdown-action')]</td>
 	<td></td>
 </tr>
+	<tr>
+	<td>PICKLIST_KEBAB_MENU_OPTION</td>
+	<td>//button/div/span[contains(text(),'${key_picklistOption}')]</td>
+	<td></td>
+	</tr>
 <tr>
 	<td>PROJECT_NAME_BREADCRUMBS</td>
 	<td>//p[contains(text(),'${key_projectName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TEMPLATE_DROPDOWN</td>
+	<td>//div[contains(@class, 'dropdown')]//li[contains(text(),'${key_templateName}')]</td>
 	<td></td>
 </tr>
 </tbody>

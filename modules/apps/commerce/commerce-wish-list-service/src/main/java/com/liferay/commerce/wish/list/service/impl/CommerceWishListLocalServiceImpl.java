@@ -21,8 +21,8 @@ import com.liferay.commerce.wish.list.model.CommerceWishList;
 import com.liferay.commerce.wish.list.model.CommerceWishListItem;
 import com.liferay.commerce.wish.list.service.CommerceWishListItemLocalService;
 import com.liferay.commerce.wish.list.service.base.CommerceWishListLocalServiceBaseImpl;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -37,8 +37,10 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -46,7 +48,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Andrea Di Giorgi
  */
 @Component(
-	enabled = false,
+	configurationPid = "com.liferay.commerce.wish.list.internal.configuration.CommerceWishListConfiguration",
 	property = "model.class.name=com.liferay.commerce.wish.list.model.CommerceWishList",
 	service = AopService.class
 )
@@ -61,11 +63,11 @@ public class CommerceWishListLocalServiceImpl
 		User user = _userLocalService.getUser(serviceContext.getUserId());
 		long groupId = serviceContext.getScopeGroupId();
 
-		if (user.isDefaultUser()) {
-			validateGuestWishLists();
+		if (user.isGuestUser()) {
+			_validateGuestWishLists();
 		}
 
-		validate(0, groupId, user.getUserId(), name, defaultWishList);
+		_validate(0, groupId, user.getUserId(), name, defaultWishList);
 
 		long commerceWishListId = counterLocalService.increment();
 
@@ -201,7 +203,7 @@ public class CommerceWishListLocalServiceImpl
 		serviceContext.setScopeGroupId(groupId);
 		serviceContext.setUserId(user.getUserId());
 
-		if (user.isDefaultUser()) {
+		if (user.isGuestUser()) {
 			return guestCommerceWishList;
 		}
 
@@ -222,7 +224,7 @@ public class CommerceWishListLocalServiceImpl
 		}
 
 		if (guestCommerceWishList != null) {
-			mergeCommerceWishList(
+			_mergeCommerceWishList(
 				guestCommerceWishList.getCommerceWishListId(),
 				commerceWishList.getCommerceWishListId(), serviceContext);
 		}
@@ -238,7 +240,7 @@ public class CommerceWishListLocalServiceImpl
 		CommerceWishList commerceWishList =
 			commerceWishListPersistence.findByPrimaryKey(commerceWishListId);
 
-		validate(
+		_validate(
 			commerceWishList.getCommerceWishListId(),
 			commerceWishList.getGroupId(), commerceWishList.getUserId(), name,
 			defaultWishList);
@@ -249,11 +251,13 @@ public class CommerceWishListLocalServiceImpl
 		return commerceWishListPersistence.update(commerceWishList);
 	}
 
-	protected String getCookieName(long groupId) {
-		return CommerceWishList.class.getName() + StringPool.POUND + groupId;
+	@Activate
+	protected void activate(Map<String, Object> properties) {
+		_commerceWishListConfiguration = ConfigurableUtil.createConfigurable(
+			CommerceWishListConfiguration.class, properties);
 	}
 
-	protected void mergeCommerceWishList(
+	private void _mergeCommerceWishList(
 			long fromCommerceWishListId, long toCommerceWishListId,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -308,7 +312,7 @@ public class CommerceWishListLocalServiceImpl
 			fromCommerceWishListId);
 	}
 
-	protected void validate(
+	private void _validate(
 			long commerceWishListId, long groupId, long userId, String name,
 			boolean defaultWishList)
 		throws PortalException {
@@ -333,7 +337,7 @@ public class CommerceWishListLocalServiceImpl
 		}
 	}
 
-	protected void validateGuestWishLists() throws PortalException {
+	private void _validateGuestWishLists() throws PortalException {
 		int count = commerceWishListPersistence.countByUserId(
 			UserConstants.USER_ID_DEFAULT);
 
@@ -342,7 +346,6 @@ public class CommerceWishListLocalServiceImpl
 		}
 	}
 
-	@Reference
 	private CommerceWishListConfiguration _commerceWishListConfiguration;
 
 	@Reference

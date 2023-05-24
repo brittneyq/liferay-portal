@@ -49,7 +49,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Máté Thurzó
  */
 @Component(
-	immediate = true, property = "javax.portlet.name=" + WikiPortletKeys.WIKI,
+	property = "javax.portlet.name=" + WikiPortletKeys.WIKI,
 	service = ExportImportPortletPreferencesProcessor.class
 )
 public class WikiExportImportPortletPreferencesProcessor
@@ -246,9 +246,10 @@ public class WikiExportImportPortletPreferencesProcessor
 	@Reference(target = "(name=ReferencedStagedModelImporter)")
 	private Capability _referencedStagedModelImporter;
 
-	@Reference
-	private WikiCommentsAndRatingsExporterImporterCapability
-		_wikiCommentsAndRatingsExporterImporterCapability;
+	@Reference(
+		target = "(component.name=com.liferay.wiki.internal.exportimport.portlet.preferences.processor.WikiCommentsAndRatingsExporterImporterCapability)"
+	)
+	private Capability _wikiCommentsAndRatingsExporterImporterCapability;
 
 	@Reference
 	private WikiNodeLocalService _wikiNodeLocalService;

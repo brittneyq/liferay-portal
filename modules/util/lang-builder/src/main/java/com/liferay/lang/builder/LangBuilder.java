@@ -120,7 +120,17 @@ public class LangBuilder {
 		_langDirName = langDirName;
 		_langFileName = langFileName;
 		_titleCapitalization = titleCapitalization;
-		_translate = translate;
+
+		if (Validator.isNull(translateSubscriptionKey)) {
+			System.out.println(
+				"Translation is disabled because credentials are not " +
+					"specified");
+
+			_translate = false;
+		}
+		else {
+			_translate = translate;
+		}
 
 		Translate.setSubscriptionKey(translateSubscriptionKey);
 
@@ -137,7 +147,7 @@ public class LangBuilder {
 
 		File propertiesFile = new File(
 			StringBundler.concat(
-				_langDirName, "/", _langFileName, ".properties"));
+				langDirName, "/", langFileName, ".properties"));
 
 		if (!propertiesFile.exists()) {
 			return;
@@ -152,6 +162,7 @@ public class LangBuilder {
 		_createProperties(content, "ar"); // Arabic
 		_createProperties(content, "eu"); // Basque
 		_createProperties(content, "bg"); // Bulgarian
+		_createProperties(content, "km"); // Cambodian
 		_createProperties(content, "ca"); // Catalan
 		_createProperties(content, "zh_CN"); // Chinese (China)
 		_createProperties(content, "zh_TW"); // Chinese (Taiwan)
@@ -192,6 +203,9 @@ public class LangBuilder {
 		_createProperties(content, "sk"); // Slovak
 		_createProperties(content, "sl"); // Slovene
 		_createProperties(content, "es"); // Spanish
+		_createProperties(content, "es_AR", "es"); // Spanish (Argentina)
+		_createProperties(content, "es_CO", "es"); // Spanish (Colombia)
+		_createProperties(content, "es_MX", "es"); // Spanish (Mexico)
 		_createProperties(content, "sv"); // Swedish
 		_createProperties(content, "ta_IN"); // Tamil
 		_createProperties(content, "th"); // Thai

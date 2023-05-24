@@ -32,10 +32,11 @@ public interface UpgradeStepRegistrator {
 			String fromSchemaVersionString, String toSchemaVersionString,
 			UpgradeStep... upgradeSteps);
 
-		public void registerInitialDeploymentUpgradeSteps(
-			UpgradeStep... upgradeSteps);
-
 		public default void registerInitialization() {
+		}
+
+		public default void registerReleaseCreationUpgradeSteps(
+			UpgradeStep... upgradeSteps) {
 		}
 
 	}

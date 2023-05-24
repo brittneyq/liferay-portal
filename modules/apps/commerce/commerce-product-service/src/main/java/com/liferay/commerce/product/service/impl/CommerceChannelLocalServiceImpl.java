@@ -15,8 +15,10 @@
 package com.liferay.commerce.product.service.impl;
 
 import com.liferay.commerce.pricing.constants.CommercePricingConstants;
+import com.liferay.commerce.product.channel.CommerceChannelTypeRegistry;
+import com.liferay.commerce.product.constants.CommerceChannelConstants;
+import com.liferay.commerce.product.exception.CommerceChannelTypeException;
 import com.liferay.commerce.product.exception.DuplicateCommerceChannelException;
-import com.liferay.commerce.product.exception.DuplicateCommerceChannelSiteGroupIdException;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.model.CommerceChannelTable;
 import com.liferay.commerce.product.service.CommerceChannelAccountEntryRelLocalService;
@@ -29,8 +31,8 @@ import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.query.GroupByStep;
 import com.liferay.petra.sql.dsl.query.JoinStep;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
-import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -58,7 +60,6 @@ import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,10 +67,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Alec Sloan
  * @author Alessio Antonio Rendina
  */
+@Component(
+	property = "model.class.name=com.liferay.commerce.product.model.CommerceChannel",
+	service = AopService.class
+)
 public class CommerceChannelLocalServiceImpl
 	extends CommerceChannelLocalServiceBaseImpl {
 
@@ -98,6 +106,8 @@ public class CommerceChannelLocalServiceImpl
 			}
 		}
 
+		_validateType(type);
+
 		long commerceChannelId = counterLocalService.increment();
 
 		commerceChannel = commerceChannelPersistence.create(commerceChannelId);
@@ -109,7 +119,7 @@ public class CommerceChannelLocalServiceImpl
 		commerceChannel.setSiteGroupId(siteGroupId);
 		commerceChannel.setName(name);
 		commerceChannel.setType(type);
-		commerceChannel.setTypeSettingsProperties(
+		commerceChannel.setTypeSettingsUnicodeProperties(
 			typeSettingsUnicodeProperties);
 		commerceChannel.setCommerceCurrencyCode(commerceCurrencyCode);
 		commerceChannel.setPriceDisplayType(
@@ -123,13 +133,17 @@ public class CommerceChannelLocalServiceImpl
 		Map<Locale, String> nameMap = Collections.singletonMap(
 			serviceContext.getLocale(), name);
 
-		_groupLocalService.addGroup(
+		Group group = _groupLocalService.addGroup(
 			user.getUserId(), GroupConstants.DEFAULT_PARENT_GROUP_ID,
 			CommerceChannel.class.getName(), commerceChannelId,
 			GroupConstants.DEFAULT_LIVE_GROUP_ID, nameMap, null,
 			GroupConstants.TYPE_SITE_PRIVATE, false,
 			GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null, false, true,
 			null);
+
+		if (CommerceChannelConstants.CHANNEL_TYPE_SITE.equals(type)) {
+			_updateGroupTypeSettings(group, siteGroupId);
+		}
 
 		// Resources
 
@@ -160,6 +174,8 @@ public class CommerceChannelLocalServiceImpl
 				commerceChannelLocalService.fetchByExternalReferenceCode(
 					externalReferenceCode, user.getCompanyId());
 		}
+
+		_validateType(type);
 
 		if (commerceChannel == null) {
 			return commerceChannelLocalService.addCommerceChannel(
@@ -234,8 +250,18 @@ public class CommerceChannelLocalServiceImpl
 			return null;
 		}
 
-		return commerceChannelPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return commerceChannelPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
+	}
+
+	@Override
+	public CommerceChannel fetchCommerceChannelByGroupClassPK(long groupId)
+		throws PortalException {
+
+		Group group = _groupLocalService.getGroup(groupId);
+
+		return commerceChannelLocalService.fetchCommerceChannel(
+			group.getClassPK());
 	}
 
 	@Override
@@ -351,24 +377,24 @@ public class CommerceChannelLocalServiceImpl
 			long companyId, String keywords, int start, int end, Sort sort)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, start, end, sort);
 
 		searchContext.setKeywords(keywords);
 
-		return search(searchContext);
+		return _search(searchContext);
 	}
 
 	@Override
 	public int searchCommerceChannelsCount(long companyId, String keywords)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
 		searchContext.setKeywords(keywords);
 
-		return searchCommerceChannelsCount(searchContext);
+		return _searchCommerceChannelsCount(searchContext);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
@@ -379,17 +405,29 @@ public class CommerceChannelLocalServiceImpl
 			String commerceCurrencyCode)
 		throws PortalException {
 
+		_validateType(type);
+
 		CommerceChannel commerceChannel =
 			commerceChannelPersistence.findByPrimaryKey(commerceChannelId);
+
+		long oldSiteGroupId = commerceChannel.getSiteGroupId();
 
 		commerceChannel.setSiteGroupId(siteGroupId);
 		commerceChannel.setName(name);
 		commerceChannel.setType(type);
-		commerceChannel.setTypeSettingsProperties(
+		commerceChannel.setTypeSettingsUnicodeProperties(
 			typeSettingsUnicodeProperties);
 		commerceChannel.setCommerceCurrencyCode(commerceCurrencyCode);
 
-		return commerceChannelPersistence.update(commerceChannel);
+		commerceChannel = commerceChannelPersistence.update(commerceChannel);
+
+		if (CommerceChannelConstants.CHANNEL_TYPE_SITE.equals(type) &&
+			(siteGroupId != oldSiteGroupId)) {
+
+			_updateGroupTypeSettings(commerceChannel.getGroup(), siteGroupId);
+		}
+
+		return commerceChannel;
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
@@ -401,19 +439,31 @@ public class CommerceChannelLocalServiceImpl
 			boolean discountsTargetNetPrice)
 		throws PortalException {
 
+		_validateType(type);
+
 		CommerceChannel commerceChannel =
 			commerceChannelPersistence.findByPrimaryKey(commerceChannelId);
+
+		long oldSiteGroupId = commerceChannel.getSiteGroupId();
 
 		commerceChannel.setSiteGroupId(siteGroupId);
 		commerceChannel.setName(name);
 		commerceChannel.setType(type);
-		commerceChannel.setTypeSettingsProperties(
+		commerceChannel.setTypeSettingsUnicodeProperties(
 			typeSettingsUnicodeProperties);
 		commerceChannel.setCommerceCurrencyCode(commerceCurrencyCode);
 		commerceChannel.setPriceDisplayType(priceDisplayType);
 		commerceChannel.setDiscountsTargetNetPrice(discountsTargetNetPrice);
 
-		return commerceChannelPersistence.update(commerceChannel);
+		commerceChannel = commerceChannelPersistence.update(commerceChannel);
+
+		if (CommerceChannelConstants.CHANNEL_TYPE_SITE.equals(type) &&
+			(siteGroupId != oldSiteGroupId)) {
+
+			_updateGroupTypeSettings(commerceChannel.getGroup(), siteGroupId);
+		}
+
+		return commerceChannel;
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
@@ -430,7 +480,7 @@ public class CommerceChannelLocalServiceImpl
 		return commerceChannelPersistence.update(commerceChannel);
 	}
 
-	protected SearchContext buildSearchContext(
+	private SearchContext _buildSearchContext(
 		long companyId, int start, int end, Sort sort) {
 
 		SearchContext searchContext = new SearchContext();
@@ -452,7 +502,7 @@ public class CommerceChannelLocalServiceImpl
 		return searchContext;
 	}
 
-	protected List<CommerceChannel> getCommerceChannels(Hits hits)
+	private List<CommerceChannel> _getCommerceChannels(Hits hits)
 		throws PortalException {
 
 		List<Document> documents = hits.toList();
@@ -486,41 +536,6 @@ public class CommerceChannelLocalServiceImpl
 		return commerceChannels;
 	}
 
-	protected List<CommerceChannel> search(SearchContext searchContext)
-		throws PortalException {
-
-		Indexer<CommerceChannel> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(CommerceChannel.class);
-
-		for (int i = 0; i < 10; i++) {
-			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
-
-			List<CommerceChannel> commerceChannels = getCommerceChannels(hits);
-
-			if (commerceChannels != null) {
-				return commerceChannels;
-			}
-		}
-
-		throw new SearchException(
-			"Unable to fix the search index after 10 attempts");
-	}
-
-	protected int searchCommerceChannelsCount(SearchContext searchContext)
-		throws PortalException {
-
-		Indexer<CommerceChannel> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(CommerceChannel.class);
-
-		return GetterUtil.getInteger(indexer.searchCount(searchContext));
-	}
-
-	protected void validate(long siteGroupId) throws PortalException {
-		if (fetchCommerceChannelBySiteGroupId(siteGroupId) != null) {
-			throw new DuplicateCommerceChannelSiteGroupIdException();
-		}
-	}
-
 	private GroupByStep _getGroupByStep(
 			JoinStep joinStep, Long companyId, String keywords,
 			Expression<String> keywordsPredicateExpression)
@@ -544,30 +559,84 @@ public class CommerceChannelLocalServiceImpl
 			));
 	}
 
+	private List<CommerceChannel> _search(SearchContext searchContext)
+		throws PortalException {
+
+		Indexer<CommerceChannel> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(CommerceChannel.class);
+
+		for (int i = 0; i < 10; i++) {
+			Hits hits = indexer.search(searchContext, _SELECTED_FIELD_NAMES);
+
+			List<CommerceChannel> commerceChannels = _getCommerceChannels(hits);
+
+			if (commerceChannels != null) {
+				return commerceChannels;
+			}
+		}
+
+		throw new SearchException(
+			"Unable to fix the search index after 10 attempts");
+	}
+
+	private int _searchCommerceChannelsCount(SearchContext searchContext)
+		throws PortalException {
+
+		Indexer<CommerceChannel> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(CommerceChannel.class);
+
+		return GetterUtil.getInteger(indexer.searchCount(searchContext));
+	}
+
+	private void _updateGroupTypeSettings(Group group, long siteGroupId)
+		throws PortalException {
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			group.getTypeSettingsProperties();
+
+		typeSettingsUnicodeProperties.put(
+			"siteGroupId", String.valueOf(siteGroupId));
+
+		_groupLocalService.updateGroup(
+			group.getGroupId(), typeSettingsUnicodeProperties.toString());
+	}
+
+	private void _validateType(String type) throws PortalException {
+		if (Validator.isNull(type) ||
+			(_commerceChannelTypeRegistry.getCommerceChannelType(type) ==
+				null)) {
+
+			throw new CommerceChannelTypeException();
+		}
+	}
+
 	private static final String[] _SELECTED_FIELD_NAMES = {
 		Field.ENTRY_CLASS_PK, Field.COMPANY_ID
 	};
 
-	@ServiceReference(type = ClassNameLocalService.class)
+	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
-	@BeanReference(type = CommerceChannelAccountEntryRelLocalService.class)
+	@Reference
 	private CommerceChannelAccountEntryRelLocalService
 		_commerceChannelAccountEntryRelLocalService;
 
-	@BeanReference(type = CommerceChannelRelLocalService.class)
+	@Reference
 	private CommerceChannelRelLocalService _commerceChannelRelLocalService;
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
+	private CommerceChannelTypeRegistry _commerceChannelTypeRegistry;
+
+	@Reference
 	private CustomSQL _customSQL;
 
-	@ServiceReference(type = GroupLocalService.class)
+	@Reference
 	private GroupLocalService _groupLocalService;
 
-	@ServiceReference(type = ResourceLocalService.class)
+	@Reference
 	private ResourceLocalService _resourceLocalService;
 
-	@ServiceReference(type = UserLocalService.class)
+	@Reference
 	private UserLocalService _userLocalService;
 
 }

@@ -51,7 +51,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 /**
  * @author Iván Zaera Avellón
  */
-@Component(immediate = true, service = DynamicInclude.class)
+@Component(service = DynamicInclude.class)
 public class TopHeadDynamicInclude implements DynamicInclude {
 
 	@Override
@@ -89,13 +89,6 @@ public class TopHeadDynamicInclude implements DynamicInclude {
 	public void register(DynamicIncludeRegistry dynamicIncludeRegistry) {
 		dynamicIncludeRegistry.register(
 			"/html/common/themes/top_js.jspf#resources");
-	}
-
-	@Reference(unbind = "-")
-	public void setPortal(Portal portal) {
-		_portal = portal;
-
-		_rebuild();
 	}
 
 	@Activate
@@ -296,7 +289,10 @@ public class TopHeadDynamicInclude implements DynamicInclude {
 	private volatile List<String> _allJsResourceURLs = new ArrayList<>();
 	private BundleContext _bundleContext;
 	private volatile List<String> _jsResourceURLs = new ArrayList<>();
+
+	@Reference
 	private Portal _portal;
+
 	private PortalWebResources _portalWebResources;
 	private final Collection<ServiceReference<TopHeadResources>>
 		_topHeadResourcesServiceReferences = new TreeSet<>();

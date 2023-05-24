@@ -41,7 +41,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Víctor Galán
  */
-@Component(immediate = true, service = ItemSelectorView.class)
+@Component(service = ItemSelectorView.class)
 public class CETItemSelectorView
 	implements ItemSelectorView<CETItemSelectorCriterion> {
 
@@ -59,7 +59,7 @@ public class CETItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		return _language.get(locale, "extensions");
+		return _language.get(locale, "client-extension");
 	}
 
 	@Override

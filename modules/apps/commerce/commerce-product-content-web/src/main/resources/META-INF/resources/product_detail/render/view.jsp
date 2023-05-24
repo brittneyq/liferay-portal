@@ -19,7 +19,7 @@
 <%
 CommerceContext commerceContext = (CommerceContext)request.getAttribute(CommerceWebKeys.COMMERCE_CONTEXT);
 
-CommerceAccount commerceAccount = commerceContext.getCommerceAccount();
+AccountEntry accountEntry = commerceContext.getAccountEntry();
 CommerceOrder commerceOrder = commerceContext.getCommerceOrder();
 
 CPContentHelper cpContentHelper = (CPContentHelper)request.getAttribute(CPContentWebKeys.CP_CONTENT_HELPER);
@@ -54,7 +54,7 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 						<span class="text-truncate" data-text-cp-instance-stock-quantity>
 							<span class="<%= ((cpSku != null) && cpSku.isDiscontinued()) ? StringPool.BLANK : "hide" %>">
 								<span class="text-danger">
-									<%= LanguageUtil.get(request, "discontinued") %>
+									<liferay-ui:message key="discontinued" />
 								</span>
 								-
 							</span>
@@ -68,7 +68,7 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 				%>
 
 				<c:if test="<%= hasReplacement %>">
-					<p class="product-description"><%= LanguageUtil.get(request, "this-product-is-discontinued.-you-can-see-the-replacement-product-by-clicking-on-the-button-below") %></p>
+					<p class="product-description"><liferay-ui:message key="this-product-is-discontinued.-you-can-see-the-replacement-product-by-clicking-on-the-button-below" /></p>
 
 					<aui:button cssClass="btn-sm my-2" href="<%= cpContentHelper.getReplacementCommerceProductFriendlyURL(cpSku, themeDisplay) %>" primary="<%= true %>" value="replacement-product" />
 				</c:if>
@@ -81,7 +81,7 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 
 					<p class="my-2">
 						<span class="font-weight-semi-bold">
-							<%= LanguageUtil.get(request, "end-of-life") %>
+							<liferay-ui:message key="end-of-life" />
 						</span>
 						<span>
 							<%= dateFormat.format(cpSku.getDiscontinuedDate()) %>
@@ -92,7 +92,7 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 				<c:choose>
 					<c:when test="<%= cpSku != null %>">
 						<p class="m-0">
-							<%= cpContentHelper.getIncomingQuantityLabel(request, cpSku.getSku()) %>
+							<%= cpContentHelper.getIncomingQuantityLabel(company.getCompanyId(), locale, cpSku.getSku(), user) %>
 						</p>
 					</c:when>
 					<c:otherwise>
@@ -121,7 +121,7 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 
 				<p class="my-2 <%= hideCssClass %>" data-text-cp-instance-manufacturer-part-number>
 					<span class="font-weight-semi-bold">
-						<%= LanguageUtil.get(request, "mpn-colon") %>
+						<liferay-ui:message key="mpn-colon" />
 					</span>
 					<span>
 						<%= (cpSku == null) ? StringPool.BLANK : HtmlUtil.escape(cpSku.getManufacturerPartNumber()) %>
@@ -152,31 +152,15 @@ long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
 			</h4>
 
 			<div class="product-detail-options">
-				<form data-senna-off="true" name="fm">
-					<%= cpContentHelper.renderOptions(renderRequest, renderResponse) %>
-				</form>
-
-				<liferay-portlet:actionURL name="/cp_content_web/check_cp_instance" portletName="com_liferay_commerce_product_content_web_internal_portlet_CPContentPortlet" var="checkCPInstanceURL">
-					<portlet:param name="cpDefinitionId" value="<%= String.valueOf(cpDefinitionId) %>" />
-				</liferay-portlet:actionURL>
-
-				<liferay-frontend:component
-					context='<%=
-						HashMapBuilder.<String, Object>put(
-							"actionURL", checkCPInstanceURL
-						).put(
-							"cpDefinitionId", cpDefinitionId
-						).put(
-							"namespace", liferayPortletResponse.getNamespace()
-						).build()
-					%>'
-					module="product_detail/render/js/ProductOptionsHandler"
+				<commerce-ui:option-selector
+					CPDefinitionId="<%= cpCatalogEntry.getCPDefinitionId() %>"
+					namespace="<%= liferayPortletResponse.getNamespace() %>"
 				/>
 			</div>
 
 			<c:choose>
 				<c:when test="<%= cpSku != null %>">
-					<div class="availability-estimate mt-1"><%= cpContentHelper.getAvailabilityEstimateLabel(request) %></div>
+					<div class="availability-estimate mt-1"><%= HtmlUtil.escape(cpContentHelper.getAvailabilityEstimateLabel(request)) %></div>
 				</c:when>
 				<c:otherwise>
 					<div class="availability-estimate mt-1" data-text-cp-instance-availability-estimate></div>
@@ -397,11 +381,11 @@ String navSpecificationsId = liferayPortletResponse.getNamespace() + "navSpecifi
 	</c:if>
 
 	<c:if test="<%= hasDirectReplacement %>">
-		<div aria-labelledby="navUnderlineReplacementsTab" class="fade <portlet:namespace />tab-element tab-pane" id="<%= navReplacementsId %>" role="tabpanel">
+		<div aria-labelledby="navUnderlineReplacementsTab" class="fade <portlet:namespace />tab-element tab-pane" id="<%= navReplacementsId %>" role="tabpanel" style="display: block; height: 0px; visibility: hidden;">
 			<frontend-data-set:classic-display
 				contextParams='<%=
 					HashMapBuilder.<String, String>put(
-						"commerceAccountId", (commerceAccount == null) ? "0" : String.valueOf(commerceAccount.getCommerceAccountId())
+						"commerceAccountId", (accountEntry == null) ? "0" : String.valueOf(accountEntry.getAccountEntryId())
 					).put(
 						"commerceChannelGroupId", String.valueOf(commerceContext.getCommerceChannelGroupId())
 					).put(

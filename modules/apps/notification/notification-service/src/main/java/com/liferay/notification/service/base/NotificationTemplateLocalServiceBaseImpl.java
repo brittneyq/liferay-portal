@@ -53,8 +53,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -280,6 +278,24 @@ public abstract class NotificationTemplateLocalServiceBaseImpl
 
 		return notificationTemplatePersistence.fetchByUuid_C_First(
 			uuid, companyId, null);
+	}
+
+	@Override
+	public NotificationTemplate
+		fetchNotificationTemplateByExternalReferenceCode(
+			String externalReferenceCode, long companyId) {
+
+		return notificationTemplatePersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
+	}
+
+	@Override
+	public NotificationTemplate getNotificationTemplateByExternalReferenceCode(
+			String externalReferenceCode, long companyId)
+		throws PortalException {
+
+		return notificationTemplatePersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -521,7 +537,7 @@ public abstract class NotificationTemplateLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		NotificationTemplateLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -537,7 +553,8 @@ public abstract class NotificationTemplateLocalServiceBaseImpl
 		notificationTemplateLocalService =
 			(NotificationTemplateLocalService)aopProxy;
 
-		_setLocalServiceUtilService(notificationTemplateLocalService);
+		NotificationTemplateLocalServiceUtil.setService(
+			notificationTemplateLocalService);
 	}
 
 	/**
@@ -580,23 +597,6 @@ public abstract class NotificationTemplateLocalServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
-		}
-	}
-
-	private void _setLocalServiceUtilService(
-		NotificationTemplateLocalService notificationTemplateLocalService) {
-
-		try {
-			Field field =
-				NotificationTemplateLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, notificationTemplateLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 

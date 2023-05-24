@@ -18,7 +18,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -34,6 +33,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.theme.PortletDisplay;
@@ -51,6 +51,7 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
+import com.liferay.portal.kernel.workflow.WorkflowHandlerVisibleFilter;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowComparatorFactoryUtil;
 import com.liferay.portal.workflow.constants.WorkflowDefinitionConstants;
 import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
@@ -89,7 +90,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 	public WorkflowDefinitionLinkDisplayContext(
 		RenderRequest renderRequest, RenderResponse renderResponse,
 		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService,
-		ResourceBundleLoader resourceBundleLoader) {
+		ResourceBundleLoader resourceBundleLoader,
+		WorkflowHandlerVisibleFilter workflowHandlerVisibleFilter) {
 
 		_workflowDefinitionLinkLocalService =
 			workflowDefinitionLinkLocalService;
@@ -106,6 +108,7 @@ public class WorkflowDefinitionLinkDisplayContext {
 			_httpServletRequest);
 
 		_resourceBundleLoader = resourceBundleLoader;
+		_workflowHandlerVisibleFilter = workflowHandlerVisibleFilter;
 	}
 
 	public WorkflowDefinition fetchDefaultWorkflowDefinition(String className)
@@ -558,7 +561,17 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 		return ListUtil.filter(
 			workflowHandlers,
-			workflowHandler -> workflowHandler.isVisible(group));
+			workflowHandler -> {
+				WorkflowHandlerVisibleFilter workflowHandlerVisibleFilter =
+					_workflowHandlerVisibleFilter;
+
+				if (workflowHandlerVisibleFilter == null) {
+					return workflowHandler.isVisible();
+				}
+
+				return workflowHandlerVisibleFilter.isVisible(
+					workflowHandler, group);
+			});
 	}
 
 	private WorkflowDefinitionLinkSearchEntry
@@ -668,5 +681,6 @@ public class WorkflowDefinitionLinkDisplayContext {
 	private final WorkflowDefinitionLinkRequestHelper
 		_workflowDefinitionLinkRequestHelper;
 	private List<WorkflowDefinition> _workflowDefinitions;
+	private final WorkflowHandlerVisibleFilter _workflowHandlerVisibleFilter;
 
 }

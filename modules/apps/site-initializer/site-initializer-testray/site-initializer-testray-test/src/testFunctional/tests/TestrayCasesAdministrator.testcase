@@ -1,11 +1,19 @@
 @component-name = "portal-solutions"
 definition {
 
+	property custom.properties = "feature.flag.LPS-163118=true";
 	property osgi.modules.includes = "site-initializer-testray";
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 	property testray.main.component.name = "Site Initializer Testray";
+
+	var caseName = "Case 1";
+	var caseType = "Case Type 1";
+	var componentName = "Component 1";
+	var projectName = "Project 1";
+	var teamName = "Team 1";
+	var testSiteName = "Testray 2";
 
 	setUp {
 		task ("Login and create a Testray Site") {
@@ -13,236 +21,493 @@ definition {
 
 			User.firstLoginPG();
 
-			Testray.createTestraySite(siteName = "Testray 2");
-
-			Refresh();
+			Testray.addTestraySite(siteName = ${testSiteName});
 		}
 
-		task ("Go to Testray, Create Project and change pagination") {
-			ApplicationsMenu.gotoSite(site = "Testray 2");
+		task ("Given that a Testray project, team, and component are created") {
+			JSONTestray.addProject(
+				projectDescription = "Project Description 1",
+				projectName = ${projectName});
 
-			Testray.createProjectTestray(
-				description = "Projects_1 Description",
-				key_name = "Projects_1 Project");
+			JSONTestray.addTeam(
+				projectName = ${projectName},
+				teamName = ${teamName});
 
-			Testray.changePagination(
-				numberItems = "20",
-				valuePagination = "150");
-		}
+			JSONTestray.addComponent(
+				componentName = ${componentName},
+				projectName = ${projectName},
+				teamName = ${teamName});
 
-		task ("Go to created project and add a new team") {
-			TestrayContextMenu.clickContextMenuProjects(name = "Projects_1 Project");
-
-			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Manage Teams");
-
-			Testray.addNewTeam(teamName = "Components_1 Team");
-
-			TestrayManage.closeModalInOptions();
-		}
-
-		task ("Go to created project and add a component") {
-			TestrayContextMenu.clickContextMenuProjects(name = "Projects_1 Project");
-
-			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Manage Components");
-
-			Testray.addNewComponent(
-				componentName = "Components_1 Project 1",
-				teamName = "Components_1 Team");
-
-			Refresh();
-		}
-
-		task ("Go to Testray 2 and change the pagination") {
-			ApplicationsMenu.gotoSite(site = "Testray 2");
-
-			Testray.changePagination(
-				numberItems = "20",
-				valuePagination = "150");
+			JSONTestray.addCaseType(caseType = ${caseType});
 		}
 	}
 
 	tearDown {
+		JSONTestrayAPI.deleteObjectViaAPI(
+			object = "casetypes",
+			objectName = ${caseType});
+
+		JSONTestrayAPI.deleteProject(projectName = ${projectName});
+
+		Testray.testrayApisTearDown();
+
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		Testray.deleteAllProjects();
-
-		Testray.tearDownCP();
-
-		if ("${testPortalInstance}" == "true") {
+		if (${testPortalInstance} == "true") {
 			PortalInstances.tearDownCP();
 		}
 	}
 
-	@description = "This is a test for LPS-156790 - Verify if as an Administrator I am able to add Cases without Subcomponents"
-	@priority = "5"
-	test AdminCanAddCase {
-		task ("Given that the user goes to project page") {
-			Testray.goToProjectPage(projectName = "Projects_1 Project");
-		}
+	@description = "Story ID: LPS-165584 | Test Summary: Verify as an administrator I can add another Cases in the Add Another button"
+	@priority = 2
+	test AdminCanAddAnotherCase {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanAddAnotherCase";
 
-		task ("And given that the user adds a new Case") {
+		task ("Given I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
 			Testray.projectTabNavigator(navTabName = "Cases");
-
-			TestrayCases.typeCasesField(
-				caseName = "Cases_1 Case",
-				caseTypeId = "Automated Functional Test",
-				componentId = "Components_1 Project 1",
-				description = "Cases_1 Case Description",
-				duration = "60",
-				priority = "5",
-				steps = "Auto Test Steps");
 		}
 
-		task ("Then the case is displayed with the new infos") {
+		task ("When I create a new case and select the option Add another") {
+			TestrayCases.typeCasesField(
+				addAnotherCase = "Add Another",
+				caseName = ${caseName},
+				caseTypeId = "Manual Test",
+				componentId = "Component 1",
+				description = "Case Description",
+				duration = 60,
+				priority = 3,
+				steps = "Auto Test Steps");
+
+			Button.click(button = "Save");
+		}
+
+		task ("Then I assert that a new Case was created and a copy of the new Case as well") {
+			Button.click(button = "Cancel");
+
 			TestrayCases.verifyCase(
-				caseName = "Cases_1 Case",
-				casePriority = "5",
-				key_caseComponent = "Components_1 Project 1");
+				caseComponent = "Component 1",
+				caseName = "Case 1",
+				casePriority = 3);
+
+			TestrayCases.verifyCase(
+				caseComponent = "Component 1",
+				caseName = "Copy - Case 1",
+				casePriority = 3);
 		}
 	}
 
-	@description = "This is a test for LPS-156933 - Verify if as an Administrator I should not be able to add a duplicate case"
-	@ignore = "Test Stub"
-	@priority = "5"
-	test AdminCanAddDuplicateCase {
+	@description = "Story ID: LPS-146923 | Test Summary: Verify if as an Administrator I am able to add Cases without Subcomponents"
+	@priority = 4
+	test AdminCanAddCase {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanAddCase";
 
-		// TODO LPS-156933 AdminCanAddDuplicateCase pending implementation
-
-	}
-
-	@description = "This is a test for LPS-156791 - Verify if as an Administrator I am able to delete Cases without Subcomponents"
-	@priority = "5"
-	test AdminCanDeleteCase {
-		task ("Given that the user goes to project page") {
-			Testray.goToProjectPage(projectName = "Projects_1 Project");
+		task ("Given that I create a new Case via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
 		}
 
-		task ("When given that the user adds a new Case") {
+		task ("When I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
 			Testray.projectTabNavigator(navTabName = "Cases");
-
-			TestrayCases.typeCasesField(
-				caseName = "Cases_1 Case",
-				caseTypeId = "Automated Functional Test",
-				componentId = "Components_1 Project 1",
-				description = "Cases_1 Case Description",
-				duration = "60",
-				priority = "5",
-				steps = "Auto Test Steps");
 		}
 
-		task ("When the user goes to delete a case") {
-			TestrayContextMenu.clickContextMenuProjects(name = "Cases_1 Case");
+		task ("Then the case is created with the new infos") {
+			TestrayCases.verifyCase(
+				caseComponent = "Component 1",
+				caseName = "Case 1",
+				casePriority = 3);
+		}
+	}
+
+	@description = "Story ID: LPS-165583 | Test Summary: Verify if as an Administrator I am able to delete Cases without Subcomponents"
+	@priority = 4
+	test AdminCanDeleteCase {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanDeleteCase";
+
+		task ("Given that I create a new Case via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
+		}
+
+		task ("And I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
+			Testray.projectTabNavigator(navTabName = "Cases");
+		}
+
+		task ("When the user delete a case") {
+			TestrayContextMenu.clickContextMenuProjects(name = ${caseName});
 
 			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Delete");
 
 			AssertConfirm(value1 = "Are you sure you want to delete this item?");
 		}
 
-		task ("then the Case should not be displayed anymore") {
-			Testray.assertItemNotPresent(itemName = "Cases_1 Case");
+		task ("Then the case should no longer be found") {
+			Testray.assertItemNotPresent(text = ${caseName});
 		}
 	}
 
-	@description = "This is a test for LPS-156793 - Verify if as an Administrator I am able to edit Cases without Subcomponents"
-	@priority = "5"
-	test AdminCanEditCasee {
-		task ("Given that the user goes to project page") {
-			Testray.goToProjectPage(projectName = "Projects_1 Project");
+	@description = "Story ID: LPS-165583 | Test Summary: Verify that an administrator can delete cases in the 'Select Cases to Export' modal"
+	@priority = 2
+	test AdminCanDeleteCasesInModalExportCases {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanDeleteCasesInModalExportCases";
+
+		task ("Given that I create a new Case via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
 		}
 
-		task ("When given that the user adds a new Case") {
+		task ("And I select a case for export") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			TestrayContextMenu.clickContextMenuProjects(name = ${projectName});
+
+			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Export Cases");
+
+			Button.click(button = "Add Cases");
+
+			Click.clickAtNotVisible(
+				key_checkboxOption = ${caseName},
+				locator1 = "Checkbox#SPECIFIC_CHECKBOX_IN_TABLE");
+
+			Button.click(button = "Select Cases");
+
+			Testray.assertItemName(text = ${caseName});
+		}
+
+		task ("When I delete this case") {
+			TestrayContextMenu.clickContextMenuProjects(name = ${caseName});
+
+			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Delete");
+		}
+
+		task ("Then I assert that Case is no longer present") {
+			Testray.assertItemNotPresent(text = ${caseName});
+		}
+	}
+
+	@description = "Story ID: LPS-146923 | Test Summary: Verify if as an Administrator I am able to edit Cases without Subcomponents"
+	@priority = 4
+	test AdminCanEditCase {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanEditCase";
+
+		task ("Given that I create a new Case via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
+		}
+
+		task ("When I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
 			Testray.projectTabNavigator(navTabName = "Cases");
-
-			TestrayCases.typeCasesField(
-				caseName = "Cases_1 Case",
-				caseTypeId = "Automated Functional Test",
-				componentId = "Components_1 Project 1",
-				description = "Cases_1 Case Description",
-				duration = "60",
-				priority = "5",
-				steps = "Auto Test Steps");
-
-			TestrayCases.verifyCase(
-				caseName = "Cases_1 Case",
-				casePriority = "5",
-				key_caseComponent = "Components_1 Project 1");
 		}
 
 		task ("And the user goes to edit a case") {
-			TestrayContextMenu.clickContextMenuProjects(name = "Cases_1 Case");
+			TestrayContextMenu.clickContextMenuProjects(name = ${caseName});
 
 			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Edit");
 
 			TestrayCases.editCases(
-				caseName = "Cases_1 Case Edited",
-				caseTypeId = "Automated Functional Test",
-				componentId = "Smoke",
-				description = "Cases_1 Case Description Edited",
-				duration = "30",
-				priority = "4",
+				caseName = "Case Edited",
+				caseTypeId = "Case Type 1",
+				componentId = "Component 1",
+				description = "Case Description",
+				duration = 30,
+				priority = 3,
 				steps = "http://test.edit.com");
 		}
 
-		task ("Then the case is displayed with the new infos") {
+		task ("Then the case is edited with the new infos") {
 			TestrayCases.verifyCase(
-				caseName = "Cases_1 Case Edited",
-				casePriority = "4",
-				key_caseComponent = "Smoke");
+				caseComponent = "Component 1",
+				caseName = "Case Edited",
+				casePriority = 3);
 		}
 	}
 
-	@description = "This is a test for LPS-156916 - Verify if as an Administrator I am able to Import Cases from another Project"
-	@ignore = "Test Stub"
-	@priority = "3"
-	test AdminCanImportCase {
+	@description = "Story ID: LPS-165583 | Test Summary: Verify if as an Administrator I am able to Export Cases from another Project"
+	@ignore = "true"
+	@priority = 4
+	test AdminCanExportCase {
 
-		// TODO LPS-156916 AdminCanImportCase pending implementation
-
-	}
-
-	@description = "This is a test for LPS-156919 - Verify if as an Administrator, I should be able to link Requirements to a Case"
-	@ignore = "Test Stub"
-	@priority = "3"
-	test AdminCanLinkRequirements {
-
-		// TODO LPS-156919 AdminCanLinkRequirements pending implementation
+		// TODO LPS-156916 AdminCanExportCase pending implementation
 
 	}
 
-	@description = "This is a test for LPS-156950 - Verify if as an Administrator I should be able to Sort by Errors"
-	@ignore = "Test Stub"
-	@priority = "4"
-	test AdminCanSortErros {
+	@description = "Story ID: LPS-160751 | Test Summary: Verify if As an Administrator, I should be able to link and unlink Requirements to a Case"
+	@priority = 3
+	test AdminCanLinkAndUnlinkRequirements {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanLinkAndUnlinkRequirements";
 
-		// TODO LPS-156950 AdminCanSortErros pending implementation
+		task ("Given that I create a new Case and new Requirement via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
+
+			JSONTestray.addRequirement(
+				componentName = ${componentName},
+				linkTitle = "ATF Requirement Link",
+				projectName = ${projectName},
+				requirementName = "Requirement Summary");
+		}
+
+		task ("And I go to the Requirement page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
+			Testray.projectTabNavigator(navTabName = "Cases");
+
+			Testray.goToProjectPage(projectName = "Case 1");
+
+			Testray.projectTabNavigator(navTabName = "Requirements");
+		}
+
+		task ("When the user goes to cases and link a requirements") {
+			TestrayCases.linkCasesRequirement(
+				buttonText = "Select Requirements",
+				linkText = "Link Requirements",
+				requirementName = "Requirement Summary");
+		}
+
+		task ("And the user goes to cases and unlink a requirement") {
+			TestrayCases.linkCasesRequirement(
+				buttonText = "Select Requirements",
+				linkText = "Link Requirements",
+				requirementName = "Requirement Summary");
+		}
+
+		task ("Then the requirement should not be displayed on Case page") {
+			Testray.assertItemNotPresent(text = "Requirement Summary");
+		}
+	}
+
+	@description = "Story ID: LPS-146923 | Test Summary: Verify that cases be added with an estimated duration less than zero"
+	@priority = 2
+	test AdminCanNotAddCasesWithEstimatedDurationLessThanZero {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanNotAddCasesWithEstimatedDurationLessThanZero";
+
+		task ("Given I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
+			Testray.projectTabNavigator(navTabName = "Cases");
+		}
+
+		task ("When I add a new Case with the estimated duration below 0") {
+			TestrayCases.typeCasesField(
+				caseName = ${caseName},
+				caseTypeId = "Manual Test",
+				componentId = ${componentName},
+				description = "Case Description",
+				duration = "-1",
+				priority = 3,
+				steps = "Auto Test Steps");
+		}
+
+		task ("Then a warning message is displayed") {
+			Testray.viewErrorMessage(
+				fieldLabel = "Estimated Duration",
+				warningMessage = "estimatedDuration must be greater than or equal to 0");
+		}
+	}
+
+	@description = "Story ID: LPS-165582 | Test Summary: Verify if as an Administrator I should not be able to add a duplicate case"
+	@priority = 3
+	test AdminCannotAddDuplicatedCase {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCannotAddDuplicatedCase";
+
+		task ("Given that I create a new Case via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
+		}
+
+		task ("And I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
+			Testray.projectTabNavigator(navTabName = "Cases");
+		}
+
+		task ("When I add a new Case duplicate") {
+			TestrayCases.typeCasesField(
+				caseName = ${caseName},
+				caseTypeId = ${caseType},
+				componentId = ${componentName},
+				description = "",
+				duration = 60,
+				priority = 3,
+				steps = "Auto Test Steps");
+		}
+
+		task ("Then the error message should appear") {
+			Alert.viewErrorMessage(errorMessage = "The Case name already exists");
+		}
+	}
+
+	@description = "Story ID: LPS-165583 | Test Summary: Verify that as administrator cases cannot be exported without linked Cases"
+	@priority = 2
+	test AdminCannotExportCasesWithoutCasesLinked {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCannotExportCasesWithoutCasesLinked";
+
+		task ("Given that I create a new Case via API") {
+			JSONTestray.addCases(
+				caseName = ${caseName},
+				caseType = ${caseType},
+				componentName = ${componentName},
+				projectName = ${projectName});
+		}
+
+		task ("When the user try export cases without linked cases") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
+
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			TestrayContextMenu.clickContextMenuProjects(name = ${projectName});
+
+			TestrayContextMenu.selectItemFromProjectsContextMenu(item = "Export Cases");
+		}
+
+		task ("Then a warning message appears") {
+			AssertElementPresent(
+				key_text = "There are no linked cases.",
+				locator1 = "CommerceDiagrams#DIAGRAM_PRODUCT_TOOLTIP_REPLACEMENT_ALERT");
+		}
+	}
+
+	@description = "Story ID: LPS-156220 | Test Summary: Verify if as an Administrator I should be able to Sort by Errors"
+	@ignore = "true"
+	@priority = 3
+	test AdminCanSortErrors {
+
+		// TODO LPS-156950 AdminCanSortErrors pending implementation
 
 	}
 
-	@description = "This is a test for LPS-156947 - Verify if as an Administrator I should be able to Sort by Product Version"
-	@ignore = "Test Stub"
-	@priority = "4"
+	@description = "Story ID: LPS-156220 | Test Summary: Verify if as an Administrator I should be able to Sort by Product Version"
+	@ignore = "true"
+	@priority = 3
 	test AdminCanSortProductVersion {
 
 		// TODO LPS-156947 AdminCanSortProductVersion pending implementation
 
 	}
 
-	@description = "This is a test for LPS-156949 - Verify if as an Administrator I should be able to Sort by Status"
-	@ignore = "Test Stub"
-	@priority = "4"
+	@description = "Story ID: LPS-156220 | Test Summary: Verify if as an Administrator I should be able to Sort by Status"
+	@ignore = "true"
+	@priority = 3
 	test AdminCanSortStatus {
 
 		// TODO LPS-156949 AdminCanSortStatus pending implementation
 
 	}
 
-	@description = "This is a test for LPS-156923 - Verify if as an Administrator, I should be able to unlink Requirements to a Case"
-	@ignore = "Test Stub"
-	@priority = "3"
-	test AdminCanUnlinkRequirements {
+	@description = "Story ID: LPS-146923 | Test Summary: Verify that the user can not create a case if all the required fields are not filled in"
+	@priority = 2
+	test AdminCanViewRequiredField {
+		property test.name.skip.portal.instance = "TestrayCasesAdministrator#AdminCanViewRequiredField";
 
-		// TODO LPS-156923 AdminCanUnlinkRequirements pending implementation
+		task ("Given I go to the Cases page") {
+			ApplicationsMenu.gotoSite(site = ${testSiteName});
 
+			Testray.changePagination(
+				numberItems = 20,
+				valuePagination = 150);
+
+			Testray.goToProjectPage(projectName = ${projectName});
+
+			Testray.projectTabNavigator(navTabName = "Cases");
+		}
+
+		task ("When I try to add a case without filling in the required fields") {
+			TestrayCases.typeCasesField(
+				caseName = "",
+				caseTypeId = "",
+				componentId = "",
+				description = "Case Description",
+				duration = 60,
+				priority = 5,
+				steps = "Auto Test Steps");
+		}
+
+		task ("Then a warning message is displayed") {
+			Testray.viewErrorMessage(
+				fieldLabel = "Name",
+				warningMessage = "name is a required field");
+
+			Testray.viewErrorMessage(
+				fieldLabel = "Type",
+				warningMessage = "caseTypeId is a required field");
+
+			Testray.viewErrorMessage(
+				fieldLabel = "Main Component",
+				warningMessage = "componentId is a required field");
+		}
 	}
 
 }

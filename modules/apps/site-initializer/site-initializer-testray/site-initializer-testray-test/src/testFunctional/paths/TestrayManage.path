@@ -26,6 +26,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>NEW_OPTION_IN_MODAL</td>
+	<td>//div[@Class='modal-body']//input[@id='name']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SELECT_CATEGORY</td>
 	<td>//select[contains(@id, 'category')]</td>
 	<td></td>
@@ -36,13 +41,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SAVE_BUTTON_IN_MODAL</td>
+	<td>//div[@class='modal-item-last']//button[@type='button'][normalize-space()='Save']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CLOSE_MODAL</td>
 	<td>//button[contains(@type, 'button') and contains(@aria-label, 'close')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MANAGE_SIDEBAR</td>
-	<td>//div[contains(@class, 'testray-sidebar')]//div[contains(@class, 'dropdown-toggle') and contains(., 'Manage')]</td>
+	<td>//div[contains(@class, 'dropdown-toggle') and contains(., 'Manage')]</td>
 	<td></td>
 </tr>
 <tr>

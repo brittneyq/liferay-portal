@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.internal.search.spi.model.query.contributor;
 
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
@@ -24,15 +25,12 @@ import com.liferay.portal.search.spi.model.query.contributor.ModelPreFilterContr
 import com.liferay.portal.search.spi.model.registrar.ModelSearchSettings;
 import com.liferay.portal.workflow.kaleo.definition.util.KaleoLogUtil;
 
-import java.util.stream.Stream;
-
 import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Rafael Praxedes
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.portal.workflow.kaleo.model.KaleoLog",
 	service = ModelPreFilterContributor.class
 )
@@ -65,13 +63,8 @@ public class KaleoLogModelPreFilterContributor
 			TermsFilter termsFilter = new TermsFilter("type");
 
 			termsFilter.addValues(
-				Stream.of(
-					logTypes
-				).map(
-					KaleoLogUtil::convert
-				).toArray(
-					String[]::new
-				));
+				TransformUtil.transform(
+					logTypes, KaleoLogUtil::convert, String.class));
 
 			booleanFilter.add(termsFilter, BooleanClauseOccur.MUST);
 		}

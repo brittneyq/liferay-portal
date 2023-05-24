@@ -52,7 +52,6 @@ import com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -196,7 +195,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -588,7 +587,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -724,7 +724,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof DLFileShortcut) {
@@ -844,7 +844,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1016,7 +1017,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -1441,7 +1442,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1606,7 +1608,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -1974,7 +1976,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2119,7 +2122,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -2494,7 +2497,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {toFileEntryId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2643,7 +2647,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -3388,7 +3392,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {groupId, folderId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3586,7 +3591,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -3985,7 +3990,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {companyId, status};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -4148,7 +4154,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -4931,7 +4937,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {groupId, folderId, active};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -5169,7 +5176,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DLFileShortcut dlFileShortcut : list) {
@@ -5995,7 +6002,8 @@ public class DLFileShortcutPersistenceImpl
 
 			finderArgs = new Object[] {groupId, folderId, active, status};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -6735,7 +6743,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<DLFileShortcut>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -6811,7 +6819,7 @@ public class DLFileShortcutPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -7119,29 +7127,13 @@ public class DLFileShortcutPersistenceImpl
 			},
 			new String[] {"groupId", "folderId", "active_", "status"}, false);
 
-		_setDLFileShortcutUtilPersistence(this);
+		DLFileShortcutUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setDLFileShortcutUtilPersistence(null);
+		DLFileShortcutUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(DLFileShortcutImpl.class.getName());
-	}
-
-	private void _setDLFileShortcutUtilPersistence(
-		DLFileShortcutPersistence dlFileShortcutPersistence) {
-
-		try {
-			Field field = DLFileShortcutUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, dlFileShortcutPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_DLFILESHORTCUT =

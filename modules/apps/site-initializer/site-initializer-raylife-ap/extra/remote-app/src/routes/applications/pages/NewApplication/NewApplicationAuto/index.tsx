@@ -14,16 +14,19 @@
 
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import ClayMultiStepNav from '@clayui/multi-step-nav';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
-import {ReactNode, useContext, useState} from 'react';
+import {ReactNode, useCallback, useContext, useState} from 'react';
 
+import MultiSteps from '../../../../../common/components/multi-steps';
 import ClayIconProvider from '../../../../../common/context/ClayIconProvider';
 import {
 	createOrUpdateRaylifeApplication,
+	createRaylifeAutoPolicy,
 	exitRaylifeApplication,
+	getApplicationsById,
 } from '../../../../../common/services';
+import {createRaylifeAutoQuote} from '../../../../../common/services/Quote';
 import {CONSTANTS} from '../../../../../common/utils/constants';
 import {redirectTo} from '../../../../../common/utils/liferay';
 import {
@@ -35,6 +38,9 @@ type DriverInfoProps = {
 	children: ReactNode;
 };
 
+const tooltipTitle =
+	'You must enter first name, last name, phone number and email address to save this quote.';
+
 const NewApplicationAuto = ({children}: DriverInfoProps) => {
 	const [state, dispatch] = useContext(NewApplicationAutoContext);
 
@@ -42,65 +48,76 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 
 	const {form} = state?.steps?.driverInfo;
 
-	const tooltipTitle =
-		'You must enter first name, last name, phone number and email address to save this quote.';
-
 	const steps = [
 		{
 			active: state.currentStep === 0,
 			complete: state.currentStep > 0,
+			show: true,
 			title: state.steps.contactInfo.name,
 		},
 		{
 			active: state.currentStep === 1,
 			complete: state.currentStep > 1,
+			show: true,
 			title: state.steps.vehicleInfo.name,
 		},
 		{
 			active: state.currentStep === 2,
 			complete: state.currentStep > 2,
+			show: true,
 			title: state.steps.driverInfo.name,
 		},
 		{
 			active: state.currentStep === 3,
 			complete: state.currentStep > 3,
+			show: true,
 			title: state.steps.coverage.name,
 		},
 		{
 			active: state.currentStep === 4,
 			complete: state.currentStep > 4,
+			show: true,
 			title: state.steps.review.name,
 		},
 	];
 
-	const handleNextClick = (event: any) => {
+	const handleSave = useCallback(
+		async (applicationStatus: string) => {
+			const response = await createOrUpdateRaylifeApplication(
+				state,
+				applicationStatus
+			);
+
+			const {
+				data: {externalReferenceCode, id},
+			} = response;
+
+			dispatch({
+				payload: {externalReferenceCode, id},
+				type: ACTIONS.SET_APPLICATION,
+			});
+		},
+		[dispatch, state]
+	);
+
+	const handleNextClick = async (event: any) => {
 		setSaveChanges(true);
 
 		event?.preventDefault();
 		dispatch({payload: false, type: ACTIONS.SET_HAS_FORM_CHANGE});
 
-		const hasUnderwritingStatus = form.some(
+		const hasUnderwritingStatus = form?.some(
 			(currentIndex) => currentIndex.hasAccidentOrCitations === 'yes'
 		);
 
 		const hasOpenOrBoundStatus =
 			state.currentStep < 4
-				? CONSTANTS.APPLICATION_STATUS.OPEN
-				: CONSTANTS.APPLICATION_STATUS.BOUND;
+				? CONSTANTS.APPLICATION_STATUS['open'].NAME
+				: CONSTANTS.APPLICATION_STATUS['bound'].NAME;
 
 		const applicationStatus = hasUnderwritingStatus
-			? CONSTANTS.APPLICATION_STATUS.UNDERWRITING
+			? CONSTANTS.APPLICATION_STATUS['underwriting'].NAME
 			: hasOpenOrBoundStatus;
-
-		createOrUpdateRaylifeApplication(state, applicationStatus).then(
-			(response) => {
-				const {
-					data: {id},
-				} = response;
-
-				dispatch({payload: {id}, type: ACTIONS.SET_APPLICATION_ID});
-			}
-		);
 
 		if (state.currentStep < steps.length - 1) {
 			dispatch({
@@ -109,50 +126,81 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 			});
 		}
 
+		if (
+			state.currentStep === 2 &&
+			form[0]?.accidentCitation[0]?.value ===
+				'Citation - Driving under the influence'
+		) {
+			handleSave(CONSTANTS.APPLICATION_STATUS['rejected'].NAME);
+
+			return dispatch({
+				payload: 5,
+				type: ACTIONS.SET_CURRENT_STEP,
+			});
+		}
+
+		await handleSave(applicationStatus);
+
 		if (state.currentStep === 4) {
+			const quote = await createRaylifeAutoQuote(state);
+
+			const quoteId = quote?.data?.id;
+
+			const application = await getApplicationsById(
+				Number(state.applicationId)
+			);
+
+			const applicationData = application?.data?.items[0];
+
+			createRaylifeAutoPolicy(applicationData, quoteId);
+
 			redirectTo('Applications');
+			createRaylifeAutoQuote(state);
 		}
 	};
 
 	const handlePreviousClick = () => {
 		setSaveChanges(false);
 		dispatch({payload: false, type: ACTIONS.SET_HAS_FORM_CHANGE});
-		if (state.currentStep > 0) {
-			dispatch({
+		if (state.currentStep < 5) {
+			return dispatch({
 				payload: state.currentStep - 1,
 				type: ACTIONS.SET_CURRENT_STEP,
 			});
 		}
+
+		dispatch({
+			payload: 2,
+			type: ACTIONS.SET_CURRENT_STEP,
+		});
 	};
 
-	const handleSaveChanges = () => {
+	const handleSaveChanges = async () => {
 		setSaveChanges(true);
 		dispatch({payload: false, type: ACTIONS.SET_HAS_FORM_CHANGE});
-		createOrUpdateRaylifeApplication(
-			state,
-			CONSTANTS.APPLICATION_STATUS.OPEN
-		).then((response) => {
-			const {
-				data: {id},
-			} = response;
-			dispatch({payload: {id}, type: ACTIONS.SET_APPLICATION_ID});
-		});
 
-		return saveChanges;
+		await handleSave(CONSTANTS.APPLICATION_STATUS['open'].NAME);
 	};
 
 	const handleExitClick = () => {
 		exitRaylifeApplication(
 			state,
-			CONSTANTS.APPLICATION_STATUS.INCOMPLETE
+			CONSTANTS.APPLICATION_STATUS['incomplete'].NAME
 		).then((response) => {
 			const {
-				data: {id},
+				data: {externalReferenceCode, id},
 			} = response;
-			dispatch({payload: {id}, type: ACTIONS.SET_APPLICATION_ID});
+			dispatch({
+				payload: {externalReferenceCode, id},
+				type: ACTIONS.SET_APPLICATION,
+			});
 		});
 
 		redirectTo('dashboard');
+	};
+
+	const handleCancelClick = () => {
+		redirectTo('Applications');
 	};
 
 	const ChangeStatusMessage = ({text}: any) => (
@@ -169,26 +217,34 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 		</div>
 	);
 
+	const getChangeStatusMessage = () => {
+		let statusMessage = '';
+
+		if (state.hasFormChanges) {
+			statusMessage = 'Unsaved Changes';
+		}
+		else if (!state.hasFormChanges && !saveChanges) {
+			statusMessage = 'No Changes Made';
+		}
+		else if (saveChanges && !state.hasFormChanges) {
+			statusMessage = 'All Changes Saved';
+		}
+
+		return <ChangeStatusMessage text={statusMessage} />;
+	};
+
 	return (
 		<ClayIconProvider>
 			<div className="container">
 				<div className="border mt-4 sheet sheet-dataset-content">
-					<div className="d-flex justify-content-between">
-						<h5>New Application</h5>
+					<div className="align-items-center d-flex flex-column flex-md-row justify-content-md-between">
+						<h5 className="my-2 my-md-0">New Application</h5>
 
-						{state.hasFormChanges && (
-							<ChangeStatusMessage text="Unsaved Changes" />
-						)}
+						<div className="my-2 my-md-0">
+							{getChangeStatusMessage()}
+						</div>
 
-						{!state.hasFormChanges && !saveChanges && (
-							<ChangeStatusMessage text="No Changes Made" />
-						)}
-
-						{saveChanges && !state.hasFormChanges && (
-							<ChangeStatusMessage text="All Changes Saved" />
-						)}
-
-						<div>
+						<div className="my-2 my-md-0">
 							<ClayButton
 								className="text-uppercase"
 								displayType={null}
@@ -198,7 +254,8 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 								Exit
 							</ClayButton>
 
-							{!state.isAbleToBeSave ? (
+							{!state.isAbleToBeSave ||
+							state.currentStep === 5 ? (
 								<ClayTooltipProvider>
 									<ClayButton
 										aria-disabled="true"
@@ -227,34 +284,12 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 					</div>
 
 					<hr></hr>
-					<>
-						<ClayMultiStepNav className="mx-10">
-							{steps.map(({active, complete, title}, index) => (
-								<ClayMultiStepNav.Item
-									active={active}
-									complete={complete}
-									expand={index + 1 !== steps.length}
-									key={index}
-								>
-									<ClayMultiStepNav.Title>
-										{title}
-									</ClayMultiStepNav.Title>
 
-									{index + 1 !== steps.length ? (
-										<ClayMultiStepNav.Divider />
-									) : (
-										''
-									)}
+					<div className="d-flex justify-content-center">
+						<MultiSteps steps={steps} />
 
-									<ClayMultiStepNav.Indicator
-										complete={complete}
-										label={1 + index}
-									/>
-								</ClayMultiStepNav.Item>
-							))}
-						</ClayMultiStepNav>
 						<hr className="mb-5"></hr>
-					</>
+					</div>
 
 					{children}
 
@@ -268,6 +303,7 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 					>
 						{state.currentStep > 0 && (
 							<ClayButton
+								disabled={state.currentStep === 5}
 								displayType={null}
 								onClick={() => handlePreviousClick()}
 								small={true}
@@ -310,6 +346,17 @@ const NewApplicationAuto = ({children}: DriverInfoProps) => {
 								small={true}
 							>
 								Generate Quote
+							</ClayButton>
+						)}
+
+						{state.currentStep === 5 && (
+							<ClayButton
+								className="justify-content-end text-uppercase"
+								displayType="secondary"
+								onClick={() => handleCancelClick()}
+								small={true}
+							>
+								Cancel
 							</ClayButton>
 						)}
 					</div>

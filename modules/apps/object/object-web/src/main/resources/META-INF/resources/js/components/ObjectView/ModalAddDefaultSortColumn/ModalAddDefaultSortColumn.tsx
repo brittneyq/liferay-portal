@@ -19,7 +19,7 @@ import {Observer} from '@clayui/modal/lib/types';
 import {
 	AutoComplete,
 	SingleSelect,
-	stringIncludesQuery,
+	filterArrayByQuery,
 } from '@liferay/object-js-components-web';
 import React, {FormEvent, useEffect, useMemo, useState} from 'react';
 
@@ -59,6 +59,7 @@ export function ModalAddDefaultSortColumn({
 }: IProps) {
 	const [
 		{
+			creationLanguageId,
 			objectFields,
 			objectView: {objectViewColumns, objectViewSortColumns},
 		},
@@ -71,10 +72,14 @@ export function ModalAddDefaultSortColumn({
 
 	useEffect(() => {
 		const newAvailableViewColumns = objectViewColumns.filter(
-			(objectViewColumn) =>
-				!objectViewColumn.defaultSort &&
-				objectViewColumn.objectFieldBusinessType !== 'Aggregation' &&
-				objectViewColumn.objectFieldBusinessType !== 'Relationship'
+			({defaultSort, objectFieldBusinessType}) =>
+				!defaultSort &&
+				objectFieldBusinessType !== 'Aggregation' &&
+				objectFieldBusinessType !== 'Attachment' &&
+				objectFieldBusinessType !== 'Encrypted' &&
+				objectFieldBusinessType !== 'Formula' &&
+				objectFieldBusinessType !== 'Relationship' &&
+				objectFieldBusinessType !== 'RichText'
 		);
 
 		setAvailableViewColumns(newAvailableViewColumns);
@@ -87,9 +92,11 @@ export function ModalAddDefaultSortColumn({
 	const [query, setQuery] = useState<string>('');
 
 	const filteredObjectSortColumn = useMemo(() => {
-		return availableViewColumns.filter(({fieldLabel}) =>
-			stringIncludesQuery(fieldLabel as string, query)
-		);
+		return filterArrayByQuery({
+			array: availableViewColumns,
+			query,
+			str: 'fieldLabel',
+		});
 	}, [availableViewColumns, query]);
 
 	const onSubmit = (event: FormEvent) => {
@@ -113,6 +120,7 @@ export function ModalAddDefaultSortColumn({
 		else {
 			dispatch({
 				payload: {
+					creationLanguageId,
 					objectFieldName: objectFieldName!,
 					objectFields,
 					objectViewSortColumns,
@@ -132,7 +140,8 @@ export function ModalAddDefaultSortColumn({
 
 				<ClayModal.Body>
 					{!isEditingSort && (
-						<AutoComplete
+						<AutoComplete<TObjectViewColumn>
+							creationLanguageId={creationLanguageId}
 							emptyStateMessage={Liferay.Language.get(
 								'there-are-no-columns-added-in-this-view-yet'
 							)}

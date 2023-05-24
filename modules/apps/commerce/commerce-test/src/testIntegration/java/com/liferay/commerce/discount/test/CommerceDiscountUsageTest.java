@@ -14,9 +14,10 @@
 
 package com.liferay.commerce.discount.test;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.service.CommerceAccountLocalService;
+import com.liferay.commerce.account.test.util.CommerceAccountTestUtil;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.model.CommerceMoney;
@@ -25,7 +26,6 @@ import com.liferay.commerce.discount.CommerceDiscountValue;
 import com.liferay.commerce.discount.constants.CommerceDiscountConstants;
 import com.liferay.commerce.discount.exception.CommerceDiscountLimitationTimesException;
 import com.liferay.commerce.discount.model.CommerceDiscount;
-import com.liferay.commerce.discount.service.CommerceDiscountLocalService;
 import com.liferay.commerce.discount.service.CommerceDiscountUsageEntryLocalService;
 import com.liferay.commerce.discount.test.util.CommerceDiscountTestUtil;
 import com.liferay.commerce.inventory.model.CommerceInventoryWarehouse;
@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -103,9 +104,8 @@ public class CommerceDiscountUsageTest {
 
 		PrincipalThreadLocal.setName(_user.getUserId());
 
-		_commerceAccount =
-			_commerceAccountLocalService.getPersonalCommerceAccount(
-				_user.getUserId());
+		_accountEntry = CommerceAccountTestUtil.getPersonAccountEntry(
+			_user.getUserId());
 
 		_commerceCurrency = CommerceCurrencyTestUtil.addCommerceCurrency(
 			_group.getCompanyId());
@@ -183,7 +183,7 @@ public class CommerceDiscountUsageTest {
 			commercePriceList.getCommercePriceListId(), priceEntryPrice);
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceChannel, _user, _group, _commerceAccount,
+			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
 			null);
 
 		CommerceProductPrice commerceProductPrice =
@@ -235,7 +235,7 @@ public class CommerceDiscountUsageTest {
 			commerceContext);
 
 		commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceChannel, _user, _group, _commerceAccount,
+			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
 			commerceOrder);
 
 		commerceProductPrice =
@@ -263,7 +263,7 @@ public class CommerceDiscountUsageTest {
 		_commerceOrders.add(commerceOrder);
 
 		commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceChannel, _user, _group, _commerceAccount,
+			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
 			commerceOrder);
 
 		_commerceProductPriceCalculation.getCommerceProductPrice(
@@ -362,7 +362,7 @@ public class CommerceDiscountUsageTest {
 				cpDefinition.getCPDefinitionId());
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceChannel, _user, _group, _commerceAccount,
+			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
 			commerceOrder);
 
 		CommerceTestUtil.addCommerceOrderItem(
@@ -461,7 +461,7 @@ public class CommerceDiscountUsageTest {
 				"exception"
 		);
 
-		_commerceAccount = _commerceAccountLocalService.getGuestCommerceAccount(
+		_accountEntry = _accountEntryLocalService.getGuestAccountEntry(
 			_group.getCompanyId());
 
 		_assertDiscountLimitation(
@@ -577,8 +577,8 @@ public class CommerceDiscountUsageTest {
 			_commerceOrderLocalService.updateCommerceOrder(commerceOrder);
 
 			CommerceContext commerceContext = new TestCommerceContext(
-				_commerceCurrency, commerceChannel, _user, _group,
-				_commerceAccount, commerceOrder);
+				_accountEntry, _commerceCurrency, commerceChannel, _user,
+				_group, commerceOrder);
 
 			CommerceTestUtil.addCommerceOrderItem(
 				commerceOrder.getCommerceOrderId(),
@@ -594,8 +594,8 @@ public class CommerceDiscountUsageTest {
 			BigDecimal discountPrice = BigDecimal.ZERO;
 
 			commerceContext = new TestCommerceContext(
-				_commerceCurrency, commerceChannel, _user, _group,
-				_commerceAccount, commerceOrder);
+				_accountEntry, _commerceCurrency, commerceChannel, _user,
+				_group, commerceOrder);
 
 			CommerceProductPrice commerceProductPrice =
 				_commerceProductPriceCalculation.getCommerceProductPrice(
@@ -643,7 +643,7 @@ public class CommerceDiscountUsageTest {
 		_commerceOrderLocalService.updateCommerceOrder(commerceOrder);
 
 		CommerceContext commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceChannel, _user, _group, _commerceAccount,
+			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
 			commerceOrder);
 
 		_commerceOrders.add(commerceOrder);
@@ -659,7 +659,7 @@ public class CommerceDiscountUsageTest {
 		BigDecimal discountPrice = BigDecimal.ZERO;
 
 		commerceContext = new TestCommerceContext(
-			_commerceCurrency, commerceChannel, _user, _group, _commerceAccount,
+			_accountEntry, _commerceCurrency, commerceChannel, _user, _group,
 			commerceOrder);
 
 		CommerceProductPrice commerceProductPrice =
@@ -701,18 +701,16 @@ public class CommerceDiscountUsageTest {
 
 	private static User _user;
 
-	private CommerceAccount _commerceAccount;
+	@DeleteAfterTestRun
+	private AccountEntry _accountEntry;
 
 	@Inject
-	private CommerceAccountLocalService _commerceAccountLocalService;
+	private AccountEntryLocalService _accountEntryLocalService;
 
 	@Inject
 	private CommerceCatalogLocalService _commerceCatalogLocalService;
 
 	private CommerceCurrency _commerceCurrency;
-
-	@Inject
-	private CommerceDiscountLocalService _commerceDiscountLocalService;
 
 	@Inject
 	private CommerceDiscountUsageEntryLocalService

@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SegmentsDisplayContext segmentsDisplayContext = (SegmentsDisplayContext)request.getAttribute(SegmentsWebKeys.SEGMENTS_DISPLAY_CONTEXT);
+SegmentsDisplayContext segmentsDisplayContext = (SegmentsDisplayContext)request.getAttribute(SegmentsDisplayContext.class.getName());
 
 String eventName = liferayPortletResponse.getNamespace() + "assignSiteRoles";
 
@@ -25,20 +25,8 @@ request.setAttribute("view.jsp-eventName", eventName);
 %>
 
 <clay:management-toolbar
-	actionDropdownItems="<%= segmentsDisplayContext.getActionDropdownItems() %>"
-	clearResultsURL="<%= segmentsDisplayContext.getClearResultsURL() %>"
-	creationMenu="<%= segmentsDisplayContext.getCreationMenu() %>"
-	disabled="<%= segmentsDisplayContext.isDisabledManagementBar() %>"
-	filterDropdownItems="<%= segmentsDisplayContext.getFilterItemsDropdownItems() %>"
-	itemsTotal="<%= segmentsDisplayContext.getTotalItems() %>"
+	managementToolbarDisplayContext="<%= new SegmentsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, renderResponse, segmentsDisplayContext.getSearchContainer()) %>"
 	propsTransformer="js/SegmentsManagementToolbarPropsTransformer"
-	searchActionURL="<%= segmentsDisplayContext.getSearchActionURL() %>"
-	searchContainerId="segmentsEntries"
-	searchFormName="searchFm"
-	selectable="<%= true %>"
-	showCreationMenu="<%= segmentsDisplayContext.isShowCreationMenu() %>"
-	sortingOrder="<%= segmentsDisplayContext.getOrderByType() %>"
-	sortingURL="<%= segmentsDisplayContext.getSortingURL() %>"
 />
 
 <c:if test="<%= !segmentsDisplayContext.isSegmentationEnabled(themeDisplay.getCompanyId()) %>">
@@ -47,7 +35,7 @@ request.setAttribute("view.jsp-eventName", eventName);
 		dismissible="<%= true %>"
 		displayType="warning"
 	>
-		<strong><%= LanguageUtil.get(request, "segmentation-is-disabled") %></strong>
+		<strong><liferay-ui:message key="segmentation-is-disabled" /></strong>
 
 		<%
 		String segmentsConfigurationURL = segmentsDisplayContext.getSegmentsCompanyConfigurationURL(request);
@@ -57,9 +45,7 @@ request.setAttribute("view.jsp-eventName", eventName);
 			<c:when test="<%= segmentsConfigurationURL != null %>">
 				<clay:link
 					href="<%= segmentsConfigurationURL %>"
-					label='<%=
-						LanguageUtil.get(request, "to-enable,-go-to-instance-settings")
-%>'
+					label='<%= LanguageUtil.get(request, "to-enable,-go-to-instance-settings") %>'
 				/>
 			</c:when>
 			<c:otherwise>
@@ -75,7 +61,7 @@ request.setAttribute("view.jsp-eventName", eventName);
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
-<aui:form action="<%= deleteSegmentsEntryURL %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="fmSegmentsEntries">
+<aui:form action="<%= deleteSegmentsEntryURL %>" cssClass="c-p-0 container-fluid container-fluid-max-xl h-100" method="post" name="fmSegmentsEntries">
 	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 
 	<liferay-ui:error exception="<%= RequiredSegmentsEntryException.MustNotDeleteSegmentsEntryReferencedBySegmentsExperiences.class %>" message="the-segment-cannot-be-deleted-because-it-is-required-by-one-or-more-experiences" />
@@ -116,10 +102,11 @@ request.setAttribute("view.jsp-eventName", eventName);
 					%>
 
 					<c:if test="<%= segmentsSourceDetailsProvider != null %>">
-						<liferay-ui:icon
-							message="<%= segmentsSourceDetailsProvider.getLabel(locale) %>"
-							src="<%= segmentsSourceDetailsProvider.getIconSrc() %>"
-						/>
+						<span class="lfr-portal-tooltip" tabindex="0" title="<%= segmentsSourceDetailsProvider.getLabel(locale) %>">
+							<img alt="<%= segmentsSourceDetailsProvider.getLabel(locale) %>" src="<%= segmentsSourceDetailsProvider.getIconSrc() %>" title="<%= segmentsSourceDetailsProvider.getLabel(locale) %>" />
+
+							<span class="sr-only"><%= segmentsSourceDetailsProvider.getLabel(locale) %></span>
+						</span>
 					</c:if>
 				</liferay-ui:search-container-column-text>
 			</c:if>
@@ -127,18 +114,9 @@ request.setAttribute("view.jsp-eventName", eventName);
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand-smallest table-cell-minw-150"
 				name="scope"
+				value="<%= segmentsDisplayContext.getScopeName(segmentsEntry) %>"
 			>
-				<c:choose>
-					<c:when test="<%= segmentsEntry.getGroupId() == themeDisplay.getCompanyGroupId() %>">
-						<liferay-ui:message key="global" />
-					</c:when>
-					<c:when test="<%= segmentsEntry.getGroupId() == themeDisplay.getScopeGroupId() %>">
-						<liferay-ui:message key="current-site" />
-					</c:when>
-					<c:otherwise>
-						<liferay-ui:message key="parent-site" />
-					</c:otherwise>
-				</c:choose>
+
 			</liferay-ui:search-container-column-text>
 
 			<liferay-ui:search-container-column-date
@@ -147,10 +125,18 @@ request.setAttribute("view.jsp-eventName", eventName);
 				value="<%= segmentsEntry.getModifiedDate() %>"
 			/>
 
-			<liferay-ui:search-container-column-jsp
-				cssClass="entry-action-column"
-				path="/segments_entry_action.jsp"
-			/>
+			<liferay-ui:search-container-column-text>
+
+				<%
+				SegmentsEntryActionDropdownItemsProvider segmentsEntryActionDropdownItemsProvider = new SegmentsEntryActionDropdownItemsProvider(request, segmentsDisplayContext, segmentsEntry);
+				%>
+
+				<clay:dropdown-actions
+					aria-label='<%= LanguageUtil.format(request, "show-more-options-for-x", HtmlUtil.escape(segmentsEntry.getName(locale))) %>'
+					dropdownItems="<%= segmentsEntryActionDropdownItemsProvider.getActionDropdownItems() %>"
+					propsTransformer="js/SegmentsEntryDropdownDefaultPropsTransformer"
+				/>
+			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
 
 		<liferay-ui:search-iterator
@@ -167,48 +153,3 @@ request.setAttribute("view.jsp-eventName", eventName);
 	<aui:input name="segmentsEntryId" type="hidden" />
 	<aui:input name="siteRoleIds" type="hidden" />
 </aui:form>
-
-<aui:script require="frontend-js-web/liferay/delegate/delegate.es as delegateModule">
-	var form = document.getElementById(
-		'<portlet:namespace />updateSegmentsEntrySiteRolesFm'
-	);
-
-	var delegate = delegateModule.default;
-
-	var delegateHandler = delegate(
-		document,
-		'click',
-		'.assign-site-roles-link',
-		(event) => {
-			var link = event.target.closest('.assign-site-roles-link');
-
-			var itemSelectorURL = link.dataset.itemselectorurl;
-			var segmentsEntryId = link.dataset.segmentsentryid;
-
-			Liferay.Util.openSelectionModal({
-				eventName: '<%= eventName %>',
-				multiple: true,
-				onSelect: function (selectedItems) {
-					if (selectedItems) {
-						var data = {
-							segmentsEntryId: segmentsEntryId,
-							siteRoleIds: selectedItems.map((item) => item.value),
-						};
-
-						Liferay.Util.postForm(form, {data: data});
-					}
-				},
-				title: '<liferay-ui:message key="assign-site-roles" />',
-				url: itemSelectorURL,
-			});
-		}
-	);
-
-	var onDestroyPortlet = function () {
-		delegateHandler.dispose();
-
-		Liferay.detach('destroyPortlet', onDestroyPortlet);
-	};
-
-	Liferay.on('destroyPortlet', onDestroyPortlet);
-</aui:script>

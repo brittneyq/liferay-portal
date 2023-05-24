@@ -18,11 +18,11 @@ import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.document.library.kernel.util.DLPreviewableProcessor;
 import com.liferay.mail.kernel.model.Account;
 import com.liferay.mail.kernel.service.MailService;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.convert.ConvertException;
 import com.liferay.portal.convert.ConvertProcess;
+import com.liferay.portal.convert.ConvertProcessUtil;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.SingleVMPool;
@@ -61,7 +61,7 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.portlet.LiferayActionResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.scripting.Scripting;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.scripting.ScriptingException;
 import com.liferay.portal.kernel.scripting.ScriptingHelperUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -81,13 +81,11 @@ import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
-import com.liferay.portal.kernel.service.ServiceComponentLocalService;
 import com.liferay.portal.kernel.servlet.DirectServletRegistry;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.MethodHandler;
@@ -95,6 +93,7 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.PrefsProps;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -102,13 +101,14 @@ import com.liferay.portal.kernel.util.ThreadUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.log4j.Log4JUtil;
 import com.liferay.portal.util.MaintenanceUtil;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.ShutdownUtil;
 import com.liferay.server.admin.web.internal.constants.ImageMagickResourceLimitConstants;
+import com.liferay.server.admin.web.internal.scripting.ServerScripting;
 
 import java.lang.reflect.InvocationHandler;
 
@@ -174,7 +174,7 @@ public class EditServerMVCActionCommand
 			return;
 		}
 
-		PortletPreferences portletPreferences = PrefsPropsUtil.getPreferences(
+		PortletPreferences portletPreferences = _prefsProps.getPreferences(
 			ParamUtil.getLong(actionRequest, "preferencesCompanyId"));
 
 		String redirect = ParamUtil.getString(actionRequest, "redirect");
@@ -238,9 +238,6 @@ public class EditServerMVCActionCommand
 		}
 		else if (cmd.equals("verifyMembershipPolicies")) {
 			_verifyMembershipPolicies();
-		}
-		else if (cmd.equals("verifyPluginTables")) {
-			_verifyPluginTables();
 		}
 
 		sendRedirect(actionRequest, actionResponse, redirect);
@@ -489,7 +486,7 @@ public class EditServerMVCActionCommand
 		String className = StringUtil.replaceFirst(
 			cmd, "convertProcess.", StringPool.BLANK);
 
-		ConvertProcess convertProcess = (ConvertProcess)InstancePool.get(
+		ConvertProcess convertProcess = ConvertProcessUtil.getConvertProcess(
 			className);
 
 		String[] parameters = convertProcess.getParameterNames();
@@ -546,7 +543,7 @@ public class EditServerMVCActionCommand
 
 		Message message = new Message();
 
-		message.setPayload(className);
+		message.setPayload(convertProcess);
 
 		_messageBus.sendMessage(DestinationNames.CONVERT_PROCESS, message);
 
@@ -587,7 +584,7 @@ public class EditServerMVCActionCommand
 			SessionMessages.add(actionRequest, "script", script);
 			SessionMessages.add(actionRequest, "output", output);
 
-			_scripting.exec(null, portletObjects, language, script);
+			_serverScripting.execute(portletObjects, language, script);
 
 			unsyncPrintWriter.flush();
 
@@ -728,6 +725,8 @@ public class EditServerMVCActionCommand
 		int pop3Port = ParamUtil.getInteger(actionRequest, "pop3Port");
 		boolean pop3Secure = ParamUtil.getBoolean(actionRequest, "pop3Secure");
 		String pop3User = ParamUtil.getString(actionRequest, "pop3User");
+		boolean popServerNotificationsEnabled = ParamUtil.getBoolean(
+			actionRequest, "popServerNotificationsEnabled");
 		String smtpHost = ParamUtil.getString(actionRequest, "smtpHost");
 		String smtpPassword = ParamUtil.getString(
 			actionRequest, "smtpPassword");
@@ -753,37 +752,60 @@ public class EditServerMVCActionCommand
 		portletPreferences.setValue(
 			PropsKeys.MAIL_SESSION_MAIL_ADVANCED_PROPERTIES,
 			advancedProperties);
-		portletPreferences.setValue(
-			PropsKeys.MAIL_SESSION_MAIL_POP3_HOST, pop3Host);
+
+		if (!Validator.isBlank(pop3Host)) {
+			portletPreferences.setValue(
+				PropsKeys.MAIL_SESSION_MAIL_POP3_HOST, pop3Host);
+		}
 
 		if (!pop3Password.equals(Portal.TEMP_OBFUSCATION_VALUE)) {
 			portletPreferences.setValue(
 				PropsKeys.MAIL_SESSION_MAIL_POP3_PASSWORD, pop3Password);
 		}
 
-		portletPreferences.setValue(
-			PropsKeys.MAIL_SESSION_MAIL_POP3_PORT, String.valueOf(pop3Port));
-		portletPreferences.setValue(
-			PropsKeys.MAIL_SESSION_MAIL_POP3_USER, pop3User);
-		portletPreferences.setValue(
-			PropsKeys.MAIL_SESSION_MAIL_SMTP_HOST, smtpHost);
+		if (pop3Port > 0) {
+			portletPreferences.setValue(
+				PropsKeys.MAIL_SESSION_MAIL_POP3_PORT,
+				String.valueOf(pop3Port));
+		}
+
+		if (!Validator.isBlank(pop3User)) {
+			portletPreferences.setValue(
+				PropsKeys.MAIL_SESSION_MAIL_POP3_USER, pop3User);
+		}
+
+		if (!Validator.isBlank(smtpHost)) {
+			portletPreferences.setValue(
+				PropsKeys.MAIL_SESSION_MAIL_SMTP_HOST, smtpHost);
+		}
 
 		if (!smtpPassword.equals(Portal.TEMP_OBFUSCATION_VALUE)) {
 			portletPreferences.setValue(
 				PropsKeys.MAIL_SESSION_MAIL_SMTP_PASSWORD, smtpPassword);
 		}
 
-		portletPreferences.setValue(
-			PropsKeys.MAIL_SESSION_MAIL_SMTP_PORT, String.valueOf(smtpPort));
+		if (smtpPort > 0) {
+			portletPreferences.setValue(
+				PropsKeys.MAIL_SESSION_MAIL_SMTP_PORT,
+				String.valueOf(smtpPort));
+		}
+
 		portletPreferences.setValue(
 			PropsKeys.MAIL_SESSION_MAIL_SMTP_STARTTLS_ENABLE,
 			String.valueOf(smtpStartTLSEnable));
-		portletPreferences.setValue(
-			PropsKeys.MAIL_SESSION_MAIL_SMTP_USER, smtpUser);
+
+		if (!Validator.isBlank(smtpUser)) {
+			portletPreferences.setValue(
+				PropsKeys.MAIL_SESSION_MAIL_SMTP_USER, smtpUser);
+		}
+
 		portletPreferences.setValue(
 			PropsKeys.MAIL_SESSION_MAIL_STORE_PROTOCOL, storeProtocol);
 		portletPreferences.setValue(
 			PropsKeys.MAIL_SESSION_MAIL_TRANSPORT_PROTOCOL, transportProtocol);
+		portletPreferences.setValue(
+			PropsKeys.POP_SERVER_NOTIFICATIONS_ENABLED,
+			String.valueOf(popServerNotificationsEnabled));
 
 		portletPreferences.store();
 
@@ -835,10 +857,6 @@ public class EditServerMVCActionCommand
 			_userGroupMembershipPolicyFactory.getUserGroupMembershipPolicy();
 
 		userGroupMembershipPolicy.verifyPolicy();
-	}
-
-	private void _verifyPluginTables() throws Exception {
-		_serviceComponentLocalService.verifyDB();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -895,6 +913,9 @@ public class EditServerMVCActionCommand
 	private PortletPreferencesLocalService _portletPreferencesLocalService;
 
 	@Reference
+	private PrefsProps _prefsProps;
+
+	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;
 
 	@Reference
@@ -904,10 +925,7 @@ public class EditServerMVCActionCommand
 	private RoleMembershipPolicyFactory _roleMembershipPolicyFactory;
 
 	@Reference
-	private Scripting _scripting;
-
-	@Reference
-	private ServiceComponentLocalService _serviceComponentLocalService;
+	private ServerScripting _serverScripting;
 
 	@Reference
 	private SingleVMPool _singleVMPool;

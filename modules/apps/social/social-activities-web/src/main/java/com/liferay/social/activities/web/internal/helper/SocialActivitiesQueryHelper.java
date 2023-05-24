@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = SocialActivitiesQueryHelper.class)
+@Component(service = SocialActivitiesQueryHelper.class)
 public class SocialActivitiesQueryHelper {
 
 	public List<SocialActivitySet> getSocialActivitySets(
@@ -152,19 +152,10 @@ public class SocialActivitiesQueryHelper {
 
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setSocialActivitySetLocalService(
-		SocialActivitySetLocalService socialActivitySetLocalService) {
-
-		_socialActivitySetLocalService = socialActivitySetLocalService;
-	}
-
+	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private SocialActivitySetLocalService _socialActivitySetLocalService;
 
 }

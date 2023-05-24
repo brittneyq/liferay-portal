@@ -52,7 +52,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alec Sloan
  * @author Alessio Antonio Rendina
  */
-@Component(enabled = false, service = CommercePriceEntriesImporter.class)
+@Component(service = CommercePriceEntriesImporter.class)
 public class CommercePriceEntriesImporter {
 
 	public void importBaseCommercePriceListEntries(
@@ -144,7 +144,8 @@ public class CommercePriceEntriesImporter {
 			}
 
 			_commercePriceEntryLocalService.addCommercePriceEntry(
-				cpDefinition.getCProductId(), cpInstance.getCPInstanceUuid(),
+				null, cpDefinition.getCProductId(),
+				cpInstance.getCPInstanceUuid(),
 				commercePriceList.getCommercePriceListId(), price,
 				BigDecimal.ZERO, serviceContext);
 		}
@@ -197,7 +198,7 @@ public class CommercePriceEntriesImporter {
 		double promoPrice = jsonObject.getDouble("promoPrice", 0);
 
 		_commercePriceEntryLocalService.addCommercePriceEntry(
-			cpDefinition.getCProductId(), cpInstance.getCPInstanceUuid(),
+			null, cpDefinition.getCProductId(), cpInstance.getCPInstanceUuid(),
 			commercePriceList.getCommercePriceListId(),
 			BigDecimal.valueOf(price), BigDecimal.valueOf(promoPrice),
 			serviceContext);

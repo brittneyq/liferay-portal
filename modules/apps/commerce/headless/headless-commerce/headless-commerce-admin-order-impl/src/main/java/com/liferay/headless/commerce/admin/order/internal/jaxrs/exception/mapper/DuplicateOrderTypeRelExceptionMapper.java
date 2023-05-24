@@ -27,7 +27,6 @@ import org.osgi.service.component.annotations.Component;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = {
 		"osgi.jaxrs.application.select=(osgi.jaxrs.name=Liferay.Headless.Commerce.Admin.Order)",
 		"osgi.jaxrs.extension=true",
@@ -44,7 +43,8 @@ public class DuplicateOrderTypeRelExceptionMapper
 			duplicateCommerceOrderTypeRelException) {
 
 		return new Problem(
-			Response.Status.CONFLICT, "Duplicate order type relation");
+			Response.Status.CONFLICT,
+			"The order type relation already exists.");
 	}
 
 }

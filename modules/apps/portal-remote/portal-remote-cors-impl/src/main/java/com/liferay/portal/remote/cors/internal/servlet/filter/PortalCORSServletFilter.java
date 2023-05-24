@@ -70,7 +70,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Carlos Sierra Andrés
  */
 @Component(
-	immediate = true,
 	property = {
 		Constants.SERVICE_PID + "=com.liferay.portal.remote.cors.configuration.PortalCORSConfiguration",
 		"before-filter=Upload Servlet Request Filter", "dispatcher=FORWARD",
@@ -277,7 +276,7 @@ public class PortalCORSServletFilter
 
 		User user = permissionChecker.getUser();
 
-		return user.isDefaultUser();
+		return user.isGuestUser();
 	}
 
 	private void _mergeCORSConfiguration(

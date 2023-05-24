@@ -17,16 +17,21 @@ package com.liferay.object.internal.field.business.type;
 import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
+import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.object.field.render.ObjectFieldRenderingContext;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectFieldSetting;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -35,13 +40,17 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcela Cunha
  */
 @Component(
-	immediate = true,
 	property = "object.field.business.type.key=" + ObjectFieldConstants.BUSINESS_TYPE_INTEGER,
-	service = {
-		IntegerObjectFieldBusinessType.class, ObjectFieldBusinessType.class
-	}
+	service = ObjectFieldBusinessType.class
 )
-public class IntegerObjectFieldBusinessType implements ObjectFieldBusinessType {
+public class IntegerObjectFieldBusinessType
+	extends BaseObjectFieldBusinessType {
+
+	@Override
+	public Set<String> getAllowedObjectFieldSettingsNames() {
+		return SetUtil.fromArray(
+			ObjectFieldSettingConstants.NAME_UNIQUE_VALUES);
+	}
 
 	@Override
 	public String getDBType() {
@@ -55,18 +64,12 @@ public class IntegerObjectFieldBusinessType implements ObjectFieldBusinessType {
 
 	@Override
 	public String getDescription(Locale locale) {
-		return _language.get(
-			ResourceBundleUtil.getModuleAndPortalResourceBundle(
-				locale, getClass()),
-			"add-an-integer-up-to-nine-digits");
+		return _language.get(locale, "add-an-integer-up-to-nine-digits");
 	}
 
 	@Override
 	public String getLabel(Locale locale) {
-		return _language.get(
-			ResourceBundleUtil.getModuleAndPortalResourceBundle(
-				locale, getClass()),
-			"integer");
+		return _language.get(locale, "integer");
 	}
 
 	@Override
@@ -87,6 +90,26 @@ public class IntegerObjectFieldBusinessType implements ObjectFieldBusinessType {
 	@Override
 	public PropertyDefinition.PropertyType getPropertyType() {
 		return PropertyDefinition.PropertyType.INTEGER;
+	}
+
+	@Override
+	public Set<String> getUnmodifiablObjectFieldSettingsNames() {
+		return SetUtil.fromArray(
+			ObjectFieldSettingConstants.NAME_UNIQUE_VALUES);
+	}
+
+	@Override
+	public void validateObjectFieldSettings(
+			ObjectField objectField,
+			List<ObjectFieldSetting> objectFieldSettings)
+		throws PortalException {
+
+		super.validateObjectFieldSettings(objectField, objectFieldSettings);
+
+		validateBooleanObjectFieldSetting(
+			objectField.getName(),
+			ObjectFieldSettingConstants.NAME_UNIQUE_VALUES,
+			getObjectFieldSettingsValues(objectFieldSettings));
 	}
 
 	@Reference

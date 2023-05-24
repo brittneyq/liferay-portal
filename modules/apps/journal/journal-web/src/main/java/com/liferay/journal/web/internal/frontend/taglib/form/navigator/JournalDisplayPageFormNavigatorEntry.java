@@ -17,17 +17,17 @@ package com.liferay.journal.web.internal.frontend.taglib.form.navigator;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.frontend.taglib.form.navigator.FormNavigatorEntry;
-import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+
+import java.util.Objects;
 
 import javax.portlet.PortletRequest;
 
@@ -59,8 +59,9 @@ public class JournalDisplayPageFormNavigatorEntry
 
 	@Override
 	public boolean isVisible(User user, JournalArticle article) {
-		if (_isDepotArticle(article) || isGlobalScopeArticle(article) ||
-			_isGlobalStructure(article)) {
+		if (isDepotOrGlobalScopeArticle(article) ||
+			((article == null) &&
+			 _isEditDepotOrGlobalScopeStructureDefaultValues())) {
 
 			return false;
 		}
@@ -68,45 +69,12 @@ public class JournalDisplayPageFormNavigatorEntry
 		return true;
 	}
 
-	@Reference(target = "(view=private)", unbind = "-")
-	public void setPrivateLayoutsItemSelectorView(
-		ItemSelectorView<?> itemSelectorView) {
-	}
-
-	@Reference(target = "(view=public)", unbind = "-")
-	public void setPublicLayoutsItemSelectorView(
-		ItemSelectorView<?> itemSelectorView) {
-	}
-
 	@Override
 	protected String getJspPath() {
-		return "/article/display_page.jsp";
+		return "/article/asset_display_page.jsp";
 	}
 
-	private Group _getGroup(JournalArticle article) {
-		if ((article != null) && (article.getId() > 0)) {
-			return _groupLocalService.fetchGroup(article.getGroupId());
-		}
-
-		ServiceContext serviceContext =
-			ServiceContextThreadLocal.getServiceContext();
-
-		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
-
-		return themeDisplay.getScopeGroup();
-	}
-
-	private boolean _isDepotArticle(JournalArticle article) {
-		Group group = _getGroup(article);
-
-		if ((group != null) && group.isDepot()) {
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean _isGlobalStructure(JournalArticle article) {
+	private boolean _isEditDepotOrGlobalScopeStructureDefaultValues() {
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
@@ -116,15 +84,13 @@ public class JournalDisplayPageFormNavigatorEntry
 			(PortletRequest)httpServletRequest.getAttribute(
 				JavaConstants.JAVAX_PORTLET_REQUEST);
 
-		long classNameId = BeanParamUtil.getLong(
-			article, portletRequest, "classNameId");
+		long classNameId = ParamUtil.getLong(portletRequest, "classNameId");
 
 		if (classNameId != _portal.getClassNameId(DDMStructure.class)) {
 			return false;
 		}
 
-		long classPK = BeanParamUtil.getLong(
-			article, portletRequest, "classPK");
+		long classPK = ParamUtil.getLong(portletRequest, "classPK");
 
 		if (classPK == 0) {
 			return false;
@@ -133,19 +99,22 @@ public class JournalDisplayPageFormNavigatorEntry
 		DDMStructure ddmStructure = _ddmStructureLocalService.fetchDDMStructure(
 			classPK);
 
-		if (ddmStructure == null) {
-			long groupId = BeanParamUtil.getLong(
-				article, portletRequest, "groupId");
+		long ddmStructureId = ParamUtil.getLong(
+			portletRequest, "ddmStructureId");
 
-			String ddmStructureKey = BeanParamUtil.getString(
-				article, portletRequest, "ddmStructureKey");
-
+		if ((ddmStructure == null) && (ddmStructureId > 0)) {
 			ddmStructure = _ddmStructureLocalService.fetchStructure(
-				groupId, _portal.getClassNameId(JournalArticle.class),
-				ddmStructureKey);
+				ddmStructureId);
 		}
 
-		if (ddmStructure == null) {
+		if ((ddmStructure == null) ||
+			!Objects.equals(
+				ParamUtil.getLong(portletRequest, "groupId"),
+				ddmStructure.getGroupId()) ||
+			!Objects.equals(
+				ddmStructure.getClassNameId(),
+				_portal.getClassNameId(JournalArticle.class))) {
+
 			return false;
 		}
 
@@ -155,7 +124,7 @@ public class JournalDisplayPageFormNavigatorEntry
 			return false;
 		}
 
-		if (group.isCompany()) {
+		if (group.isCompany() || group.isDepot()) {
 			return true;
 		}
 
@@ -167,6 +136,11 @@ public class JournalDisplayPageFormNavigatorEntry
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.layout.item.selector.web)"
+	)
+	private ServletContext _itemSelectorWebServletContext;
 
 	@Reference
 	private Portal _portal;

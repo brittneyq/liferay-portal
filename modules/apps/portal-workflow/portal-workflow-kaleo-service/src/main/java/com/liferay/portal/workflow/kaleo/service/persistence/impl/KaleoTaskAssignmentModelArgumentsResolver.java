@@ -33,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {
-		KaleoTaskAssignmentModelArgumentsResolver.class, ArgumentsResolver.class
-	}
+	property = {
+		"class.name=com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskAssignmentImpl",
+		"table.name=KaleoTaskAssignment"
+	},
+	service = ArgumentsResolver.class
 )
 public class KaleoTaskAssignmentModelArgumentsResolver
 	implements ArgumentsResolver {

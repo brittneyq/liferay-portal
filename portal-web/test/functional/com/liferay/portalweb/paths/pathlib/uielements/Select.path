@@ -21,8 +21,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_ARIA_LABEL</td>
+	<td>//select[contains(@aria-label,'${ariaLabel}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANY_DISABLED</td>
 	<td>//div[not(contains(@class,'hide'))]/div[contains(@class,'input-select-wrapper')][label[contains(.,'${key_selectFieldLabel}')]]/select[contains(@class,'disabled')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_ID</td>
+	<td>//select[contains(@id,'${selectId}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -127,7 +137,7 @@
 </tr>
 <tr>
 	<td>GENERIC_SELECT_FIELD_WITH_ICON_TEXT</td>
-	<td>//div[label[*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]]]//following-sibling::div[contains(@class,'text-truncate')]</td>
+	<td>//div[label[*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]]]//following-sibling::div/span[contains(@class,'text-truncate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -263,6 +273,11 @@
 <tr>
 	<td>TYPE_SELECTED</td>
 	<td>//div[label[contains(.,'Type')]]//option[contains(.,'${key_typeName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_AGENT</td>
+	<td>//select[contains(@name,'userAgent_${key_index}')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -15,9 +15,8 @@
 package com.liferay.trash.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.TabsItem;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.TabsItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -30,6 +29,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
@@ -317,16 +317,6 @@ public class TrashDisplayContext {
 		return _entrySearch;
 	}
 
-	public List<NavigationItem> getInfoPanelNavigationItems() {
-		return NavigationItemListBuilder.add(
-			navigationItem -> {
-				navigationItem.setActive(true);
-				navigationItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "details"));
-			}
-		).build();
-	}
-
 	public String getKeywords() {
 		if (_keywords != null) {
 			return _keywords;
@@ -418,6 +408,16 @@ public class TrashDisplayContext {
 		return portletURL;
 	}
 
+	public List<TabsItem> getTabsItems() {
+		return TabsItemListBuilder.add(
+			tabsItem -> {
+				tabsItem.setActive(true);
+				tabsItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "details"));
+			}
+		).build();
+	}
+
 	public SearchContainer<TrashedModel> getTrashContainerSearchContainer()
 		throws PortalException {
 
@@ -461,13 +461,6 @@ public class TrashDisplayContext {
 		_trashContainerSearchContainer = searchContainer;
 
 		return _trashContainerSearchContainer;
-	}
-
-	public int getTrashContainerTotalItems() throws PortalException {
-		SearchContainer<TrashedModel> searchContainer =
-			getTrashContainerSearchContainer();
-
-		return searchContainer.getTotal();
 	}
 
 	public TrashEntry getTrashEntry() {
@@ -564,33 +557,32 @@ public class TrashDisplayContext {
 	public String getViewContentRedirectURL() throws PortalException {
 		String redirect = ParamUtil.getString(_httpServletRequest, "redirect");
 
-		if (Validator.isNull(redirect)) {
-			TrashHandler trashHandler = getTrashHandler();
-
-			ContainerModel parentContainerModel =
-				trashHandler.getParentContainerModel(getClassPK());
-
-			PortletURL redirectURL = _liferayPortletResponse.createRenderURL();
-
-			if ((parentContainerModel != null) && (getClassNameId() > 0)) {
-				String parentContainerModelClassName =
-					parentContainerModel.getModelClassName();
-
-				redirectURL.setParameter("mvcPath", "/view_content.jsp");
-				redirectURL.setParameter(
-					"classNameId",
-					String.valueOf(
-						PortalUtil.getClassNameId(
-							parentContainerModelClassName)));
-				redirectURL.setParameter(
-					"classPK",
-					String.valueOf(parentContainerModel.getContainerModelId()));
-			}
-
-			redirect = redirectURL.toString();
+		if (Validator.isNotNull(redirect)) {
+			return redirect;
 		}
 
-		return redirect;
+		TrashHandler trashHandler = getTrashHandler();
+
+		ContainerModel parentContainerModel =
+			trashHandler.getParentContainerModel(getClassPK());
+
+		PortletURL redirectURL = _liferayPortletResponse.createRenderURL();
+
+		if ((parentContainerModel != null) && (getClassNameId() > 0)) {
+			String parentContainerModelClassName =
+				parentContainerModel.getModelClassName();
+
+			redirectURL.setParameter("mvcPath", "/view_content.jsp");
+			redirectURL.setParameter(
+				"classNameId",
+				String.valueOf(
+					PortalUtil.getClassNameId(parentContainerModelClassName)));
+			redirectURL.setParameter(
+				"classPK",
+				String.valueOf(parentContainerModel.getContainerModelId()));
+		}
+
+		return redirectURL.toString();
 	}
 
 	public boolean isApproximate() {

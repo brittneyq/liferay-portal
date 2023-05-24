@@ -23,13 +23,15 @@ import com.liferay.portal.kernel.portlet.configuration.icon.BaseJSPPortletConfig
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.workflow.kaleo.forms.constants.KaleoFormsPortletKeys;
 import com.liferay.portal.workflow.kaleo.forms.service.permission.KaleoProcessPermission;
 
+import java.util.Map;
+
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 
 import javax.servlet.ServletContext;
 
@@ -40,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Inácio Nery
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + KaleoFormsPortletKeys.KALEO_FORMS_ADMIN,
 		"path=/admin/view_kaleo_process.jsp"
@@ -51,21 +52,22 @@ public class ExportKaleoProcessPortletConfigurationIcon
 	extends BaseJSPPortletConfigurationIcon {
 
 	@Override
+	public Map<String, Object> getContext(PortletRequest portletRequest) {
+		return HashMapBuilder.<String, Object>put(
+			"action", getNamespace(portletRequest) + "exportKaleoProcess"
+		).put(
+			"globalAction", true
+		).build();
+	}
+
+	@Override
 	public String getJspPath() {
 		return "/admin/configuration/icon/export_kaleo_process.jsp";
 	}
 
 	@Override
 	public String getMessage(PortletRequest portletRequest) {
-		return _language.get(
-			getResourceBundle(getLocale(portletRequest)), "export");
-	}
-
-	@Override
-	public String getURL(
-		PortletRequest portletRequest, PortletResponse portletResponse) {
-
-		return "javascript:void(0);";
+		return _language.get(getLocale(portletRequest), "export");
 	}
 
 	@Override
@@ -87,7 +89,7 @@ public class ExportKaleoProcessPortletConfigurationIcon
 
 		User user = themeDisplay.getUser();
 
-		if (user.isDefaultUser()) {
+		if (user.isGuestUser()) {
 			return false;
 		}
 
@@ -106,11 +108,6 @@ public class ExportKaleoProcessPortletConfigurationIcon
 
 			return false;
 		}
-	}
-
-	@Override
-	public boolean isToolTip() {
-		return false;
 	}
 
 	@Override

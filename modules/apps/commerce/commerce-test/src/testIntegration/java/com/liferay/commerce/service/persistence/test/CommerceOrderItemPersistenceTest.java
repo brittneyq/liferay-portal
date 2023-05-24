@@ -15,6 +15,7 @@
 package com.liferay.commerce.service.persistence.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.commerce.exception.DuplicateCommerceOrderItemExternalReferenceCodeException;
 import com.liferay.commerce.exception.NoSuchOrderItemException;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.service.CommerceOrderItemLocalServiceUtil;
@@ -249,6 +250,10 @@ public class CommerceOrderItemPersistenceTest {
 
 		newCommerceOrderItem.setQuantity(RandomTestUtil.nextInt());
 
+		newCommerceOrderItem.setReplacedCPInstanceId(RandomTestUtil.nextLong());
+
+		newCommerceOrderItem.setReplacedSku(RandomTestUtil.randomString());
+
 		newCommerceOrderItem.setRequestedDeliveryDate(
 			RandomTestUtil.nextDate());
 
@@ -438,6 +443,12 @@ public class CommerceOrderItemPersistenceTest {
 			existingCommerceOrderItem.getQuantity(),
 			newCommerceOrderItem.getQuantity());
 		Assert.assertEquals(
+			existingCommerceOrderItem.getReplacedCPInstanceId(),
+			newCommerceOrderItem.getReplacedCPInstanceId());
+		Assert.assertEquals(
+			existingCommerceOrderItem.getReplacedSku(),
+			newCommerceOrderItem.getReplacedSku());
+		Assert.assertEquals(
 			Time.getShortTimestamp(
 				existingCommerceOrderItem.getRequestedDeliveryDate()),
 			Time.getShortTimestamp(
@@ -480,6 +491,28 @@ public class CommerceOrderItemPersistenceTest {
 		AssertUtils.assertEquals(
 			existingCommerceOrderItem.getWidth(),
 			newCommerceOrderItem.getWidth());
+	}
+
+	@Test(
+		expected = DuplicateCommerceOrderItemExternalReferenceCodeException.class
+	)
+	public void testUpdateWithExistingExternalReferenceCode() throws Exception {
+		CommerceOrderItem commerceOrderItem = addCommerceOrderItem();
+
+		CommerceOrderItem newCommerceOrderItem = addCommerceOrderItem();
+
+		newCommerceOrderItem.setCompanyId(commerceOrderItem.getCompanyId());
+
+		newCommerceOrderItem = _persistence.update(newCommerceOrderItem);
+
+		Session session = _persistence.getCurrentSession();
+
+		session.evict(newCommerceOrderItem);
+
+		newCommerceOrderItem.setExternalReferenceCode(
+			commerceOrderItem.getExternalReferenceCode());
+
+		_persistence.update(newCommerceOrderItem);
 	}
 
 	@Test
@@ -562,12 +595,12 @@ public class CommerceOrderItemPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_ERC() throws Exception {
-		_persistence.countByC_ERC(RandomTestUtil.nextLong(), "");
+	public void testCountByERC_C() throws Exception {
+		_persistence.countByERC_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByC_ERC(0L, "null");
+		_persistence.countByERC_C("null", 0L);
 
-		_persistence.countByC_ERC(0L, (String)null);
+		_persistence.countByERC_C((String)null, 0L);
 	}
 
 	@Test
@@ -618,9 +651,10 @@ public class CommerceOrderItemPersistenceTest {
 			true, "manuallyAdjusted", true, "maxSubscriptionCycles", true,
 			"name", true, "priceManuallyAdjusted", true, "printedNote", true,
 			"promoPrice", true, "promoPriceWithTaxAmount", true, "quantity",
-			true, "requestedDeliveryDate", true, "shipSeparately", true,
-			"shippable", true, "shippedQuantity", true, "shippingExtraPrice",
-			true, "sku", true, "subscription", true, "subscriptionLength", true,
+			true, "replacedCPInstanceId", true, "replacedSku", true,
+			"requestedDeliveryDate", true, "shipSeparately", true, "shippable",
+			true, "shippedQuantity", true, "shippingExtraPrice", true, "sku",
+			true, "subscription", true, "subscriptionLength", true,
 			"subscriptionType", true, "subscriptionTypeSettings", true,
 			"unitPrice", true, "unitPriceWithTaxAmount", true, "weight", true,
 			"width", true);
@@ -917,15 +951,15 @@ public class CommerceOrderItemPersistenceTest {
 				new Class<?>[] {String.class}, "bookedQuantityId"));
 
 		Assert.assertEquals(
-			Long.valueOf(commerceOrderItem.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				commerceOrderItem, "getColumnOriginalValue",
-				new Class<?>[] {String.class}, "companyId"));
-		Assert.assertEquals(
 			commerceOrderItem.getExternalReferenceCode(),
 			ReflectionTestUtil.invoke(
 				commerceOrderItem, "getColumnOriginalValue",
 				new Class<?>[] {String.class}, "externalReferenceCode"));
+		Assert.assertEquals(
+			Long.valueOf(commerceOrderItem.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				commerceOrderItem, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 	}
 
 	protected CommerceOrderItem addCommerceOrderItem() throws Exception {
@@ -1051,6 +1085,10 @@ public class CommerceOrderItemPersistenceTest {
 			new BigDecimal(RandomTestUtil.nextDouble()));
 
 		commerceOrderItem.setQuantity(RandomTestUtil.nextInt());
+
+		commerceOrderItem.setReplacedCPInstanceId(RandomTestUtil.nextLong());
+
+		commerceOrderItem.setReplacedSku(RandomTestUtil.randomString());
 
 		commerceOrderItem.setRequestedDeliveryDate(RandomTestUtil.nextDate());
 

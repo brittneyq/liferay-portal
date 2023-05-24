@@ -14,9 +14,9 @@
 
 package com.liferay.commerce.product.content.search.web.internal.portlet.shared.search;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.asset.kernel.model.AssetCategory;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.product.constants.CPField;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.content.search.web.internal.util.CPSpecificationOptionFacetsUtil;
@@ -26,6 +26,7 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPSpecificationOptionLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.search.facet.SerializableFacet;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -41,6 +42,7 @@ import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.search.facet.config.FacetConfiguration;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -61,7 +63,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Shuyang Zhou
  */
 @Component(
-	enabled = false,
 	property = "javax.portlet.name=" + CPPortletKeys.CP_SPECIFICATION_OPTION_FACETS,
 	service = PortletSharedSearchContributor.class
 )
@@ -82,15 +83,15 @@ public class CPSpecificationOptionFacetsPortletSharedSearchContributor
 			SerializableFacet serializableFacet = new SerializableFacet(
 				CPField.SPECIFICATION_NAMES, searchContext);
 
-			Optional<String[]> parameterValuesOptional =
-				portletSharedSearchSettings.getParameterValues71(
+			String[] parameterValues =
+				portletSharedSearchSettings.getParameterValues(
 					CPField.SPECIFICATION_NAMES);
 
-			if (parameterValuesOptional.isPresent()) {
-				serializableFacet.select(parameterValuesOptional.get());
+			if (ArrayUtil.isNotEmpty(parameterValues)) {
+				serializableFacet.select(parameterValues);
 
 				searchContext.setAttribute(
-					CPField.SPECIFICATION_NAMES, parameterValuesOptional.get());
+					CPField.SPECIFICATION_NAMES, parameterValues);
 			}
 
 			portletSharedSearchSettings.addFacet(serializableFacet);
@@ -117,8 +118,8 @@ public class CPSpecificationOptionFacetsPortletSharedSearchContributor
 						getCPSpecificationOptionKeyFromIndexFieldName(
 							facet.getFieldName());
 
-				parameterValuesOptional =
-					portletSharedSearchSettings.getParameterValues71(
+				parameterValues =
+					portletSharedSearchSettings.getParameterValues(
 						cpSpecificationOptionKey);
 
 				serializableFacet = new SerializableFacet(
@@ -128,11 +129,11 @@ public class CPSpecificationOptionFacetsPortletSharedSearchContributor
 					_buildFacetConfiguration(
 						facet, frequencyThreshold, maxTerms));
 
-				if (parameterValuesOptional.isPresent()) {
-					serializableFacet.select(parameterValuesOptional.get());
+				if (ArrayUtil.isNotEmpty(parameterValues)) {
+					serializableFacet.select(parameterValues);
 
 					searchContext.setAttribute(
-						facet.getFieldName(), parameterValuesOptional.get());
+						facet.getFieldName(), parameterValues);
 				}
 
 				portletSharedSearchSettings.addFacet(serializableFacet);
@@ -171,16 +172,16 @@ public class CPSpecificationOptionFacetsPortletSharedSearchContributor
 			searchContext.setAttribute(
 				"commerceChannelGroupId", commerceChannel.getGroupId());
 
-			CommerceAccount commerceAccount =
-				_commerceAccountHelper.getCurrentCommerceAccount(
+			AccountEntry accountEntry =
+				_commerceAccountHelper.getCurrentAccountEntry(
 					commerceChannel.getGroupId(),
 					_portal.getHttpServletRequest(renderRequest));
 
-			if (commerceAccount != null) {
+			if (accountEntry != null) {
 				searchContext.setAttribute(
 					"commerceAccountGroupIds",
-					_commerceAccountHelper.getCommerceAccountGroupIds(
-						commerceAccount.getCommerceAccountId()));
+					_accountGroupLocalService.getAccountGroupIds(
+						accountEntry.getAccountEntryId()));
 			}
 		}
 
@@ -271,6 +272,9 @@ public class CPSpecificationOptionFacetsPortletSharedSearchContributor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPSpecificationOptionFacetsPortletSharedSearchContributor.class);
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;

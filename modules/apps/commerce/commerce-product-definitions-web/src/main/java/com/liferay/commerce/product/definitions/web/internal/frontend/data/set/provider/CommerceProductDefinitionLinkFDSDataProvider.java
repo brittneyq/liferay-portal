@@ -14,7 +14,7 @@
 
 package com.liferay.commerce.product.definitions.web.internal.frontend.data.set.provider;
 
-import com.liferay.commerce.account.constants.CommerceAccountConstants;
+import com.liferay.account.constants.AccountConstants;
 import com.liferay.commerce.frontend.model.ImageField;
 import com.liferay.commerce.product.definitions.web.internal.constants.CommerceProductFDSNames;
 import com.liferay.commerce.product.definitions.web.internal.model.ProductLink;
@@ -48,7 +48,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false, immediate = true,
 	property = "fds.data.provider.key=" + CommerceProductFDSNames.PRODUCT_LINKS,
 	service = FDSDataProvider.class
 )
@@ -95,7 +94,7 @@ public class CommerceProductDefinitionLinkFDSDataProvider
 						new ImageField(
 							name, "rounded", "lg",
 							cpDefinition.getDefaultImageThumbnailSrc(
-								CommerceAccountConstants.ACCOUNT_ID_ADMIN)),
+								AccountConstants.ACCOUNT_ENTRY_ID_ADMIN)),
 						HtmlUtil.escape(name),
 						_language.get(
 							httpServletRequest, cpDefinitionLink.getType()),

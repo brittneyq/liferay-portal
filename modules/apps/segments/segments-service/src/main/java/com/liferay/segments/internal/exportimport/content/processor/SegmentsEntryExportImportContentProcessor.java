@@ -22,7 +22,6 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.odata.filter.Filter;
 import com.liferay.portal.odata.filter.FilterParser;
@@ -50,10 +49,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	property = "model.class.name=com.liferay.segments.model.SegmentsEntry",
-	service = {
-		ExportImportContentProcessor.class,
-		SegmentsEntryExportImportContentProcessor.class
-	}
+	service = ExportImportContentProcessor.class
 )
 public class SegmentsEntryExportImportContentProcessor
 	implements ExportImportContentProcessor<String> {
@@ -276,9 +272,6 @@ public class SegmentsEntryExportImportContentProcessor
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private SegmentsCriteriaContributorRegistry

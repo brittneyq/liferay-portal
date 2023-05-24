@@ -45,15 +45,11 @@ public class NotificationQueueEntryLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.notification.service.impl.NotificationQueueEntryLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static NotificationQueueEntry addNotificationQueueEntry(
-			long userId, long notificationTemplateId, String bcc, String body,
-			String cc, String className, long classPK, String from,
-			String fromName, double priority, String subject, String to,
-			String toName, List<Long> fileEntryIds)
+			com.liferay.notification.context.NotificationContext
+				notificationContext)
 		throws PortalException {
 
-		return getService().addNotificationQueueEntry(
-			userId, notificationTemplateId, bcc, body, cc, className, classPK,
-			from, fromName, priority, subject, to, toName, fileEntryIds);
+		return getService().addNotificationQueueEntry(notificationContext);
 	}
 
 	/**
@@ -254,6 +250,12 @@ public class NotificationQueueEntryLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
+	public static List<NotificationQueueEntry> getNotificationEntries(
+		String type, int status) {
+
+		return getService().getNotificationEntries(type, status);
+	}
+
 	/**
 	 * Returns a range of all the notification queue entries.
 	 *
@@ -320,10 +322,6 @@ public class NotificationQueueEntryLocalServiceUtil {
 			notificationQueueEntryId);
 	}
 
-	public static void sendNotificationQueueEntries() {
-		getService().sendNotificationQueueEntries();
-	}
-
 	/**
 	 * Updates the notification queue entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -341,15 +339,19 @@ public class NotificationQueueEntryLocalServiceUtil {
 			notificationQueueEntry);
 	}
 
-	public static NotificationQueueEntry updateSent(
-			long notificationQueueEntryId, boolean sent)
+	public static NotificationQueueEntry updateStatus(
+			long notificationQueueEntryId, int status)
 		throws PortalException {
 
-		return getService().updateSent(notificationQueueEntryId, sent);
+		return getService().updateStatus(notificationQueueEntryId, status);
 	}
 
 	public static NotificationQueueEntryLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(NotificationQueueEntryLocalService service) {
+		_service = service;
 	}
 
 	private static volatile NotificationQueueEntryLocalService _service;

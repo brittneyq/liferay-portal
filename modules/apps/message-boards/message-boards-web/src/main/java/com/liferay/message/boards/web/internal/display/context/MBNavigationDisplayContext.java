@@ -19,9 +19,9 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBu
 import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.message.boards.settings.MBGroupServiceSettings;
 import com.liferay.message.boards.web.internal.security.permission.MBResourcePermission;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -51,8 +51,7 @@ public class MBNavigationDisplayContext {
 		_renderResponse = renderResponse;
 
 		_mvcRenderCommandName = ParamUtil.getString(
-			_httpServletRequest, "mvcRenderCommandName",
-			"/message_boards/view");
+			httpServletRequest, "mvcRenderCommandName", "/message_boards/view");
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}

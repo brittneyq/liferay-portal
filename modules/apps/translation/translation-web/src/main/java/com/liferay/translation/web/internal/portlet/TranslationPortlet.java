@@ -25,7 +25,6 @@ import org.osgi.service.component.annotations.Component;
  * @author Alicia Garcia
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.display-category=category.hidden",
@@ -36,7 +35,8 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.init-param.mvc-command-names-default-views=/translation/view",
 		"javax.portlet.name=" + TranslationPortletKeys.TRANSLATION,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator"
+		"javax.portlet.security-role-ref=administrator",
+		"javax.portlet.version=3.0"
 	},
 	service = Portlet.class
 )

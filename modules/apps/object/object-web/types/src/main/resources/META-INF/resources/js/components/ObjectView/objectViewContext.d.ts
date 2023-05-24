@@ -14,7 +14,6 @@
 
 import React from 'react';
 import {
-	TName,
 	TObjectView,
 	TObjectViewSortColumn,
 	TState,
@@ -51,18 +50,22 @@ declare type TSortOptions = {
 export declare type TAction =
 	| {
 			payload: {
+				creationLanguageId: Liferay.Language.Locale;
+				objectFields: ObjectField[];
 				objectView: TObjectView;
 			};
 			type: TYPES.ADD_OBJECT_VIEW;
 	  }
 	| {
 			payload: {
+				creationLanguageId: Liferay.Language.Locale;
 				selectedObjectFields: ObjectField[];
 			};
 			type: TYPES.ADD_OBJECT_VIEW_COLUMN;
 	  }
 	| {
 			payload: {
+				creationLanguageId: Liferay.Language.Locale;
 				filterType?: string;
 				objectFieldName: string;
 				valueList?: IItem[];
@@ -71,19 +74,13 @@ export declare type TAction =
 	  }
 	| {
 			payload: {
+				creationLanguageId: Liferay.Language.Locale;
 				objectFieldName: string;
 				objectFields: ObjectField[];
 				objectViewSortColumns?: TObjectViewSortColumn[];
 				selectedObjetSort: TSortOptions;
 			};
 			type: TYPES.ADD_OBJECT_VIEW_SORT_COLUMN;
-	  }
-	| {
-			payload: {
-				objectFields: ObjectField[];
-				objectView: TObjectView;
-			};
-			type: TYPES.ADD_OBJECT_FIELDS;
 	  }
 	| {
 			payload: {
@@ -126,7 +123,7 @@ export declare type TAction =
 	| {
 			payload: {
 				editingObjectFieldName: string;
-				translations: TName;
+				translations: LocalizedValue<string>;
 			};
 			type: TYPES.EDIT_OBJECT_VIEW_COLUMN_LABEL;
 	  }
@@ -155,6 +152,7 @@ interface IViewContextProviderProps extends React.HTMLAttributes<HTMLElement> {
 	value: {
 		filterOperators: TFilterOperators;
 		isViewOnly: boolean;
+		objectDefinitionExternalReferenceCode: string;
 		objectViewId: string;
 		workflowStatusJSONArray: TWorkflowStatus[];
 	};

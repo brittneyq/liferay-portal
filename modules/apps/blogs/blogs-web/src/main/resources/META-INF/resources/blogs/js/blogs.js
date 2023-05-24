@@ -15,6 +15,7 @@
 import {State} from '@liferay/frontend-js-state-web';
 import {
 	fetch,
+	normalizeFriendlyURL,
 	openConfirmModal,
 	toggleBoxes,
 	toggleDisabled,
@@ -377,9 +378,15 @@ export default class Blogs {
 
 				const allowPingbacks = this._getElementById('allowPingbacks');
 				const allowTrackbacks = this._getElementById('allowTrackbacks');
+				const inputPermissionsViewRole = this._getElementById(
+					'inputPermissionsViewRole'
+				).value;
 
 				const bodyData = addNamespace(
 					{
+						addEntryResources: this._getElementById(
+							'addEntryResources'
+						).value,
 						allowPingbacks: allowPingbacks?.value,
 						allowTrackbacks: allowTrackbacks?.value,
 						assetCategoryIds: this._getValuesByName(
@@ -410,6 +417,7 @@ export default class Blogs {
 						displayDateYear: this._getElementById('displayDateYear')
 							.value,
 						entryId: this._getElementById('entryId').value,
+						inputPermissionsViewRole,
 						referringPortletResource: this._getElementById(
 							'referringPortletResource'
 						).value,
@@ -659,7 +667,7 @@ export default class Blogs {
 			this._automaticURL() &&
 			(friendlyURLEmpty || this._originalFriendlyURLChanged)
 		) {
-			urlTitleInput.value = Liferay.Util.normalizeFriendlyURL(title);
+			urlTitleInput.value = normalizeFriendlyURL(title);
 		}
 
 		this._originalFriendlyURLChanged = true;

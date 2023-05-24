@@ -25,7 +25,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -46,22 +46,22 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
 import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the cp option local service.
@@ -76,8 +76,7 @@ import javax.sql.DataSource;
  */
 public abstract class CPOptionLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements CPOptionLocalService, CTService<CPOption>,
-			   IdentifiableOSGiService {
+	implements AopService, CPOptionLocalService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -267,48 +266,21 @@ public abstract class CPOptionLocalServiceBaseImpl
 		return cpOptionPersistence.fetchByUuid_C_First(uuid, companyId, null);
 	}
 
-	/**
-	 * Returns the cp option with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the cp option's external reference code
-	 * @return the matching cp option, or <code>null</code> if a matching cp option could not be found
-	 */
 	@Override
 	public CPOption fetchCPOptionByExternalReferenceCode(
-		long companyId, String externalReferenceCode) {
+		String externalReferenceCode, long companyId) {
 
-		return cpOptionPersistence.fetchByC_ERC(
-			companyId, externalReferenceCode);
+		return cpOptionPersistence.fetchByERC_C(
+			externalReferenceCode, companyId);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchCPOptionByExternalReferenceCode(long, String)}
-	 */
-	@Deprecated
-	@Override
-	public CPOption fetchCPOptionByReferenceCode(
-		long companyId, String externalReferenceCode) {
-
-		return fetchCPOptionByExternalReferenceCode(
-			companyId, externalReferenceCode);
-	}
-
-	/**
-	 * Returns the cp option with the matching external reference code and company.
-	 *
-	 * @param companyId the primary key of the company
-	 * @param externalReferenceCode the cp option's external reference code
-	 * @return the matching cp option
-	 * @throws PortalException if a matching cp option could not be found
-	 */
 	@Override
 	public CPOption getCPOptionByExternalReferenceCode(
-			long companyId, String externalReferenceCode)
+			String externalReferenceCode, long companyId)
 		throws PortalException {
 
-		return cpOptionPersistence.findByC_ERC(
-			companyId, externalReferenceCode);
+		return cpOptionPersistence.findByERC_C(
+			externalReferenceCode, companyId);
 	}
 
 	/**
@@ -527,82 +499,24 @@ public abstract class CPOptionLocalServiceBaseImpl
 		return cpOptionPersistence.update(cpOption);
 	}
 
-	/**
-	 * Returns the cp option local service.
-	 *
-	 * @return the cp option local service
-	 */
-	public CPOptionLocalService getCPOptionLocalService() {
-		return cpOptionLocalService;
+	@Deactivate
+	protected void deactivate() {
+		CPOptionLocalServiceUtil.setService(null);
 	}
 
-	/**
-	 * Sets the cp option local service.
-	 *
-	 * @param cpOptionLocalService the cp option local service
-	 */
-	public void setCPOptionLocalService(
-		CPOptionLocalService cpOptionLocalService) {
-
-		this.cpOptionLocalService = cpOptionLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			CPOptionLocalService.class, IdentifiableOSGiService.class,
+			CTService.class, PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Returns the cp option persistence.
-	 *
-	 * @return the cp option persistence
-	 */
-	public CPOptionPersistence getCPOptionPersistence() {
-		return cpOptionPersistence;
-	}
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		cpOptionLocalService = (CPOptionLocalService)aopProxy;
 
-	/**
-	 * Sets the cp option persistence.
-	 *
-	 * @param cpOptionPersistence the cp option persistence
-	 */
-	public void setCPOptionPersistence(
-		CPOptionPersistence cpOptionPersistence) {
-
-		this.cpOptionPersistence = cpOptionPersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.commerce.product.model.CPOption",
-			cpOptionLocalService);
-
-		_setLocalServiceUtilService(cpOptionLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.commerce.product.model.CPOption");
-
-		_setLocalServiceUtilService(null);
+		CPOptionLocalServiceUtil.setService(cpOptionLocalService);
 	}
 
 	/**
@@ -661,39 +575,16 @@ public abstract class CPOptionLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CPOptionLocalService cpOptionLocalService) {
-
-		try {
-			Field field = CPOptionLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, cpOptionLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@BeanReference(type = CPOptionLocalService.class)
 	protected CPOptionLocalService cpOptionLocalService;
 
-	@BeanReference(type = CPOptionPersistence.class)
+	@Reference
 	protected CPOptionPersistence cpOptionPersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPOptionLocalServiceBaseImpl.class);
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

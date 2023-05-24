@@ -63,7 +63,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.portal.cluster.multiple.configuration.ClusterExecutorConfiguration",
-	enabled = false, immediate = true, service = ClusterChannelFactory.class
+	enabled = false, service = ClusterChannelFactory.class
 )
 public class JGroupsClusterChannelFactory implements ClusterChannelFactory {
 
@@ -115,11 +115,6 @@ public class JGroupsClusterChannelFactory implements ClusterChannelFactory {
 	@Deactivate
 	protected synchronized void deactivate() {
 		_classLoaders.clear();
-	}
-
-	@Reference(unbind = "-")
-	protected void setProps(Props props) {
-		_props = props;
 	}
 
 	private InputStream _getInputStream(String channelPropertiesLocation)
@@ -311,6 +306,8 @@ public class JGroupsClusterChannelFactory implements ClusterChannelFactory {
 		new ConcurrentReferenceKeyHashMap<>(
 			FinalizeManager.WEAK_REFERENCE_FACTORY);
 	private volatile ClusterExecutorConfiguration _clusterExecutorConfiguration;
+
+	@Reference
 	private Props _props;
 
 }

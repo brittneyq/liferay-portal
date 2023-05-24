@@ -20,7 +20,7 @@
 CommerceOrganizationDisplayContext commerceOrganizationDisplayContext = (CommerceOrganizationDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 %>
 
-<div id="<%= liferayPortletResponse.getNamespace() %>org-chart-root">
+<div id="<portlet:namespace />org-chart-root">
 	<span aria-hidden="true" class="loading-animation loading-animation-sm"></span>
 
 	<react:component
@@ -29,7 +29,7 @@ CommerceOrganizationDisplayContext commerceOrganizationDisplayContext = (Commerc
 			HashMapBuilder.<String, Object>put(
 				"rootOrganizationId", commerceOrganizationDisplayContext.getRootOrganizationId()
 			).put(
-				"spritemap", FrontendIconsUtil.getSpritemap(themeDisplay)
+				"spritemap", themeDisplay.getPathThemeSpritemap()
 			).build()
 		%>'
 	/>

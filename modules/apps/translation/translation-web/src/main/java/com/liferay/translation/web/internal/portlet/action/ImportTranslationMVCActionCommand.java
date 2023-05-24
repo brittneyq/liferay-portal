@@ -18,9 +18,8 @@ import com.liferay.document.library.kernel.exception.FileSizeException;
 import com.liferay.info.exception.InfoItemPermissionException;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
-import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.petra.function.UnsafeSupplier;
-import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -28,6 +27,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.servlet.MultiSessionMessages;
@@ -109,7 +109,7 @@ public class ImportTranslationMVCActionCommand extends BaseMVCActionCommand {
 
 			TranslationRequestHelper translationRequestHelper =
 				new TranslationRequestHelper(
-					_infoItemServiceTracker, actionRequest,
+					_infoItemServiceRegistry, actionRequest,
 					_segmentsExperienceLocalService);
 			List<Map<String, String>> failureMessages = new LinkedList<>();
 			List<String> successMessages = new ArrayList<>();
@@ -213,8 +213,8 @@ public class ImportTranslationMVCActionCommand extends BaseMVCActionCommand {
 		throws XLIFFFileException {
 
 		if (!Objects.equals(ContentTypes.APPLICATION_ZIP, contentType) &&
-			!Objects.equals("application/x-xliff+xml", contentType) &&
-			!Objects.equals("application/xliff+xml", contentType)) {
+			!Objects.equals(contentType, "application/x-xliff+xml") &&
+			!Objects.equals(contentType, "application/xliff+xml")) {
 
 			throw new XLIFFFileException.MustBeValid(
 				"Unsupported content type: " + contentType);
@@ -422,7 +422,7 @@ public class ImportTranslationMVCActionCommand extends BaseMVCActionCommand {
 					).build();
 
 	@Reference
-	private InfoItemServiceTracker _infoItemServiceTracker;
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 	@Reference
 	private Language _language;

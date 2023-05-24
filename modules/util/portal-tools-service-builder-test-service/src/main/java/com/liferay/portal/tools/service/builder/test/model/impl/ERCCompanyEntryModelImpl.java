@@ -221,53 +221,71 @@ public class ERCCompanyEntryModelImpl
 	public Map<String, Function<ERCCompanyEntry, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<ERCCompanyEntry, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<ERCCompanyEntry, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<ERCCompanyEntry, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<ERCCompanyEntry, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap<String, Function<ERCCompanyEntry, Object>>();
-		Map<String, BiConsumer<ERCCompanyEntry, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<ERCCompanyEntry, ?>>();
+		private static final Map<String, Function<ERCCompanyEntry, Object>>
+			_attributeGetterFunctions;
 
-		attributeGetterFunctions.put("uuid", ERCCompanyEntry::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid",
-			(BiConsumer<ERCCompanyEntry, String>)ERCCompanyEntry::setUuid);
-		attributeGetterFunctions.put(
-			"externalReferenceCode", ERCCompanyEntry::getExternalReferenceCode);
-		attributeSetterBiConsumers.put(
-			"externalReferenceCode",
-			(BiConsumer<ERCCompanyEntry, String>)
-				ERCCompanyEntry::setExternalReferenceCode);
-		attributeGetterFunctions.put(
-			"ercCompanyEntryId", ERCCompanyEntry::getErcCompanyEntryId);
-		attributeSetterBiConsumers.put(
-			"ercCompanyEntryId",
-			(BiConsumer<ERCCompanyEntry, Long>)
-				ERCCompanyEntry::setErcCompanyEntryId);
-		attributeGetterFunctions.put(
-			"companyId", ERCCompanyEntry::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<ERCCompanyEntry, Long>)ERCCompanyEntry::setCompanyId);
+		static {
+			Map<String, Function<ERCCompanyEntry, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<ERCCompanyEntry, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put("uuid", ERCCompanyEntry::getUuid);
+			attributeGetterFunctions.put(
+				"externalReferenceCode",
+				ERCCompanyEntry::getExternalReferenceCode);
+			attributeGetterFunctions.put(
+				"ercCompanyEntryId", ERCCompanyEntry::getErcCompanyEntryId);
+			attributeGetterFunctions.put(
+				"companyId", ERCCompanyEntry::getCompanyId);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map<String, BiConsumer<ERCCompanyEntry, Object>>
+			_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<ERCCompanyEntry, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap<String, BiConsumer<ERCCompanyEntry, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"uuid",
+				(BiConsumer<ERCCompanyEntry, String>)ERCCompanyEntry::setUuid);
+			attributeSetterBiConsumers.put(
+				"externalReferenceCode",
+				(BiConsumer<ERCCompanyEntry, String>)
+					ERCCompanyEntry::setExternalReferenceCode);
+			attributeSetterBiConsumers.put(
+				"ercCompanyEntryId",
+				(BiConsumer<ERCCompanyEntry, Long>)
+					ERCCompanyEntry::setErcCompanyEntryId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<ERCCompanyEntry, Long>)
+					ERCCompanyEntry::setCompanyId);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -595,37 +613,6 @@ public class ERCCompanyEntryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<ERCCompanyEntry, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<ERCCompanyEntry, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<ERCCompanyEntry, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((ERCCompanyEntry)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, ERCCompanyEntry>
@@ -644,7 +631,8 @@ public class ERCCompanyEntryModelImpl
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<ERCCompanyEntry, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

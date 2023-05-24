@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,7 +51,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -84,7 +82,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(service = {MBThreadFlagPersistence.class, BasePersistence.class})
+@Component(service = MBThreadFlagPersistence.class)
 public class MBThreadFlagPersistenceImpl
 	extends BasePersistenceImpl<MBThreadFlag>
 	implements MBThreadFlagPersistence {
@@ -204,7 +202,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBThreadFlag>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBThreadFlag mbThreadFlag : list) {
@@ -593,7 +591,7 @@ public class MBThreadFlagPersistenceImpl
 
 			finderArgs = new Object[] {uuid};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -729,7 +727,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
-				_finderPathFetchByUUID_G, finderArgs);
+				_finderPathFetchByUUID_G, finderArgs, this);
 		}
 
 		if (result instanceof MBThreadFlag) {
@@ -849,7 +847,7 @@ public class MBThreadFlagPersistenceImpl
 
 			finderArgs = new Object[] {uuid, groupId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1021,7 +1019,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBThreadFlag>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBThreadFlag mbThreadFlag : list) {
@@ -1444,7 +1442,7 @@ public class MBThreadFlagPersistenceImpl
 
 			finderArgs = new Object[] {uuid, companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1604,7 +1602,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBThreadFlag>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBThreadFlag mbThreadFlag : list) {
@@ -1970,7 +1968,7 @@ public class MBThreadFlagPersistenceImpl
 
 			finderArgs = new Object[] {userId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2112,7 +2110,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBThreadFlag>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MBThreadFlag mbThreadFlag : list) {
@@ -2479,7 +2477,7 @@ public class MBThreadFlagPersistenceImpl
 
 			finderArgs = new Object[] {threadId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2598,7 +2596,8 @@ public class MBThreadFlagPersistenceImpl
 		Object result = null;
 
 		if (useFinderCache && productionMode) {
-			result = finderCache.getResult(_finderPathFetchByU_T, finderArgs);
+			result = finderCache.getResult(
+				_finderPathFetchByU_T, finderArgs, this);
 		}
 
 		if (result instanceof MBThreadFlag) {
@@ -2705,7 +2704,7 @@ public class MBThreadFlagPersistenceImpl
 
 			finderArgs = new Object[] {userId, threadId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3365,7 +3364,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<MBThreadFlag>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3441,7 +3440,7 @@ public class MBThreadFlagPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3669,30 +3668,14 @@ public class MBThreadFlagPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"userId", "threadId"}, false);
 
-		_setMBThreadFlagUtilPersistence(this);
+		MBThreadFlagUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setMBThreadFlagUtilPersistence(null);
+		MBThreadFlagUtil.setPersistence(null);
 
 		entityCache.removeCache(MBThreadFlagImpl.class.getName());
-	}
-
-	private void _setMBThreadFlagUtilPersistence(
-		MBThreadFlagPersistence mbThreadFlagPersistence) {
-
-		try {
-			Field field = MBThreadFlagUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, mbThreadFlagPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3763,9 +3746,5 @@ public class MBThreadFlagPersistenceImpl
 
 	@Reference
 	private PortalUUID _portalUUID;
-
-	@Reference
-	private MBThreadFlagModelArgumentsResolver
-		_mbThreadFlagModelArgumentsResolver;
 
 }

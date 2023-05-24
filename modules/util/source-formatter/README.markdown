@@ -97,8 +97,9 @@ Checks are configured in the following files:
    - [Upgrade](src/main/resources/documentation/upgrade_checks.markdown#upgrade-checks)
 
 - ### By File Extensions:
-   - [.action, .function, .jrxml, .macro, .pom, .project, .properties, .svg, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd](src/main/resources/documentation/xml_source_processor_checks.markdown#checks-for-action-function-jrxml-macro-pom-project-properties-svg-testcase-toggle-tpl-wsdl-xml-or-xsd)
+   - [.action, .function, .jelly, .jrxml, .macro, .pom, .project, .properties, .svg, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd](src/main/resources/documentation/xml_source_processor_checks.markdown#checks-for-action-function-jelly-jrxml-macro-pom-project-properties-svg-testcase-toggle-tpl-wsdl-xml-or-xsd)
    - [.bnd](src/main/resources/documentation/bnd_source_processor_checks.markdown#checks-for-bnd)
+   - [.bnd, .gradle, .java or .vm](src/main/resources/documentation/upgrade_source_processor_checks.markdown#checks-for-bnd-gradle-java-or-vm)
    - [.bndrun](src/main/resources/documentation/bnd_run_source_processor_checks.markdown#checks-for-bndrun)
    - [.cfg or .config](src/main/resources/documentation/config_source_processor_checks.markdown#checks-for-cfg-or-config)
    - [.cql](src/main/resources/documentation/cql_source_processor_checks.markdown#checks-for-cql)
@@ -109,6 +110,7 @@ Checks are configured in the following files:
    - [.ftl](src/main/resources/documentation/ftl_source_processor_checks.markdown#checks-for-ftl)
    - [.function, .jar, .lar, .macro, .path, .testcase, .war or .zip](src/main/resources/documentation/poshi_source_processor_checks.markdown#checks-for-function-jar-lar-macro-path-testcase-war-or-zip)
    - [.gradle](src/main/resources/documentation/gradle_source_processor_checks.markdown#checks-for-gradle)
+   - [.gradle, .gradle, .gradle, .gradle, .json, .json, .properties, .properties, .xml or .xml](src/main/resources/documentation/library_source_processor_checks.markdown#checks-for-gradle-gradle-gradle-gradle-json-json-properties-properties-xml-or-xml)
    - [.groovy](src/main/resources/documentation/groovy_source_processor_checks.markdown#checks-for-groovy)
    - [.html or .path](src/main/resources/documentation/html_source_processor_checks.markdown#checks-for-html-or-path)
    - [.ipynb, .json or .npmbridgerc](src/main/resources/documentation/json_source_processor_checks.markdown#checks-for-ipynb-json-or-npmbridgerc)

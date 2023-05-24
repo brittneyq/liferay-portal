@@ -23,17 +23,16 @@ import com.liferay.commerce.order.rule.service.COREntryService;
 import com.liferay.commerce.service.CommerceOrderTypeService;
 import com.liferay.headless.commerce.admin.order.dto.v1_0.OrderRule;
 import com.liferay.headless.commerce.admin.order.dto.v1_0.OrderRuleOrderType;
-import com.liferay.headless.commerce.admin.order.internal.dto.v1_0.converter.OrderRuleOrderTypeDTOConverter;
 import com.liferay.headless.commerce.admin.order.resource.v1_0.OrderRuleOrderTypeResource;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.Map;
 
@@ -45,7 +44,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Marco Leo
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/order-rule-order-type.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = {NestedFieldSupport.class, OrderRuleOrderTypeResource.class}
@@ -74,7 +72,7 @@ public class OrderRuleOrderTypeResourceImpl
 		}
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_corEntryRelService.getCommerceOrderTypeCOREntryRels(
 					corEntry.getCOREntryId(), null,
 					pagination.getStartPosition(), pagination.getEndPosition()),
@@ -98,7 +96,7 @@ public class OrderRuleOrderTypeResourceImpl
 		}
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_corEntryRelService.getCommerceOrderTypeCOREntryRels(
 					id, search, pagination.getStartPosition(),
 					pagination.getEndPosition()),
@@ -210,7 +208,10 @@ public class OrderRuleOrderTypeResourceImpl
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@Reference
-	private OrderRuleOrderTypeDTOConverter _orderRuleOrderTypeDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.order.internal.dto.v1_0.converter.OrderRuleOrderTypeDTOConverter)"
+	)
+	private DTOConverter<COREntryRel, OrderRuleOrderType>
+		_orderRuleOrderTypeDTOConverter;
 
 }

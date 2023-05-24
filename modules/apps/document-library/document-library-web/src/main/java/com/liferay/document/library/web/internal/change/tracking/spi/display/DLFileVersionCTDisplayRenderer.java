@@ -32,16 +32,15 @@ import com.liferay.document.library.preview.DLPreviewRendererProvider;
 import com.liferay.document.library.service.DLFileVersionPreviewLocalService;
 import com.liferay.frontend.taglib.clay.servlet.taglib.LinkTag;
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.documentlibrary.store.StoreFactory;
 
 import java.io.InputStream;
 
@@ -55,7 +54,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 /**
  * @author Samuel Trong Tran
  */
-@Component(immediate = true, service = CTDisplayRenderer.class)
+@Component(service = CTDisplayRenderer.class)
 public class DLFileVersionCTDisplayRenderer
 	extends BaseCTDisplayRenderer<DLFileVersion> {
 
@@ -73,8 +72,8 @@ public class DLFileVersionCTDisplayRenderer
 		throws PortalException {
 
 		return getDownloadInputStream(
-			_audioProcessor, _dlAppLocalService, dlFileVersion, _imageProcessor,
-			key, _pdfProcessor, _videoProcessor);
+			_store, _audioProcessor, _dlAppLocalService, dlFileVersion,
+			_imageProcessor, key, _pdfProcessor, _videoProcessor);
 	}
 
 	@Override
@@ -121,8 +120,7 @@ public class DLFileVersionCTDisplayRenderer
 
 			return StringBundler.concat(
 				"<audio controls controlsList=\"nodownload\" style=\"",
-				"max-width: ",
-				String.valueOf(PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_WIDTH),
+				"max-width: ", PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_WIDTH,
 				"px;\"><source src=\"",
 				displayContext.getDownloadURL(
 					_AUDIO_PREVIEW + ",mp3",
@@ -213,7 +211,7 @@ public class DLFileVersionCTDisplayRenderer
 				"<video controls controlsList=\"nodownload\" style=\"",
 				"background-color: #000; display: block; margin: auto; ",
 				"max-height:624px; max-width:",
-				String.valueOf(PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_WIDTH),
+				PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_WIDTH,
 				"px;\"><source src=\"",
 				displayContext.getDownloadURL(
 					_VIDEO_PREVIEW + ",mp4",
@@ -231,10 +229,10 @@ public class DLFileVersionCTDisplayRenderer
 	}
 
 	protected static InputStream getDownloadInputStream(
-			AudioProcessor audioProcessor, DLAppLocalService dlAppLocalService,
-			DLFileVersion dlFileVersion, ImageProcessor imageProcessor,
-			String key, PDFProcessor pdfProcessor,
-			VideoProcessor videoProcessor)
+			Store store, AudioProcessor audioProcessor,
+			DLAppLocalService dlAppLocalService, DLFileVersion dlFileVersion,
+			ImageProcessor imageProcessor, String key,
+			PDFProcessor pdfProcessor, VideoProcessor videoProcessor)
 		throws PortalException {
 
 		String[] parts = StringUtil.split(key, StringPool.COMMA);
@@ -268,10 +266,6 @@ public class DLFileVersionCTDisplayRenderer
 		catch (Exception exception) {
 			throw new PortalException(exception);
 		}
-
-		StoreFactory storeFactory = StoreFactory.getInstance();
-
-		Store store = storeFactory.getStore();
 
 		DLFileEntry dlFileEntry = dlFileVersion.getFileEntry();
 
@@ -363,6 +357,9 @@ public class DLFileVersionCTDisplayRenderer
 
 	@Reference(policyOption = ReferencePolicyOption.GREEDY)
 	private PDFProcessor _pdfProcessor;
+
+	@Reference(target = "(default=true)")
+	private Store _store;
 
 	@Reference(policyOption = ReferencePolicyOption.GREEDY)
 	private VideoProcessor _videoProcessor;

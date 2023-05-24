@@ -23,7 +23,6 @@ import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.petra.xml.XMLUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -115,7 +114,7 @@ public class JournalUpgradeProcess extends UpgradeProcess {
 
 		Group group = _groupLocalService.getCompanyGroup(companyId);
 
-		long defaultUserId = _userLocalService.getDefaultUserId(companyId);
+		long guestUserId = _userLocalService.getGuestUserId(companyId);
 
 		Class<?> clazz = getClass();
 
@@ -128,7 +127,7 @@ public class JournalUpgradeProcess extends UpgradeProcess {
 
 		try {
 			_defaultDDMStructureHelper.addDDMStructures(
-				defaultUserId, group.getGroupId(),
+				guestUserId, group.getGroupId(),
 				PortalUtil.getClassNameId(JournalArticle.class),
 				clazz.getClassLoader(),
 				"com/liferay/journal/internal/upgrade/v1_0_0/dependencies" +
@@ -324,7 +323,7 @@ public class JournalUpgradeProcess extends UpgradeProcess {
 			dynamicElementElement.add(dynamicContentElement);
 		}
 
-		return XMLUtil.formatXML(newDocument);
+		return newDocument.formattedString(StringPool.DOUBLE_SPACE);
 	}
 
 	private String _fixStaticContent(
@@ -576,7 +575,7 @@ public class JournalUpgradeProcess extends UpgradeProcess {
 
 		_transformDateFieldValues(dynamicElementElements);
 
-		return XMLUtil.formatXML(document);
+		return document.formattedString(StringPool.DOUBLE_SPACE);
 	}
 
 	private String _transformFieldNames(String content) throws Exception {

@@ -20,10 +20,14 @@ import com.liferay.headless.delivery.dto.v1_0.CollectionConfig;
 import com.liferay.headless.delivery.dto.v1_0.CollectionViewport;
 import com.liferay.headless.delivery.dto.v1_0.CollectionViewportDefinition;
 import com.liferay.headless.delivery.dto.v1_0.EmptyCollectionConfig;
+import com.liferay.headless.delivery.dto.v1_0.Layout;
 import com.liferay.headless.delivery.dto.v1_0.PageCollectionDefinition;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderItemSelectorReturnType;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
+import com.liferay.layout.converter.AlignConverter;
+import com.liferay.layout.converter.FlexWrapConverter;
+import com.liferay.layout.converter.JustifyConverter;
 import com.liferay.layout.responsive.ViewportSize;
 import com.liferay.layout.util.structure.CollectionStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructureItem;
@@ -66,6 +70,8 @@ public class CollectionLayoutStructureItemMapper
 					{
 						collectionConfig = _getCollectionConfig(
 							collectionStyledLayoutStructureItem);
+						collectionViewports = _getCollectionViewports(
+							collectionStyledLayoutStructureItem);
 						displayAllItems =
 							collectionStyledLayoutStructureItem.
 								isDisplayAllItems();
@@ -74,11 +80,16 @@ public class CollectionLayoutStructureItemMapper
 								isDisplayAllPages();
 						emptyCollectionConfig = _getEmptyCollectionConfig(
 							collectionStyledLayoutStructureItem);
+						fragmentViewports = getFragmentViewPorts(
+							collectionStyledLayoutStructureItem.
+								getItemConfigJSONObject());
+						layout = _toLayout(collectionStyledLayoutStructureItem);
 						listItemStyle =
 							collectionStyledLayoutStructureItem.
 								getListItemStyle();
 						listStyle =
 							collectionStyledLayoutStructureItem.getListStyle();
+						name = collectionStyledLayoutStructureItem.getName();
 						numberOfColumns =
 							collectionStyledLayoutStructureItem.
 								getNumberOfColumns();
@@ -100,15 +111,6 @@ public class CollectionLayoutStructureItemMapper
 						templateKey =
 							collectionStyledLayoutStructureItem.
 								getTemplateKey();
-
-						setCollectionViewports(
-							_getCollectionViewports(
-								collectionStyledLayoutStructureItem));
-						setFragmentViewports(
-							() -> getFragmentViewPorts(
-								collectionStyledLayoutStructureItem.
-									getItemConfigJSONObject()));
-						setName(collectionStyledLayoutStructureItem::getName);
 					}
 				};
 				type = Type.COLLECTION;
@@ -229,8 +231,8 @@ public class CollectionLayoutStructureItemMapper
 
 		return new EmptyCollectionConfig() {
 			{
-				setDisplayMessage(emptyCollectionOptions::isDisplayMessage);
-				setMessage_i18n(emptyCollectionOptions::getMessage);
+				displayMessage = emptyCollectionOptions.isDisplayMessage();
+				message_i18n = emptyCollectionOptions.getMessage();
 			}
 		};
 	}
@@ -281,6 +283,59 @@ public class CollectionLayoutStructureItemMapper
 						}
 
 						return jsonObject.getInt("numberOfColumns");
+					});
+			}
+		};
+	}
+
+	private Layout _toLayout(
+		CollectionStyledLayoutStructureItem
+			collectionStyledLayoutStructureItem) {
+
+		String formLayoutAlign = collectionStyledLayoutStructureItem.getAlign();
+		String formLayoutFlexWrap =
+			collectionStyledLayoutStructureItem.getFlexWrap();
+		String formLayoutJustify =
+			collectionStyledLayoutStructureItem.getJustify();
+
+		if (Validator.isNull(formLayoutAlign) &&
+			Validator.isNull(formLayoutFlexWrap) &&
+			Validator.isNull(formLayoutJustify)) {
+
+			return null;
+		}
+
+		return new Layout() {
+			{
+				setAlign(
+					() -> {
+						if (Validator.isNull(formLayoutAlign)) {
+							return null;
+						}
+
+						return Align.create(
+							AlignConverter.convertToExternalValue(
+								formLayoutAlign));
+					});
+				setFlexWrap(
+					() -> {
+						if (Validator.isNull(formLayoutFlexWrap)) {
+							return null;
+						}
+
+						return FlexWrap.create(
+							FlexWrapConverter.convertToExternalValue(
+								formLayoutFlexWrap));
+					});
+				setJustify(
+					() -> {
+						if (Validator.isNull(formLayoutJustify)) {
+							return null;
+						}
+
+						return Justify.create(
+							JustifyConverter.convertToExternalValue(
+								formLayoutJustify));
 					});
 			}
 		};

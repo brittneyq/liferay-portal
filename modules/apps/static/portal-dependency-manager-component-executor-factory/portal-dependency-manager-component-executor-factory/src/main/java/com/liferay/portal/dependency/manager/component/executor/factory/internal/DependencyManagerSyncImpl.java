@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.ServiceRegistration;
@@ -34,12 +35,12 @@ public class DependencyManagerSyncImpl implements DependencyManagerSync {
 
 	public DependencyManagerSyncImpl(
 		ExecutorService executorService,
-		ServiceRegistration<?> componentExecutorFactoryRegistration,
+		ServiceRegistration<?> componentExecutorFactoryServiceRegistration,
 		long syncTimeout) {
 
 		_executorService = executorService;
-		_componentExecutorFactoryRegistration =
-			componentExecutorFactoryRegistration;
+		_componentExecutorFactoryServiceRegistration =
+			componentExecutorFactoryServiceRegistration;
 		_syncTimeout = syncTimeout;
 	}
 
@@ -57,16 +58,28 @@ public class DependencyManagerSyncImpl implements DependencyManagerSync {
 	}
 
 	@Override
-	public void registerSyncFuture(Future<Void> syncFuture) {
+	public void registerSyncFutureTask(
+		FutureTask<Void> syncFutureTask, String taskName) {
+
 		_addFutureListener(
 			future -> {
+				syncFutureTask.run();
+
 				try {
-					syncFuture.get(_syncTimeout, TimeUnit.SECONDS);
+					syncFutureTask.get(_syncTimeout, TimeUnit.SECONDS);
 				}
 				catch (Exception exception) {
 					_log.error("Unable to sync future", exception);
 				}
 			});
+
+		if (!syncFutureTask.isDone()) {
+			Thread thread = new Thread(syncFutureTask, taskName);
+
+			thread.setDaemon(true);
+
+			thread.start();
+		}
 	}
 
 	@Override
@@ -75,9 +88,9 @@ public class DependencyManagerSyncImpl implements DependencyManagerSync {
 			return;
 		}
 
-		if (_componentExecutorFactoryRegistration != null) {
+		if (_componentExecutorFactoryServiceRegistration != null) {
 			try {
-				_componentExecutorFactoryRegistration.unregister();
+				_componentExecutorFactoryServiceRegistration.unregister();
 			}
 			catch (IllegalStateException illegalStateException) {
 				if (_log.isDebugEnabled()) {
@@ -132,7 +145,8 @@ public class DependencyManagerSyncImpl implements DependencyManagerSync {
 	private static final Log _log = LogFactoryUtil.getLog(
 		DependencyManagerSyncImpl.class);
 
-	private final ServiceRegistration<?> _componentExecutorFactoryRegistration;
+	private final ServiceRegistration<?>
+		_componentExecutorFactoryServiceRegistration;
 	private final ExecutorService _executorService;
 	private final DefaultNoticeableFuture<Void> _syncDefaultNoticeableFuture =
 		new DefaultNoticeableFuture<>();

@@ -43,10 +43,17 @@ if (priceDisplayType.equals(CommercePricingConstants.TAX_INCLUDED_IN_PRICE)) {
 	totalOrderCommerceMoney = commerceOrderPrice.getTotalWithTaxAmount();
 }
 
-CommerceAccount commerceAccount = commerceOrderContentDisplayContext.getCommerceAccount();
+AccountEntry accountEntry = commerceOrderContentDisplayContext.getAccountEntry();
 
 if (commerceOrder != null) {
-	commerceAccount = commerceOrder.getCommerceAccount();
+	accountEntry = commerceOrder.getAccountEntry();
+}
+
+String backURL = ParamUtil.getString(request, "backURL", null);
+
+if (backURL != null) {
+	portletDisplay.setShowBackIcon(true);
+	portletDisplay.setURLBack(backURL);
 }
 %>
 
@@ -76,7 +83,7 @@ if (commerceOrder != null) {
 		<div class="align-items-center row">
 			<div class="col-md-3">
 				<div class="commerce-order-title">
-					<%= HtmlUtil.escape(commerceAccount.getName()) %>
+					<%= HtmlUtil.escape(accountEntry.getName()) %>
 				</div>
 			</div>
 
@@ -109,7 +116,7 @@ if (commerceOrder != null) {
 			<div class="col-md-3">
 				<dl class="commerce-list">
 					<dt><liferay-ui:message key="account-id" /></dt>
-					<dd><%= commerceAccount.getCommerceAccountId() %></dd>
+					<dd><%= accountEntry.getAccountEntryId() %></dd>
 				</dl>
 			</div>
 
@@ -185,7 +192,7 @@ if (commerceOrder != null) {
 		<div class="commerce-panel">
 			<div class="commerce-panel__title"><liferay-ui:message key="billing-address" /></div>
 			<div class="commerce-panel__content">
-				<c:if test="<%= commerceOrderContentDisplayContext.hasViewBillingAddressPermission(permissionChecker, commerceAccount) && (billingCommerceAddress != null) %>">
+				<c:if test="<%= commerceOrderContentDisplayContext.hasViewBillingAddressPermission(permissionChecker, accountEntry) && (billingCommerceAddress != null) %>">
 					<p><%= HtmlUtil.escape(billingCommerceAddress.getName()) %></p>
 
 					<p><%= HtmlUtil.escape(billingCommerceAddress.getStreet1()) %></p>

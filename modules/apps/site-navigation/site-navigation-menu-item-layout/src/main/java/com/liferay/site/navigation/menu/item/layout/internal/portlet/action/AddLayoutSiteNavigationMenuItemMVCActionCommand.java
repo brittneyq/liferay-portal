@@ -15,7 +15,7 @@
 package com.liferay.site.navigation.menu.item.layout.internal.portlet.action;
 
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -38,8 +39,9 @@ import com.liferay.site.navigation.exception.SiteNavigationMenuItemNameException
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
@@ -52,7 +54,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + SiteNavigationAdminPortletKeys.SITE_NAVIGATION_ADMIN,
 		"mvc.command.name=/navigation_menu/add_layout_site_navigation_menu_item"
@@ -79,12 +80,12 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 			actionRequest);
 
 		Map<Long, SiteNavigationMenuItem> layoutSiteNavigationMenuItemMap =
-			new HashMap<>();
+			new LinkedHashMap<>();
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
 		try {
-			JSONArray jsonArray = JSONFactoryUtil.createJSONArray(
+			JSONArray jsonArray = _jsonFactory.createJSONArray(
 				ParamUtil.getString(actionRequest, "items"));
 
 			Iterator<JSONObject> iterator = jsonArray.iterator();
@@ -104,9 +105,13 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 					continue;
 				}
 
+				long parentSiteNavigationMenuItemId = ParamUtil.getLong(
+					actionRequest, "parentSiteNavigationMenuItemId");
+
 				SiteNavigationMenuItem siteNavigationMenuItem =
 					_siteNavigationMenuItemService.addSiteNavigationMenuItem(
-						themeDisplay.getScopeGroupId(), siteNavigationMenuId, 0,
+						themeDisplay.getScopeGroupId(), siteNavigationMenuId,
+						parentSiteNavigationMenuItemId,
 						siteNavigationMenuItemType,
 						UnicodePropertiesBuilder.create(
 							true
@@ -125,29 +130,50 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 					layout.getPlid(), siteNavigationMenuItem);
 			}
 
+			int order = ParamUtil.getInteger(actionRequest, "order", -1);
+
+			int nextOrder = order;
+
 			for (Map.Entry<Long, SiteNavigationMenuItem> entry :
 					layoutSiteNavigationMenuItemMap.entrySet()) {
 
-				Layout layout = _layoutLocalService.fetchLayout(entry.getKey());
+				if (order < 0) {
+					Layout layout = _layoutLocalService.fetchLayout(
+						entry.getKey());
 
-				if (layout.getParentPlid() <= 0) {
-					continue;
+					if (layout.getParentPlid() <= 0) {
+						continue;
+					}
+
+					SiteNavigationMenuItem parentSiteNavigationMenuItem =
+						layoutSiteNavigationMenuItemMap.get(
+							layout.getParentPlid());
+
+					if (parentSiteNavigationMenuItem == null) {
+						continue;
+					}
+
+					SiteNavigationMenuItem siteNavigationMenuItem =
+						entry.getValue();
+
+					_siteNavigationMenuItemService.updateSiteNavigationMenuItem(
+						siteNavigationMenuItem.getSiteNavigationMenuItemId(),
+						parentSiteNavigationMenuItem.
+							getSiteNavigationMenuItemId(),
+						layout.getPriority());
 				}
+				else {
+					SiteNavigationMenuItem siteNavigationMenuItem =
+						entry.getValue();
 
-				SiteNavigationMenuItem parentSiteNavigationMenuItem =
-					layoutSiteNavigationMenuItemMap.get(layout.getParentPlid());
+					_siteNavigationMenuItemService.updateSiteNavigationMenuItem(
+						siteNavigationMenuItem.getSiteNavigationMenuItemId(),
+						siteNavigationMenuItem.
+							getParentSiteNavigationMenuItemId(),
+						nextOrder);
 
-				if (parentSiteNavigationMenuItem == null) {
-					continue;
+					nextOrder++;
 				}
-
-				SiteNavigationMenuItem siteNavigationMenuItem =
-					entry.getValue();
-
-				_siteNavigationMenuItemService.updateSiteNavigationMenuItem(
-					siteNavigationMenuItem.getSiteNavigationMenuItemId(),
-					parentSiteNavigationMenuItem.getSiteNavigationMenuItemId(),
-					layout.getPriority());
 			}
 
 			if (MapUtil.isEmpty(layoutSiteNavigationMenuItemMap)) {
@@ -161,6 +187,19 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 				jsonObject.put(
 					"siteNavigationMenuItemId",
 					layoutSiteNavigationMenuItemMap);
+
+				String message = _language.format(
+					themeDisplay.getLocale(), "x-x-was-added-to-this-menu",
+					Arrays.asList(jsonArray.length(), "page"));
+
+				if (jsonArray.length() > 1) {
+					message = _language.format(
+						themeDisplay.getLocale(), "x-x-were-added-to-this-menu",
+						Arrays.asList(jsonArray.length(), "pages"));
+				}
+
+				SessionMessages.add(
+					actionRequest, "siteNavigationMenuItemsAdded", message);
 			}
 		}
 		catch (SiteNavigationMenuItemNameException
@@ -183,6 +222,9 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AddLayoutSiteNavigationMenuItemMVCActionCommand.class);
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

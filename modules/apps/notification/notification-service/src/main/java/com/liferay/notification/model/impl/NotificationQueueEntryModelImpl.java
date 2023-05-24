@@ -78,13 +78,10 @@ public class NotificationQueueEntryModelImpl
 		{"notificationQueueEntryId", Types.BIGINT}, {"companyId", Types.BIGINT},
 		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
 		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"notificationTemplateId", Types.BIGINT}, {"bcc", Types.VARCHAR},
-		{"body", Types.CLOB}, {"cc", Types.VARCHAR},
+		{"notificationTemplateId", Types.BIGINT}, {"body", Types.CLOB},
 		{"classNameId", Types.BIGINT}, {"classPK", Types.BIGINT},
-		{"from_", Types.VARCHAR}, {"fromName", Types.VARCHAR},
-		{"priority", Types.DOUBLE}, {"sent", Types.BOOLEAN},
-		{"sentDate", Types.TIMESTAMP}, {"subject", Types.VARCHAR},
-		{"to_", Types.VARCHAR}, {"toName", Types.VARCHAR},
+		{"priority", Types.DOUBLE}, {"sentDate", Types.TIMESTAMP},
+		{"subject", Types.CLOB}, {"type_", Types.VARCHAR},
 		{"status", Types.INTEGER}
 	};
 
@@ -100,24 +97,18 @@ public class NotificationQueueEntryModelImpl
 		TABLE_COLUMNS_MAP.put("createDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("modifiedDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("notificationTemplateId", Types.BIGINT);
-		TABLE_COLUMNS_MAP.put("bcc", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("body", Types.CLOB);
-		TABLE_COLUMNS_MAP.put("cc", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("classNameId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("classPK", Types.BIGINT);
-		TABLE_COLUMNS_MAP.put("from_", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("fromName", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("priority", Types.DOUBLE);
-		TABLE_COLUMNS_MAP.put("sent", Types.BOOLEAN);
 		TABLE_COLUMNS_MAP.put("sentDate", Types.TIMESTAMP);
-		TABLE_COLUMNS_MAP.put("subject", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("to_", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("toName", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("subject", Types.CLOB);
+		TABLE_COLUMNS_MAP.put("type_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("status", Types.INTEGER);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table NotificationQueueEntry (mvccVersion LONG default 0 not null,notificationQueueEntryId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,notificationTemplateId LONG,bcc VARCHAR(75) null,body TEXT null,cc VARCHAR(75) null,classNameId LONG,classPK LONG,from_ VARCHAR(75) null,fromName VARCHAR(75) null,priority DOUBLE,sent BOOLEAN,sentDate DATE null,subject VARCHAR(75) null,to_ VARCHAR(75) null,toName VARCHAR(75) null,status INTEGER)";
+		"create table NotificationQueueEntry (mvccVersion LONG default 0 not null,notificationQueueEntryId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,notificationTemplateId LONG,body TEXT null,classNameId LONG,classPK LONG,priority DOUBLE,sentDate DATE null,subject TEXT null,type_ VARCHAR(75) null,status INTEGER)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table NotificationQueueEntry";
@@ -144,19 +135,19 @@ public class NotificationQueueEntryModelImpl
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long SENT_COLUMN_BITMASK = 2L;
+	public static final long SENTDATE_COLUMN_BITMASK = 2L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long SENTDATE_COLUMN_BITMASK = 4L;
+	public static final long STATUS_COLUMN_BITMASK = 4L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long STATUS_COLUMN_BITMASK = 8L;
+	public static final long TYPE_COLUMN_BITMASK = 8L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
@@ -256,163 +247,149 @@ public class NotificationQueueEntryModelImpl
 	public Map<String, Function<NotificationQueueEntry, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<NotificationQueueEntry, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static final Map<String, Function<NotificationQueueEntry, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<NotificationQueueEntry, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeGetterFunctionsHolder {
 
-	static {
-		Map<String, Function<NotificationQueueEntry, Object>>
-			attributeGetterFunctions =
-				new LinkedHashMap
-					<String, Function<NotificationQueueEntry, Object>>();
-		Map<String, BiConsumer<NotificationQueueEntry, ?>>
-			attributeSetterBiConsumers =
-				new LinkedHashMap
-					<String, BiConsumer<NotificationQueueEntry, ?>>();
+		private static final Map
+			<String, Function<NotificationQueueEntry, Object>>
+				_attributeGetterFunctions;
 
-		attributeGetterFunctions.put(
-			"mvccVersion", NotificationQueueEntry::getMvccVersion);
-		attributeSetterBiConsumers.put(
-			"mvccVersion",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setMvccVersion);
-		attributeGetterFunctions.put(
-			"notificationQueueEntryId",
-			NotificationQueueEntry::getNotificationQueueEntryId);
-		attributeSetterBiConsumers.put(
-			"notificationQueueEntryId",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setNotificationQueueEntryId);
-		attributeGetterFunctions.put(
-			"companyId", NotificationQueueEntry::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setCompanyId);
-		attributeGetterFunctions.put(
-			"userId", NotificationQueueEntry::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setUserId);
-		attributeGetterFunctions.put(
-			"userName", NotificationQueueEntry::getUserName);
-		attributeSetterBiConsumers.put(
-			"userName",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setUserName);
-		attributeGetterFunctions.put(
-			"createDate", NotificationQueueEntry::getCreateDate);
-		attributeSetterBiConsumers.put(
-			"createDate",
-			(BiConsumer<NotificationQueueEntry, Date>)
-				NotificationQueueEntry::setCreateDate);
-		attributeGetterFunctions.put(
-			"modifiedDate", NotificationQueueEntry::getModifiedDate);
-		attributeSetterBiConsumers.put(
-			"modifiedDate",
-			(BiConsumer<NotificationQueueEntry, Date>)
-				NotificationQueueEntry::setModifiedDate);
-		attributeGetterFunctions.put(
-			"notificationTemplateId",
-			NotificationQueueEntry::getNotificationTemplateId);
-		attributeSetterBiConsumers.put(
-			"notificationTemplateId",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setNotificationTemplateId);
-		attributeGetterFunctions.put("bcc", NotificationQueueEntry::getBcc);
-		attributeSetterBiConsumers.put(
-			"bcc",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setBcc);
-		attributeGetterFunctions.put("body", NotificationQueueEntry::getBody);
-		attributeSetterBiConsumers.put(
-			"body",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setBody);
-		attributeGetterFunctions.put("cc", NotificationQueueEntry::getCc);
-		attributeSetterBiConsumers.put(
-			"cc",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setCc);
-		attributeGetterFunctions.put(
-			"classNameId", NotificationQueueEntry::getClassNameId);
-		attributeSetterBiConsumers.put(
-			"classNameId",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setClassNameId);
-		attributeGetterFunctions.put(
-			"classPK", NotificationQueueEntry::getClassPK);
-		attributeSetterBiConsumers.put(
-			"classPK",
-			(BiConsumer<NotificationQueueEntry, Long>)
-				NotificationQueueEntry::setClassPK);
-		attributeGetterFunctions.put("from", NotificationQueueEntry::getFrom);
-		attributeSetterBiConsumers.put(
-			"from",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setFrom);
-		attributeGetterFunctions.put(
-			"fromName", NotificationQueueEntry::getFromName);
-		attributeSetterBiConsumers.put(
-			"fromName",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setFromName);
-		attributeGetterFunctions.put(
-			"priority", NotificationQueueEntry::getPriority);
-		attributeSetterBiConsumers.put(
-			"priority",
-			(BiConsumer<NotificationQueueEntry, Double>)
-				NotificationQueueEntry::setPriority);
-		attributeGetterFunctions.put("sent", NotificationQueueEntry::getSent);
-		attributeSetterBiConsumers.put(
-			"sent",
-			(BiConsumer<NotificationQueueEntry, Boolean>)
-				NotificationQueueEntry::setSent);
-		attributeGetterFunctions.put(
-			"sentDate", NotificationQueueEntry::getSentDate);
-		attributeSetterBiConsumers.put(
-			"sentDate",
-			(BiConsumer<NotificationQueueEntry, Date>)
-				NotificationQueueEntry::setSentDate);
-		attributeGetterFunctions.put(
-			"subject", NotificationQueueEntry::getSubject);
-		attributeSetterBiConsumers.put(
-			"subject",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setSubject);
-		attributeGetterFunctions.put("to", NotificationQueueEntry::getTo);
-		attributeSetterBiConsumers.put(
-			"to",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setTo);
-		attributeGetterFunctions.put(
-			"toName", NotificationQueueEntry::getToName);
-		attributeSetterBiConsumers.put(
-			"toName",
-			(BiConsumer<NotificationQueueEntry, String>)
-				NotificationQueueEntry::setToName);
-		attributeGetterFunctions.put(
-			"status", NotificationQueueEntry::getStatus);
-		attributeSetterBiConsumers.put(
-			"status",
-			(BiConsumer<NotificationQueueEntry, Integer>)
-				NotificationQueueEntry::setStatus);
+		static {
+			Map<String, Function<NotificationQueueEntry, Object>>
+				attributeGetterFunctions =
+					new LinkedHashMap
+						<String, Function<NotificationQueueEntry, Object>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeGetterFunctions.put(
+				"mvccVersion", NotificationQueueEntry::getMvccVersion);
+			attributeGetterFunctions.put(
+				"notificationQueueEntryId",
+				NotificationQueueEntry::getNotificationQueueEntryId);
+			attributeGetterFunctions.put(
+				"companyId", NotificationQueueEntry::getCompanyId);
+			attributeGetterFunctions.put(
+				"userId", NotificationQueueEntry::getUserId);
+			attributeGetterFunctions.put(
+				"userName", NotificationQueueEntry::getUserName);
+			attributeGetterFunctions.put(
+				"createDate", NotificationQueueEntry::getCreateDate);
+			attributeGetterFunctions.put(
+				"modifiedDate", NotificationQueueEntry::getModifiedDate);
+			attributeGetterFunctions.put(
+				"notificationTemplateId",
+				NotificationQueueEntry::getNotificationTemplateId);
+			attributeGetterFunctions.put(
+				"body", NotificationQueueEntry::getBody);
+			attributeGetterFunctions.put(
+				"classNameId", NotificationQueueEntry::getClassNameId);
+			attributeGetterFunctions.put(
+				"classPK", NotificationQueueEntry::getClassPK);
+			attributeGetterFunctions.put(
+				"priority", NotificationQueueEntry::getPriority);
+			attributeGetterFunctions.put(
+				"sentDate", NotificationQueueEntry::getSentDate);
+			attributeGetterFunctions.put(
+				"subject", NotificationQueueEntry::getSubject);
+			attributeGetterFunctions.put(
+				"type", NotificationQueueEntry::getType);
+			attributeGetterFunctions.put(
+				"status", NotificationQueueEntry::getStatus);
+
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
+		}
+
+	}
+
+	private static class AttributeSetterBiConsumersHolder {
+
+		private static final Map
+			<String, BiConsumer<NotificationQueueEntry, Object>>
+				_attributeSetterBiConsumers;
+
+		static {
+			Map<String, BiConsumer<NotificationQueueEntry, ?>>
+				attributeSetterBiConsumers =
+					new LinkedHashMap
+						<String, BiConsumer<NotificationQueueEntry, ?>>();
+
+			attributeSetterBiConsumers.put(
+				"mvccVersion",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setMvccVersion);
+			attributeSetterBiConsumers.put(
+				"notificationQueueEntryId",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setNotificationQueueEntryId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setUserId);
+			attributeSetterBiConsumers.put(
+				"userName",
+				(BiConsumer<NotificationQueueEntry, String>)
+					NotificationQueueEntry::setUserName);
+			attributeSetterBiConsumers.put(
+				"createDate",
+				(BiConsumer<NotificationQueueEntry, Date>)
+					NotificationQueueEntry::setCreateDate);
+			attributeSetterBiConsumers.put(
+				"modifiedDate",
+				(BiConsumer<NotificationQueueEntry, Date>)
+					NotificationQueueEntry::setModifiedDate);
+			attributeSetterBiConsumers.put(
+				"notificationTemplateId",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setNotificationTemplateId);
+			attributeSetterBiConsumers.put(
+				"body",
+				(BiConsumer<NotificationQueueEntry, String>)
+					NotificationQueueEntry::setBody);
+			attributeSetterBiConsumers.put(
+				"classNameId",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setClassNameId);
+			attributeSetterBiConsumers.put(
+				"classPK",
+				(BiConsumer<NotificationQueueEntry, Long>)
+					NotificationQueueEntry::setClassPK);
+			attributeSetterBiConsumers.put(
+				"priority",
+				(BiConsumer<NotificationQueueEntry, Double>)
+					NotificationQueueEntry::setPriority);
+			attributeSetterBiConsumers.put(
+				"sentDate",
+				(BiConsumer<NotificationQueueEntry, Date>)
+					NotificationQueueEntry::setSentDate);
+			attributeSetterBiConsumers.put(
+				"subject",
+				(BiConsumer<NotificationQueueEntry, String>)
+					NotificationQueueEntry::setSubject);
+			attributeSetterBiConsumers.put(
+				"type",
+				(BiConsumer<NotificationQueueEntry, String>)
+					NotificationQueueEntry::setType);
+			attributeSetterBiConsumers.put(
+				"status",
+				(BiConsumer<NotificationQueueEntry, Integer>)
+					NotificationQueueEntry::setStatus);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@JSON
@@ -574,26 +551,6 @@ public class NotificationQueueEntryModelImpl
 
 	@JSON
 	@Override
-	public String getBcc() {
-		if (_bcc == null) {
-			return "";
-		}
-		else {
-			return _bcc;
-		}
-	}
-
-	@Override
-	public void setBcc(String bcc) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_bcc = bcc;
-	}
-
-	@JSON
-	@Override
 	public String getBody() {
 		if (_body == null) {
 			return "";
@@ -610,26 +567,6 @@ public class NotificationQueueEntryModelImpl
 		}
 
 		_body = body;
-	}
-
-	@JSON
-	@Override
-	public String getCc() {
-		if (_cc == null) {
-			return "";
-		}
-		else {
-			return _cc;
-		}
-	}
-
-	@Override
-	public void setCc(String cc) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_cc = cc;
 	}
 
 	@Override
@@ -684,46 +621,6 @@ public class NotificationQueueEntryModelImpl
 
 	@JSON
 	@Override
-	public String getFrom() {
-		if (_from == null) {
-			return "";
-		}
-		else {
-			return _from;
-		}
-	}
-
-	@Override
-	public void setFrom(String from) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_from = from;
-	}
-
-	@JSON
-	@Override
-	public String getFromName() {
-		if (_fromName == null) {
-			return "";
-		}
-		else {
-			return _fromName;
-		}
-	}
-
-	@Override
-	public void setFromName(String fromName) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_fromName = fromName;
-	}
-
-	@JSON
-	@Override
 	public double getPriority() {
 		return _priority;
 	}
@@ -735,37 +632,6 @@ public class NotificationQueueEntryModelImpl
 		}
 
 		_priority = priority;
-	}
-
-	@JSON
-	@Override
-	public boolean getSent() {
-		return _sent;
-	}
-
-	@JSON
-	@Override
-	public boolean isSent() {
-		return _sent;
-	}
-
-	@Override
-	public void setSent(boolean sent) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_sent = sent;
-	}
-
-	/**
-	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 *             #getColumnOriginalValue(String)}
-	 */
-	@Deprecated
-	public boolean getOriginalSent() {
-		return GetterUtil.getBoolean(
-			this.<Boolean>getColumnOriginalValue("sent"));
 	}
 
 	@JSON
@@ -814,42 +680,31 @@ public class NotificationQueueEntryModelImpl
 
 	@JSON
 	@Override
-	public String getTo() {
-		if (_to == null) {
+	public String getType() {
+		if (_type == null) {
 			return "";
 		}
 		else {
-			return _to;
+			return _type;
 		}
 	}
 
 	@Override
-	public void setTo(String to) {
+	public void setType(String type) {
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
 
-		_to = to;
+		_type = type;
 	}
 
-	@JSON
-	@Override
-	public String getToName() {
-		if (_toName == null) {
-			return "";
-		}
-		else {
-			return _toName;
-		}
-	}
-
-	@Override
-	public void setToName(String toName) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_toName = toName;
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public String getOriginalType() {
+		return getColumnOriginalValue("type_");
 	}
 
 	@JSON
@@ -945,19 +800,13 @@ public class NotificationQueueEntryModelImpl
 		notificationQueueEntryImpl.setModifiedDate(getModifiedDate());
 		notificationQueueEntryImpl.setNotificationTemplateId(
 			getNotificationTemplateId());
-		notificationQueueEntryImpl.setBcc(getBcc());
 		notificationQueueEntryImpl.setBody(getBody());
-		notificationQueueEntryImpl.setCc(getCc());
 		notificationQueueEntryImpl.setClassNameId(getClassNameId());
 		notificationQueueEntryImpl.setClassPK(getClassPK());
-		notificationQueueEntryImpl.setFrom(getFrom());
-		notificationQueueEntryImpl.setFromName(getFromName());
 		notificationQueueEntryImpl.setPriority(getPriority());
-		notificationQueueEntryImpl.setSent(isSent());
 		notificationQueueEntryImpl.setSentDate(getSentDate());
 		notificationQueueEntryImpl.setSubject(getSubject());
-		notificationQueueEntryImpl.setTo(getTo());
-		notificationQueueEntryImpl.setToName(getToName());
+		notificationQueueEntryImpl.setType(getType());
 		notificationQueueEntryImpl.setStatus(getStatus());
 
 		notificationQueueEntryImpl.resetOriginalValues();
@@ -986,32 +835,20 @@ public class NotificationQueueEntryModelImpl
 			this.<Date>getColumnOriginalValue("modifiedDate"));
 		notificationQueueEntryImpl.setNotificationTemplateId(
 			this.<Long>getColumnOriginalValue("notificationTemplateId"));
-		notificationQueueEntryImpl.setBcc(
-			this.<String>getColumnOriginalValue("bcc"));
 		notificationQueueEntryImpl.setBody(
 			this.<String>getColumnOriginalValue("body"));
-		notificationQueueEntryImpl.setCc(
-			this.<String>getColumnOriginalValue("cc"));
 		notificationQueueEntryImpl.setClassNameId(
 			this.<Long>getColumnOriginalValue("classNameId"));
 		notificationQueueEntryImpl.setClassPK(
 			this.<Long>getColumnOriginalValue("classPK"));
-		notificationQueueEntryImpl.setFrom(
-			this.<String>getColumnOriginalValue("from_"));
-		notificationQueueEntryImpl.setFromName(
-			this.<String>getColumnOriginalValue("fromName"));
 		notificationQueueEntryImpl.setPriority(
 			this.<Double>getColumnOriginalValue("priority"));
-		notificationQueueEntryImpl.setSent(
-			this.<Boolean>getColumnOriginalValue("sent"));
 		notificationQueueEntryImpl.setSentDate(
 			this.<Date>getColumnOriginalValue("sentDate"));
 		notificationQueueEntryImpl.setSubject(
 			this.<String>getColumnOriginalValue("subject"));
-		notificationQueueEntryImpl.setTo(
-			this.<String>getColumnOriginalValue("to_"));
-		notificationQueueEntryImpl.setToName(
-			this.<String>getColumnOriginalValue("toName"));
+		notificationQueueEntryImpl.setType(
+			this.<String>getColumnOriginalValue("type_"));
 		notificationQueueEntryImpl.setStatus(
 			this.<Integer>getColumnOriginalValue("status"));
 
@@ -1132,14 +969,6 @@ public class NotificationQueueEntryModelImpl
 		notificationQueueEntryCacheModel.notificationTemplateId =
 			getNotificationTemplateId();
 
-		notificationQueueEntryCacheModel.bcc = getBcc();
-
-		String bcc = notificationQueueEntryCacheModel.bcc;
-
-		if ((bcc != null) && (bcc.length() == 0)) {
-			notificationQueueEntryCacheModel.bcc = null;
-		}
-
 		notificationQueueEntryCacheModel.body = getBody();
 
 		String body = notificationQueueEntryCacheModel.body;
@@ -1148,37 +977,11 @@ public class NotificationQueueEntryModelImpl
 			notificationQueueEntryCacheModel.body = null;
 		}
 
-		notificationQueueEntryCacheModel.cc = getCc();
-
-		String cc = notificationQueueEntryCacheModel.cc;
-
-		if ((cc != null) && (cc.length() == 0)) {
-			notificationQueueEntryCacheModel.cc = null;
-		}
-
 		notificationQueueEntryCacheModel.classNameId = getClassNameId();
 
 		notificationQueueEntryCacheModel.classPK = getClassPK();
 
-		notificationQueueEntryCacheModel.from = getFrom();
-
-		String from = notificationQueueEntryCacheModel.from;
-
-		if ((from != null) && (from.length() == 0)) {
-			notificationQueueEntryCacheModel.from = null;
-		}
-
-		notificationQueueEntryCacheModel.fromName = getFromName();
-
-		String fromName = notificationQueueEntryCacheModel.fromName;
-
-		if ((fromName != null) && (fromName.length() == 0)) {
-			notificationQueueEntryCacheModel.fromName = null;
-		}
-
 		notificationQueueEntryCacheModel.priority = getPriority();
-
-		notificationQueueEntryCacheModel.sent = isSent();
 
 		Date sentDate = getSentDate();
 
@@ -1197,20 +1000,12 @@ public class NotificationQueueEntryModelImpl
 			notificationQueueEntryCacheModel.subject = null;
 		}
 
-		notificationQueueEntryCacheModel.to = getTo();
+		notificationQueueEntryCacheModel.type = getType();
 
-		String to = notificationQueueEntryCacheModel.to;
+		String type = notificationQueueEntryCacheModel.type;
 
-		if ((to != null) && (to.length() == 0)) {
-			notificationQueueEntryCacheModel.to = null;
-		}
-
-		notificationQueueEntryCacheModel.toName = getToName();
-
-		String toName = notificationQueueEntryCacheModel.toName;
-
-		if ((toName != null) && (toName.length() == 0)) {
-			notificationQueueEntryCacheModel.toName = null;
+		if ((type != null) && (type.length() == 0)) {
+			notificationQueueEntryCacheModel.type = null;
 		}
 
 		notificationQueueEntryCacheModel.status = getStatus();
@@ -1268,38 +1063,6 @@ public class NotificationQueueEntryModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<NotificationQueueEntry, Object>>
-			attributeGetterFunctions = getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<NotificationQueueEntry, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<NotificationQueueEntry, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(
-				attributeGetterFunction.apply((NotificationQueueEntry)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, NotificationQueueEntry>
@@ -1318,26 +1081,21 @@ public class NotificationQueueEntryModelImpl
 	private Date _modifiedDate;
 	private boolean _setModifiedDate;
 	private long _notificationTemplateId;
-	private String _bcc;
 	private String _body;
-	private String _cc;
 	private long _classNameId;
 	private long _classPK;
-	private String _from;
-	private String _fromName;
 	private double _priority;
-	private boolean _sent;
 	private Date _sentDate;
 	private String _subject;
-	private String _to;
-	private String _toName;
+	private String _type;
 	private int _status;
 
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
 		Function<NotificationQueueEntry, Object> function =
-			_attributeGetterFunctions.get(columnName);
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(
@@ -1372,19 +1130,13 @@ public class NotificationQueueEntryModelImpl
 		_columnOriginalValues.put("modifiedDate", _modifiedDate);
 		_columnOriginalValues.put(
 			"notificationTemplateId", _notificationTemplateId);
-		_columnOriginalValues.put("bcc", _bcc);
 		_columnOriginalValues.put("body", _body);
-		_columnOriginalValues.put("cc", _cc);
 		_columnOriginalValues.put("classNameId", _classNameId);
 		_columnOriginalValues.put("classPK", _classPK);
-		_columnOriginalValues.put("from_", _from);
-		_columnOriginalValues.put("fromName", _fromName);
 		_columnOriginalValues.put("priority", _priority);
-		_columnOriginalValues.put("sent", _sent);
 		_columnOriginalValues.put("sentDate", _sentDate);
 		_columnOriginalValues.put("subject", _subject);
-		_columnOriginalValues.put("to_", _to);
-		_columnOriginalValues.put("toName", _toName);
+		_columnOriginalValues.put("type_", _type);
 		_columnOriginalValues.put("status", _status);
 	}
 
@@ -1393,8 +1145,7 @@ public class NotificationQueueEntryModelImpl
 	static {
 		Map<String, String> attributeNames = new HashMap<>();
 
-		attributeNames.put("from_", "from");
-		attributeNames.put("to_", "to");
+		attributeNames.put("type_", "type");
 
 		_attributeNames = Collections.unmodifiableMap(attributeNames);
 	}
@@ -1426,33 +1177,21 @@ public class NotificationQueueEntryModelImpl
 
 		columnBitmasks.put("notificationTemplateId", 128L);
 
-		columnBitmasks.put("bcc", 256L);
+		columnBitmasks.put("body", 256L);
 
-		columnBitmasks.put("body", 512L);
+		columnBitmasks.put("classNameId", 512L);
 
-		columnBitmasks.put("cc", 1024L);
+		columnBitmasks.put("classPK", 1024L);
 
-		columnBitmasks.put("classNameId", 2048L);
+		columnBitmasks.put("priority", 2048L);
 
-		columnBitmasks.put("classPK", 4096L);
+		columnBitmasks.put("sentDate", 4096L);
 
-		columnBitmasks.put("from_", 8192L);
+		columnBitmasks.put("subject", 8192L);
 
-		columnBitmasks.put("fromName", 16384L);
+		columnBitmasks.put("type_", 16384L);
 
-		columnBitmasks.put("priority", 32768L);
-
-		columnBitmasks.put("sent", 65536L);
-
-		columnBitmasks.put("sentDate", 131072L);
-
-		columnBitmasks.put("subject", 262144L);
-
-		columnBitmasks.put("to_", 524288L);
-
-		columnBitmasks.put("toName", 1048576L);
-
-		columnBitmasks.put("status", 2097152L);
+		columnBitmasks.put("status", 32768L);
 
 		_columnBitmasks = Collections.unmodifiableMap(columnBitmasks);
 	}

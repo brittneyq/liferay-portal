@@ -13,12 +13,13 @@
  */
 
 import {TreeView as ClayTreeView} from '@clayui/core';
+import ClayEmptyState from '@clayui/empty-state';
 import {ClayCheckbox} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayLink, {ClayLinkContext} from '@clayui/link';
 import classNames from 'classnames';
-import {cancelDebounce, debounce} from 'frontend-js-web';
+import {cancelDebounce, debounce, getOpener} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
@@ -115,7 +116,7 @@ const TreeFilter = ({
 
 			selectedNodesRef.current = data;
 
-			const openerWindow = Liferay.Util.getOpener();
+			const openerWindow = getOpener();
 
 			openerWindow.Liferay.fire(itemSelectorSaveEvent, {
 				data: selectedDataOutputTransfomer({
@@ -307,15 +308,13 @@ const TreeFilter = ({
 								)}
 							</ClayTreeView>
 						) : (
-							<div className="border-0 pt-0 sheet taglib-empty-result-message">
-								<div className="taglib-empty-result-message-header"></div>
-
-								<div className="sheet-text text-center">
-									{Liferay.Language.get(
-										'no-results-were-found'
-									)}
-								</div>
-							</div>
+							<ClayEmptyState
+								description={Liferay.Language.get(
+									'no-results-were-found'
+								)}
+								imgSrc={`${themeDisplay.getPathThemeImages()}/states/empty_state.gif`}
+								title={null}
+							/>
 						)}
 					</div>
 				</ClayLayout.ContainerFluid>

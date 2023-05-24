@@ -22,17 +22,16 @@ import com.liferay.commerce.payment.service.CommercePaymentMethodGroupRelService
 import com.liferay.commerce.term.model.CommerceTermEntry;
 import com.liferay.commerce.term.service.CommerceTermEntryService;
 import com.liferay.headless.commerce.admin.channel.dto.v1_0.PaymentMethodGroupRelTerm;
-import com.liferay.headless.commerce.admin.channel.internal.dto.v1_0.converter.PaymentMethodGroupRelTermDTOConverter;
 import com.liferay.headless.commerce.admin.channel.resource.v1_0.PaymentMethodGroupRelTermResource;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.Map;
 
@@ -44,7 +43,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Riccardo Alberti
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/payment-method-group-rel-term.properties",
 	scope = ServiceScope.PROTOTYPE,
 	service = PaymentMethodGroupRelTermResource.class
@@ -75,7 +73,7 @@ public class PaymentMethodGroupRelTermResourceImpl
 		}
 
 		return Page.of(
-			TransformUtil.transform(
+			transform(
 				_commercePaymentMethodGroupRelQualifierService.
 					getCommerceTermEntryCommercePaymentMethodGroupRelQualifiers(
 						id, search, pagination.getStartPosition(),
@@ -175,8 +173,11 @@ public class PaymentMethodGroupRelTermResourceImpl
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
 
-	@Reference
-	private PaymentMethodGroupRelTermDTOConverter
-		_paymentMethodGroupRelTermDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.channel.internal.dto.v1_0.converter.PaymentMethodGroupRelTermDTOConverter)"
+	)
+	private DTOConverter
+		<CommercePaymentMethodGroupRelQualifier, PaymentMethodGroupRelTerm>
+			_paymentMethodGroupRelTermDTOConverter;
 
 }

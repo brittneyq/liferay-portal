@@ -26,7 +26,7 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Luis Miguel Barcos
  */
-@Component(immediate = true, service = GraphQLContributor.class)
+@Component(service = GraphQLContributor.class)
 public class StructuredContentGraphQLContributor implements GraphQLContributor {
 
 	@Override
@@ -37,6 +37,11 @@ public class StructuredContentGraphQLContributor implements GraphQLContributor {
 	@Override
 	public StructuredContentQuery getQuery() {
 		return new StructuredContentQuery();
+	}
+
+	@Override
+	public boolean isJaxRsResourceInvocation() {
+		return false;
 	}
 
 	public static class StructuredContentQuery {

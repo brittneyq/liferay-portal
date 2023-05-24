@@ -52,8 +52,8 @@ public class WikiPageServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 #addPage(String, long, String, String, String, boolean, String, String,
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #addPage(String,
+	 long, String, String, String, boolean, String, String,
 	 String, ServiceContext)}
 	 */
 	@Deprecated
@@ -467,6 +467,10 @@ public class WikiPageServiceUtil {
 
 	public static WikiPageService getService() {
 		return _service;
+	}
+
+	public static void setService(WikiPageService service) {
+		_service = service;
 	}
 
 	private static volatile WikiPageService _service;

@@ -60,10 +60,6 @@ public class BuildFactory {
 					url, "JOB_VARIANT", parentBuild);
 			}
 
-			if ((jobVariant != null) && jobVariant.contains("cucumber")) {
-				return new CucumberAxisBuild(url, (BatchBuild)parentBuild);
-			}
-
 			if ((jobVariant != null) &&
 				(jobVariant.contains("functional") ||
 				 jobVariant.contains("test-portal-environment") ||
@@ -261,6 +257,10 @@ public class BuildFactory {
 		return newBuildFromArchive(null, archiveName);
 	}
 
+	public static DefaultBuild newDefaultBuild(String url) {
+		return new DefaultBuild(url);
+	}
+
 	private static final String _BUILD_URL_SUFFIX_REGEX =
 		JenkinsResultsParserUtil.combine(
 			"((?<axisVariable>AXIS_VARIABLE=[^,/]+(,[^/]+)?)|)/?",
@@ -273,7 +273,7 @@ public class BuildFactory {
 
 	private static final MultiPattern _buildURLMultiPattern = new MultiPattern(
 		JenkinsResultsParserUtil.combine(
-			"\\w+://(?<master>[^/]+)/+job/+(?<jobName>[^/]+)/?",
+			"\\w+://(?<master>[^/]+)/+job/+(?<jobName>[^/]+(/label=[^/]+)?)/",
 			_BUILD_URL_SUFFIX_REGEX),
 		JenkinsResultsParserUtil.combine(
 			".*?Test/+[^/]+/+(?<master>test-[0-9]-[0-9]{1,2})/",

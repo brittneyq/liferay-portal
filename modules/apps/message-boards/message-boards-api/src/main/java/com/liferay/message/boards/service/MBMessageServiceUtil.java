@@ -286,6 +286,14 @@ public class MBMessageServiceUtil {
 			entryURL, themeDisplay);
 	}
 
+	public static MBMessage getMBMessageByExternalReferenceCode(
+			String externalReferenceCode, long groupId)
+		throws PortalException {
+
+		return getService().getMBMessageByExternalReferenceCode(
+			externalReferenceCode, groupId);
+	}
+
 	public static MBMessage getMessage(long messageId) throws PortalException {
 		return getService().getMessage(messageId);
 	}
@@ -370,11 +378,11 @@ public class MBMessageServiceUtil {
 		getService().unsubscribeMessage(messageId);
 	}
 
-	public static void updateAnswer(
+	public static MBMessage updateAnswer(
 			long messageId, boolean answer, boolean cascade)
 		throws PortalException {
 
-		getService().updateAnswer(messageId, answer, cascade);
+		return getService().updateAnswer(messageId, answer, cascade);
 	}
 
 	public static MBMessage updateDiscussionMessage(
@@ -403,6 +411,10 @@ public class MBMessageServiceUtil {
 
 	public static MBMessageService getService() {
 		return _service;
+	}
+
+	public static void setService(MBMessageService service) {
+		_service = service;
 	}
 
 	private static volatile MBMessageService _service;

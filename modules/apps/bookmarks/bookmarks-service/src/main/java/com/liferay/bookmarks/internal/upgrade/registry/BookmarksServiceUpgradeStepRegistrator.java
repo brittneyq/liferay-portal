@@ -20,7 +20,7 @@ import com.liferay.bookmarks.internal.upgrade.v1_0_0.UpgradePortletSettings;
 import com.liferay.bookmarks.internal.upgrade.v2_0_0.UpgradeBookmarksEntryResourceBlock;
 import com.liferay.bookmarks.internal.upgrade.v2_0_0.UpgradeBookmarksFolderResourceBlock;
 import com.liferay.bookmarks.model.BookmarksEntry;
-import com.liferay.portal.kernel.settings.SettingsFactory;
+import com.liferay.portal.kernel.settings.SettingsLocatorHelper;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.ViewCountUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
@@ -32,7 +32,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Miguel Pastor
  */
-@Component(immediate = true, service = UpgradeStepRegistrator.class)
+@Component(service = UpgradeStepRegistrator.class)
 public class BookmarksServiceUpgradeStepRegistrator
 	implements UpgradeStepRegistrator {
 
@@ -42,7 +42,7 @@ public class BookmarksServiceUpgradeStepRegistrator
 
 		registry.register(
 			"0.0.2", "1.0.0", new UpgradeLastPublishDate(),
-			new UpgradePortletSettings(_settingsFactory));
+			new UpgradePortletSettings(_settingsLocatorHelper));
 
 		registry.register(
 			"1.0.0", "2.0.0", new UpgradeBookmarksEntryResourceBlock(),
@@ -53,7 +53,7 @@ public class BookmarksServiceUpgradeStepRegistrator
 			new MVCCVersionUpgradeProcess() {
 
 				@Override
-				protected String[] getModuleTableNames() {
+				protected String[] getTableNames() {
 					return new String[] {"BookmarksEntry", "BookmarksFolder"};
 				}
 
@@ -66,7 +66,7 @@ public class BookmarksServiceUpgradeStepRegistrator
 	}
 
 	@Reference
-	private SettingsFactory _settingsFactory;
+	private SettingsLocatorHelper _settingsLocatorHelper;
 
 	/**
 	 * See LPS-101587. The ViewCount table needs to exist.

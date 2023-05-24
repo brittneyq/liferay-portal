@@ -40,18 +40,12 @@ public class NotificationTemplateServiceWrapper
 	@Override
 	public com.liferay.notification.model.NotificationTemplate
 			addNotificationTemplate(
-				long userId, long objectDefinitionId, String bcc,
-				java.util.Map<java.util.Locale, String> bodyMap, String cc,
-				String description, String from,
-				java.util.Map<java.util.Locale, String> fromNameMap,
-				String name, java.util.Map<java.util.Locale, String> subjectMap,
-				java.util.Map<java.util.Locale, String> toMap,
-				java.util.List<Long> attachmentObjectFieldIds)
+				com.liferay.notification.context.NotificationContext
+					notificationContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _notificationTemplateService.addNotificationTemplate(
-			userId, objectDefinitionId, bcc, bodyMap, cc, description, from,
-			fromNameMap, name, subjectMap, toMap, attachmentObjectFieldIds);
+			notificationContext);
 	}
 
 	@Override
@@ -76,6 +70,17 @@ public class NotificationTemplateServiceWrapper
 
 	@Override
 	public com.liferay.notification.model.NotificationTemplate
+			fetchNotificationTemplateByExternalReferenceCode(
+				String externalReferenceCode, long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _notificationTemplateService.
+			fetchNotificationTemplateByExternalReferenceCode(
+				externalReferenceCode, companyId);
+	}
+
+	@Override
+	public com.liferay.notification.model.NotificationTemplate
 			getNotificationTemplate(long notificationTemplateId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -96,19 +101,12 @@ public class NotificationTemplateServiceWrapper
 	@Override
 	public com.liferay.notification.model.NotificationTemplate
 			updateNotificationTemplate(
-				long notificationTemplateId, long objectDefinitionId,
-				String bcc, java.util.Map<java.util.Locale, String> bodyMap,
-				String cc, String description, String from,
-				java.util.Map<java.util.Locale, String> fromNameMap,
-				String name, java.util.Map<java.util.Locale, String> subjectMap,
-				java.util.Map<java.util.Locale, String> toMap,
-				java.util.List<Long> attachmentObjectFieldIds)
+				com.liferay.notification.context.NotificationContext
+					notificationContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _notificationTemplateService.updateNotificationTemplate(
-			notificationTemplateId, objectDefinitionId, bcc, bodyMap, cc,
-			description, from, fromNameMap, name, subjectMap, toMap,
-			attachmentObjectFieldIds);
+			notificationContext);
 	}
 
 	@Override

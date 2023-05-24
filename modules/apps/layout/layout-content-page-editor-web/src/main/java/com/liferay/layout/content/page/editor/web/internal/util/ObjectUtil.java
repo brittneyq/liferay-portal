@@ -14,18 +14,16 @@
 
 package com.liferay.layout.content.page.editor.web.internal.util;
 
+import com.liferay.info.item.InfoItemServiceRegistry;
+import com.liferay.info.permission.provider.InfoPermissionProvider;
 import com.liferay.layout.content.page.editor.web.internal.constants.ContentPageEditorConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
-import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.HashMap;
@@ -38,13 +36,15 @@ import java.util.Map;
 public class ObjectUtil {
 
 	public static Map<String, List<Map<String, Object>>>
-		getLayoutElementMapsListMap(long companyId) {
+		getLayoutElementMapsListMap(
+			long companyId, InfoItemServiceRegistry infoItemServiceRegistry,
+			PermissionChecker permissionChecker) {
 
 		Map<String, List<Map<String, Object>>> layoutElementMapsListMap =
 			new HashMap<>(ContentPageEditorConstants.layoutElementMapsListMap);
 
-		if (!GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-150277")) ||
-			hideInputFragments(companyId)) {
+		if (hideInputFragments(
+				companyId, infoItemServiceRegistry, permissionChecker)) {
 
 			layoutElementMapsListMap.remove("INPUTS");
 		}
@@ -52,7 +52,14 @@ public class ObjectUtil {
 		return layoutElementMapsListMap;
 	}
 
-	public static Boolean hideInputFragments(long companyId) {
+	public static Boolean hideInputFragments(
+		long companyId, InfoItemServiceRegistry infoItemServiceRegistry,
+		PermissionChecker permissionChecker) {
+
+		if (_isLayoutTypeAssetDisplay()) {
+			return true;
+		}
+
 		List<ObjectDefinition> objectDefinitions =
 			ObjectDefinitionLocalServiceUtil.getObjectDefinitions(
 				companyId, true, false, WorkflowConstants.STATUS_APPROVED);
@@ -62,7 +69,10 @@ public class ObjectUtil {
 		}
 
 		for (ObjectDefinition objectDefinition : objectDefinitions) {
-			if (_hasPermissions(objectDefinition)) {
+			if (_hasPermissions(
+					objectDefinition, infoItemServiceRegistry,
+					permissionChecker)) {
+
 				return false;
 			}
 		}
@@ -70,28 +80,45 @@ public class ObjectUtil {
 		return true;
 	}
 
-	private static boolean _hasPermissions(ObjectDefinition objectDefinition) {
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(
-			objectDefinition.getCompanyId(), objectDefinition.getPortletId());
+	private static boolean _hasPermissions(
+		ObjectDefinition objectDefinition,
+		InfoItemServiceRegistry infoItemServiceRegistry,
+		PermissionChecker permissionChecker) {
 
-		if (!portlet.isActive()) {
-			return false;
-		}
+		InfoPermissionProvider infoPermissionProvider =
+			infoItemServiceRegistry.getFirstInfoItemService(
+				InfoPermissionProvider.class, objectDefinition.getClassName());
 
-		try {
-			return PortletPermissionUtil.contains(
-				PermissionThreadLocal.getPermissionChecker(),
-				portlet.getRootPortletId(), ActionKeys.VIEW);
-		}
-		catch (Exception exception) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(exception);
-			}
+		if ((infoPermissionProvider == null) ||
+			infoPermissionProvider.hasViewPermission(permissionChecker)) {
+
+			return true;
 		}
 
 		return false;
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(ObjectUtil.class);
+	private static boolean _isLayoutTypeAssetDisplay() {
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if (serviceContext == null) {
+			return false;
+		}
+
+		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
+
+		if (themeDisplay == null) {
+			return false;
+		}
+
+		Layout layout = themeDisplay.getLayout();
+
+		if ((layout != null) && layout.isTypeAssetDisplay()) {
+			return true;
+		}
+
+		return false;
+	}
 
 }

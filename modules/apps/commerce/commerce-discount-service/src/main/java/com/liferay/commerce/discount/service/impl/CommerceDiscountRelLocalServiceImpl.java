@@ -60,7 +60,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	property = "model.class.name=com.liferay.commerce.discount.model.CommerceDiscountRel",
 	service = AopService.class
 )
@@ -94,7 +93,7 @@ public class CommerceDiscountRelLocalServiceImpl
 
 		// Commerce discount
 
-		reindexCommerceDiscount(commerceDiscountId);
+		_reindexCommerceDiscount(commerceDiscountId);
 
 		return commerceDiscountRel;
 	}
@@ -112,7 +111,7 @@ public class CommerceDiscountRelLocalServiceImpl
 
 		// Commerce discount
 
-		reindexCommerceDiscount(commerceDiscount);
+		_reindexCommerceDiscount(commerceDiscount);
 
 		return commerceDiscountRel;
 	}
@@ -374,24 +373,6 @@ public class CommerceDiscountRelLocalServiceImpl
 				CPInstanceTable.INSTANCE.sku));
 	}
 
-	protected void reindexCommerceDiscount(CommerceDiscount commerceDiscount)
-		throws PortalException {
-
-		Indexer<CommerceDiscount> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(CommerceDiscount.class);
-
-		indexer.reindex(commerceDiscount);
-	}
-
-	protected void reindexCommerceDiscount(long commerceDiscountId)
-		throws PortalException {
-
-		CommerceDiscount commerceDiscount =
-			_commerceDiscountPersistence.findByPrimaryKey(commerceDiscountId);
-
-		reindexCommerceDiscount(commerceDiscount);
-	}
-
 	private GroupByStep _getGroupByStep(
 		JoinStep joinStep, String className, Long commerceDiscountId,
 		String keywords, Expression<String> keywordsPredicateExpression) {
@@ -417,6 +398,24 @@ public class CommerceDiscountRelLocalServiceImpl
 
 				return predicate;
 			});
+	}
+
+	private void _reindexCommerceDiscount(CommerceDiscount commerceDiscount)
+		throws PortalException {
+
+		Indexer<CommerceDiscount> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(CommerceDiscount.class);
+
+		indexer.reindex(commerceDiscount);
+	}
+
+	private void _reindexCommerceDiscount(long commerceDiscountId)
+		throws PortalException {
+
+		CommerceDiscount commerceDiscount =
+			_commerceDiscountPersistence.findByPrimaryKey(commerceDiscountId);
+
+		_reindexCommerceDiscount(commerceDiscount);
 	}
 
 	@Reference

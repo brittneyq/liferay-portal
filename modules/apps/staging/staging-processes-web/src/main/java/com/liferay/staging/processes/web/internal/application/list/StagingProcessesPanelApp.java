@@ -42,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.change.tracking.configuration.CTSettingsConfiguration",
-	immediate = true,
 	property = {
 		"panel.app.order:Integer=100",
 		"panel.category.key=" + PanelCategoryKeys.SITE_ADMINISTRATION_PUBLISHING
@@ -50,6 +49,11 @@ import org.osgi.service.component.annotations.Reference;
 	service = PanelApp.class
 )
 public class StagingProcessesPanelApp extends BasePanelApp {
+
+	@Override
+	public Portlet getPortlet() {
+		return _portlet;
+	}
 
 	@Override
 	public String getPortletId() {
@@ -68,15 +72,6 @@ public class StagingProcessesPanelApp extends BasePanelApp {
 		}
 
 		return super.isShow(permissionChecker, group);
-	}
-
-	@Override
-	@Reference(
-		target = "(javax.portlet.name=" + StagingProcessesPortletKeys.STAGING_PROCESSES + ")",
-		unbind = "-"
-	)
-	public void setPortlet(Portlet portlet) {
-		super.setPortlet(portlet);
 	}
 
 	@Activate
@@ -112,5 +107,10 @@ public class StagingProcessesPanelApp extends BasePanelApp {
 	private ConfigurationProvider _configurationProvider;
 
 	private volatile CTSettingsConfiguration _defaultCTSettingsConfiguration;
+
+	@Reference(
+		target = "(javax.portlet.name=" + StagingProcessesPortletKeys.STAGING_PROCESSES + ")"
+	)
+	private Portlet _portlet;
 
 }

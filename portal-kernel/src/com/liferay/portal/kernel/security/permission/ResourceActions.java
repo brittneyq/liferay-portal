@@ -103,7 +103,16 @@ public interface ResourceActions {
 			ClassLoader classLoader, String... sources)
 		throws ResourceActionsException;
 
+	public void populateModelResources(
+			ClassLoader classLoader, String[] sources,
+			boolean checkResourceActions)
+		throws ResourceActionsException;
+
 	public void populateModelResources(Document document)
+		throws ResourceActionsException;
+
+	public void populatePortletResource(
+			Portlet portlet, ClassLoader classLoader, Document document)
 		throws ResourceActionsException;
 
 	public void populatePortletResource(
@@ -113,5 +122,12 @@ public interface ResourceActions {
 	public void populatePortletResources(
 			ClassLoader classLoader, String... sources)
 		throws ResourceActionsException;
+
+	public void populatePortletResources(
+			ClassLoader classLoader, String[] sources,
+			boolean checkResourceActions)
+		throws ResourceActionsException;
+
+	public void removeModelResource(String name, String action);
 
 }

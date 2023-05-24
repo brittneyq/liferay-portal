@@ -19,10 +19,10 @@ import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTy
 import com.liferay.dynamic.data.mapping.form.field.type.internal.util.DDMFormFieldTypeUtil;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.CalendarUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.LocaleThreadLocal;
 
 import java.time.DayOfWeek;
 import java.time.temporal.WeekFields;
@@ -31,9 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -42,15 +41,11 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcellus Tavares
  */
 @Component(
-	immediate = true,
 	property = {
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE,
 		"ddm.form.field.type.name=" + DDMFormFieldTypeConstants.DATE_TIME
 	},
-	service = {
-		DateDDMFormFieldTemplateContextContributor.class,
-		DDMFormFieldTemplateContextContributor.class
-	}
+	service = DDMFormFieldTemplateContextContributor.class
 )
 public class DateDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
@@ -61,12 +56,13 @@ public class DateDDMFormFieldTemplateContextContributor
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
 		return HashMapBuilder.<String, Object>put(
-			"firstDayOfWeek", _getFirstDayOfWeek()
+			"firstDayOfWeek",
+			_getFirstDayOfWeek(ddmFormFieldRenderingContext.getLocale())
 		).put(
 			"months",
 			Arrays.asList(
 				CalendarUtil.getMonths(
-					LocaleThreadLocal.getThemeDisplayLocale()))
+					ddmFormFieldRenderingContext.getLocale()))
 		).put(
 			"predefinedValue",
 			DDMFormFieldTypeUtil.getPropertyValue(
@@ -79,22 +75,17 @@ public class DateDDMFormFieldTemplateContextContributor
 				"tooltip")
 		).put(
 			"weekdaysShort",
-			Stream.of(
-				CalendarUtil.DAYS_ABBREVIATION
-			).map(
+			TransformUtil.transformToList(
+				CalendarUtil.DAYS_ABBREVIATION,
 				day -> _language.get(
-					LocaleThreadLocal.getThemeDisplayLocale(), day)
-			).collect(
-				Collectors.toList()
-			)
+					ddmFormFieldRenderingContext.getLocale(), day))
 		).put(
 			"years", _getYears()
 		).build();
 	}
 
-	private int _getFirstDayOfWeek() {
-		WeekFields weekFields = WeekFields.of(
-			LocaleThreadLocal.getThemeDisplayLocale());
+	private int _getFirstDayOfWeek(Locale locale) {
+		WeekFields weekFields = WeekFields.of(locale);
 
 		DayOfWeek dayOfWeek = weekFields.getFirstDayOfWeek();
 

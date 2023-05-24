@@ -23,7 +23,6 @@ import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil
 import com.liferay.headless.delivery.dto.v1_0.KnowledgeBaseArticle;
 import com.liferay.headless.delivery.dto.v1_0.Rating;
 import com.liferay.headless.delivery.dto.v1_0.util.CustomFieldsUtil;
-import com.liferay.headless.delivery.internal.dto.v1_0.converter.KnowledgeBaseArticleDTOConverter;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.RatingUtil;
 import com.liferay.headless.delivery.internal.odata.entity.v1_0.KnowledgeBaseArticleEntityModel;
 import com.liferay.headless.delivery.resource.v1_0.KnowledgeBaseArticleResource;
@@ -62,6 +61,7 @@ import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.sort.Sorts;
 import com.liferay.portal.vulcan.aggregation.Aggregation;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -72,7 +72,6 @@ import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 import java.io.Serializable;
 
 import java.util.Map;
-import java.util.Optional;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -159,9 +158,8 @@ public class KnowledgeBaseArticleResourceImpl
 				"createBatch",
 				addAction(
 					KBActionKeys.ADD_KB_ARTICLE,
-					"postKnowledgeBaseFolderKnowledgeBaseArticleBatch",
-					KBConstants.RESOURCE_NAME_ADMIN,
-					parentKnowledgeBaseArticleId)
+					"postSiteKnowledgeBaseArticleBatch",
+					KBConstants.RESOURCE_NAME_ADMIN, kbArticle.getGroupId())
 			).put(
 				"get",
 				addAction(
@@ -206,15 +204,24 @@ public class KnowledgeBaseArticleResourceImpl
 			HashMapBuilder.put(
 				"create",
 				addAction(
-					KBActionKeys.ADD_KB_ARTICLE,
+					KBActionKeys.ADD_KB_ARTICLE, kbFolder.getKbFolderId(),
 					"postKnowledgeBaseFolderKnowledgeBaseArticle",
-					KBConstants.RESOURCE_NAME_ADMIN, kbFolder.getGroupId())
+					kbFolder.getUserId(), KBConstants.RESOURCE_NAME_ADMIN,
+					kbFolder.getGroupId())
+			).put(
+				"createBatch",
+				addAction(
+					KBActionKeys.ADD_KB_ARTICLE, kbFolder.getKbFolderId(),
+					"postKnowledgeBaseFolderKnowledgeBaseArticleBatch",
+					kbFolder.getUserId(), KBConstants.RESOURCE_NAME_ADMIN,
+					kbFolder.getGroupId())
 			).put(
 				"get",
 				addAction(
-					ActionKeys.VIEW,
+					ActionKeys.VIEW, kbFolder.getKbFolderId(),
 					"getKnowledgeBaseFolderKnowledgeBaseArticlesPage",
-					KBConstants.RESOURCE_NAME_ADMIN, kbFolder.getGroupId())
+					kbFolder.getUserId(), KBConstants.RESOURCE_NAME_ADMIN,
+					kbFolder.getGroupId())
 			).build(),
 			booleanQuery -> {
 				BooleanFilter booleanFilter =
@@ -503,7 +510,8 @@ public class KnowledgeBaseArticleResourceImpl
 				knowledgeBaseArticle.getTitle(),
 				knowledgeBaseArticle.getFriendlyUrlPath(),
 				knowledgeBaseArticle.getArticleBody(),
-				knowledgeBaseArticle.getDescription(), null, null, null,
+				knowledgeBaseArticle.getDescription(), null, null, null, null,
+				null,
 				ServiceContextRequestUtil.createServiceContext(
 					knowledgeBaseArticle.getTaxonomyCategoryIds(),
 					knowledgeBaseArticle.getKeywords(),
@@ -658,22 +666,23 @@ public class KnowledgeBaseArticleResourceImpl
 			KBArticle kbArticle, KnowledgeBaseArticle knowledgeBaseArticle)
 		throws Exception {
 
+		Long[] taxonomyCategoryIds =
+			knowledgeBaseArticle.getTaxonomyCategoryIds();
+
+		if (taxonomyCategoryIds == null) {
+			taxonomyCategoryIds = new Long[0];
+		}
+
 		return _toKnowledgeBaseArticle(
 			_kbArticleService.updateKBArticle(
 				kbArticle.getResourcePrimKey(), knowledgeBaseArticle.getTitle(),
 				knowledgeBaseArticle.getArticleBody(),
 				knowledgeBaseArticle.getDescription(), null, null, null, null,
+				null, null,
 				ServiceContextRequestUtil.createServiceContext(
-					Optional.ofNullable(
-						knowledgeBaseArticle.getTaxonomyCategoryIds()
-					).orElse(
-						new Long[0]
-					),
-					Optional.ofNullable(
-						knowledgeBaseArticle.getKeywords()
-					).orElse(
-						new String[0]
-					),
+					taxonomyCategoryIds,
+					GetterUtil.getStringValues(
+						knowledgeBaseArticle.getKeywords()),
 					_getExpandoBridgeAttributes(knowledgeBaseArticle),
 					kbArticle.getGroupId(), contextHttpServletRequest,
 					knowledgeBaseArticle.getViewableByAsString())));
@@ -706,8 +715,11 @@ public class KnowledgeBaseArticleResourceImpl
 	@Reference
 	private KBFolderService _kbFolderService;
 
-	@Reference
-	private KnowledgeBaseArticleDTOConverter _knowledgeBaseArticleDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.delivery.internal.dto.v1_0.converter.KnowledgeBaseArticleDTOConverter)"
+	)
+	private DTOConverter<KBArticle, KnowledgeBaseArticle>
+		_knowledgeBaseArticleDTOConverter;
 
 	@Reference
 	private Portal _portal;

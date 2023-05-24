@@ -17,7 +17,6 @@ package com.liferay.commerce.order.rule.service.base;
 import com.liferay.commerce.order.rule.model.COREntryRel;
 import com.liferay.commerce.order.rule.service.COREntryRelLocalService;
 import com.liferay.commerce.order.rule.service.COREntryRelLocalServiceUtil;
-import com.liferay.commerce.order.rule.service.persistence.COREntryPersistence;
 import com.liferay.commerce.order.rule.service.persistence.COREntryRelPersistence;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.aop.AopService;
@@ -47,8 +46,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -391,7 +388,7 @@ public abstract class COREntryRelLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		COREntryRelLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -406,7 +403,7 @@ public abstract class COREntryRelLocalServiceBaseImpl
 	public void setAopProxy(Object aopProxy) {
 		corEntryRelLocalService = (COREntryRelLocalService)aopProxy;
 
-		_setLocalServiceUtilService(corEntryRelLocalService);
+		COREntryRelLocalServiceUtil.setService(corEntryRelLocalService);
 	}
 
 	/**
@@ -451,25 +448,6 @@ public abstract class COREntryRelLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		COREntryRelLocalService corEntryRelLocalService) {
-
-		try {
-			Field field = COREntryRelLocalServiceUtil.class.getDeclaredField(
-				"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, corEntryRelLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
-	@Reference
-	protected COREntryPersistence corEntryPersistence;
-
 	protected COREntryRelLocalService corEntryRelLocalService;
 
 	@Reference
@@ -478,18 +456,6 @@ public abstract class COREntryRelLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		COREntryRelLocalServiceBaseImpl.class);

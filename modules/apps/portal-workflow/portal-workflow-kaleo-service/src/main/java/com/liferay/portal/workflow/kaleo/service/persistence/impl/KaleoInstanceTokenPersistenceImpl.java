@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -49,7 +48,6 @@ import com.liferay.portal.workflow.kaleo.service.persistence.impl.constants.Kale
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
@@ -83,9 +81,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@Component(
-	service = {KaleoInstanceTokenPersistence.class, BasePersistence.class}
-)
+@Component(service = KaleoInstanceTokenPersistence.class)
 public class KaleoInstanceTokenPersistenceImpl
 	extends BasePersistenceImpl<KaleoInstanceToken>
 	implements KaleoInstanceTokenPersistence {
@@ -208,7 +204,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstanceToken>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstanceToken kaleoInstanceToken : list) {
@@ -584,7 +580,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -736,7 +732,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstanceToken>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstanceToken kaleoInstanceToken : list) {
@@ -1122,7 +1118,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 			finderArgs = new Object[] {kaleoDefinitionVersionId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1271,7 +1267,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstanceToken>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstanceToken kaleoInstanceToken : list) {
@@ -1651,7 +1647,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 			finderArgs = new Object[] {kaleoInstanceId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1809,7 +1805,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstanceToken>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstanceToken kaleoInstanceToken : list) {
@@ -2216,7 +2212,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 			finderArgs = new Object[] {companyId, parentKaleoInstanceTokenId};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2390,7 +2386,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstanceToken>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (KaleoInstanceToken kaleoInstanceToken : list) {
@@ -2855,7 +2851,7 @@ public class KaleoInstanceTokenPersistenceImpl
 				companyId, parentKaleoInstanceTokenId, _getTime(completionDate)
 			};
 
-			count = (Long)finderCache.getResult(finderPath, finderArgs);
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3507,7 +3503,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<KaleoInstanceToken>)finderCache.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3583,7 +3579,7 @@ public class KaleoInstanceTokenPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)finderCache.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3829,30 +3825,14 @@ public class KaleoInstanceTokenPersistenceImpl
 			},
 			false);
 
-		_setKaleoInstanceTokenUtilPersistence(this);
+		KaleoInstanceTokenUtil.setPersistence(this);
 	}
 
 	@Deactivate
 	public void deactivate() {
-		_setKaleoInstanceTokenUtilPersistence(null);
+		KaleoInstanceTokenUtil.setPersistence(null);
 
 		entityCache.removeCache(KaleoInstanceTokenImpl.class.getName());
-	}
-
-	private void _setKaleoInstanceTokenUtilPersistence(
-		KaleoInstanceTokenPersistence kaleoInstanceTokenPersistence) {
-
-		try {
-			Field field = KaleoInstanceTokenUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, kaleoInstanceTokenPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	@Override
@@ -3925,9 +3905,5 @@ public class KaleoInstanceTokenPersistenceImpl
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
-
-	@Reference
-	private KaleoInstanceTokenModelArgumentsResolver
-		_kaleoInstanceTokenModelArgumentsResolver;
 
 }

@@ -29,42 +29,6 @@ import org.json.JSONObject;
 public class PoshiDownstreamBuild extends DownstreamBuild {
 
 	@Override
-	public long getTestExecutionDuration() {
-		long testExecutionDuration = getStopWatchRecordDuration(
-			"test.execution.duration");
-
-		if (testExecutionDuration <= 0L) {
-			return super.getTestExecutionDuration();
-		}
-
-		for (int i = 0; i < 5; i++) {
-			long startAppServerDuration = getStopWatchRecordDuration(
-				"start.app.server." + i);
-
-			if (startAppServerDuration < 0L) {
-				break;
-			}
-
-			testExecutionDuration -= startAppServerDuration;
-
-			long stopAppServerDuration = getStopWatchRecordDuration(
-				"stop.app.server." + i);
-
-			if (stopAppServerDuration < 0L) {
-				break;
-			}
-
-			testExecutionDuration -= stopAppServerDuration;
-		}
-
-		if (testExecutionDuration <= 0L) {
-			return super.getTestExecutionDuration();
-		}
-
-		return testExecutionDuration;
-	}
-
-	@Override
 	public List<TestResult> getTestResults() {
 		String status = getStatus();
 
@@ -102,13 +66,18 @@ public class PoshiDownstreamBuild extends DownstreamBuild {
 			JSONObject caseJSONObject = new JSONObject();
 
 			caseJSONObject.put(
-				"className", "com.liferay.poshi.runner.PoshiRunner");
-			caseJSONObject.put("duration", 0);
-			caseJSONObject.put(
-				"errorDetails", "The build failed prior to running the test.");
-			caseJSONObject.put("errorStackTrace", "");
-			caseJSONObject.put("name", "test[" + poshiTestName + "]");
-			caseJSONObject.put("status", "FAILED");
+				"className", "com.liferay.poshi.runner.PoshiRunner"
+			).put(
+				"duration", 0
+			).put(
+				"errorDetails", "The build failed prior to running the test."
+			).put(
+				"errorStackTrace", ""
+			).put(
+				"name", "test[" + poshiTestName + "]"
+			).put(
+				"status", "FAILED"
+			);
 
 			testResults.add(
 				TestResultFactory.newTestResult(this, caseJSONObject));

@@ -33,8 +33,11 @@ import org.osgi.service.component.annotations.Component;
  * @generated
  */
 @Component(
-	immediate = true,
-	service = {LockModelArgumentsResolver.class, ArgumentsResolver.class}
+	property = {
+		"class.name=com.liferay.portal.lock.model.impl.LockImpl",
+		"table.name=Lock_"
+	},
+	service = ArgumentsResolver.class
 )
 public class LockModelArgumentsResolver implements ArgumentsResolver {
 

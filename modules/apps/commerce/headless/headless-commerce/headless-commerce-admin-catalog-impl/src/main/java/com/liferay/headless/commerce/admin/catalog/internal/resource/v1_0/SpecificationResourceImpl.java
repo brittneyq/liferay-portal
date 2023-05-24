@@ -19,7 +19,6 @@ import com.liferay.commerce.product.model.CPSpecificationOption;
 import com.liferay.commerce.product.service.CPSpecificationOptionService;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.OptionCategory;
 import com.liferay.headless.commerce.admin.catalog.dto.v1_0.Specification;
-import com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.SpecificationDTOConverter;
 import com.liferay.headless.commerce.admin.catalog.internal.odata.entity.v1_0.SpecificationEntityModel;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.SpecificationResource;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
@@ -34,6 +33,7 @@ import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
@@ -53,7 +53,6 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Alessio Antonio Rendina
  */
 @Component(
-	enabled = false,
 	properties = "OSGI-INF/liferay/rest/v1_0/specification.properties",
 	scope = ServiceScope.PROTOTYPE, service = SpecificationResource.class
 )
@@ -214,10 +213,16 @@ public class SpecificationResourceImpl extends BaseSpecificationResourceImpl {
 
 		return _cpSpecificationOptionService.updateCPSpecificationOption(
 			cpSpecificationOption.getCPSpecificationOptionId(),
-			_getCPOptionCategoryId(specification),
+			GetterUtil.getLong(
+				cpSpecificationOption.getCPOptionCategoryId(),
+				_getCPOptionCategoryId(specification)),
 			LanguageUtils.getLocalizedMap(specification.getTitle()),
 			LanguageUtils.getLocalizedMap(specification.getDescription()),
-			_isFacetable(specification), specification.getKey(),
+			GetterUtil.getBoolean(
+				cpSpecificationOption.isFacetable(),
+				_isFacetable(specification)),
+			GetterUtil.getString(
+				specification.getKey(), cpSpecificationOption.getKey()),
 			_serviceContextHelper.getServiceContext());
 	}
 
@@ -252,7 +257,10 @@ public class SpecificationResourceImpl extends BaseSpecificationResourceImpl {
 	@Reference
 	private ServiceContextHelper _serviceContextHelper;
 
-	@Reference
-	private SpecificationDTOConverter _specificationDTOConverter;
+	@Reference(
+		target = "(component.name=com.liferay.headless.commerce.admin.catalog.internal.dto.v1_0.converter.SpecificationDTOConverter)"
+	)
+	private DTOConverter<CPSpecificationOption, Specification>
+		_specificationDTOConverter;
 
 }

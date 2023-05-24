@@ -47,8 +47,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -417,7 +415,7 @@ public abstract class CommerceQualifierEntryLocalServiceBaseImpl
 
 	@Deactivate
 	protected void deactivate() {
-		_setLocalServiceUtilService(null);
+		CommerceQualifierEntryLocalServiceUtil.setService(null);
 	}
 
 	@Override
@@ -433,7 +431,8 @@ public abstract class CommerceQualifierEntryLocalServiceBaseImpl
 		commerceQualifierEntryLocalService =
 			(CommerceQualifierEntryLocalService)aopProxy;
 
-		_setLocalServiceUtilService(commerceQualifierEntryLocalService);
+		CommerceQualifierEntryLocalServiceUtil.setService(
+			commerceQualifierEntryLocalService);
 	}
 
 	/**
@@ -479,23 +478,6 @@ public abstract class CommerceQualifierEntryLocalServiceBaseImpl
 		}
 	}
 
-	private void _setLocalServiceUtilService(
-		CommerceQualifierEntryLocalService commerceQualifierEntryLocalService) {
-
-		try {
-			Field field =
-				CommerceQualifierEntryLocalServiceUtil.class.getDeclaredField(
-					"_service");
-
-			field.setAccessible(true);
-
-			field.set(null, commerceQualifierEntryLocalService);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
-	}
-
 	protected CommerceQualifierEntryLocalService
 		commerceQualifierEntryLocalService;
 
@@ -506,18 +488,6 @@ public abstract class CommerceQualifierEntryLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.UserLocalService
-		userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CommerceQualifierEntryLocalServiceBaseImpl.class);

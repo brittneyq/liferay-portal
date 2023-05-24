@@ -46,7 +46,6 @@ import com.liferay.portal.model.impl.VirtualHostModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -191,7 +190,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<VirtualHost>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VirtualHost virtualHost : list) {
@@ -558,7 +557,8 @@ public class VirtualHostPersistenceImpl
 
 			finderArgs = new Object[] {companyId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -674,7 +674,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByHostname, finderArgs);
+				_finderPathFetchByHostname, finderArgs, this);
 		}
 
 		if (result instanceof VirtualHost) {
@@ -786,7 +786,8 @@ public class VirtualHostPersistenceImpl
 
 			finderArgs = new Object[] {hostname};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -949,7 +950,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<VirtualHost>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VirtualHost virtualHost : list) {
@@ -1347,7 +1348,8 @@ public class VirtualHostPersistenceImpl
 
 			finderArgs = new Object[] {companyId, layoutSetId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1494,7 +1496,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<VirtualHost>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VirtualHost virtualHost : list) {
@@ -2001,7 +2003,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<VirtualHost>)FinderCacheUtil.getResult(
-				_finderPathWithPaginationFindByNotL_H, finderArgs);
+				_finderPathWithPaginationFindByNotL_H, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (VirtualHost virtualHost : list) {
@@ -2138,7 +2140,8 @@ public class VirtualHostPersistenceImpl
 
 			finderArgs = new Object[] {layoutSetId, hostname};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2226,7 +2229,7 @@ public class VirtualHostPersistenceImpl
 			};
 
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByNotL_H, finderArgs);
+				_finderPathWithPaginationCountByNotL_H, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -2397,7 +2400,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByC_L_D, finderArgs);
+				_finderPathFetchByC_L_D, finderArgs, this);
 		}
 
 		if (result instanceof VirtualHost) {
@@ -2534,7 +2537,8 @@ public class VirtualHostPersistenceImpl
 				companyId, layoutSetId, defaultVirtualHost
 			};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -3160,7 +3164,7 @@ public class VirtualHostPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<VirtualHost>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -3236,7 +3240,7 @@ public class VirtualHostPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -3436,29 +3440,13 @@ public class VirtualHostPersistenceImpl
 			new String[] {"companyId", "layoutSetId", "defaultVirtualHost"},
 			false);
 
-		_setVirtualHostUtilPersistence(this);
+		VirtualHostUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setVirtualHostUtilPersistence(null);
+		VirtualHostUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(VirtualHostImpl.class.getName());
-	}
-
-	private void _setVirtualHostUtilPersistence(
-		VirtualHostPersistence virtualHostPersistence) {
-
-		try {
-			Field field = VirtualHostUtil.class.getDeclaredField(
-				"_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, virtualHostPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_VIRTUALHOST =

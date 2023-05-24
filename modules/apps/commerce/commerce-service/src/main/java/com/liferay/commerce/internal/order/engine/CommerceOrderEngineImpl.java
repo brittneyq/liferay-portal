@@ -14,12 +14,13 @@
 
 package com.liferay.commerce.internal.order.engine;
 
-import com.liferay.commerce.account.model.CommerceAccount;
+import com.liferay.account.model.AccountEntry;
 import com.liferay.commerce.configuration.CommerceOrderCheckoutConfiguration;
 import com.liferay.commerce.constants.CommerceConstants;
 import com.liferay.commerce.constants.CommerceOrderActionKeys;
 import com.liferay.commerce.constants.CommerceOrderConstants;
-import com.liferay.commerce.constants.CommercePaymentConstants;
+import com.liferay.commerce.constants.CommerceOrderPaymentConstants;
+import com.liferay.commerce.constants.CommercePaymentMethodConstants;
 import com.liferay.commerce.constants.CommerceShipmentConstants;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
@@ -34,6 +35,7 @@ import com.liferay.commerce.exception.CommerceOrderShippingMethodException;
 import com.liferay.commerce.exception.CommerceOrderStatusException;
 import com.liferay.commerce.exception.CommerceOrderValidatorException;
 import com.liferay.commerce.internal.order.status.CompletedCommerceOrderStatusImpl;
+import com.liferay.commerce.internal.order.status.PartiallyShippedCommerceOrderStatusImpl;
 import com.liferay.commerce.internal.order.status.ShippedCommerceOrderStatusImpl;
 import com.liferay.commerce.inventory.model.CommerceInventoryBookedQuantity;
 import com.liferay.commerce.inventory.service.CommerceInventoryBookedQuantityLocalService;
@@ -42,6 +44,7 @@ import com.liferay.commerce.model.CommerceAddress;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.model.CommerceShippingMethod;
+import com.liferay.commerce.model.attributes.provider.CommerceModelAttributesProvider;
 import com.liferay.commerce.notification.util.CommerceNotificationHelper;
 import com.liferay.commerce.order.CommerceOrderValidatorRegistry;
 import com.liferay.commerce.order.engine.CommerceOrderEngine;
@@ -58,7 +61,7 @@ import com.liferay.commerce.subscription.CommerceSubscriptionEntryHelperUtil;
 import com.liferay.commerce.util.CommerceShippingHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -95,9 +98,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Alec Sloan
  */
-@Component(
-	enabled = false, immediate = true, service = CommerceOrderEngine.class
-)
+@Component(service = CommerceOrderEngine.class)
 public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 
 	@Override
@@ -154,8 +155,9 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		if (currentCommerceOrderStatus == null) {
 			return nextCommerceOrderStatuses;
 		}
-		else if (currentCommerceOrderStatus.getKey() ==
-					CommerceOrderConstants.ORDER_STATUS_ON_HOLD) {
+
+		if (currentCommerceOrderStatus.getKey() ==
+				CommerceOrderConstants.ORDER_STATUS_ON_HOLD) {
 
 			nextCommerceOrderStatuses.add(
 				_commerceOrderStatusRegistry.getCommerceOrderStatus(
@@ -165,45 +167,45 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		}
 
 		List<CommerceOrderStatus> commerceOrderStatuses =
-			_commerceOrderStatusRegistry.getCommerceOrderStatuses();
+			_commerceOrderStatusRegistry.getCommerceOrderStatuses(
+				commerceOrder);
 
 		int currentOrderStatusIndex = commerceOrderStatuses.indexOf(
 			currentCommerceOrderStatus);
 
-		if (currentOrderStatusIndex != (commerceOrderStatuses.size() - 1)) {
-			CommerceOrderStatus nextCommerceOrderStatus = null;
+		if (currentOrderStatusIndex == (commerceOrderStatuses.size() - 1)) {
+			return nextCommerceOrderStatuses;
+		}
 
-			for (int i = currentOrderStatusIndex + 1;
-				 i < commerceOrderStatuses.size(); i++) {
+		CommerceOrderStatus nextCommerceOrderStatus = null;
 
-				if ((nextCommerceOrderStatus != null) &&
-					(nextCommerceOrderStatus.getPriority() >
-						currentCommerceOrderStatus.getPriority())) {
+		for (int i = currentOrderStatusIndex + 1;
+			 i < commerceOrderStatuses.size(); i++) {
 
-					break;
-				}
+			if ((nextCommerceOrderStatus != null) &&
+				(nextCommerceOrderStatus.getPriority() >
+					currentCommerceOrderStatus.getPriority())) {
 
-				nextCommerceOrderStatus = commerceOrderStatuses.get(i);
+				break;
 			}
 
-			for (CommerceOrderStatus commerceOrderStatus :
-					commerceOrderStatuses) {
+			nextCommerceOrderStatus = commerceOrderStatuses.get(i);
+		}
 
-				if ((commerceOrderStatus.isTransitionCriteriaMet(
-						commerceOrder) &&
-					 (((commerceOrderStatus.getPriority() ==
-						 CommerceOrderConstants.ORDER_STATUS_ANY) &&
-					   (currentCommerceOrderStatus.getKey() !=
-						   CommerceOrderConstants.ORDER_STATUS_OPEN)) ||
-					  (commerceOrderStatus.getPriority() ==
-						  nextCommerceOrderStatus.getPriority()))) ||
-					(!_commerceShippingHelper.isShippable(commerceOrder) &&
-					 commerceOrderStatus.isValidForOrder(commerceOrder) &&
-					 (commerceOrderStatus.getPriority() >
-						 currentCommerceOrderStatus.getPriority()))) {
+		for (CommerceOrderStatus commerceOrderStatus : commerceOrderStatuses) {
+			if ((!_commerceShippingHelper.isShippable(commerceOrder) &&
+				 commerceOrderStatus.isValidForOrder(commerceOrder) &&
+				 (commerceOrderStatus.getPriority() >
+					 currentCommerceOrderStatus.getPriority())) ||
+				((((commerceOrderStatus.getPriority() ==
+					CommerceOrderConstants.ORDER_STATUS_ANY) &&
+				   (currentCommerceOrderStatus.getKey() !=
+					   CommerceOrderConstants.ORDER_STATUS_OPEN)) ||
+				  (commerceOrderStatus.getPriority() ==
+					  nextCommerceOrderStatus.getPriority())) &&
+				 commerceOrderStatus.isTransitionCriteriaMet(commerceOrder))) {
 
-					nextCommerceOrderStatuses.add(commerceOrderStatus);
-				}
+				nextCommerceOrderStatuses.add(commerceOrderStatus);
 			}
 		}
 
@@ -278,7 +280,7 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		List<CommerceOrderItem> commerceOrderItems =
 			commerceOrder.getCommerceOrderItems();
 
-		CommerceAccount commerceAccount = commerceOrder.getCommerceAccount();
+		AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
 		for (CommerceOrderItem commerceOrderItem : commerceOrderItems) {
 			CommerceInventoryBookedQuantity commerceInventoryBookedQuantity =
@@ -289,7 +291,7 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 						commerceOrderItem.getQuantity(), null,
 						HashMapBuilder.put(
 							CommerceInventoryAuditTypeConstants.ACCOUNT_NAME,
-							commerceAccount.getName()
+							accountEntry.getName()
 						).put(
 							CommerceInventoryAuditTypeConstants.ORDER_ID,
 							String.valueOf(
@@ -310,6 +312,10 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 	private CommerceOrder _checkCommerceOrderShipmentStatus(
 			CommerceOrder commerceOrder)
 		throws Exception {
+
+		CommerceOrderStatus partiallyShippedCommerceOrderStatus =
+			_commerceOrderStatusRegistry.getCommerceOrderStatus(
+				PartiallyShippedCommerceOrderStatusImpl.KEY);
 
 		CommerceOrderStatus shippedCommerceOrderStatus =
 			_commerceOrderStatusRegistry.getCommerceOrderStatus(
@@ -340,7 +346,9 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 			commerceOrder = transitionCommerceOrder(
 				commerceOrder, CommerceOrderConstants.ORDER_STATUS_SHIPPED, 0);
 		}
-		else {
+		else if (partiallyShippedCommerceOrderStatus.isTransitionCriteriaMet(
+					commerceOrder)) {
+
 			commerceOrder = transitionCommerceOrder(
 				commerceOrder,
 				CommerceOrderConstants.ORDER_STATUS_PARTIALLY_SHIPPED, 0);
@@ -381,10 +389,10 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		serviceContext.setScopeGroupId(commerceOrder.getGroupId());
 
 		if (userId == 0) {
-			User defaultUser = _userLocalService.getDefaultUser(
+			User guestUser = _userLocalService.getGuestUser(
 				commerceOrder.getCompanyId());
 
-			userId = defaultUser.getUserId();
+			userId = guestUser.getUserId();
 		}
 
 		serviceContext.setUserId(userId);
@@ -440,14 +448,13 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 				commerceOrder.getCommercePaymentMethodKey());
 
 		if ((commerceOrder.getPaymentStatus() ==
-				CommerceOrderConstants.PAYMENT_STATUS_PAID) ||
+				CommerceOrderPaymentConstants.STATUS_COMPLETED) ||
 			(commercePaymentMethod == null) ||
 			((commercePaymentMethod != null) &&
 			 (commercePaymentMethod.getPaymentType() ==
-				 CommercePaymentConstants.
-					 COMMERCE_PAYMENT_METHOD_TYPE_OFFLINE) &&
+				 CommercePaymentMethodConstants.TYPE_OFFLINE) &&
 			 (commerceOrder.getPaymentStatus() ==
-				 CommerceOrderConstants.PAYMENT_STATUS_PENDING))) {
+				 CommerceOrderPaymentConstants.STATUS_PENDING))) {
 
 			return transitionCommerceOrder(
 				commerceOrder, CommerceOrderConstants.ORDER_STATUS_PENDING,
@@ -471,23 +478,20 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		}
 	}
 
-	private JSONObject _getCommerceOrderJSONObject(CommerceOrder commerceOrder)
+	private JSONObject _getCommerceOrderJSONObject(
+			CommerceOrder commerceOrder,
+			DTOConverter<?, ?> commerceOrderDTOConverter)
 		throws Exception {
-
-		DTOConverter<?, ?> commerceOrderDTOConverter =
-			_dtoConverterRegistry.getDTOConverter(
-				CommerceOrder.class.getName());
 
 		Object commerceOrderObject = commerceOrderDTOConverter.toDTO(
 			new DefaultDTOConverterContext(
 				_dtoConverterRegistry, commerceOrder.getCommerceOrderId(),
 				LocaleUtil.getSiteDefault(), null, null));
 
-		JSONObject commerceOrderJSONObject = JSONFactoryUtil.createJSONObject(
+		JSONObject commerceOrderJSONObject = _jsonFactory.createJSONObject(
 			commerceOrderObject.toString());
 
-		JSONArray commerceOrderItemsJSONArray =
-			JSONFactoryUtil.createJSONArray();
+		JSONArray commerceOrderItemsJSONArray = _jsonFactory.createJSONArray();
 
 		DTOConverter<?, ?> commerceOrderItemDTOConverter =
 			_dtoConverterRegistry.getDTOConverter(
@@ -505,8 +509,8 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 						LocaleUtil.getSiteDefault(), null, null));
 
 			JSONObject commerceOrderItemJSONObject =
-				JSONFactoryUtil.createJSONObject(
-					commerceOrderItemObject.toString());
+				_jsonFactory.createJSONObject(
+					_jsonFactory.looseSerializeDeep(commerceOrderItemObject));
 
 			commerceOrderItemsJSONArray.put(commerceOrderItemJSONObject);
 		}
@@ -529,12 +533,15 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 	private void _sendOrderStatusMessage(
 		CommerceOrder commerceOrder, int orderStatus) {
 
+		CommerceOrder originalCommerceOrder =
+			commerceOrder.cloneWithOriginalValues();
+
 		TransactionCommitCallbackUtil.registerCallback(
 			() -> {
 				if ((orderStatus ==
 						CommerceOrderConstants.ORDER_STATUS_PENDING) &&
 					(commerceOrder.getPaymentStatus() ==
-						CommerceOrderConstants.PAYMENT_STATUS_PAID)) {
+						CommerceOrderPaymentConstants.STATUS_COMPLETED)) {
 
 					CommerceSubscriptionEntryHelperUtil.
 						checkCommerceSubscriptions(commerceOrder);
@@ -547,14 +554,32 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 
 				Message message = new Message();
 
+				DTOConverter<?, ?> commerceOrderDTOConverter =
+					_dtoConverterRegistry.getDTOConverter(
+						CommerceOrder.class.getName());
+
 				message.setPayload(
 					JSONUtil.put(
+						"classPK", commerceOrder.getCommerceOrderId()
+					).put(
 						"commerceOrder",
-						_getCommerceOrderJSONObject(commerceOrder)
+						_getCommerceOrderJSONObject(
+							commerceOrder, commerceOrderDTOConverter)
 					).put(
 						"commerceOrderId", commerceOrder.getCommerceOrderId()
 					).put(
+						"model" + CommerceOrder.class.getSimpleName(),
+						commerceOrder.getModelAttributes()
+					).put(
+						"modelDTO" + commerceOrderDTOConverter.getContentType(),
+						_commerceModelAttributesProvider.getModelAttributes(
+							commerceOrder, commerceOrderDTOConverter,
+							commerceOrder.getUserId())
+					).put(
 						"orderStatus", commerceOrder.getOrderStatus()
+					).put(
+						"originalCommerceOrder",
+						originalCommerceOrder.getModelAttributes()
 					));
 
 				MessageBusUtil.sendMessage(
@@ -698,6 +723,9 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 		_commerceInventoryBookedQuantityLocalService;
 
 	@Reference
+	private CommerceModelAttributesProvider _commerceModelAttributesProvider;
+
+	@Reference
 	private CommerceNotificationHelper _commerceNotificationHelper;
 
 	@Reference
@@ -736,6 +764,9 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private UserLocalService _userLocalService;

@@ -14,10 +14,9 @@
 
 package com.liferay.object.service.impl;
 
-import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectLayoutBoxConstants;
 import com.liferay.object.exception.DefaultObjectLayoutException;
-import com.liferay.object.exception.NoSuchObjectDefinitionException;
+import com.liferay.object.exception.ObjectDefinitionModifiableException;
 import com.liferay.object.exception.ObjectLayoutBoxCategorizationTypeException;
 import com.liferay.object.exception.ObjectLayoutColumnSizeException;
 import com.liferay.object.model.ObjectDefinition;
@@ -28,13 +27,14 @@ import com.liferay.object.model.ObjectLayoutColumn;
 import com.liferay.object.model.ObjectLayoutRow;
 import com.liferay.object.model.ObjectLayoutTab;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectLayoutTabLocalService;
 import com.liferay.object.service.base.ObjectLayoutLocalServiceBaseImpl;
 import com.liferay.object.service.persistence.ObjectDefinitionPersistence;
 import com.liferay.object.service.persistence.ObjectFieldPersistence;
 import com.liferay.object.service.persistence.ObjectLayoutBoxPersistence;
 import com.liferay.object.service.persistence.ObjectLayoutColumnPersistence;
 import com.liferay.object.service.persistence.ObjectLayoutRowPersistence;
-import com.liferay.object.service.persistence.ObjectLayoutTabPersistence;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -46,7 +46,6 @@ import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -79,12 +78,8 @@ public class ObjectLayoutLocalServiceImpl
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId);
 
-		if (objectDefinition.isSystem()) {
-
-			// TODO Add test
-
-			throw new NoSuchObjectDefinitionException(
-				"Object layouts require a custom object definition");
+		if (objectDefinition.isUnmodifiableSystemObject()) {
+			throw new ObjectDefinitionModifiableException.MustBeModifiable();
 		}
 
 		_validate(0, objectDefinitionId, defaultObjectLayout, objectLayoutTabs);
@@ -107,8 +102,7 @@ public class ObjectLayoutLocalServiceImpl
 
 		objectLayout.setObjectLayoutTabs(
 			_addObjectLayoutTabs(
-				user, objectDefinitionId, objectLayout.getObjectLayoutId(),
-				objectLayoutTabs));
+				user, objectDefinitionId, objectLayout, objectLayoutTabs));
 
 		return objectLayout;
 	}
@@ -147,6 +141,21 @@ public class ObjectLayoutLocalServiceImpl
 
 			objectLayoutLocalService.deleteObjectLayout(objectLayout);
 		}
+	}
+
+	@Override
+	public ObjectLayout fetchDefaultObjectLayout(long objectDefinitionId) {
+		ObjectLayout objectLayout =
+			objectLayoutPersistence.fetchByODI_DOL_First(
+				objectDefinitionId, true, null);
+
+		if (objectLayout == null) {
+			return null;
+		}
+
+		objectLayout.setObjectLayoutTabs(_getObjectLayoutTabs(objectLayout));
+
+		return objectLayout;
 	}
 
 	@Override
@@ -226,8 +235,8 @@ public class ObjectLayoutLocalServiceImpl
 
 		objectLayout.setObjectLayoutTabs(
 			_addObjectLayoutTabs(
-				user, objectLayout.getObjectDefinitionId(),
-				objectLayout.getObjectLayoutId(), objectLayoutTabs));
+				user, objectLayout.getObjectDefinitionId(), objectLayout,
+				objectLayoutTabs));
 
 		return objectLayout;
 	}
@@ -372,18 +381,10 @@ public class ObjectLayoutLocalServiceImpl
 			int priority, List<ObjectLayoutBox> objectLayoutBoxes)
 		throws PortalException {
 
-		ObjectLayoutTab objectLayoutTab = _objectLayoutTabPersistence.create(
-			counterLocalService.increment());
-
-		objectLayoutTab.setCompanyId(user.getCompanyId());
-		objectLayoutTab.setUserId(user.getUserId());
-		objectLayoutTab.setUserName(user.getFullName());
-		objectLayoutTab.setObjectLayoutId(objectLayoutId);
-		objectLayoutTab.setObjectRelationshipId(objectRelationshipId);
-		objectLayoutTab.setNameMap(nameMap);
-		objectLayoutTab.setPriority(priority);
-
-		objectLayoutTab = _objectLayoutTabPersistence.update(objectLayoutTab);
+		ObjectLayoutTab objectLayoutTab =
+			_objectLayoutTabLocalService.addObjectLayoutTab(
+				user.getUserId(), objectLayoutId, objectRelationshipId, nameMap,
+				priority);
 
 		objectLayoutTab.setObjectLayoutBoxes(
 			_addObjectLayoutBoxes(
@@ -394,17 +395,27 @@ public class ObjectLayoutLocalServiceImpl
 	}
 
 	private List<ObjectLayoutTab> _addObjectLayoutTabs(
-			User user, long objectDefinitionId, long objectLayoutId,
+			User user, long objectDefinitionId, ObjectLayout objectLayout,
 			List<ObjectLayoutTab> objectLayoutTabs)
 		throws PortalException {
 
-		return TransformUtil.unsafeTransform(
+		objectLayoutTabs = TransformUtil.unsafeTransform(
 			objectLayoutTabs,
 			objectLayoutTab -> _addObjectLayoutTab(
-				user, objectDefinitionId, objectLayoutId,
+				user, objectDefinitionId, objectLayout.getObjectLayoutId(),
 				objectLayoutTab.getObjectRelationshipId(),
 				objectLayoutTab.getNameMap(), objectLayoutTab.getPriority(),
 				objectLayoutTab.getObjectLayoutBoxes()));
+
+		if (objectLayout.isDefaultObjectLayout()) {
+			_objectLayoutTabLocalService.
+				registerObjectLayoutTabScreenNavigationCategories(
+					_objectDefinitionPersistence.fetchByPrimaryKey(
+						objectDefinitionId),
+					objectLayoutTabs);
+		}
+
+		return objectLayoutTabs;
 	}
 
 	private void _deleteObjectLayoutBoxes(
@@ -446,13 +457,17 @@ public class ObjectLayoutLocalServiceImpl
 		}
 	}
 
-	private void _deleteObjectLayoutTabs(long objectLayoutId) {
-		List<ObjectLayoutTab> objectLayoutTabs =
-			_objectLayoutTabPersistence.findByObjectLayoutId(objectLayoutId);
+	private void _deleteObjectLayoutTabs(long objectLayoutId)
+		throws PortalException {
 
-		_objectLayoutTabPersistence.removeByObjectLayoutId(objectLayoutId);
+		List<ObjectLayoutTab> objectLayoutTabs =
+			_objectLayoutTabLocalService.getObjectLayoutObjectLayoutTabs(
+				objectLayoutId);
 
 		_deleteObjectLayoutBoxes(objectLayoutTabs);
+
+		_objectLayoutTabLocalService.deleteObjectLayoutObjectLayoutTabs(
+			objectLayoutId);
 	}
 
 	private List<ObjectLayoutBox> _getObjectLayoutBoxes(
@@ -490,7 +505,7 @@ public class ObjectLayoutLocalServiceImpl
 		ObjectLayout objectLayout) {
 
 		List<ObjectLayoutTab> objectLayoutTabs =
-			_objectLayoutTabPersistence.findByObjectLayoutId(
+			_objectLayoutTabLocalService.getObjectLayoutObjectLayoutTabs(
 				objectLayout.getObjectLayoutId());
 
 		for (ObjectLayoutTab objectLayoutTab : objectLayoutTabs) {
@@ -559,6 +574,8 @@ public class ObjectLayoutLocalServiceImpl
 		}
 
 		int countObjectLayoutBoxCategorizationType = 0;
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
 
 		for (ObjectLayoutTab objectLayoutTab : objectLayoutTabs) {
 			List<ObjectLayoutBox> objectLayoutBoxes =
@@ -570,40 +587,39 @@ public class ObjectLayoutLocalServiceImpl
 						"Object layout box must have a type");
 				}
 
-				if (StringUtil.equals(
+				if (!StringUtil.equals(
 						objectLayoutBox.getType(),
 						ObjectLayoutBoxConstants.TYPE_CATEGORIZATION)) {
 
-					countObjectLayoutBoxCategorizationType++;
+					continue;
+				}
 
-					if (countObjectLayoutBoxCategorizationType > 1) {
-						throw new ObjectLayoutBoxCategorizationTypeException(
-							"There can only be one categorization layout box " +
-								"per layout");
-					}
+				if (!objectDefinition.isEnableCategorization()) {
+					throw new ObjectLayoutBoxCategorizationTypeException(
+						"Categorization layout box must be enabled to be used");
+				}
 
-					if (ListUtil.isNotEmpty(
-							objectLayoutBox.getObjectLayoutRows())) {
+				if (!objectDefinition.isDefaultStorageType()) {
+					throw new ObjectLayoutBoxCategorizationTypeException(
+						"Categorization layout box can only be used in " +
+							"object definitions with a default storage type");
+				}
 
-						throw new ObjectLayoutBoxCategorizationTypeException(
-							"Categorization layout box must not have layout " +
-								"rows");
-					}
+				countObjectLayoutBoxCategorizationType++;
+
+				if (countObjectLayoutBoxCategorizationType > 1) {
+					throw new ObjectLayoutBoxCategorizationTypeException(
+						"There can only be one categorization layout box per " +
+							"layout");
+				}
+
+				if (ListUtil.isNotEmpty(
+						objectLayoutBox.getObjectLayoutRows())) {
+
+					throw new ObjectLayoutBoxCategorizationTypeException(
+						"Categorization layout box must not have layout rows");
 				}
 			}
-		}
-
-		ObjectDefinition objectDefinition =
-			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
-
-		if ((countObjectLayoutBoxCategorizationType == 1) &&
-			!StringUtil.equals(
-				objectDefinition.getStorageType(),
-				ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT)) {
-
-			throw new ObjectLayoutBoxCategorizationTypeException(
-				"Categorization layout box only can be used in object " +
-					"definitions with default storage type");
 		}
 	}
 
@@ -626,7 +642,7 @@ public class ObjectLayoutLocalServiceImpl
 	private ObjectLayoutRowPersistence _objectLayoutRowPersistence;
 
 	@Reference
-	private ObjectLayoutTabPersistence _objectLayoutTabPersistence;
+	private ObjectLayoutTabLocalService _objectLayoutTabLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;

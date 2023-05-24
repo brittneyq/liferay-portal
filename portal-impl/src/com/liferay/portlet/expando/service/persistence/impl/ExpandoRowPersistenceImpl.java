@@ -48,7 +48,6 @@ import com.liferay.portlet.expando.model.impl.ExpandoRowModelImpl;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
@@ -189,7 +188,7 @@ public class ExpandoRowPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<ExpandoRow>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoRow expandoRow : list) {
@@ -554,7 +553,8 @@ public class ExpandoRowPersistenceImpl
 
 			finderArgs = new Object[] {tableId};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -694,7 +694,7 @@ public class ExpandoRowPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<ExpandoRow>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoRow expandoRow : list) {
@@ -1059,7 +1059,8 @@ public class ExpandoRowPersistenceImpl
 
 			finderArgs = new Object[] {classPK};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1179,7 +1180,7 @@ public class ExpandoRowPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
-				_finderPathFetchByT_C, finderArgs);
+				_finderPathFetchByT_C, finderArgs, this);
 		}
 
 		if (result instanceof ExpandoRow) {
@@ -1286,7 +1287,8 @@ public class ExpandoRowPersistenceImpl
 
 			finderArgs = new Object[] {tableId, classPK};
 
-			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (count == null) {
@@ -1906,7 +1908,7 @@ public class ExpandoRowPersistenceImpl
 
 		if (useFinderCache && productionMode) {
 			list = (List<ExpandoRow>)FinderCacheUtil.getResult(
-				finderPath, finderArgs);
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -1982,7 +1984,7 @@ public class ExpandoRowPersistenceImpl
 
 		if (productionMode) {
 			count = (Long)FinderCacheUtil.getResult(
-				_finderPathCountAll, FINDER_ARGS_EMPTY);
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 		}
 
 		if (count == null) {
@@ -2156,28 +2158,13 @@ public class ExpandoRowPersistenceImpl
 			new String[] {Long.class.getName(), Long.class.getName()},
 			new String[] {"tableId", "classPK"}, false);
 
-		_setExpandoRowUtilPersistence(this);
+		ExpandoRowUtil.setPersistence(this);
 	}
 
 	public void destroy() {
-		_setExpandoRowUtilPersistence(null);
+		ExpandoRowUtil.setPersistence(null);
 
 		EntityCacheUtil.removeCache(ExpandoRowImpl.class.getName());
-	}
-
-	private void _setExpandoRowUtilPersistence(
-		ExpandoRowPersistence expandoRowPersistence) {
-
-		try {
-			Field field = ExpandoRowUtil.class.getDeclaredField("_persistence");
-
-			field.setAccessible(true);
-
-			field.set(null, expandoRowPersistence);
-		}
-		catch (ReflectiveOperationException reflectiveOperationException) {
-			throw new RuntimeException(reflectiveOperationException);
-		}
 	}
 
 	private static final String _SQL_SELECT_EXPANDOROW =

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -27,6 +26,7 @@ const InputCurrency = ({
 	meta,
 	onAccept,
 	required,
+	value,
 }: PRMFormFieldProps & PRMFormFieldStateProps<number> & IProps) => (
 	<WrapperInput
 		{...meta}
@@ -50,7 +50,7 @@ const InputCurrency = ({
 			scale={2}
 			thousandsSeparator=","
 			unmask="typed"
-			value={field.value || ''}
+			value={value || field.value || ''}
 		/>
 	</WrapperInput>
 );

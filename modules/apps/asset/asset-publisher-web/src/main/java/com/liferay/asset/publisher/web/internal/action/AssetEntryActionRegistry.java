@@ -14,10 +14,11 @@
 
 package com.liferay.asset.publisher.web.internal.action;
 
-import com.liferay.asset.kernel.action.AssetEntryAction;
-import com.liferay.osgi.service.tracker.collections.ServiceTrackerMapBuilder;
+import com.liferay.asset.publisher.action.AssetEntryAction;
 import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
+import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceMapper;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,12 +30,12 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Jürgen Kappler
  */
-@Component(immediate = true, service = AssetEntryActionRegistry.class)
+@Component(service = AssetEntryActionRegistry.class)
 public class AssetEntryActionRegistry {
 
 	public List<AssetEntryAction<?>> getAssetEntryActions(String className) {
 		List<AssetEntryAction<?>> assetEntryActions =
-			_assetEntryActionsMap.getService(className);
+			_serviceTrackerMap.getService(className);
 
 		if (assetEntryActions != null) {
 			return assetEntryActions;
@@ -45,20 +46,16 @@ public class AssetEntryActionRegistry {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_assetEntryActionsMap =
-			ServiceTrackerMapBuilder.SelectorFactory.newSelector(
-				bundleContext,
-				(Class<AssetEntryAction<?>>)(Class<?>)AssetEntryAction.class
-			).map(
-				"model.class.name"
-			).collectMultiValue(
-				Collections.reverseOrder(
-					new PropertyServiceReferenceComparator<>(
-						"asset.entry.action.order"))
-			).build();
+		_serviceTrackerMap = ServiceTrackerMapFactory.openMultiValueMap(
+			bundleContext,
+			(Class<AssetEntryAction<?>>)(Class<?>)AssetEntryAction.class, null,
+			new PropertyServiceReferenceMapper<>("model.class.name"),
+			Collections.reverseOrder(
+				new PropertyServiceReferenceComparator<>(
+					"asset.entry.action.order")));
 	}
 
 	private ServiceTrackerMap<String, List<AssetEntryAction<?>>>
-		_assetEntryActionsMap;
+		_serviceTrackerMap;
 
 }

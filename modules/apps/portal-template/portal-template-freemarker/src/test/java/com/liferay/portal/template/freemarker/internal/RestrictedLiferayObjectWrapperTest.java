@@ -490,7 +490,7 @@ public class RestrictedLiferayObjectWrapperTest
 			Assert.assertEquals(
 				StringBundler.concat(
 					"Denied access to method or field ", key, " of ",
-					TestLiferayMethodObject.class.toString()),
+					TestLiferayMethodObject.class),
 				templateModelException.getMessage());
 		}
 	}
@@ -600,11 +600,6 @@ public class RestrictedLiferayObjectWrapperTest
 		@Override
 		public String toString() {
 			return String.valueOf(_companyId);
-		}
-
-		@Override
-		public String toXmlString() {
-			return null;
 		}
 
 		private TestBaseModel(long companyId) {

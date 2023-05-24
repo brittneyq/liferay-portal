@@ -14,19 +14,22 @@
 
 import ClayAutocomplete from '@clayui/autocomplete';
 import ClayButton from '@clayui/button';
-import {useResource} from '@clayui/data-provider';
 import ClayDropDown from '@clayui/drop-down';
 import {ClayInput, ClaySelect} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {FocusScope} from '@clayui/shared';
 import getCN from 'classnames';
-import {navigate} from 'frontend-js-web';
-import React, {useRef, useState} from 'react';
+import {addParams, fetch, navigate} from 'frontend-js-web';
+import React, {useCallback, useRef, useState} from 'react';
+
+import useDebounceCallback from '../hooks/useDebounceCallback';
+import cleanSuggestionsContributorConfiguration from '../utils/clean_suggestions_contributor_configuration';
 
 export default function SearchBar({
 	destinationFriendlyURL,
 	emptySearchEnabled,
+	isDXP = true,
+	isSearchExperiencesSupported = true,
 	keywords = '',
 	keywordsParameterName = 'q',
 	letUserChooseScope = false,
@@ -36,7 +39,7 @@ export default function SearchBar({
 	scopeParameterStringEverything,
 	searchURL,
 	selectedEverythingSearchScope = false,
-	suggestionsContributorConfiguration = '{}',
+	suggestionsContributorConfiguration = '[]',
 	suggestionsDisplayThreshold = '2',
 	suggestionsURL = '/o/portal-search-rest/v1.0/suggestions',
 }) {
@@ -48,52 +51,106 @@ export default function SearchBar({
 	const [active, setActive] = useState(false);
 	const [autocompleteSearchValue, setAutocompleteSearchValue] = useState('');
 	const [inputValue, setInputValue] = useState(keywords);
-	const [networkState, setNetworkState] = useState(() => ({
-		error: false,
-		loading: false,
-		networkStatus: 4,
-	}));
+	const [loading, setLoading] = useState(false);
 	const [scope, setScope] = useState(
 		selectedEverythingSearchScope
 			? scopeParameterStringEverything
 			: scopeParameterStringCurrentSite
 	);
+	const [suggestionsResponseItems, setSuggestionsResponseItems] = useState(
+		[]
+	);
 
 	const alignElementRef = useRef();
 	const dropdownRef = useRef();
 
-	const {resource} = useResource({
-		fetchOptions: {
-			body: suggestionsContributorConfiguration,
-			credentials: 'include',
-			headers: new Headers({
-				'Accept': 'application/json',
-				'Accept-Language': Liferay.ThemeDisplay.getBCP47LanguageId(),
-				'Content-Type': 'application/json',
-				'x-csrf-token': Liferay.authToken,
-			}),
-			method: 'POST',
-		},
-		fetchPolicy: 'cache-first',
-		link: fetchURL.href,
-		onNetworkStatusChange: (status) => {
-			setNetworkState({
-				error: status === 5,
-				loading: status > 1 && status < 4,
-				networkStatus: status,
+	/**
+	 * Returns the lowest suggestions display threshold available.
+	 * If a suggestions contributor does not set its own threshold,
+	 * it uses the global one.
+	 */
+
+	const _getLowestSuggestionsDisplayThreshold = useCallback(() => {
+		const characterThresholdArray = cleanSuggestionsContributorConfiguration(
+			suggestionsContributorConfiguration,
+			isDXP,
+			isSearchExperiencesSupported
+		).map((config) =>
+			config.attributes?.characterThreshold
+				? parseInt(config.attributes.characterThreshold, 10)
+				: parseInt(suggestionsDisplayThreshold, 10)
+		);
+
+		return Math.min(...characterThresholdArray);
+	}, [
+		isDXP,
+		isSearchExperiencesSupported,
+		suggestionsContributorConfiguration,
+		suggestionsDisplayThreshold,
+	]);
+
+	/**
+	 * Filters out blueprint suggestion contributors if search
+	 * experiences is not supported.
+	 */
+	const _getSuggestionsContributorConfiguration = useCallback(
+		() =>
+			JSON.stringify(
+				cleanSuggestionsContributorConfiguration(
+					suggestionsContributorConfiguration,
+					isDXP,
+					isSearchExperiencesSupported
+				)
+			),
+		[
+			isDXP,
+			isSearchExperiencesSupported,
+			suggestionsContributorConfiguration,
+		]
+	);
+
+	const _fetchSuggestions = (searchValue, scopeValue) => {
+		fetch(
+			addParams(
+				{
+					currentURL: window.location.href,
+					destinationFriendlyURL: destinationFriendlyURL.trim().length
+						? destinationFriendlyURL
+						: '/search',
+					groupId: Liferay.ThemeDisplay.getScopeGroupId(),
+					keywordsParameterName,
+					plid: Liferay.ThemeDisplay.getPlid(),
+					scope: scopeValue,
+					search: searchValue,
+				},
+				fetchURL.href
+			),
+			{
+				body: _getSuggestionsContributorConfiguration(),
+				headers: new Headers({
+					'Accept': 'application/json',
+					'Accept-Language': Liferay.ThemeDisplay.getBCP47LanguageId(),
+					'Content-Type': 'application/json',
+				}),
+				method: 'POST',
+			}
+		)
+			.then((response) => response.json())
+			.then((data) => {
+				setSuggestionsResponseItems(data?.items || []);
+			})
+			.catch(() => {
+				setSuggestionsResponseItems([]);
+			})
+			.finally(() => {
+				setLoading(false);
 			});
-		},
-		variables: {
-			currentURL: window.location.href,
-			destinationFriendlyURL: destinationFriendlyURL.trim().length
-				? destinationFriendlyURL
-				: '/search',
-			groupId: Liferay.ThemeDisplay.getScopeGroupId(),
-			plid: Liferay.ThemeDisplay.getPlid(),
-			scope,
-			search: autocompleteSearchValue,
-		},
-	});
+	};
+
+	const [fetchSuggestionsDebounced] = useDebounceCallback(
+		_fetchSuggestions,
+		500
+	);
 
 	const _handleKeyDown = (event) => {
 		if (event.key === 'Enter') {
@@ -103,6 +160,19 @@ export default function SearchBar({
 
 	const _handleChangeScope = (event) => {
 		setScope(event.target.value);
+	};
+
+	const _handleFocus = () => {
+		if (
+			_getLowestSuggestionsDisplayThreshold() === 0 &&
+			inputValue === ''
+		) {
+			setLoading(true);
+
+			_fetchSuggestions(inputValue, scope);
+
+			setActive(true);
+		}
 	};
 
 	const _handleSubmit = (event) => {
@@ -121,14 +191,16 @@ export default function SearchBar({
 
 		setInputValue(value);
 
-		if (value.trim().length > parseInt(suggestionsDisplayThreshold, 10)) {
+		if (value.trim().length >= _getLowestSuggestionsDisplayThreshold()) {
 
 			// Immediately show loading spinner unless the value hasn't changed.
 			// If the value hasn't changed, no new request will be made and the
-			// loading spinner will never be hidden.
+			// loading spinner will not be shown.
 
 			if (value.trim() !== autocompleteSearchValue) {
-				_setLoading(true);
+				setLoading(true);
+
+				fetchSuggestionsDebounced(value.trim(), scope);
 			}
 
 			setActive(true);
@@ -153,6 +225,7 @@ export default function SearchBar({
 					data-qa-id="searchInput"
 					name={keywordsParameterName}
 					onChange={_handleValueChange}
+					onFocus={_handleFocus}
 					onKeyDown={_handleKeyDown}
 					placeholder={Liferay.Language.get('search-...')}
 					title={Liferay.Language.get('search')}
@@ -160,12 +233,12 @@ export default function SearchBar({
 					value={inputValue}
 				/>
 
-				{networkState.loading ? (
+				{loading ? (
 					<ClayAutocomplete.LoadingIndicator />
 				) : (
 					<ClayInput.GroupInsetItem after>
 						<ClayButton
-							aria-label={Liferay.Language.get('submit')}
+							aria-label={Liferay.Language.get('search')}
 							displayType="unstyled"
 							onClick={_handleSubmit}
 							type="submit"
@@ -190,6 +263,7 @@ export default function SearchBar({
 							data-qa-id="searchInput"
 							name={keywordsParameterName}
 							onChange={_handleValueChange}
+							onFocus={_handleFocus}
 							onKeyDown={_handleKeyDown}
 							placeholder={Liferay.Language.get('search-...')}
 							type="text"
@@ -197,12 +271,14 @@ export default function SearchBar({
 						/>
 
 						<ClayInput.GroupInsetItem after>
-							<ClayLoadingIndicator
-								className={getCN({
-									invisible: !networkState.loading,
-								})}
-								small
-							/>
+							<span className="c-mr-2 inline-item">
+								<ClayLoadingIndicator
+									className={getCN({
+										invisible: !loading,
+									})}
+									small
+								/>
+							</span>
 						</ClayInput.GroupInsetItem>
 					</ClayInput.Group>
 				</ClayInput.GroupItem>
@@ -229,9 +305,9 @@ export default function SearchBar({
 					</ClaySelect>
 				</ClayInput.GroupItem>
 
-				<ClayInput.GroupItem append className="mr-0" shrink>
+				<ClayInput.GroupItem append className="c-mr-0" shrink>
 					<ClayButton
-						aria-label={Liferay.Language.get('submit')}
+						aria-label={Liferay.Language.get('search')}
 						displayType="secondary"
 						onClick={_handleSubmit}
 						type="submit"
@@ -243,18 +319,10 @@ export default function SearchBar({
 		);
 	};
 
-	const _setLoading = (loading) => {
-		setNetworkState({
-			error: false,
-			loading,
-			networkStatus: 4,
-		});
-	};
-
 	const _updateQueryString = (queryString) => {
 		const searchParams = new URLSearchParams(queryString);
 
-		if (inputValue) {
+		if (emptySearchEnabled || inputValue) {
 			searchParams.set(
 				keywordsParameterName,
 				inputValue.replace(/^\s+|\s+$/, '')
@@ -277,71 +345,69 @@ export default function SearchBar({
 	};
 
 	return (
-		<FocusScope>
-			<ClayAutocomplete className="search-bar-suggestions">
-				<ClayInput.Group ref={alignElementRef}>
-					{letUserChooseScope
-						? _renderSearchBarWithScope()
-						: _renderSearchBar()}
-				</ClayInput.Group>
+		<ClayAutocomplete className="search-bar-suggestions">
+			<ClayInput.Group ref={alignElementRef}>
+				{letUserChooseScope
+					? _renderSearchBarWithScope()
+					: _renderSearchBar()}
+			</ClayInput.Group>
 
-				<ClayDropDown.Menu
-					active={active && !!resource?.items?.length}
-					alignElementRef={alignElementRef}
-					autoBestAlign={false}
-					className="search-bar-suggestions-dropdown-menu"
-					closeOnClickOutside
-					onSetActive={setActive}
-					ref={dropdownRef}
-					style={{
-						width:
-							alignElementRef.current &&
-							alignElementRef.current.clientWidth + 'px',
-					}}
-				>
-					{resource?.items?.map((group, groupIndex) => (
-						<ClayDropDown.ItemList
-							className="search-bar-suggestions-results-list"
-							key={groupIndex}
-						>
-							<ClayDropDown.Group header={group.displayGroupName}>
-								{group.suggestions.map(
-									({text, attributes = {}}, index) => (
-										<ClayDropDown.Item
-											href={attributes.assetURL}
-											key={index}
-										>
-											<div className="suggestion-item-title">
-												{text}
-											</div>
+			<ClayDropDown.Menu
+				active={active && !!suggestionsResponseItems.length}
+				alignElementRef={alignElementRef}
+				autoBestAlign={false}
+				className="search-bar-suggestions-dropdown-menu"
+				closeOnClickOutside
+				onSetActive={setActive}
+				ref={dropdownRef}
+				style={{
+					width:
+						alignElementRef.current &&
+						alignElementRef.current.clientWidth + 'px',
+				}}
+			>
+				{suggestionsResponseItems.map((group, groupIndex) => (
+					<ClayDropDown.ItemList
+						className="search-bar-suggestions-results-list"
+						key={groupIndex}
+					>
+						<ClayDropDown.Group header={group.displayGroupName}>
+							{group.suggestions.map(
+								({text, attributes = {}}, index) => (
+									<ClayDropDown.Item
+										href={attributes.assetURL}
+										key={index}
+									>
+										<div className="suggestion-item-title">
+											{text}
+										</div>
 
-											{attributes.assetSearchSummary && (
-												<div className="suggestion-item-description">
-													<div className="text-truncate-inline">
-														<div className="text-truncate">
-															{attributes.assetSearchSummary ||
-																''}
-														</div>
+										{attributes.assetSearchSummary && (
+											<div className="suggestion-item-description">
+												<div className="text-truncate-inline">
+													<div className="text-truncate">
+														{attributes.assetSearchSummary ||
+															''}
 													</div>
 												</div>
-											)}
-										</ClayDropDown.Item>
-									)
-								)}
-							</ClayDropDown.Group>
-						</ClayDropDown.ItemList>
-					))}
-
-					<ClayDropDown.ItemList>
-						<ClayDropDown.Item
-							className="search-bar-suggestions-show-more"
-							onClick={_handleSubmit}
-						>
-							{Liferay.Language.get('show-more')}
-						</ClayDropDown.Item>
+											</div>
+										)}
+									</ClayDropDown.Item>
+								)
+							)}
+						</ClayDropDown.Group>
 					</ClayDropDown.ItemList>
-				</ClayDropDown.Menu>
-			</ClayAutocomplete>
-		</FocusScope>
+				))}
+
+				<ClayDropDown.ItemList>
+					<ClayDropDown.Item
+						className="search-bar-suggestions-show-more"
+						onClick={_handleSubmit}
+					>
+						{Liferay.Language.get('show-more')}
+					</ClayDropDown.Item>
+				</ClayDropDown.ItemList>
+			</ClayDropDown.Menu>
+		</ClayAutocomplete>
 	);
 }

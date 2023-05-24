@@ -28,6 +28,7 @@ import com.liferay.headless.commerce.delivery.catalog.client.pagination.Page;
 import com.liferay.headless.commerce.delivery.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.delivery.catalog.client.resource.v1_0.ProductOptionResource;
 import com.liferay.headless.commerce.delivery.catalog.client.serdes.v1_0.ProductOptionSerDes;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -55,6 +56,7 @@ import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,8 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -197,27 +197,27 @@ public abstract class BaseProductOptionResourceTestCase {
 	}
 
 	@Test
-	public void testGetChannelProductOptionsPage() throws Exception {
-		Long channelId = testGetChannelProductOptionsPage_getChannelId();
+	public void testGetChannelProductProductOptionsPage() throws Exception {
+		Long channelId = testGetChannelProductProductOptionsPage_getChannelId();
 		Long irrelevantChannelId =
-			testGetChannelProductOptionsPage_getIrrelevantChannelId();
-		Long productId = testGetChannelProductOptionsPage_getProductId();
+			testGetChannelProductProductOptionsPage_getIrrelevantChannelId();
+		Long productId = testGetChannelProductProductOptionsPage_getProductId();
 		Long irrelevantProductId =
-			testGetChannelProductOptionsPage_getIrrelevantProductId();
+			testGetChannelProductProductOptionsPage_getIrrelevantProductId();
 
 		Page<ProductOption> page =
-			productOptionResource.getChannelProductOptionsPage(
+			productOptionResource.getChannelProductProductOptionsPage(
 				channelId, productId, Pagination.of(1, 10));
 
 		Assert.assertEquals(0, page.getTotalCount());
 
 		if ((irrelevantChannelId != null) && (irrelevantProductId != null)) {
 			ProductOption irrelevantProductOption =
-				testGetChannelProductOptionsPage_addProductOption(
+				testGetChannelProductProductOptionsPage_addProductOption(
 					irrelevantChannelId, irrelevantProductId,
 					randomIrrelevantProductOption());
 
-			page = productOptionResource.getChannelProductOptionsPage(
+			page = productOptionResource.getChannelProductProductOptionsPage(
 				irrelevantChannelId, irrelevantProductId, Pagination.of(1, 2));
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -225,18 +225,21 @@ public abstract class BaseProductOptionResourceTestCase {
 			assertEquals(
 				Arrays.asList(irrelevantProductOption),
 				(List<ProductOption>)page.getItems());
-			assertValid(page);
+			assertValid(
+				page,
+				testGetChannelProductProductOptionsPage_getExpectedActions(
+					irrelevantChannelId, irrelevantProductId));
 		}
 
 		ProductOption productOption1 =
-			testGetChannelProductOptionsPage_addProductOption(
+			testGetChannelProductProductOptionsPage_addProductOption(
 				channelId, productId, randomProductOption());
 
 		ProductOption productOption2 =
-			testGetChannelProductOptionsPage_addProductOption(
+			testGetChannelProductProductOptionsPage_addProductOption(
 				channelId, productId, randomProductOption());
 
-		page = productOptionResource.getChannelProductOptionsPage(
+		page = productOptionResource.getChannelProductProductOptionsPage(
 			channelId, productId, Pagination.of(1, 10));
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -244,30 +247,43 @@ public abstract class BaseProductOptionResourceTestCase {
 		assertEqualsIgnoringOrder(
 			Arrays.asList(productOption1, productOption2),
 			(List<ProductOption>)page.getItems());
-		assertValid(page);
+		assertValid(
+			page,
+			testGetChannelProductProductOptionsPage_getExpectedActions(
+				channelId, productId));
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetChannelProductProductOptionsPage_getExpectedActions(
+				Long channelId, Long productId)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
 	}
 
 	@Test
-	public void testGetChannelProductOptionsPageWithPagination()
+	public void testGetChannelProductProductOptionsPageWithPagination()
 		throws Exception {
 
-		Long channelId = testGetChannelProductOptionsPage_getChannelId();
-		Long productId = testGetChannelProductOptionsPage_getProductId();
+		Long channelId = testGetChannelProductProductOptionsPage_getChannelId();
+		Long productId = testGetChannelProductProductOptionsPage_getProductId();
 
 		ProductOption productOption1 =
-			testGetChannelProductOptionsPage_addProductOption(
+			testGetChannelProductProductOptionsPage_addProductOption(
 				channelId, productId, randomProductOption());
 
 		ProductOption productOption2 =
-			testGetChannelProductOptionsPage_addProductOption(
+			testGetChannelProductProductOptionsPage_addProductOption(
 				channelId, productId, randomProductOption());
 
 		ProductOption productOption3 =
-			testGetChannelProductOptionsPage_addProductOption(
+			testGetChannelProductProductOptionsPage_addProductOption(
 				channelId, productId, randomProductOption());
 
 		Page<ProductOption> page1 =
-			productOptionResource.getChannelProductOptionsPage(
+			productOptionResource.getChannelProductProductOptionsPage(
 				channelId, productId, Pagination.of(1, 2));
 
 		List<ProductOption> productOptions1 =
@@ -277,7 +293,7 @@ public abstract class BaseProductOptionResourceTestCase {
 			productOptions1.toString(), 2, productOptions1.size());
 
 		Page<ProductOption> page2 =
-			productOptionResource.getChannelProductOptionsPage(
+			productOptionResource.getChannelProductProductOptionsPage(
 				channelId, productId, Pagination.of(2, 2));
 
 		Assert.assertEquals(3, page2.getTotalCount());
@@ -289,7 +305,7 @@ public abstract class BaseProductOptionResourceTestCase {
 			productOptions2.toString(), 1, productOptions2.size());
 
 		Page<ProductOption> page3 =
-			productOptionResource.getChannelProductOptionsPage(
+			productOptionResource.getChannelProductProductOptionsPage(
 				channelId, productId, Pagination.of(1, 3));
 
 		assertEqualsIgnoringOrder(
@@ -297,35 +313,38 @@ public abstract class BaseProductOptionResourceTestCase {
 			(List<ProductOption>)page3.getItems());
 	}
 
-	protected ProductOption testGetChannelProductOptionsPage_addProductOption(
-			Long channelId, Long productId, ProductOption productOption)
+	protected ProductOption
+			testGetChannelProductProductOptionsPage_addProductOption(
+				Long channelId, Long productId, ProductOption productOption)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetChannelProductOptionsPage_getChannelId()
+	protected Long testGetChannelProductProductOptionsPage_getChannelId()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetChannelProductOptionsPage_getIrrelevantChannelId()
+	protected Long
+			testGetChannelProductProductOptionsPage_getIrrelevantChannelId()
 		throws Exception {
 
 		return null;
 	}
 
-	protected Long testGetChannelProductOptionsPage_getProductId()
+	protected Long testGetChannelProductProductOptionsPage_getProductId()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetChannelProductOptionsPage_getIrrelevantProductId()
+	protected Long
+			testGetChannelProductProductOptionsPage_getIrrelevantProductId()
 		throws Exception {
 
 		return null;
@@ -484,6 +503,22 @@ public abstract class BaseProductOptionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("required", additionalAssertFieldName)) {
+				if (productOption.getRequired() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("skuContributor", additionalAssertFieldName)) {
+				if (productOption.getSkuContributor() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -493,6 +528,13 @@ public abstract class BaseProductOptionResourceTestCase {
 	}
 
 	protected void assertValid(Page<ProductOption> page) {
+		assertValid(page, Collections.emptyMap());
+	}
+
+	protected void assertValid(
+		Page<ProductOption> page,
+		Map<String, Map<String, String>> expectedActions) {
+
 		boolean valid = false;
 
 		java.util.Collection<ProductOption> productOptions = page.getItems();
@@ -507,6 +549,20 @@ public abstract class BaseProductOptionResourceTestCase {
 		}
 
 		Assert.assertTrue(valid);
+
+		Map<String, Map<String, String>> actions = page.getActions();
+
+		for (String key : expectedActions.keySet()) {
+			Map action = actions.get(key);
+
+			Assert.assertNotNull(key + " does not contain an action", action);
+
+			Map expectedAction = expectedActions.get(key);
+
+			Assert.assertEquals(
+				expectedAction.get("method"), action.get("method"));
+			Assert.assertEquals(expectedAction.get("href"), action.get("href"));
+		}
 	}
 
 	protected String[] getAdditionalAssertFieldNames() {
@@ -675,6 +731,28 @@ public abstract class BaseProductOptionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("required", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						productOption1.getRequired(),
+						productOption2.getRequired())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("skuContributor", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						productOption1.getSkuContributor(),
+						productOption2.getSkuContributor())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -712,14 +790,16 @@ public abstract class BaseProductOptionResourceTestCase {
 	protected java.lang.reflect.Field[] getDeclaredFields(Class clazz)
 		throws Exception {
 
-		Stream<java.lang.reflect.Field> stream = Stream.of(
-			ReflectionUtil.getDeclaredFields(clazz));
+		return TransformUtil.transform(
+			ReflectionUtil.getDeclaredFields(clazz),
+			field -> {
+				if (field.isSynthetic()) {
+					return null;
+				}
 
-		return stream.filter(
-			field -> !field.isSynthetic()
-		).toArray(
-			java.lang.reflect.Field[]::new
-		);
+				return field;
+			},
+			java.lang.reflect.Field.class);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()
@@ -736,6 +816,10 @@ public abstract class BaseProductOptionResourceTestCase {
 		EntityModel entityModel = entityModelResource.getEntityModel(
 			new MultivaluedHashMap());
 
+		if (entityModel == null) {
+			return Collections.emptyList();
+		}
+
 		Map<String, EntityField> entityFieldsMap =
 			entityModel.getEntityFieldsMap();
 
@@ -745,18 +829,18 @@ public abstract class BaseProductOptionResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		java.util.Collection<EntityField> entityFields = getEntityFields();
+		return TransformUtil.transform(
+			getEntityFields(),
+			entityField -> {
+				if (!Objects.equals(entityField.getType(), type) ||
+					ArrayUtil.contains(
+						getIgnoredEntityFieldNames(), entityField.getName())) {
 
-		Stream<EntityField> stream = entityFields.stream();
+					return null;
+				}
 
-		return stream.filter(
-			entityField ->
-				Objects.equals(entityField.getType(), type) &&
-				!ArrayUtil.contains(
-					getIgnoredEntityFieldNames(), entityField.getName())
-		).collect(
-			Collectors.toList()
-		);
+				return entityField;
+			});
 	}
 
 	protected String getFilterString(
@@ -830,6 +914,16 @@ public abstract class BaseProductOptionResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("required")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("skuContributor")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -884,6 +978,8 @@ public abstract class BaseProductOptionResourceTestCase {
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				optionId = RandomTestUtil.randomLong();
 				priority = RandomTestUtil.randomDouble();
+				required = RandomTestUtil.randomBoolean();
+				skuContributor = RandomTestUtil.randomBoolean();
 			}
 		};
 	}

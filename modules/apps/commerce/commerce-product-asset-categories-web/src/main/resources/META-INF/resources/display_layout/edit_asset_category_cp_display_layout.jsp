@@ -19,7 +19,6 @@
 <%
 CategoryCPDisplayLayoutDisplayContext categoryCPDisplayLayoutDisplayContext = (CategoryCPDisplayLayoutDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
-CommerceChannel commerceChannel = categoryCPDisplayLayoutDisplayContext.getCommerceChannel();
 CPDisplayLayout cpDisplayLayout = categoryCPDisplayLayoutDisplayContext.getCPDisplayLayout();
 
 AssetCategory assetCategory = null;
@@ -28,19 +27,7 @@ if (cpDisplayLayout != null) {
 	assetCategory = categoryCPDisplayLayoutDisplayContext.getAssetCategory(cpDisplayLayout.getClassPK());
 }
 
-String layoutBreadcrumb = StringPool.BLANK;
-
-if (cpDisplayLayout != null) {
-	Layout selLayout = LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(cpDisplayLayout.getLayoutUuid(), commerceChannel.getSiteGroupId(), false);
-
-	if (selLayout == null) {
-		selLayout = LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(cpDisplayLayout.getLayoutUuid(), commerceChannel.getSiteGroupId(), true);
-	}
-
-	if (selLayout != null) {
-		layoutBreadcrumb = selLayout.getBreadcrumb(locale);
-	}
-}
+String layoutBreadcrumb = categoryCPDisplayLayoutDisplayContext.getLayoutBreadcrumb(cpDisplayLayout);
 %>
 
 <liferay-frontend:side-panel-content
@@ -56,43 +43,45 @@ if (cpDisplayLayout != null) {
 		<aui:input name="commerceChannelId" type="hidden" value="<%= categoryCPDisplayLayoutDisplayContext.getCommerceChannelId() %>" />
 
 		<liferay-ui:error exception="<%= CPDisplayLayoutEntryException.class %>" message="please-select-a-valid-category" />
-		<liferay-ui:error exception="<%= CPDisplayLayoutLayoutUuidException.class %>" message="please-select-a-valid-layout" />
+		<liferay-ui:error exception="<%= CPDisplayLayoutEntryUuidException.class %>" message="please-select-a-valid-layout" />
 
 		<aui:model-context bean="<%= cpDisplayLayout %>" model="<%= CPDisplayLayout.class %>" />
 
-		<aui:fieldset-group markupView="lexicon">
-			<aui:fieldset>
-				<liferay-asset:asset-categories-error />
+		<div class="sheet">
+			<div class="panel-group panel-group-flush">
+				<aui:fieldset>
+					<liferay-asset:asset-categories-error />
 
-				<h4><liferay-ui:message key="select-categories" /></h4>
+					<h4><liferay-ui:message key="select-categories" /></h4>
 
-				<div id="<portlet:namespace />categoriesContainer"></div>
+					<div id="<portlet:namespace />categoriesContainer"></div>
 
-				<aui:button name="selectCategories" value="select" />
+					<aui:button name="selectCategories" value="select" />
 
-				<aui:input id="pagesContainerInput" ignoreRequestValue="<%= true %>" name="layoutUuid" type="hidden" value="<%= (cpDisplayLayout == null) ? StringPool.BLANK : cpDisplayLayout.getLayoutUuid() %>" />
+					<aui:input id="pagesContainerInput" ignoreRequestValue="<%= true %>" name="layoutUuid" type="hidden" value="<%= (cpDisplayLayout == null) ? StringPool.BLANK : cpDisplayLayout.getLayoutUuid() %>" />
 
-				<aui:field-wrapper helpMessage="category-display-page-help" label="category-display-page">
-					<p class="text-default">
-						<span class="<%= Validator.isNull(layoutBreadcrumb) ? "hide" : StringPool.BLANK %>" id="<portlet:namespace />displayPageItemRemove" role="button">
-							<aui:icon cssClass="icon-monospaced" image="times" markupView="lexicon" />
-						</span>
-						<span id="<portlet:namespace />displayPageNameInput">
-							<c:choose>
-								<c:when test="<%= Validator.isNull(layoutBreadcrumb) %>">
-									<span class="text-muted"><liferay-ui:message key="none" /></span>
-								</c:when>
-								<c:otherwise>
-									<%= layoutBreadcrumb %>
-								</c:otherwise>
-							</c:choose>
-						</span>
-					</p>
-				</aui:field-wrapper>
+					<aui:field-wrapper helpMessage="category-display-page-help" label="category-display-page">
+						<p class="text-default">
+							<span class="<%= Validator.isNull(layoutBreadcrumb) ? "hide" : StringPool.BLANK %>" id="<portlet:namespace />displayPageItemRemove" role="button">
+								<aui:icon cssClass="icon-monospaced" image="times" markupView="lexicon" />
+							</span>
+							<span id="<portlet:namespace />displayPageNameInput">
+								<c:choose>
+									<c:when test="<%= Validator.isNull(layoutBreadcrumb) %>">
+										<span class="text-muted"><liferay-ui:message key="none" /></span>
+									</c:when>
+									<c:otherwise>
+										<%= layoutBreadcrumb %>
+									</c:otherwise>
+								</c:choose>
+							</span>
+						</p>
+					</aui:field-wrapper>
 
-				<aui:button name="chooseDisplayPage" value="choose" />
-			</aui:fieldset>
-		</aui:fieldset-group>
+					<aui:button name="chooseDisplayPage" value="choose" />
+				</aui:fieldset>
+			</div>
+		</div>
 
 		<aui:button-row>
 			<aui:button cssClass="btn-lg" type="submit" />

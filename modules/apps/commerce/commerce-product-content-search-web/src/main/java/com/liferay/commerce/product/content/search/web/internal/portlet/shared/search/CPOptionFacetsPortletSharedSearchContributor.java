@@ -14,9 +14,9 @@
 
 package com.liferay.commerce.product.content.search.web.internal.portlet.shared.search;
 
+import com.liferay.account.model.AccountEntry;
+import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.asset.kernel.model.AssetCategory;
-import com.liferay.commerce.account.model.CommerceAccount;
-import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.product.constants.CPField;
 import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.content.search.web.internal.util.CPOptionFacetsUtil;
@@ -26,6 +26,7 @@ import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.product.service.CPOptionLocalService;
 import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.search.facet.SerializableFacet;
+import com.liferay.commerce.util.CommerceAccountHelper;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -41,6 +42,7 @@ import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.search.facet.config.FacetConfiguration;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -61,7 +63,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Shuyang Zhou
  */
 @Component(
-	enabled = false,
 	property = "javax.portlet.name=" + CPPortletKeys.CP_OPTION_FACETS,
 	service = PortletSharedSearchContributor.class
 )
@@ -79,15 +80,15 @@ public class CPOptionFacetsPortletSharedSearchContributor
 			SerializableFacet serializableFacet = new SerializableFacet(
 				CPField.OPTION_NAMES, searchContext);
 
-			Optional<String[]> parameterValuesOptional =
-				portletSharedSearchSettings.getParameterValues71(
+			String[] parameterValues =
+				portletSharedSearchSettings.getParameterValues(
 					CPField.OPTION_NAMES);
 
-			if (parameterValuesOptional.isPresent()) {
-				serializableFacet.select(parameterValuesOptional.get());
+			if (ArrayUtil.isNotEmpty(parameterValues)) {
+				serializableFacet.select(parameterValues);
 
 				searchContext.setAttribute(
-					CPField.OPTION_NAMES, parameterValuesOptional.get());
+					CPField.OPTION_NAMES, parameterValues);
 			}
 
 			RenderRequest renderRequest =
@@ -124,9 +125,8 @@ public class CPOptionFacetsPortletSharedSearchContributor
 					CPOptionFacetsUtil.getCPOptionKeyFromIndexFieldName(
 						facet.getFieldName());
 
-				parameterValuesOptional =
-					portletSharedSearchSettings.getParameterValues71(
-						cpOptionKey);
+				parameterValues =
+					portletSharedSearchSettings.getParameterValues(cpOptionKey);
 
 				serializableFacet = new SerializableFacet(
 					facet.getFieldName(), searchContext);
@@ -135,11 +135,11 @@ public class CPOptionFacetsPortletSharedSearchContributor
 					buildFacetConfiguration(
 						frequencyThreshold, maxTerms, serializableFacet));
 
-				if (parameterValuesOptional.isPresent()) {
-					serializableFacet.select(parameterValuesOptional.get());
+				if (ArrayUtil.isNotEmpty(parameterValues)) {
+					serializableFacet.select(parameterValues);
 
 					searchContext.setAttribute(
-						facet.getFieldName(), parameterValuesOptional.get());
+						facet.getFieldName(), parameterValues);
 				}
 
 				portletSharedSearchSettings.addFacet(serializableFacet);
@@ -160,16 +160,16 @@ public class CPOptionFacetsPortletSharedSearchContributor
 					CPField.COMMERCE_CHANNEL_GROUP_ID, commerceChannelGroupId);
 				searchContext.setAttribute("secure", Boolean.TRUE);
 
-				CommerceAccount commerceAccount =
-					_commerceAccountHelper.getCurrentCommerceAccount(
+				AccountEntry accountEntry =
+					_commerceAccountHelper.getCurrentAccountEntry(
 						commerceChannelGroupId, themeDisplay.getRequest());
 
 				long[] commerceAccountGroupIds = null;
 
-				if (commerceAccount != null) {
+				if (accountEntry != null) {
 					commerceAccountGroupIds =
-						_commerceAccountHelper.getCommerceAccountGroupIds(
-							commerceAccount.getCommerceAccountId());
+						_accountGroupLocalService.getAccountGroupIds(
+							accountEntry.getAccountEntryId());
 				}
 
 				searchContext.setAttribute(
@@ -228,16 +228,16 @@ public class CPOptionFacetsPortletSharedSearchContributor
 			searchContext.setAttribute(
 				"commerceChannelGroupId", commerceChannel.getGroupId());
 
-			CommerceAccount commerceAccount =
-				_commerceAccountHelper.getCurrentCommerceAccount(
+			AccountEntry accountEntry =
+				_commerceAccountHelper.getCurrentAccountEntry(
 					commerceChannel.getGroupId(),
 					_portal.getHttpServletRequest(renderRequest));
 
-			if (commerceAccount != null) {
+			if (accountEntry != null) {
 				searchContext.setAttribute(
 					"commerceAccountGroupIds",
-					_commerceAccountHelper.getCommerceAccountGroupIds(
-						commerceAccount.getCommerceAccountId()));
+					_accountGroupLocalService.getAccountGroupIds(
+						accountEntry.getAccountEntryId()));
 			}
 		}
 
@@ -305,6 +305,9 @@ public class CPOptionFacetsPortletSharedSearchContributor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CPOptionFacetsPortletSharedSearchContributor.class);
+
+	@Reference
+	private AccountGroupLocalService _accountGroupLocalService;
 
 	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;

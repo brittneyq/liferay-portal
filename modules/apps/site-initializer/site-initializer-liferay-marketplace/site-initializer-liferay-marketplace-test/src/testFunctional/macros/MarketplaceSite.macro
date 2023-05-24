@@ -1,0 +1,10 @@
+definition {
+
+	macro addMarketplaceSite {
+		HeadlessSite.addSite(
+			siteName = ${testSiteName},
+			templateName = "Liferay Marketplace",
+			templateType = "Site Initializer");
+	}
+
+}

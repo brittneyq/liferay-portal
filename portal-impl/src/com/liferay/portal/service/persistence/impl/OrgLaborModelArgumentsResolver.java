@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.OrgLaborTable;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.model.impl.OrgLaborImpl;
 import com.liferay.portal.model.impl.OrgLaborModelImpl;
 
@@ -30,6 +31,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Brian Wing Shun Chan
  * @generated
  */
+@OSGiBeanProperties(
+	property = {
+		"class.name=com.liferay.portal.model.impl.OrgLaborImpl",
+		"table.name=OrgLabor"
+	},
+	service = ArgumentsResolver.class
+)
 public class OrgLaborModelArgumentsResolver implements ArgumentsResolver {
 
 	@Override
@@ -126,7 +134,8 @@ public class OrgLaborModelArgumentsResolver implements ArgumentsResolver {
 
 		orderByColumnsBitmask |= OrgLaborModelImpl.getColumnBitmask(
 			"organizationId");
-		orderByColumnsBitmask |= OrgLaborModelImpl.getColumnBitmask("typeId");
+		orderByColumnsBitmask |= OrgLaborModelImpl.getColumnBitmask(
+			"listTypeId");
 
 		_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
 	}

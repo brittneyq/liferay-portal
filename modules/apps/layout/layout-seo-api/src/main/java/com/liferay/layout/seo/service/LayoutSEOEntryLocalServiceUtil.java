@@ -63,8 +63,8 @@ public class LayoutSEOEntryLocalServiceUtil {
 	}
 
 	public static LayoutSEOEntry copyLayoutSEOEntry(
-			long userId, long groupId, boolean privateLayout, long layoutId,
-			boolean canonicalURLEnabled,
+			long userId, long groupId, boolean privateLayout,
+			long sourceLayoutId, boolean canonicalURLEnabled,
 			Map<java.util.Locale, String> canonicalURLMap,
 			long copyDDMStorageId, boolean openGraphDescriptionEnabled,
 			Map<java.util.Locale, String> openGraphDescriptionMap,
@@ -75,7 +75,7 @@ public class LayoutSEOEntryLocalServiceUtil {
 		throws PortalException {
 
 		return getService().copyLayoutSEOEntry(
-			userId, groupId, privateLayout, layoutId, canonicalURLEnabled,
+			userId, groupId, privateLayout, sourceLayoutId, canonicalURLEnabled,
 			canonicalURLMap, copyDDMStorageId, openGraphDescriptionEnabled,
 			openGraphDescriptionMap, openGraphImageAltMap,
 			openGraphImageFileEntryId, openGraphTitleEnabled, openGraphTitleMap,
@@ -449,6 +449,10 @@ public class LayoutSEOEntryLocalServiceUtil {
 
 	public static LayoutSEOEntryLocalService getService() {
 		return _service;
+	}
+
+	public static void setService(LayoutSEOEntryLocalService service) {
+		_service = service;
 	}
 
 	private static volatile LayoutSEOEntryLocalService _service;

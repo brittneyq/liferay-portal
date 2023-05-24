@@ -14,17 +14,17 @@
 
 /// <reference types="react" />
 
+interface IProps {
+	error?: string;
+	objectDefinitionExternalReferenceCode: string;
+	onChange: (objectFieldName: string) => void;
+	value?: string;
+}
 export default function SelectRelationship({
 	error,
-	objectDefinitionId,
+	objectDefinitionExternalReferenceCode,
 	onChange,
 	value,
 	...otherProps
 }: IProps): JSX.Element;
-interface IProps {
-	error?: string;
-	objectDefinitionId?: number;
-	onChange?: (objectFieldId: number) => void;
-	value?: number;
-}
 export {};
