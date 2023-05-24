@@ -20,7 +20,7 @@ import com.liferay.petra.string.StringPool;
 import java.io.Serializable;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Brian Wing Shun Chans
  */
 public class Preference implements Cloneable, Serializable {
 

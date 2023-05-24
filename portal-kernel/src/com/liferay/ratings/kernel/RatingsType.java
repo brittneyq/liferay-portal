@@ -20,7 +20,7 @@ import java.util.Objects;
 
 /**
  * @author Sergio Gonzalez
- * @author Roberto Díaz
+ * @author Roberto Díazs
  */
 public enum RatingsType {
 

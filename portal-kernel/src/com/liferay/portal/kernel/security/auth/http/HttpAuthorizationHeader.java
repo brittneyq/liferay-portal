@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author Tomas Polesovsky
+ * @author Tomas Polesovskys
  */
 public class HttpAuthorizationHeader {
 
