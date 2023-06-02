@@ -10779,6 +10779,7 @@ send_user $expect_out(buffer)]]></echo>
 
 		<path id="junit.reports.paths">
 			<multirootfileset erroronmissingdir="false">
+				<basedir file="${analytics.cloud.asah.dir}/**/build/test-results/testIntegration" />
 				<basedir file="modules" />
 				<basedir file="portal-impl/test-results" />
 				<basedir file="portal-kernel/test-results" />
