@@ -535,6 +535,12 @@ if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			/>
 
 			<execute dir="${analytics.cloud.asah.dir}">
+				docker ps 
+
+				docker network ls 
+
+				docker network inspect ${short.name} 
+				
 				cat build-ext.gradle
 
 				./gradlew testIntegration
