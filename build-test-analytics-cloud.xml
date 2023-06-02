@@ -424,74 +424,12 @@ networks:
 			/>
 
 			<execute dir="${analytics.cloud.asah.dir}">
-				./gradlew jar -Dliferay.ci=true
-
-				./gradlew clean assemble -Dliferay.ci=true
-
 				echo analytics cloud yaml : ${analytics.cloud.docker.test.yaml}
 
-				docker-compose --file=${analytics.cloud.docker.test.yaml} build
+				docker compose -f ${analytics.cloud.docker.test.yaml} up -d
+
+				docker ps
 			</execute>
-
-			<property location="${analytics.cloud.asah.dir}/start_analytics_cloud.sh" name="analytics.cloud.start.sh" />
-
-			<echo file="${analytics.cloud.start.sh}">
-				#!/bin/bash
-
-				docker-compose -f ${analytics.cloud.docker.test.yaml} up -d
-
-				while [[ -n $(docker ps | grep "health: starting") ]] || [[ -n $(docker ps | grep "unhealthy") ]]
-				do
-					echo "Waiting for docker compose to be healthy."
-
-					sleep 30
-				done
-
-				docker container prune -f
-				docker image prune -f
-				docker volume prune -f
-			</echo>
-
-			<trycatch>
-				<try>
-					<retry retrycount="${analytics.cloud.retry.count}" retrydelay="30000">
-						<sequential>
-							<trycatch property="analytics.cloud.error">
-								<try>
-									<local name="analytics.cloud.start.result" />
-
-									<exec dir="${analytics.cloud.asah.dir}" executable="/bin/bash" resultproperty="analytics.cloud.start.result" timeout="${analytics.cloud.start.timeout}">
-										<arg value="${analytics.cloud.start.sh}" />
-									</exec>
-
-									<if>
-										<not>
-											<equals arg1="${analytics.cloud.start.result}" arg2="0" />
-										</not>
-										<then>
-											<fail message="Failed to start Analytics Cloud with error code ${analytics.cloud.start.result}." />
-										</then>
-									</if>
-								</try>
-								<catch>
-									<print-analytics-cloud-logs />
-
-									<stop-analytics-cloud />
-
-									<fail message="${analytics.cloud.error}" />
-								</catch>
-							</trycatch>
-						</sequential>
-					</retry>
-				</try>
-				<catch>
-					<echo>Failed to create Analytics Cloud demo data.</echo>
-
-					<fail message="${analytics.cloud.error}" />
-				</catch>
-			</trycatch>
-
-			<delete file="${analytics.cloud.start.sh}" />
 
 			<exec executable="/bin/bash" outputproperty="network.ip.address">
 				<arg value="-c" />
@@ -535,12 +473,12 @@ if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			/>
 
 			<execute dir="${analytics.cloud.asah.dir}">
-				docker ps 
+				docker ps
 
-				docker network ls 
+				docker network ls
 
-				docker network inspect ${short.name} 
-				
+				docker network inspect ${short.hostname}
+
 				cat build-ext.gradle
 
 				./gradlew testIntegration
