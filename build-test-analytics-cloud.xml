@@ -387,12 +387,12 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 		<sequential>
 			<fail message="Please set the property ${env.DOCKER_ENABLED}." unless="env.DOCKER_ENABLED" />
 
-			<delete file="${analytics.cloud.asah.dir}/docker-compose.test.yml" />
+			<!--<delete file="${analytics.cloud.asah.dir}/docker-compose.test.yml" />
 
-			<property location="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml" name="analytics.cloud.docker.test.yaml" />
+			<property location="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml" name="analytics.cloud.docker.test.yaml" />-->
 
 			<replaceregexp
-				file="${analytics.cloud.docker.test.yaml}"
+				file="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml"
 				match="\&quot;9200:9200\&quot;"
 				replace="&quot;${analytics.cloud.asah.elasticsearch.port}:9200&quot;"
 			/>
@@ -410,7 +410,7 @@ OSB_FARO_FRONTEND_URL=${analytics.cloud.faro.frontend.url}</echo>
 			<if>
 				<isset property="short.hostname" />
 				<then>
-					<echo append="true" file="${analytics.cloud.docker.test.yaml}"><![CDATA[
+					<echo append="true" file="${analytics.cloud.asah.dir}/docker-compose.integration-test.yml"><![CDATA[
 networks:
     default:
         external:
@@ -424,9 +424,9 @@ networks:
 			/>
 
 			<execute dir="${analytics.cloud.asah.dir}">
-				echo analytics cloud yaml : ${analytics.cloud.docker.test.yaml}
+				echo analytics cloud yaml : ${analytics.cloud.asah.dir}/docker-compose.integration-test.yml
 
-				docker-compose -f ${analytics.cloud.docker.test.yaml} up -d
+				docker-compose -f docker-compose.integration-test.yml up -d
 
 				docker ps
 			</execute>
