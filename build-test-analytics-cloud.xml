@@ -495,7 +495,7 @@ networks:
 
 			<exec executable="/bin/bash" outputproperty="network.ip.address">
 				<arg value="-c" />
-				<arg value="docker inspect ${env.HOSTNAME} -f '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}'" />
+				<arg value="docker inspect ${short.hostname} -f '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}'" />
 			</exec>
 
 			<echo>NETWORK IP ADDRESS : ${network.ip.address}</echo>
