@@ -426,7 +426,7 @@ networks:
 			<execute dir="${analytics.cloud.asah.dir}">
 				echo analytics cloud yaml : ${analytics.cloud.docker.test.yaml}
 
-				docker compose -f ${analytics.cloud.docker.test.yaml} up -d
+				docker-compose -f ${analytics.cloud.docker.test.yaml} up -d
 
 				docker ps
 			</execute>
