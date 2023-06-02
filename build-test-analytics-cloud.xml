@@ -527,7 +527,7 @@ if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			}
 		}
 	}
-}}</echo>
+}</echo>
 
 			<copy
 				file="${analytics.cloud.asah.dir}/temp-build-ext.gradle"
