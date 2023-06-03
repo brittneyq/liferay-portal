@@ -10818,6 +10818,8 @@ send_user $expect_out(buffer)]]></echo>
 
 						File testResultsFile = new File("@{test.results.file}");
 
+						System.out.println("TEST RESULTS FILE : " @{test.results.file});
+
 						if (!testResultsFile.exists()) {
 							return;
 						}
