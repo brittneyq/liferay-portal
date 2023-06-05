@@ -10807,6 +10807,8 @@ send_user $expect_out(buffer)]]></echo>
 				/>
 			</path>
 			<sequential>
+				<echo>TEST RESULT FILE: @{test.results.file}</echo>
+
 				<beanshell>
 					<![CDATA[
 						import com.liferay.jenkins.results.parser.Dom4JUtil;
@@ -10817,8 +10819,6 @@ send_user $expect_out(buffer)]]></echo>
 						import org.dom4j.Node;
 
 						File testResultsFile = new File("@{test.results.file}");
-
-						System.out.println("TEST RESULTS FILE : " + @{test.results.file});
 
 						if (!testResultsFile.exists()) {
 							return;
