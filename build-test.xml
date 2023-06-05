@@ -10777,9 +10777,15 @@ send_user $expect_out(buffer)]]></echo>
 	<target name="merge-test-results">
 		<mkdir dir="test-results" />
 
+		<execute dir="${analytics.cloud.asah.dir}">
+			cd osb-asah-backend/build/test-results/testIntegration
+
+			ls
+		</execute>
+
 		<path id="junit.reports.paths">
 			<multirootfileset erroronmissingdir="false">
-				<basedir file="${analytics.cloud.asah.dir}/**/build/test-results/testIntegration/TEST-*.xml" />
+				<basedir file="${analytics.cloud.asah.dir}/**/build/test-results/testIntegration" />
 				<basedir file="modules" />
 				<basedir file="portal-impl/test-results" />
 				<basedir file="portal-kernel/test-results" />
