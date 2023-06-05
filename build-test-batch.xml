@@ -729,6 +729,12 @@ mariadb.executable=${mariadb.executable}]]></echo>
 		<sequential>
 			<antcall target="merge-test-results" />
 
+			<execute dir="${analytics.cloud.asah.dir}">
+				cd osb-asah-backend/build/test-results/testIntegration
+
+				ls
+			</execute>
+
 			<if>
 				<isset property="env.WORKSPACE" />
 				<then>
