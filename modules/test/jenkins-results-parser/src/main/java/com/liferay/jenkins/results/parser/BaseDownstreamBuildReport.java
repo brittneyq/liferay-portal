@@ -55,7 +55,7 @@ public abstract class BaseDownstreamBuildReport
 		for (TestReport testReport : getTestReports()) {
 			String testClassName = testReport.getTestName();
 
-			if (batchName.startsWith("integration") ||
+			if (batchName.contains("integration") ||
 				batchName.startsWith("modules-integration") ||
 				batchName.startsWith("modules-unit") ||
 				batchName.startsWith("unit")) {

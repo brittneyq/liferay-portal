@@ -581,7 +581,7 @@ public class DownstreamBuild extends BaseBuild {
 		String batchName = getBatchName();
 
 		if (batchName.startsWith("function") ||
-			batchName.startsWith("integration") ||
+			batchName.contains("integration") ||
 			batchName.startsWith("modules-integration") ||
 			batchName.startsWith("modules-unit") ||
 			batchName.startsWith("unit")) {
@@ -700,7 +700,7 @@ public class DownstreamBuild extends BaseBuild {
 		String batchName = getBatchName();
 
 		if (!batchName.startsWith("function") &&
-			!batchName.startsWith("integration") &&
+			!batchName.contains("integration") &&
 			!batchName.startsWith("modules-integration") &&
 			!batchName.startsWith("modules-unit") &&
 			!batchName.startsWith("unit")) {
