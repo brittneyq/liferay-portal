@@ -388,7 +388,7 @@ public class TestrayAttachmentRecorder {
 			return;
 		}
 
-		if (!batchName.startsWith("integration-") &&
+		if (!batchName.contains("integration-") &&
 			!batchName.startsWith("modules-integration-") &&
 			!batchName.startsWith("modules-unit-") &&
 			!batchName.startsWith("unit-")) {
