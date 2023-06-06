@@ -206,7 +206,11 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 		JSONArray testClassesJSONArray = jsonObject.getJSONArray(
 			"test_classes");
 
+		System.out.println("TEST CLASSES JSON ARRAY : " + testClassesJSONArray);
+
 		if ((testClassesJSONArray == null) || testClassesJSONArray.isEmpty()) {
+			System.out.println("TEST CLASSES JSON ARRAY IS NULL OR EMPTY");
+
 			return;
 		}
 
@@ -214,10 +218,16 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 			JSONObject testClassJSONObject = testClassesJSONArray.getJSONObject(
 				i);
 
+			System.out.println(
+				"TEST CLASS JSON OBJECT : " + testClassJSONObject);
+
 			if (testClassJSONObject == null) {
+				System.out.println("TEST CLASS JSON OBJECT IS NULL");
+
 				continue;
 			}
 
+			System.out.println("ADDING NEW TEST CLASS!");
 			testClasses.add(
 				TestClassFactory.newTestClass(
 					batchTestClassGroup, testClassJSONObject));
