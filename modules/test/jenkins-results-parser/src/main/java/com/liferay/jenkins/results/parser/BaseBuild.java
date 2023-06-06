@@ -1501,6 +1501,8 @@ public abstract class BaseBuild implements Build {
 
 	@Override
 	public TestClassResult getTestClassResult(String testClassName) {
+		System.out.println("GET TEST CLASS RESULTS");
+
 		if (!isCompleted()) {
 			return null;
 		}
@@ -1508,8 +1510,14 @@ public abstract class BaseBuild implements Build {
 		_initTestClassResults();
 
 		if (_testClassResults == null) {
+			System.out.println("TEST CLASS RESULTS IS NULL!!");
+
 			return null;
 		}
+
+		System.out.println(
+			"AT END OF GET TEST CLASS RESULT FOR " + testClassName);
+		System.out.println(_testClassResults.get(testClassName));
 
 		return _testClassResults.get(testClassName);
 	}
@@ -1587,15 +1595,23 @@ public abstract class BaseBuild implements Build {
 
 	@Override
 	public JSONObject getTestReportJSONObject(boolean checkCache) {
+		System.out.println("IN GET TEST REPORT JSON OBJECT");
+
 		String result = getResult();
 
+		System.out.println("RESULT : " + result);
+
 		if (result == null) {
+			System.out.println("RESULT = NULL!");
+
 			return null;
 		}
 
 		String urlSuffix = "testReport/api/json";
 
 		String archiveFileContent = getArchiveFileContent(urlSuffix);
+
+		System.out.println("ARCHIVE FILE CONTENT : " + archiveFileContent);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(archiveFileContent)) {
 			return new JSONObject(archiveFileContent);
@@ -4302,6 +4318,8 @@ public abstract class BaseBuild implements Build {
 	}
 
 	private synchronized void _initTestClassResults() {
+		System.out.println("INIT TEST CLASS RESULTS");
+
 		if (!isCompleted() || (_testClassResults != null)) {
 			return;
 		}
@@ -4310,6 +4328,9 @@ public abstract class BaseBuild implements Build {
 
 		try {
 			testReportJSONObject = getTestReportJSONObject(true);
+
+			System.out.println(
+				"TEST REPORT JSON OBJECT : " + testReportJSONObject);
 		}
 		catch (RuntimeException runtimeException) {
 			_testClassResults = new ConcurrentHashMap<>();
@@ -4320,15 +4341,20 @@ public abstract class BaseBuild implements Build {
 		_testClassResults = new ConcurrentHashMap<>();
 
 		if ((testReportJSONObject == null) || testReportJSONObject.isEmpty()) {
+			System.out.println("TEST REPORT JSON OBJET IS NULL OR EMPTY");
+
 			return;
 		}
 
 		List<JSONArray> suitesJSONArrays = new ArrayList<>();
 
 		if (testReportJSONObject.has("suites")) {
+			System.out.println("TEST REPORT JSON OBJECT HAS SUITES");
 			suitesJSONArrays.add(testReportJSONObject.getJSONArray("suites"));
 		}
 		else if (testReportJSONObject.has("childReports")) {
+			System.out.println("TEST REPORT JSON OBJECT HAS CHILD REPORTS");
+
 			JSONArray childReportsJSONArray = testReportJSONObject.getJSONArray(
 				"childReports");
 
@@ -4353,11 +4379,15 @@ public abstract class BaseBuild implements Build {
 
 		for (JSONArray suitesJSONArray : suitesJSONArrays) {
 			for (int i = 0; i < suitesJSONArray.length(); i++) {
+				System.out.println("FOR LOOP IN SUITE JSON ARRAY");
+
 				JSONObject suiteJSONObject = suitesJSONArray.getJSONObject(i);
 
 				TestClassResult testClassResult =
 					TestClassResultFactory.newTestClassResult(
 						this, suiteJSONObject);
+
+				System.out.println("CREATE NEW TEST CLASS RESULT");
 
 				_testClassResults.put(
 					testClassResult.getClassName(), testClassResult);

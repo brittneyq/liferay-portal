@@ -208,17 +208,26 @@ public class TestClassGroupFactory {
 	private static BatchTestClassGroup _newBatchTestClassGroup(
 		String batchName, Job job, JSONObject jsonObject) {
 
+		System.out.println("IN NEW BATCH TEST CLASS GROUP");
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(batchName)) {
 			batchName = jsonObject.getString("batch_name");
+
+			System.out.println("BATCH NAME IS NULL OR EMPTY : " + batchName);
 		}
 
 		String key = JobFactory.getKey(job) + "_" + batchName;
+
+		System.out.println("KEY  : " + key);
 
 		BatchTestClassGroup batchTestClassGroup = _batchTestClassGroups.get(
 			key);
 
 		if ((batchTestClassGroup == null) &&
 			(job instanceof PortalEnvironmentJob)) {
+
+			System.out.println(
+				"BATCH TEST CLASS GROUP NULL AND PORTAL ENVIRONMENT JOB");
 
 			if (jsonObject != null) {
 				batchTestClassGroup =
@@ -234,6 +243,9 @@ public class TestClassGroupFactory {
 
 		if ((batchTestClassGroup == null) &&
 			(job instanceof PortalTestClassJob)) {
+
+			System.out.println(
+				"BATCH TEST CLASS GROUP NULL AND PORTAL TEST CLASS JOB");
 
 			PortalTestClassJob portalTestClassJob = (PortalTestClassJob)job;
 
@@ -257,11 +269,16 @@ public class TestClassGroupFactory {
 					 batchName.startsWith("modules-unit-project-templates-") ||
 					 batchName.startsWith("unit-")) {
 
+				System.out.println("BATCH NAME CONTAINS INTEGRATION");
+
 				if (jsonObject != null) {
+					System.out.println("JSON OBJECT IS NOT NULL");
 					batchTestClassGroup = new JUnitBatchTestClassGroup(
 						jsonObject, portalTestClassJob);
 				}
 				else {
+					System.out.println("JSON OBJECT ISNULL");
+
 					batchTestClassGroup = new JUnitBatchTestClassGroup(
 						batchName, portalTestClassJob);
 				}
@@ -306,6 +323,9 @@ public class TestClassGroupFactory {
 						  "modules-unit-project-templates-")) ||
 					 batchName.startsWith("subrepository-integration-") ||
 					 batchName.startsWith("subrepository-unit-")) {
+
+				System.out.println(
+					"BATCH NAME STARTS WITH MODULES INTEGRATION");
 
 				if (jsonObject != null) {
 					batchTestClassGroup = new ModulesJUnitBatchTestClassGroup(
@@ -407,11 +427,17 @@ public class TestClassGroupFactory {
 				}
 			}
 			else {
+				System.out.println("BATCH NAME DOES NOT EQUAL ANY ");
+
 				if (jsonObject != null) {
+					System.out.println("JSON OBJECT IS NOT NULL");
+
 					batchTestClassGroup = new DefaultBatchTestClassGroup(
 						jsonObject, portalTestClassJob);
 				}
 				else {
+					System.out.println("JSON OBJECT IS NULL");
+
 					batchTestClassGroup = new DefaultBatchTestClassGroup(
 						batchName, portalTestClassJob);
 				}
