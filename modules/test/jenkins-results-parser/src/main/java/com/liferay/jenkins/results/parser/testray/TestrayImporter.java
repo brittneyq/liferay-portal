@@ -931,6 +931,8 @@ public class TestrayImporter {
 
 		axisTestClassGroups.addAll(job.getDependentAxisTestClassGroups());
 
+		System.out.println("AXIS TEST CLASS GROUPS: " + axisTestClassGroups);
+
 		File testBaseDir = null;
 
 		if (job instanceof QAWebsitesGitRepositoryJob) {
@@ -959,6 +961,11 @@ public class TestrayImporter {
 
 					@Override
 					public Void call() throws Exception {
+						System.out.println(
+							"AXIS TEST CLASS GROUP 1 : " + axisTestClassGroup +
+								"AXIS TEST CLASS BATCH NAME : " +
+									axisTestClassGroup.getBatchName());
+
 						TestrayBuild testrayBuild = getTestrayBuild(
 							axisTestClassGroup.getTestBaseDir());
 
@@ -1029,6 +1036,9 @@ public class TestrayImporter {
 							axisTestClassGroup instanceof
 								JUnitAxisTestClassGroup) {
 
+							System.out.println(
+								"AXIS TEST CLASS GROUP IN FUNCTIONAL JUNIT");
+
 							PortalLogTestrayCaseResult
 								portalLogTestrayCaseResult =
 									TestrayFactory.
@@ -1053,6 +1063,8 @@ public class TestrayImporter {
 							}
 						}
 						else {
+							System.out.println("AXIS TEST CLASS GROUP IN ELSE");
+
 							testrayCaseResults.add(
 								TestrayFactory.newTestrayCaseResult(
 									testrayBuild, getTopLevelBuild(),
@@ -1061,6 +1073,10 @@ public class TestrayImporter {
 
 						for (TestrayCaseResult testrayCaseResult :
 								testrayCaseResults) {
+
+							System.out.println(
+								"TESTRAY CASE RESULT NAME : " +
+									testrayCaseResult.getName());
 
 							Element testcaseElement = rootElement.addElement(
 								"testcase");
@@ -1172,6 +1188,8 @@ public class TestrayImporter {
 
 						try {
 							String axisName = axisTestClassGroup.getAxisName();
+
+							System.out.println("AXIS NAME : " + axisName);
 
 							testrayServer.writeCaseResult(
 								JenkinsResultsParserUtil.combine(

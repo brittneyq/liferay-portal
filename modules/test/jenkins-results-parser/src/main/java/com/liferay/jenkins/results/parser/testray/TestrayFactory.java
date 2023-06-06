@@ -124,23 +124,35 @@ public class TestrayFactory {
 		AxisTestClassGroup axisTestClassGroup, TestClass testClass) {
 
 		if (testrayBuild == null) {
+			System.out.println("testray build is null");
+
 			throw new RuntimeException("Testray build is null");
 		}
 
 		if (topLevelBuild == null) {
+			System.out.println("top level build is null");
+
 			throw new RuntimeException("Top level build is null");
 		}
 
 		if (axisTestClassGroup == null) {
+			System.out.println("axis test class group is null");
+
 			throw new RuntimeException("Axis test class group is null");
 		}
 
 		if (testClass != null) {
+			System.out.println("TEST CLASS IS NOT NULL!");
+
 			if (axisTestClassGroup instanceof FunctionalAxisTestClassGroup) {
+				System.out.println("TEST CLASS GROUP IS FUNCTIONAL!");
+
 				return new FunctionalBatchBuildTestrayCaseResult(
 					testrayBuild, topLevelBuild, axisTestClassGroup, testClass);
 			}
 			else if (axisTestClassGroup instanceof JUnitAxisTestClassGroup) {
+				System.out.println("TEST CLASS GROUP IS JUNIT!");
+
 				return new JUnitBatchBuildTestrayCaseResult(
 					testrayBuild, topLevelBuild, axisTestClassGroup, testClass);
 			}
@@ -150,6 +162,8 @@ public class TestrayFactory {
 			return new SFBatchBuildTestrayCaseResult(
 				testrayBuild, topLevelBuild, axisTestClassGroup);
 		}
+
+		System.out.println("RETURN BATCH BUILD TESTRAY CASE RESULT");
 
 		return new BatchBuildTestrayCaseResult(
 			testrayBuild, topLevelBuild, axisTestClassGroup);
