@@ -95,11 +95,17 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	public List<JobProperty> getFilterJobProperties() {
 		List<JobProperty> filterJobProperties = new ArrayList<>();
 
-		filterJobProperties.add(
-			getJobProperty(
-				"test.batch.class.names.filter", JobProperty.Type.FILTER_GLOB));
+		JobProperty jobProperty = getJobProperty(
+			"test.batch.class.names.filter", JobProperty.Type.FILTER_GLOB);
+
+		System.out.println(
+			"FILTER JOB PROPERTY VALUE : " + jobProperty.getValue());
+
+		filterJobProperties.add(jobProperty);
 
 		recordJobProperties(filterJobProperties);
+
+		System.out.println("FILTER JOB PROPERTIES : " + filterJobProperties);
 
 		return filterJobProperties;
 	}
@@ -136,6 +142,11 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	@Override
 	public JSONObject getJSONObject() {
 		if (jsonObject != null) {
+			System.out.println("JSON OBJECT IN JUNIT BATCH IS NOT NULL ");
+
+			System.out.println(
+				"JSON OBJECT IN GET JSON OBJECT 1: " + jsonObject);
+
 			return jsonObject;
 		}
 
@@ -150,6 +161,9 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 			"include_unstaged_test_class_files",
 			_includeUnstagedTestClassFiles);
 		jsonObject.put("target_duration", getTargetAxisDuration());
+
+		System.out.println(
+			"JSON OBJECT AT END OF GETJSONOBJECT : " + jsonObject);
 
 		return jsonObject;
 	}
