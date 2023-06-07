@@ -262,7 +262,7 @@ public class TestClassGroupFactory {
 						batchName, portalTestClassJob);
 				}
 			}
-			else if (batchName.contains("integration-") ||
+			else if (batchName.startsWith("integration-") ||
 					 batchName.startsWith("junit-test-") ||
 					 batchName.startsWith(
 						 "modules-integration-project-templates-") ||

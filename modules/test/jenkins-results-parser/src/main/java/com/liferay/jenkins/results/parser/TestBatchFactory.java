@@ -36,7 +36,7 @@ public class TestBatchFactory {
 				testBatch = new FunctionalPortalTestBatch(
 					portalBatchBuildData, workspace);
 			}
-			else if (batchName.contains("integration-") ||
+			else if (batchName.startsWith("integration-") ||
 					 batchName.startsWith("modules-integration-") ||
 					 batchName.startsWith("modules-unit-") ||
 					 batchName.startsWith("unit-")) {
