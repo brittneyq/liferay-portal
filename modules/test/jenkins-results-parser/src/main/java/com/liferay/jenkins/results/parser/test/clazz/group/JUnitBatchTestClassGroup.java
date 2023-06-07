@@ -662,8 +662,12 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 						if (JenkinsResultsParserUtil.isFileExcluded(
 								excludesPathMatchers, filePath.toFile())) {
 
+							System.out.println("file path skip: " + filePath);
+
 							return FileVisitResult.SKIP_SUBTREE;
 						}
+
+						System.out.println("file path continue: " + filePath);
 
 						return FileVisitResult.CONTINUE;
 					}
@@ -680,8 +684,14 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 							!JenkinsResultsParserUtil.isFileIncluded(
 								null, filterPathMatchers, filePath)) {
 
+							System.out.println(
+								"file path not included : " + filePath);
+
 							return FileVisitResult.CONTINUE;
 						}
+
+						System.out.println(
+							"FILE PATH TO FILE :" + filePath.toFile());
 
 						TestClass testClass = TestClassFactory.newTestClass(
 							batchTestClassGroup, filePath.toFile());
@@ -689,8 +699,14 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 						if ((testClass != null) && !testClass.isIgnored() &&
 							testClass.hasTestClassMethods()) {
 
+							System.out.println(
+								"TEST CLASS IS NOT NULL AND NOT IGNORED AND " +
+									"AS METHODS!");
+
 							testClasses.add(testClass);
 						}
+
+						System.out.println("FILE VISIT RESULT CONTINUE...2");
 
 						return FileVisitResult.CONTINUE;
 					}
