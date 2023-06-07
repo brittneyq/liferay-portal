@@ -58,6 +58,8 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 		jsonObject.put("include_globs", getGlobs(getIncludesJobProperties()));
 		jsonObject.put("modified_dirs_list", moduleDirsList);
 
+		System.out.println("MODULES DIRS LIST : " + moduleDirsList);
+
 		return jsonObject;
 	}
 
