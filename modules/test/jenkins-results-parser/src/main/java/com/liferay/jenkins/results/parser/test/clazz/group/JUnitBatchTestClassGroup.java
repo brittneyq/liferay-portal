@@ -490,12 +490,18 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 	@Override
 	protected void setAxisTestClassGroups() {
+		System.out.println("IN SET AXIS TEST CLASS GROUPS");
+
 		long targetAxisDuration = getTargetAxisDuration();
 
 		if (targetAxisDuration > 0) {
+			System.out.println("TARGET AXIS DURATION IS GREATER THAN 0");
+
 			List<TestClass> testClasses = getTestClasses();
 
 			if (testClasses.isEmpty()) {
+				System.out.println("TEST CLASSES IS EMPTY");
+
 				if (!_includeAutoBalanceTests) {
 					return;
 				}
@@ -523,6 +529,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 			}
 		}
 		else {
+			System.out.println("TARGET AXIS DURATION IS LESS THAN 0");
+
 			int axisCount = getAxisCount();
 
 			if (axisCount == 0) {
@@ -532,6 +540,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 			int testClassCount = testClasses.size();
 
 			if (testClassCount == 0) {
+				System.out.println("TEST CLASS COUNT IS 0");
+
 				if (!_includeAutoBalanceTests) {
 					return;
 				}
@@ -540,6 +550,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 					0, TestClassGroupFactory.newAxisTestClassGroup(this));
 			}
 			else {
+				System.out.println("TEST CLASSES IS NOT 0");
+
 				int axisSize = (int)Math.ceil(
 					(double)testClassCount / axisCount);
 
@@ -583,6 +595,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	protected void setTestClasses() {
 		final List<PathMatcher> includesPathMatchers =
 			getIncludesPathMatchers();
+
+		System.out.println("IN SET CLASSES");
 
 		if (includesPathMatchers.isEmpty()) {
 			return;
@@ -660,12 +674,16 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private void _setAutoBalanceTestFiles() {
+		System.out.println("IN SET AUTO BALANCE TEST FILES");
+
 		JobProperty jobProperty = getJobProperty(
 			"test.class.names.auto.balance");
 
 		String jobPropertyValue = jobProperty.getValue();
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(jobPropertyValue)) {
+			System.out.println("TEST CLASS NAME AUTO BALANCE IS NULL");
+
 			return;
 		}
 
