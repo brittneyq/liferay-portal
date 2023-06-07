@@ -43,21 +43,31 @@ public class TestClassGroupFactory {
 	public static AxisTestClassGroup newAxisTestClassGroup(
 		BatchTestClassGroup batchTestClassGroup, File testBaseDir) {
 
+		System.out.println("IN NEW AXIS TEST CLASS GROUP");
+
 		if (batchTestClassGroup instanceof FunctionalBatchTestClassGroup) {
+			System.out.println("BATCH INSTANCE OF FUNCTIONAL");
+
 			return new FunctionalAxisTestClassGroup(
 				(FunctionalBatchTestClassGroup)batchTestClassGroup,
 				testBaseDir);
 		}
 
 		if (batchTestClassGroup instanceof JUnitBatchTestClassGroup) {
+			System.out.println("BATCH INSTANCE OF JUNIT");
+
 			return new JUnitAxisTestClassGroup(
 				(JUnitBatchTestClassGroup)batchTestClassGroup);
 		}
 
 		if (batchTestClassGroup instanceof PluginsGulpBatchTestClassGroup) {
+			System.out.println("BATCH INSTANCE OF PLUGINS");
+
 			return new PluginsGulpAxisTestClassGroup(
 				(PluginsGulpBatchTestClassGroup)batchTestClassGroup);
 		}
+
+		System.out.println("NEW AXIS TEST CLASS DEFAULT");
 
 		return new AxisTestClassGroup(batchTestClassGroup);
 	}
@@ -328,10 +338,13 @@ public class TestClassGroupFactory {
 					"BATCH NAME STARTS WITH MODULES INTEGRATION");
 
 				if (jsonObject != null) {
+					System.out.println("JSON OBJECT IS NOT NULL");
 					batchTestClassGroup = new ModulesJUnitBatchTestClassGroup(
 						jsonObject, portalTestClassJob);
 				}
 				else {
+					System.out.println("JSON OBJECT IS NULL");
+					System.out.println("BATCH NAME : " + batchName);
 					batchTestClassGroup = new ModulesJUnitBatchTestClassGroup(
 						batchName, portalTestClassJob);
 				}
