@@ -112,6 +112,8 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		String jobPropertyValue = jobProperty.getValue();
 
+		System.out.println("TEST BATCH AXIS COUNT : " + jobPropertyValue);
+
 		if (JenkinsResultsParserUtil.isInteger(jobPropertyValue)) {
 			recordJobProperty(jobProperty);
 
@@ -120,16 +122,24 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		int testClassCount = testClasses.size();
 
+		System.out.println("TEST CLASS COUNT 1 : " + testClassCount);
+
 		if (testClassCount == 0) {
+			System.out.println("TEST CLASS COUNT IS 0!");
+
 			return 0;
 		}
 
 		int axisMaxSize = getAxisMaxSize();
 
+		System.out.println("AXIS MAX SIZE : " + axisMaxSize);
+
 		if (axisMaxSize <= 0) {
 			throw new RuntimeException(
 				"'test.batch.axis.max.size' cannot be 0 or less");
 		}
+
+		System.out.println("RETURNING AXIS COUNT ...");
 
 		return (int)Math.ceil((double)testClassCount / axisMaxSize);
 	}

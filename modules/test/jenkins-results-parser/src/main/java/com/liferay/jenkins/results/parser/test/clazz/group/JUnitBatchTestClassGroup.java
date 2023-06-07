@@ -547,6 +547,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 			int axisCount = getAxisCount();
 
+			System.out.println("AXIS COUNT IS : " + axisCount);
+
 			if (axisCount == 0) {
 				return;
 			}
@@ -572,10 +574,13 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				for (List<TestClass> axisTestClasses :
 						Lists.partition(testClasses, axisSize)) {
 
+					System.out.println("AXIS TEST CLASS GROUP for loop");
+
 					AxisTestClassGroup axisTestClassGroup =
 						TestClassGroupFactory.newAxisTestClassGroup(this);
 
 					for (TestClass axisTestClass : axisTestClasses) {
+						System.out.println("ADDING AXIS TEST CLASSES!");
 						axisTestClassGroup.addTestClass(axisTestClass);
 					}
 
