@@ -725,6 +725,8 @@ public abstract class BaseJob implements Job {
 	protected List<BatchTestClassGroup> getBatchTestClassGroups(
 		Set<String> rawBatchNames) {
 
+		System.out.println("RAW BATCH NAMES : " + rawBatchNames);
+
 		if ((rawBatchNames == null) || rawBatchNames.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -742,9 +744,13 @@ public abstract class BaseJob implements Job {
 		String testSuiteName = null;
 
 		if (this instanceof TestSuiteJob) {
+			System.out.println("INSTANCE OF TEST SUITE JOB");
+
 			TestSuiteJob testSuiteJob = (TestSuiteJob)this;
 
 			testSuiteName = testSuiteJob.getTestSuiteName();
+
+			System.out.println("TEST SUITE NAME : " + testSuiteName);
 		}
 
 		final Job job = this;
@@ -755,8 +761,13 @@ public abstract class BaseJob implements Job {
 		for (final String batchName : rawBatchNames) {
 			File testBaseDir = null;
 
+			System.out.println("BATCH NAME 1 : " + batchName);
+
 			JobProperty jobProperty = getJobProperty(
 				"test.base.dir", testSuiteName, batchName);
+
+			System.out.println(
+				"TEST BASE DIR PATH : " + jobProperty.getValue());
 
 			if ((jobProperty != null) &&
 				!JenkinsResultsParserUtil.isNullOrEmpty(
@@ -764,6 +775,8 @@ public abstract class BaseJob implements Job {
 
 				testBaseDir = new File(jobProperty.getValue());
 			}
+
+			System.out.println("TEST BASE DIR : " + testBaseDir);
 
 			Callable<BatchTestClassGroup> callable =
 				new Callable<BatchTestClassGroup>() {
@@ -833,6 +846,8 @@ public abstract class BaseJob implements Job {
 				};
 
 			if (testBaseDir == null) {
+				System.out.println("TEST BASE DIR IS NULL");
+
 				callables.add(callable);
 
 				continue;
@@ -842,6 +857,8 @@ public abstract class BaseJob implements Job {
 				testBaseDirCallablesMap.get(testBaseDir);
 
 			if (testBaseDirCallables == null) {
+				System.out.println("TEST BASE DIR CALLABLES IS NULL");
+
 				testBaseDirCallables = new ArrayList<>();
 
 				testBaseDirCallablesMap.put(testBaseDir, testBaseDirCallables);
@@ -868,6 +885,9 @@ public abstract class BaseJob implements Job {
 		}
 
 		batchTestClassGroups.removeAll(Collections.singleton(null));
+
+		System.out.println(
+			"BATCH TEST CLASS GROUPS SIZE : " + batchTestClassGroups);
 
 		System.out.println(
 			JenkinsResultsParserUtil.combine(
