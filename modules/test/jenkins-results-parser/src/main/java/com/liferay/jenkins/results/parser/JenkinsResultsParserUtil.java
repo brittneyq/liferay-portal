@@ -3293,12 +3293,12 @@ public class JenkinsResultsParserUtil {
 				}
 			}
 
-			System.out.println("RETURNING FALSE...");
+			System.out.println("RETURNING FALSE...for " + path);
 
 			return false;
 		}
 
-		System.out.println("RETURNING TRUE...");
+		System.out.println("RETURNING TRUE... for " + path);
 
 		return true;
 	}
