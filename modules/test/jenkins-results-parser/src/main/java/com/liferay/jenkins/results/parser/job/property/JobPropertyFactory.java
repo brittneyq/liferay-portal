@@ -65,6 +65,13 @@ public class JobPropertyFactory {
 		sb.append("_");
 		sb.append(job.getJobName());
 
+		if (testBatchName.equals("modules-integration-analytics-cloud")) {
+			testBaseDir = new File(
+				"/opt/dev/projects/github/com-liferay-osb-asah-private");
+
+			System.out.println("NEW TEST BASE DIR : " + testBaseDir);
+		}
+
 		if (testBaseDir != null) {
 			sb.append("_");
 			sb.append(JenkinsResultsParserUtil.getCanonicalPath(testBaseDir));

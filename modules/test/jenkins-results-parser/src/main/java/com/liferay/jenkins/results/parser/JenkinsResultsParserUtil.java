@@ -3279,7 +3279,7 @@ public class JenkinsResultsParserUtil {
 		List<PathMatcher> includesPathMatchers, Path path) {
 
 		if (isFileExcluded(excludesPathMatchers, path)) {
-			System.out.println("IS FILE EXCLUDED ....");
+			System.out.println("IS FILE EXCLUDED ...." + path);
 
 			return false;
 		}
@@ -3287,18 +3287,19 @@ public class JenkinsResultsParserUtil {
 		if ((includesPathMatchers != null) && !includesPathMatchers.isEmpty()) {
 			for (PathMatcher includesPathMatcher : includesPathMatchers) {
 				if (includesPathMatcher.matches(path)) {
-					System.out.println("INCLUDES PATH MATCHER MATCHES PATH");
+					System.out.println(
+						"INCLUDES PATH MATCHER MATCHES PATH" + path);
 
 					return true;
 				}
 			}
 
-			System.out.println("RETURNING FALSE...for " + path);
+			//System.out.println("RETURNING FALSE...for " + path);
 
 			return false;
 		}
 
-		System.out.println("RETURNING TRUE... for " + path);
+		//System.out.println("RETURNING TRUE... for " + path);
 
 		return true;
 	}
