@@ -89,6 +89,13 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		recordJobProperties(excludesJobProperties);
 
+		for (JobProperty jobProperty : excludesJobProperties) {
+			System.out.println(
+				"EXCLUDE job property : " + jobProperty.getValue());
+		}
+
+		System.out.println("EXCLUDE JOB PROPERTIES : " + excludesJobProperties);
+
 		return excludesJobProperties;
 	}
 
@@ -135,6 +142,14 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		includesJobProperties.removeAll(Collections.singleton(null));
 
 		recordJobProperties(includesJobProperties);
+
+		for (JobProperty jobProperty : includesJobProperties) {
+			System.out.println(
+				"include job property : " + jobProperty.getValue());
+		}
+
+		System.out.println(
+			"includes job properties! : " + includesJobProperties);
 
 		return includesJobProperties;
 	}
@@ -300,6 +315,12 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				"test.batch.class.names.includes",
 				JobProperty.Type.INCLUDE_GLOB));
 
+		JobProperty jobProperty = getJobProperty(
+			"test.batch.class.names.includes", JobProperty.Type.INCLUDE_GLOB);
+
+		System.out.println(
+			"default includes job property! : " + jobProperty.getValue());
+
 		return includesJobProperties;
 	}
 
@@ -413,10 +434,15 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	protected List<JobProperty> getRequiredExcludesJobProperties() {
 		List<JobProperty> excludesJobProperties = new ArrayList<>();
 
-		excludesJobProperties.add(
-			getJobProperty(
-				"test.batch.class.names.excludes.required",
-				JobProperty.Type.EXCLUDE_GLOB));
+		JobProperty jobProperty = getJobProperty(
+			"test.batch.class.names.excludes.required",
+			JobProperty.Type.EXCLUDE_GLOB);
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(jobProperty.getValue())) {
+			return excludesJobProperties;
+		}
+
+		excludesJobProperties.add(jobProperty);
 
 		return excludesJobProperties;
 	}
@@ -424,10 +450,22 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	protected List<JobProperty> getRequiredIncludesJobProperties() {
 		List<JobProperty> includesJobProperties = new ArrayList<>();
 
-		includesJobProperties.add(
-			getJobProperty(
-				"test.batch.class.names.includes.required",
-				JobProperty.Type.INCLUDE_GLOB));
+		JobProperty jobProperty = getJobProperty(
+			"test.batch.class.names.includes.required",
+			JobProperty.Type.INCLUDE_GLOB);
+
+		System.out.println(
+			"test batch class names includes requires : " +
+				jobProperty.getValue());
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(jobProperty.getValue())) {
+			System.out.println(
+				"includes job property required is null or empty");
+
+			return includesJobProperties;
+		}
+
+		includesJobProperties.add(jobProperty);
 
 		return includesJobProperties;
 	}
@@ -677,6 +715,17 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 							Path filePath,
 							BasicFileAttributes basicFileAttributes)
 						throws IOException {
+
+						System.out.println(
+							"EXCLUDES INCLUDES PATH MATCHERS : " +
+								!JenkinsResultsParserUtil.isFileIncluded(
+									excludesPathMatchers, includesPathMatchers,
+									filePath));
+
+						System.out.println(
+							"FILTER PATH MATCHERS : " +
+								!JenkinsResultsParserUtil.isFileIncluded(
+									null, filterPathMatchers, filePath));
 
 						if (!JenkinsResultsParserUtil.isFileIncluded(
 								excludesPathMatchers, includesPathMatchers,
