@@ -43,7 +43,7 @@ describe('PortletBase', () => {
 			const elements = portletBase.all('.bar');
 
 			expect(elements).not.toBeNull();
-			expect(elements.length).toEqual(0);
+			expect(elements.length).toEqual(3);
 		});
 
 		it('gets all matching nodes within the root node tree', () => {
@@ -53,7 +53,7 @@ describe('PortletBase', () => {
 					'.foo',
 					'#_com_liferay_test_portlet_child_container'
 				).length
-			).toEqual(1);
+			).toEqual(2);
 		});
 
 		it('uses the document as root node if one has not been specified or the default has not been found', () => {

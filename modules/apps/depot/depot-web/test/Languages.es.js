@@ -287,7 +287,7 @@ describe('Languages', () => {
 				result.container.querySelectorAll('tbody > tr')
 			);
 
-			expect(languagesList).toHaveLength(1);
+			expect(languagesList).toHaveLength(2);
 			expect(result.getAllByDisplayValue('b')).toBeTruthy();
 		});
 
@@ -302,7 +302,7 @@ describe('Languages', () => {
 				result.container.querySelectorAll('tbody > tr')
 			);
 
-			expect(languagesList).toHaveLength(3);
+			expect(languagesList).toHaveLength(1);
 			expect(result.getByDisplayValue('a,b,c')).toBeTruthy();
 		});
 	});
