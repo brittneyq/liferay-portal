@@ -104,6 +104,11 @@ public class TestClassFactory {
 		BatchTestClassGroup batchTestClassGroup, JSONObject jsonObject,
 		File testClassFile, String testClassMethodName) {
 
+		System.out.println("*****IN NEW TEST CLASS********");
+
+		System.out.println("JSON OBJECT : " + jsonObject);
+		System.out.println("TEST CLASS FILE : " + testClassFile);
+
 		if (batchTestClassGroup instanceof CompileModulesBatchTestClassGroup) {
 			if (jsonObject != null) {
 				return new CompileModulesTestClass(
@@ -136,28 +141,42 @@ public class TestClassFactory {
 			File canonicalFile;
 
 			if (testClassFile != null) {
+				System.out.println("TEST CLASS DOES NOT EQUAL NULL");
+
 				canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(
 					testClassFile);
+
+				System.out.println("CANONICAL FILE : " + canonicalFile);
 			}
 			else if ((jsonObject != null) && jsonObject.has("file")) {
+				System.out.println("JSON OBJECT IS NOT NULL AND HAS FILE ");
+
 				canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(
 					new File(jsonObject.getString("file")));
+
+				System.out.println("CANONICAL FILE 2: " + canonicalFile);
 			}
 			else {
 				throw new RuntimeException("Please set a test class file");
 			}
 
 			if (_jUnitTestClasses.containsKey(canonicalFile)) {
+				System.out.println("IF JUNIT TEST CLASSES CONTAINS KEY");
+
 				return _jUnitTestClasses.get(canonicalFile);
 			}
 
 			JUnitTestClass jUnitTestClass = null;
 
 			if (jsonObject != null) {
+				System.out.println("json object is not null ");
+
 				jUnitTestClass = new JUnitTestClass(
 					batchTestClassGroup, jsonObject);
 			}
 			else {
+				System.out.println("json object is null!!!");
+
 				jUnitTestClass = new JUnitTestClass(
 					batchTestClassGroup, testClassFile);
 			}

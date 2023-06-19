@@ -3278,6 +3278,9 @@ public class JenkinsResultsParserUtil {
 		List<PathMatcher> excludesPathMatchers,
 		List<PathMatcher> includesPathMatchers, Path path) {
 
+		System.out.println("IN IS FILE INCLUDED ...");
+		System.out.println("INCLUDE PATCH MATCHERS : " + includesPathMatchers);
+
 		if (isFileExcluded(excludesPathMatchers, path)) {
 			System.out.println("IS FILE EXCLUDED ...." + path);
 
@@ -3285,6 +3288,8 @@ public class JenkinsResultsParserUtil {
 		}
 
 		if ((includesPathMatchers != null) && !includesPathMatchers.isEmpty()) {
+			System.out.println("PATH MATCHERS ISNOt NULL AND ITs NOT EMPTY");
+
 			for (PathMatcher includesPathMatcher : includesPathMatchers) {
 				if (includesPathMatcher.matches(path)) {
 					System.out.println(

@@ -344,7 +344,7 @@ public class TestClassGroupFactory {
 				}
 				else {
 					System.out.println("JSON OBJECT IS NULL");
-					System.out.println("BATCH NAME : " + batchName);
+					System.out.println("BATCH NAME test: " + batchName);
 					batchTestClassGroup = new ModulesJUnitBatchTestClassGroup(
 						batchName, portalTestClassJob);
 				}
