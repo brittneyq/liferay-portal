@@ -65,26 +65,30 @@ public class JobPropertyFactory {
 		sb.append("_");
 		sb.append(job.getJobName());
 
-		if (testBatchName.equals("modules-integration-analytics-cloud")) {
-			testBaseDir = new File(
-				"/opt/dev/projects/github/com-liferay-osb-asah-private");
-
-			System.out.println("NEW TEST BASE DIR : " + testBaseDir);
-		}
+		System.out.println("TEST BASE DIR : " + testBaseDir);
 
 		if (testBaseDir != null) {
 			sb.append("_");
 			sb.append(JenkinsResultsParserUtil.getCanonicalPath(testBaseDir));
+
+			System.out.println(
+				"CANONICAL PATH OF TESTBASE DIR : " +
+					JenkinsResultsParserUtil.getCanonicalPath(testBaseDir));
 		}
 
 		if (type == null) {
+			System.out.println("TYPE EQUALS NULL");
+
 			if (testBaseDir != null) {
 				type = JobProperty.Type.DEFAULT_TEST_DIR;
 			}
 			else {
+				System.out.println("TEST BASE IS NULL!!!");
 				type = JobProperty.Type.DEFAULT;
 			}
 		}
+
+		System.out.println("TYPE NOW ... " + type);
 
 		sb.append("_");
 		sb.append(type);
@@ -92,6 +96,8 @@ public class JobPropertyFactory {
 		sb.append(useBasePropertyName);
 
 		String key = sb.toString();
+
+		System.out.println("KEY BEFORE SB TO STRING : " + key);
 
 		JobProperty jobProperty = _jobProperties.get(key);
 
@@ -107,6 +113,15 @@ public class JobPropertyFactory {
 		else if ((type == JobProperty.Type.EXCLUDE_GLOB) ||
 				 (type == JobProperty.Type.FILTER_GLOB) ||
 				 (type == JobProperty.Type.INCLUDE_GLOB)) {
+
+			if (testBatchName.equals("modules-integration-analytics-cloud") &&
+				(testBaseDir == null)) {
+
+				testBaseDir = new File(
+					"/opt/dev/projects/github/com-liferay-osb-asah-private");
+
+				System.out.println("NEW TEST BASE DIR : " + testBaseDir);
+			}
 
 			jobProperty = new DefaultGlobJobProperty(
 				job, type, testBaseDir, basePropertyName, useBasePropertyName,
@@ -135,6 +150,8 @@ public class JobPropertyFactory {
 				testSuiteName, testBatchName);
 		}
 		else {
+			System.out.println("DEFAULT JOB PROPERTYY!!");
+
 			jobProperty = new DefaultJobProperty(
 				job, type, basePropertyName, useBasePropertyName, testSuiteName,
 				testBatchName);
