@@ -9,10 +9,6 @@
  * distribution rights of the Software.
  */
 
-/*
-* test
-*/
-
 import {act, fireEvent, render} from '@testing-library/react';
 import React from 'react';
 
@@ -110,7 +106,7 @@ describe('The App component should', () => {
 
 		const dropDownItems = document.querySelectorAll('.dropdown-item');
 
-		expect(dropDownItems[0]).toHaveTextContent('settings');
+		expect(dropDownItems[0]).toHaveTextContent('setting');
 
 		fireEvent.click(dropDownItems[0]);
 
