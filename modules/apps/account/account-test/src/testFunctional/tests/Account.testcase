@@ -22,7 +22,7 @@ definition {
 		}
 	}
 
-	@description = "This test asserts that a user can view all the Account Groups an account is assigned to via Account details page"
+	@description = "This test asserts that a user can view all the Account Groups an account is assigned to via Account details pages"
 	@priority = 4
 	test AccountGroupsAreDisplayedInAccountDetailsPage {
 		property portal.acceptance = "true";
