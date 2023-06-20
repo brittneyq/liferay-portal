@@ -1947,6 +1947,16 @@ public class GitWorkingDirectory {
 		return isOnlyMatchingFilesModified(_poshiFileNamesMultiPattern);
 	}
 
+	public boolean isPoshiFilesModified() {
+		for (File file : getModifiedFilesList()) {
+			if (JenkinsResultsParserUtil.isPoshiFile(file)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public boolean isRemoteGitRepositoryAlive(String remoteURL) {
 		String command = JenkinsResultsParserUtil.combine(
 			"git ls-remote -h ", remoteURL, " HEAD");
