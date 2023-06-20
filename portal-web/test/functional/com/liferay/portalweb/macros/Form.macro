@@ -1,6 +1,6 @@
 definition {
 
-	var formDescription = "Created Form Description";
+	var formDescription = "Created Form Descriptions";
 	var formName = "Created Form Name";
 	var rowNumber = 1;
 
