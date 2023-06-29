@@ -1,6 +1,5 @@
 definition {
 
-	@summary = "Created the EVP Site"
 	macro addEVPSite {
 		Site.openSitesAdmin();
 
@@ -9,7 +8,6 @@ definition {
 			siteTemplateName = "EVP");
 	}
 
-	@summary = "Assert the title cards"
 	macro assertCardsTitle {
 		for (var cardTitle : list ${listcardTitle}) {
 			AssertElementPresent(
@@ -18,7 +16,6 @@ definition {
 		}
 	}
 
-	@summary = "Confirm that the file has been downloaded"
 	macro downloadFileViaCurl {
 		var currentURL = selenium.getCurrentUrl();
 		var testDependenciesDir = PropsUtil.get("output.dir.name");
@@ -30,7 +27,6 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.get(${curl});
 	}
 
-	@summary = "Generate Financial Report for EVP"
 	macro generateFinancialReport {
 		LexiconCard.clickCardTitle(card = ${cardTitle});
 
@@ -42,7 +38,6 @@ definition {
 		Button.click(button = "Generate");
 	}
 
-	@summary = "Generate Requests listing for EVP"
 	macro generateRequestsListing {
 		LexiconCard.clickCard(card = ${cardTitle});
 
@@ -99,7 +94,6 @@ definition {
 		}
 	}
 
-	@summary = "Fill the date fields"
 	macro insertDate {
 		var currentDate = DateUtil.getFormattedDate(${dateRange}, "yyyy-MM-dd");
 		var nextDayDate = DateUtil.getFormattedDate("+2", "yyyy-MM-dd");
