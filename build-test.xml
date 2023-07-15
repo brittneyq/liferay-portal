@@ -7703,6 +7703,8 @@ ${docker.start.error}</fail>
 			<local name="docker.network.name" />
 			<local name="docker.stop.script" />
 
+			<echo>in stop docker container @{name}</echo>
+
 			<condition else="" property="docker.network.name" value="${env.DOCKER_NETWORK_NAME}">
 				<isset property="env.DOCKER_NETWORK_NAME" />
 			</condition>
@@ -7746,6 +7748,8 @@ ${docker.start.error}</fail>
 
 	<macrodef name="stop-docker-database">
 		<sequential>
+			<echo> in stop docker database!</echo>
+
 			<trycatch property="stop.docker.database.error">
 				<try>
 					<retry retrycount="2">
@@ -7766,6 +7770,8 @@ ${docker.start.error}</fail>
 	<macrodef name="stop-docker-database-cmd">
 		<sequential>
 			<get-database-property property.name="database.host" />
+
+			<echo>database host : ${database.host}</echo>
 
 			<stop-docker-container name="${database.host}" />
 		</sequential>
@@ -16407,7 +16413,11 @@ mail.send.blacklist=</echo>
 		<if>
 			<isset property="database.docker.image" />
 			<then>
+				<echo>docker database image : ${database.docker.image}</echo>
+
 				<stop-docker-database />
+
+				<echo>finished stop docker database</echo>
 
 				<start-docker-database />
 			</then>
