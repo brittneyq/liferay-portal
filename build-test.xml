@@ -7283,6 +7283,13 @@ ${docker.start.error}</fail>
 				</else>
 			</if>
 
+			<echo>database.host = ${database.host}</echo>
+			<echo>database.docker.database.options=${database.docker.database.options}</echo>
+			<echo>database.docker.image=${database.docker.image}</echo>
+			<echo>database.docker.run.options=${database.docker.run.options}</echo>
+			<echo>database.docker.run.options.new=${database.docker.database.options.new}</echo>
+			<echo>data.archive.type=${data.archive.type}</echo>
+
 			<start-docker-container image="${database.docker.image}" name="${database.host}" options="${database.docker.database.options.new}">\
 				${database.docker.run.options} \
 			</start-docker-container>
