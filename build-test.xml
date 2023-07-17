@@ -489,25 +489,17 @@ typeSettings=&#91;&quot;friendlyURLMapping=perico&quot;,&quot;instanceable=false
 
 			<execute>
 				<![CDATA[
-					docker ps
-
 					docker exec @{container} mkdir -p /tmp
 
 					echo 1!
-
-					docker ps
 
 					docker cp ${script.sh.file} @{container}:/tmp/script.sh
 
 					echo 2!
 
-					docker ps
-
 					docker exec @{container} @{shell.path} /tmp/script.sh
 
 					echo 3!
-
-					docker ps
 
 					docker exec --user root @{container} rm -f /tmp/script.sh
 
