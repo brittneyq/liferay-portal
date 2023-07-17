@@ -491,9 +491,15 @@ typeSettings=&#91;&quot;friendlyURLMapping=perico&quot;,&quot;instanceable=false
 				<![CDATA[
 					docker exec @{container} mkdir -p /tmp
 
+					echo 1!
+
 					docker cp ${script.sh.file} @{container}:/tmp/script.sh
 
+					echo 2!
+
 					docker exec @{container} @{shell.path} /tmp/script.sh
+
+					echo 3!
 
 					docker exec --user root @{container} rm -f /tmp/script.sh
 				]]>
@@ -7713,6 +7719,8 @@ ${docker.start.error}</fail>
 
 			<echo file="${docker.stop.script}">
 				<![CDATA[
+					docker ps
+
 					docker ps --filter "name=@{name}" --format "Stopping container [ID: '{{.ID}}', name: '{{.Names}}']'"
 
 					docker kill @{name}
@@ -7754,6 +7762,8 @@ ${docker.start.error}</fail>
 				<try>
 					<retry retrycount="2">
 						<sequential>
+							<echo> trying stop docker database command..</echo>
+
 							<stop-docker-database-cmd />
 						</sequential>
 					</retry>
