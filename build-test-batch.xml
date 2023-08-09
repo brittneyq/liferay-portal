@@ -6842,14 +6842,18 @@ information. Make sure to commit in all format-javadoc results.
 					</then>
 				</if>
 
-				<gradle-execute dir="modules" task="test">
-					<arg value="--continue" />
-					<arg value="-Dbuild.exclude.ant.plugin=true" />
-					<arg if:true="${run.solr.unit.tests}" value="-Dcom.liferay.portal.search.solr8.test.unit.started=true" />
-					<arg value="-Djunit.code.coverage=${test.batch.code.coverage}" />
-					<arg if:set="project.templates.test.builds" value="-Dproject.templates.test.builds=${project.templates.test.builds}" />
-					<arg value="-Dtest.class.group.index=${axis.variable}" />
-				</gradle-execute>
+				<for list="${test.class.group}" param="test.class">
+					<sequential>
+						<gradle-execute dir="modules" task="test">
+							<arg value="--continue" />
+							<arg value="-Dbuild.exclude.ant.plugin=true" />
+							<arg if:true="${run.solr.unit.tests}" value="-Dcom.liferay.portal.search.solr8.test.unit.started=true" />
+							<arg value="-Djunit.code.coverage=${test.batch.code.coverage}" />
+							<arg if:set="project.templates.test.builds" value="-Dproject.templates.test.builds=${project.templates.test.builds}" />
+							<arg value="--tests @{test.class} " />
+						</gradle-execute>
+					</sequential>
+				</for>
 
 				<lstopwatch action="total" name="test.execution.duration" />
 			</test-action>
