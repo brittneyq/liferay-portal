@@ -758,6 +758,7 @@ information.
 		<attribute default="true" name="setupbinariescache" />
 		<attribute default="true" name="stacktrace" />
 		<attribute name="task" />
+		<attribute default="" name="testclass" />
 		<element implicit="true" name="args" optional="true" />
 
 		<sequential>
@@ -932,26 +933,54 @@ information.
 								</then>
 							</if>
 
-							<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
-								<args />
-								<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
-								<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
-								<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
-								<arg if:true="${gradle.profile.enabled}" value="--profile" />
-								<arg if:set="env.JENKINS_HOME" value="--profile" />
-								<arg value="--project-cache-dir=${project.dir}/.gradle" />
-								<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
-								<arg if:true="@{stacktrace}" value="--stacktrace" />
-								<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
-								<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
-								<arg value="-Dliferay.home=${liferay.home}" />
-								<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
-								<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
-								<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
-								<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
-								<arg line="@{task}" />
-								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
-							</exec>
+							<if>
+								<equals arg1="@{testclass}" arg2="" />
+								<then>
+									<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
+										<args />
+										<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+										<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
+										<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
+										<arg if:true="${gradle.profile.enabled}" value="--profile" />
+										<arg if:set="env.JENKINS_HOME" value="--profile" />
+										<arg value="--project-cache-dir=${project.dir}/.gradle" />
+										<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
+										<arg if:true="@{stacktrace}" value="--stacktrace" />
+										<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
+										<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
+										<arg value="-Dliferay.home=${liferay.home}" />
+										<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
+										<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
+										<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
+										<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
+										<arg line="@{task}" />
+										<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
+									</exec>
+								</then>
+								<else>
+									<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
+										<args />
+										<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+										<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
+										<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
+										<arg if:true="${gradle.profile.enabled}" value="--profile" />
+										<arg if:set="env.JENKINS_HOME" value="--profile" />
+										<arg value="--project-cache-dir=${project.dir}/.gradle" />
+										<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
+										<arg if:true="@{stacktrace}" value="--stacktrace" />
+										<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
+										<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
+										<arg value="-Dliferay.home=${liferay.home}" />
+										<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
+										<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
+										<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
+										<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
+										<arg line="@{task}" />
+										<arg line="--tests @{testclass}" />
+										<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
+									</exec>
+								</else>
+							</if>
 						</try>
 						<catch>
 							<if>
@@ -967,28 +996,58 @@ information.
 
 							<echo />
 
-							<echoxml>
-								<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
-									<args />
-									<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
-									<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
-									<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
-									<arg if:true="${gradle.profile.enabled}" value="--profile" />
-									<arg if:set="env.JENKINS_HOME" value="--profile" />
-									<arg value="--project-cache-dir=${project.dir}/.gradle" />
-									<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
-									<arg if:true="@{stacktrace}" value="--stacktrace" />
-									<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
-									<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
-									<arg value="-Dliferay.home=${liferay.home}" />
-									<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
-									<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
-									<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
-									<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
-									<arg line="@{task}" />
-									<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
-								</exec>
-							</echoxml>
+							<if>
+								<equals arg1="@{testclass}" arg2="" />
+								<then>
+									<echoxml>
+										<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
+											<args />
+											<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+											<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
+											<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
+											<arg if:true="${gradle.profile.enabled}" value="--profile" />
+											<arg if:set="env.JENKINS_HOME" value="--profile" />
+											<arg value="--project-cache-dir=${project.dir}/.gradle" />
+											<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
+											<arg if:true="@{stacktrace}" value="--stacktrace" />
+											<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
+											<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
+											<arg value="-Dliferay.home=${liferay.home}" />
+											<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
+											<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
+											<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
+											<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
+											<arg line="@{task}" />
+											<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
+										</exec>
+									</echoxml>
+								</then>
+								<else>
+									<echoxml>
+										<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
+											<args />
+											<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+											<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
+											<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
+											<arg if:true="${gradle.profile.enabled}" value="--profile" />
+											<arg if:set="env.JENKINS_HOME" value="--profile" />
+											<arg value="--project-cache-dir=${project.dir}/.gradle" />
+											<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
+											<arg if:true="@{stacktrace}" value="--stacktrace" />
+											<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
+											<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
+											<arg value="-Dliferay.home=${liferay.home}" />
+											<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
+											<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
+											<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
+											<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
+											<arg line="@{task}" />
+											<arg line="--tests @{testclass}" />
+											<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
+										</exec>
+									</echoxml>
+								</else>
+							</if>
 
 							<fail message="Unable to execute Gradle task: ${gradle.executable.task}." />
 						</catch>
