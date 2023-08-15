@@ -6844,12 +6844,121 @@ information. Make sure to commit in all format-javadoc results.
 
 				<for list="${test.class.group}" param="test.class">
 					<sequential>
-						<gradle-execute dir="modules" task="test" testclass="@{test.class}">
+						<echo>************TEST CLASS GROUP : @{test.class}</echo>
+
+						<property name="test.class" value="@{test.class}" />
+
+						<propertyregex
+							casesensitive="false"
+							input="${test.class}"
+							property="test.class.java"
+							regexp=".class"
+							replace=".java"
+						/>
+
+						<echo>${test.class.java}</echo>
+
+						<first id="first">
+							<fileset
+								dir="modules"
+								includes="**/${test.class.java}"
+							/>
+						</first>
+
+						<property name="filePath" value="${toString:first}" />
+						<echo>TEST PATH : + ${filePath}</echo>
+
+						<beanshell>
+							<![CDATA[
+								import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
+								import java.util.Properties;
+								import java.util.regex.Matcher;
+								import java.util.regex.Pattern;
+
+								public static File getBndFile(File file) {
+									if (file == null) {
+										return null;
+									}
+
+									File canonicalFile = JenkinsResultsParserUtil.getCanonicalFile(file);
+
+									File parentFile = canonicalFile.getParentFile();
+
+									if ((parentFile == null) || !parentFile.exists()) {
+										return file;
+									}
+
+									if (!canonicalFile.isDirectory()) {
+										return getBndFile(parentFile);
+									}
+
+									File testPropertiesFile = new File(canonicalFile, "bnd.bnd");
+
+									if (!testPropertiesFile.exists()) {
+										return getBndFile(parentFile);
+									}
+
+									return testPropertiesFile;
+								}
+
+								public static String getProjectName(File bndFile){
+									Properties properties = JenkinsResultsParserUtil.getProperties(new File[] {bndFile});
+
+									String bundleSymbolicName = properties.getProperty("Bundle-SymbolicName");
+
+									System.out.println(bundleSymbolicName);
+
+									String projectDir = project.getProperty("project.dir");
+									System.out.println("PROJECT DIR : " + projectDir);
+									File modulesPropertyFile = new File(projectDir + "/modules/modules.properties");
+									System.out.println("MODULES PROPERTY FILE : " + modulesPropertyFile);
+									Properties properties2 = JenkinsResultsParserUtil.getProperties(new File[] {modulesPropertyFile});
+
+									return properties2.getProperty("project.name[" + bundleSymbolicName + "]");
+
+								}
+
+								public static String getTestName(String filePath){
+									Pattern pattern = Pattern.compile("/([^/]+)\\.java");
+
+									Matcher matcher = pattern.matcher(filePath);
+
+									String testName = "";
+									if (matcher.find()) {
+										testName = matcher.group(1);
+										System.out.println(testName);
+									}
+
+									return testName;
+								}
+
+								String filePath = project.getProperty("filePath");
+								String testName = getTestName(filePath);
+								System.out.println("TEST NAME : " + testName);
+								project.setProperty("test.name", testName);
+
+								System.out.println("FILE PATH :  " + filePath);
+								File file = new File(filePath);
+								System.out.println("file : " + file);
+								File bndFile = getBndFile(file);
+								System.out.println("BND FILE : " + bndFile);
+
+								String projectName = getProjectName(bndFile);
+								System.out.println("PROJECT NAME : " + projectName);
+
+								project.setProperty("project.name", projectName);
+
+							]]>
+						</beanshell>
+
+						<gradle-execute dir="modules" task="${project.name}:test" test.name="${test.name}">
 							<arg value="--continue" />
 							<arg value="-Dbuild.exclude.ant.plugin=true" />
 							<arg if:true="${run.solr.unit.tests}" value="-Dcom.liferay.portal.search.solr8.test.unit.started=true" />
 							<arg value="-Djunit.code.coverage=${test.batch.code.coverage}" />
 							<arg if:set="project.templates.test.builds" value="-Dproject.templates.test.builds=${project.templates.test.builds}" />
+							<arg value="-Dtest.class.group.index=${axis.variable}" />
 						</gradle-execute>
 					</sequential>
 				</for>
