@@ -962,27 +962,6 @@ information.
 								<arg if:set="test.name" value="--tests ${test.name}" />
 								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 							</exec>
-
-							<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
-								<args />
-								<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
-								<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
-								<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
-								<arg if:true="${gradle.profile.enabled}" value="--profile" />
-								<arg if:set="env.JENKINS_HOME" value="--profile" />
-								<arg value="--project-cache-dir=${project.dir}/.gradle" />
-								<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
-								<arg if:true="@{stacktrace}" value="--stacktrace" />
-								<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
-								<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
-								<arg value="-Dliferay.home=${liferay.home}" />
-								<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.connectionTimeout=120000" />
-								<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
-								<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
-								<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
-								<arg line="@{task}" />
-								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
-							</exec>
 						</try>
 						<catch>
 							<if>
