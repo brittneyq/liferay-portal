@@ -72,7 +72,7 @@ public class LegacyDataArchive {
 				generatedArchiveDirectory.toString(), "/",
 				_legacyDataArchivePortalVersion.getPortalVersion(), "/",
 				_legacyDataArchiveGroup.getDataArchiveType(), "-",
-				_databaseName, ".zip"));
+				_databaseName, "115", ".zip"));
 
 		if (generatedArchiveFile.exists()) {
 			JenkinsResultsParserUtil.copy(
@@ -108,8 +108,8 @@ public class LegacyDataArchive {
 			JenkinsResultsParserUtil.combine(
 				legacyDataWorkingDirectory.toString(), "/",
 				_legacyDataArchivePortalVersion.getPortalVersion(),
-				"/data-archive/", _dataArchiveType, "-", _databaseName,
-				".zip"));
+				"/data-archive/", _dataArchiveType, "-", _databaseName, 
+				"115", ".zip"));
 	}
 
 	private final String _dataArchiveType;
