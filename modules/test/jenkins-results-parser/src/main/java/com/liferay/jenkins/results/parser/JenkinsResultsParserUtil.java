@@ -1822,8 +1822,9 @@ public class JenkinsResultsParserUtil {
 		try {
 			Files.walkFileTree(
 				baseDir.toPath(),
-				new SimpleFileVisitor() {
+				new SimpleFileVisitor<Path>() {
 
+					@Override
 					public FileVisitResult visitFile(
 							Path filePath,
 							BasicFileAttributes basicFileAttributes)
