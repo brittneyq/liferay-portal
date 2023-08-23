@@ -810,7 +810,11 @@ mariadb.executable=${mariadb.executable}]]></echo>
 
 					String testClassFilePath = project.getProperty("test.class.file.path");
 
+					System.out.println("test class file path : " + testClassFilePath);
+
 					String testProjectName = getTestProjectName(testClassFilePath);
+
+					System.out.println("test project name : " + testProjectName);
 
 					if (testProjectName == null) {
 						throw new Exception("Unable to find corresponding project name for " + testClassFilePath + ".");
