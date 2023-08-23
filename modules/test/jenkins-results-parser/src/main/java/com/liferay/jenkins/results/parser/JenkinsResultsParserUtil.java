@@ -1814,15 +1814,16 @@ public class JenkinsResultsParserUtil {
 		return excludedFiles;
 	}
 
-	public static File getFiles(File baseDir, final String testClass) {
+	public static File getFileFromPath(
+		File baseDir, final String testFilePath) {
+
 		final List<File> includedFiles = new ArrayList<>();
 
 		try {
 			Files.walkFileTree(
 				baseDir.toPath(),
-				new SimpleFileVisitor<Path>() {
+				new SimpleFileVisitor() {
 
-					@Override
 					public FileVisitResult visitFile(
 							Path filePath,
 							BasicFileAttributes basicFileAttributes)
@@ -1830,7 +1831,7 @@ public class JenkinsResultsParserUtil {
 
 						String filePathString = filePath.toString();
 
-						if (filePathString.contains(testClass)) {
+						if (filePathString.contains(testFilePath)) {
 							includedFiles.add(filePath.toFile());
 						}
 
