@@ -2925,6 +2925,9 @@ log.sanitizer.enabled=false</echo>
 									count++;
 								}
 
+								sb.append(">");
+								sb.append(testList.size());
+								System.out.println("TEST LIST SIZE + " + testList.size());
 								sb.append("\n");
 
 								String testString = testList.toString();
@@ -2951,15 +2954,22 @@ log.sanitizer.enabled=false</echo>
 								<propertyregex
 									property="testProject"
 									input="@{projectName}"
-									regexp="(.*)>(.*)"
+									regexp="(.*)>(.*)>(.*)"
 									select="\1"
 								/>
 
 								<propertyregex
 									property="testCommands"
 									input="@{projectName}"
-									regexp="(.*)>(.*)"
+									regexp="(.*)>(.*)>(.*)"
 									select="\2"
+								/>
+
+								<propertyregex
+									property="test.list.size"
+									input="@{projectName}"
+									regexp="(.*)>(.*)>(.*)"
+									select="\3"
 								/>
 
 								<propertyregex
@@ -2971,10 +2981,31 @@ log.sanitizer.enabled=false</echo>
 								/>
 
 								<echo>TEST PROJECT : ${testProject}</echo>
+								<echo>TEST list size: ${test.list.size}</echo>
 								<echo>TEST PROJECT PATH: ${testProjectPath}</echo>
 								<echo>TEST COMMANDS : ${testCommands}</echo>
 
-								<limit failonerror="true" maxwait="${test.class.timeout.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} ${testCommands} failed to complete in ${test.class.timeout.minutes} minutes">
+								<math
+									datatype="int"
+									operand1="${test.class.timeout.minutes}"
+									operand2="${test.list.size}"
+									operation="+"
+									result="test.class.timeout.minutes.per.test"
+								/>
+
+								<echo>minutes per test: ${test.class.timeout.minutes.per.test}</echo>
+
+								<math
+									datatype="int"
+									operand1="${test.class.timeout.minutes.per.test}"
+									operand2="60"
+									operation="*"
+									result="test.class.timeout.tests.seconds"
+								/>
+
+								<echo>test class timeout tests seconds : ${test.class.timeout.tests.seconds}</echo>
+
+								<limit failonerror="true" maxwait="${test.class.timeout.tests.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} ${testCommands} failed to complete in ${test.class.timeout.minutes} minutes">
 									<gradle-execute dir="modules" task="${testProject}:@{test.task}" test.name="${testCommands}">
 									</gradle-execute>
 								</limit>
@@ -2990,6 +3021,8 @@ log.sanitizer.enabled=false</echo>
 								</move>
 							</sequential>
 						</for>
+
+						<delete file="${project.dir}/test_file.txt" />
 					</sequential>
 				</try>
 				<catch>
