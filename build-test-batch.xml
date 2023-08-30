@@ -2929,10 +2929,7 @@ log.sanitizer.enabled=false</echo>
 								int count = 0;
 
 								for(String test : testList){
-									if(count != 0){
-										sb.append("--tests ");
-									}
-
+									sb.append("--tests ");
 									sb.append(test);
 									sb.append(" ");
 									count++;
@@ -2979,7 +2976,6 @@ log.sanitizer.enabled=false</echo>
 
 								<limit failonerror="true" maxwait="${test.class.timeout.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} --tests ${testCommands} failed to complete in ${test.class.timeout.minutes} minutes">
 									<gradle-execute dir="modules" task="${testProject}:@{test.task}" test.name="${testCommands}">
-										<args />
 									</gradle-execute>
 								</limit>
 
