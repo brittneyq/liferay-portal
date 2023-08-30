@@ -2859,14 +2859,6 @@ log.sanitizer.enabled=false</echo>
 								return null;
 							}
 
-							public static String getTestProjectResultsDir(String testClassFilePath) {
-								String testProjectName = getTestProjectName(testClassFilePath);
-
-								File testProjectResultsDir = new File(project.getProperty("project.dir") + "/modules/" + testProjectName.replaceAll(":", "/") + "/test-results/");
-
-								return JenkinsResultsParserUtil.getCanonicalPath(testProjectResultsDir);
-							}
-
 							public static void addProjectToMap(String projectName, String testName, Map testMap){
 								if(!testMap.containsKey(projectName)){
 									List testList = new ArrayList();
@@ -2904,8 +2896,6 @@ log.sanitizer.enabled=false</echo>
 								System.out.println("file: " + file);
 
 								String testProjectName = getTestProjectName(file.toString());
-
-								project.setProperty("test.project.results.dir", getTestProjectResultsDir(file.toString()));
 
 								String testName = getTestName(file.toString());
 
@@ -2960,6 +2950,7 @@ log.sanitizer.enabled=false</echo>
 							<sequential>
 								<var name="testProject" unset="true" />
 								<var name="testCommands" unset="true" />
+								<var name="testProjectPath" unset="true" />
 
 								<propertyregex
 									property="testProject"
@@ -2975,10 +2966,19 @@ log.sanitizer.enabled=false</echo>
 									select="\2"
 								/>
 
+								<propertyregex
+									input="${project.dir}/modules${testProject}/test-results"
+									override="true"
+									property="testProjectPath"
+									regexp=":"
+									replace="/"
+								/>
+
 								<echo>TEST PROJECT : ${testProject}</echo>
+								<echo>TEST PROJECT PATH: ${testProjectPath}</echo>
 								<echo>TEST COMMANDS : ${testCommands}</echo>
 
-								<limit failonerror="true" maxwait="${test.class.timeout.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} --tests ${testCommands} failed to complete in ${test.class.timeout.minutes} minutes">
+								<limit failonerror="true" maxwait="${test.class.timeout.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} ${testCommands} failed to complete in ${test.class.timeout.minutes} minutes">
 									<gradle-execute dir="modules" task="${testProject}:@{test.task}" test.name="${testCommands}">
 									</gradle-execute>
 								</limit>
@@ -2988,7 +2988,7 @@ log.sanitizer.enabled=false</echo>
 									todir="modules/test-results"
 								>
 									<fileset
-										dir="${test.project.results.dir}"
+										dir="${testProjectPath}"
 										includes="**/TEST-*.xml"
 									/>
 								</move>
@@ -3035,13 +3035,13 @@ log.sanitizer.enabled=false</echo>
 						replace="."
 					/>
 
-					<!-- 	<generate-backend-batch-junit-report
-					junit.failure.count="1"
-					junit.failure.message.element="${junit.failure.message.element}"
-					test.class.name="${test.class.name}"
-					test.command.name="testCompile"
-					test.results.dir="modules/test-results"
-				/>-->
+					<generate-backend-batch-junit-report
+						junit.failure.count="1"
+						junit.failure.message.element="${junit.failure.message.element}"
+						test.class.name="${test.class.name}"
+						test.command.name="testCompile"
+						test.results.dir="modules/test-results"
+					/>
 				</catch>
 			</trycatch>
 		</sequential>
