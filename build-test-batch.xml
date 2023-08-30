@@ -2887,7 +2887,11 @@ log.sanitizer.enabled=false</echo>
 
 							String testClassGroup = project.getProperty("test.class");
 
+							System.out.println("test class group :" + testClassGroup);
+
 							String[] testClassList = testClassGroup.split(",");
+
+							System.out.println("test class list : " + testClassList);
 
 							Map modulesTestMap = new HashMap();
 
