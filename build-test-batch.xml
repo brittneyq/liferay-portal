@@ -2888,7 +2888,7 @@ log.sanitizer.enabled=false</echo>
 							for (String testClass : testClassList){
 								testClass = testClass.replaceAll("\\.class", "\\.java");
 								System.out.println("test class 2: " + testClass);
-								File file = JenkinsResultsParserUtil.getFileFromPath(projectDir, testClass);
+								File file = JenkinsResultsParserUtil.getFileFromPathSnippet(projectDir, testClass);
 								System.out.println("file: " + file);
 
 								String testProjectName = getTestProjectName(file.toString());

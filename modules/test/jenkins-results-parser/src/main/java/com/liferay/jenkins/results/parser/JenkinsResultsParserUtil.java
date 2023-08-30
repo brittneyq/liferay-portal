@@ -1814,10 +1814,10 @@ public class JenkinsResultsParserUtil {
 		return excludedFiles;
 	}
 
-	public static File getFileFromPath(
-		File baseDir, final String testFilePath) {
+	public static File getFileFromPathSnippet(
+		File baseDir, final String pathSnippet) {
 
-		final List<File> includedFiles = new ArrayList<>();
+		final List<File> matchingFiles = new ArrayList<>();
 
 		try {
 			Files.walkFileTree(
@@ -1832,8 +1832,8 @@ public class JenkinsResultsParserUtil {
 
 						String filePathString = filePath.toString();
 
-						if (filePathString.contains(testFilePath)) {
-							includedFiles.add(filePath.toFile());
+						if (filePathString.contains(pathSnippet)) {
+							matchingFiles.add(filePath.toFile());
 						}
 
 						return FileVisitResult.CONTINUE;
@@ -1845,7 +1845,11 @@ public class JenkinsResultsParserUtil {
 			throw new RuntimeException(ioException);
 		}
 
-		return includedFiles.get(0);
+		if (matchingFiles.isEmpty()) {
+			return null;
+		}
+
+		return matchingFiles.get(0);
 	}
 
 	public static String getGitDirectoryName(
