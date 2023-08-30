@@ -2950,6 +2950,9 @@ log.sanitizer.enabled=false</echo>
 								<var name="testProject" unset="true" />
 								<var name="testCommands" unset="true" />
 								<var name="testProjectPath" unset="true" />
+								<var name="test.list.size" unset="true" />
+								<var name="test.class.timeout.minutes.per.test" unset="true" />
+								<var name="test.class.timeout.tests.seconds" unset="true" />
 
 								<propertyregex
 									property="testProject"
