@@ -822,7 +822,7 @@ mariadb.executable=${mariadb.executable}]]></echo>
 
 					File projectDir = new File(project.getProperty("project.dir"));
 
-					String testClassGroup = project.getProperty("test.class");
+					String testClassGroup = "@{test.class}";
 
 					String[] testClassList = testClassGroup.split(",");
 
@@ -2885,7 +2885,7 @@ log.sanitizer.enabled=false</echo>
 
 							File projectDir = new File(project.getProperty("project.dir"));
 
-							String testClassGroup = project.getProperty("test.class");
+							String testClassGroup = "@{test.class}";
 
 							System.out.println("test class group :" + testClassGroup);
 
