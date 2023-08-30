@@ -7302,18 +7302,14 @@ information. Make sure to commit in all format-javadoc results.
 					</then>
 				</if>
 
-				<for list="${test.class.group}" param="test.class">
-					<sequential>
-						<run-modules-junit-test test.class="@{test.class}" test.task="test">
-							<arg value="--continue" />
-							<arg value="-Dbuild.exclude.ant.plugin=true" />
-							<arg if:true="${run.solr.unit.tests}" value="-Dcom.liferay.portal.search.solr8.test.unit.started=true" />
-							<arg value="-Djunit.code.coverage=${test.batch.code.coverage}" />
-							<arg if:set="project.templates.test.builds" value="-Dproject.templates.test.builds=${project.templates.test.builds}" />
-							<arg value="-Dtest.class.group.index=${axis.variable}" />
-						</run-modules-junit-test>
-					</sequential>
-				</for>
+				<run-modules-junit-test test.class="${test.class.group}" test.task="test">
+					<arg value="--continue" />
+					<arg value="-Dbuild.exclude.ant.plugin=true" />
+					<arg if:true="${run.solr.unit.tests}" value="-Dcom.liferay.portal.search.solr8.test.unit.started=true" />
+					<arg value="-Djunit.code.coverage=${test.batch.code.coverage}" />
+					<arg if:set="project.templates.test.builds" value="-Dproject.templates.test.builds=${project.templates.test.builds}" />
+					<arg value="-Dtest.class.group.index=${axis.variable}" />
+				</run-modules-junit-test>
 
 				<lstopwatch action="total" name="test.execution.duration" />
 			</test-action>
