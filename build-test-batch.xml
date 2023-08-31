@@ -2792,6 +2792,7 @@ log.sanitizer.enabled=false</echo>
 
 		<sequential>
 			<var name="test.timeout" unset="true" />
+			<var name="test.class.path" unset="true"/>
 
 			<trycatch property="test.failure.message">
 				<try>
@@ -2888,6 +2889,8 @@ log.sanitizer.enabled=false</echo>
 							for (String testClass : testClassList){
 								testClass = testClass.replaceAll("\\.class", "\\.java");
 								System.out.println("test class 2: " + testClass);
+								project.setProperty("test.class.path", testClass);
+
 								File file = JenkinsResultsParserUtil.getFileFromPathSnippet(projectDir, testClass);
 								System.out.println("file: " + file);
 
@@ -3051,10 +3054,10 @@ log.sanitizer.enabled=false</echo>
 					<local name="test.class.name" />
 
 					<propertyregex
-						input="@{test.class}"
+						input="${test.class.path}"
 						override="true"
 						property="test.class.name"
-						regexp="(.*)\.class"
+						regexp="(.*)\.java"
 						replace="\1"
 					/>
 
