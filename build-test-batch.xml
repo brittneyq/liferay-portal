@@ -2692,33 +2692,228 @@ log.sanitizer.enabled=false</echo>
 	</macrodef>
 
 	<macrodef name="run-modules-junit-test">
-		<attribute name="test.class" />
+		<attribute name="test.class.group" />
 		<attribute name="test.task" />
 
 		<element implicit="true" name="args" optional="true" />
 
 		<sequential>
 			<var name="test.timeout" unset="true" />
+			<var name="test.class.path" unset="true" />
 
 			<trycatch property="test.failure.message">
 				<try>
-					<get-test-project-information test.class="@{test.class}" />
+					<sequential>
+						<var name="test.name" unset="true" />
+						<var name="test.project.name" unset="true" />
+						<var name="test.project.results.dir" unset="true" />
 
-					<limit failonerror="true" maxwait="${test.class.timeout.seconds}" property="test.timeout" value="FAILURE: ${test.project.name}:@{test.task} --tests ${test.name} failed to complete in ${test.class.timeout.minutes} minutes">
-						<gradle-execute dir="modules" task="${test.project.name}:@{test.task}" test.name="${test.name}">
-							<args />
-						</gradle-execute>
-					</limit>
+						<local name="test.class.java.path" />
 
-					<move
-						flatten="true"
-						todir="modules/test-results"
-					>
-						<fileset
-							dir="${test.project.results.dir}"
-							includes="**/TEST-*.xml"
+						<beanshell>
+							<![CDATA[
+								import com.liferay.jenkins.results.parser.GitWorkingDirectory;
+								import com.liferay.jenkins.results.parser.GitWorkingDirectoryFactory;
+								import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+								import com.liferay.jenkins.results.parser.Job;
+								import com.liferay.jenkins.results.parser.JobFactory;
+								import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
+
+								import java.io.File;
+
+								import java.nio.file.attribute.BasicFileAttributes;
+
+								import java.util.Properties;
+								import java.util.regex.Matcher;
+								import java.util.regex.Pattern;
+
+								public static File getPortalGitWorkingDirectory() {
+									return JenkinsResultsParserUtil.getGitWorkingDir(new File(project.getProperty("project.dir")));
+								}
+
+								public static String getTestName(String testClassFilePath) {
+									Pattern pattern = Pattern.compile("/([^/]+)\\.java");
+
+									Matcher matcher = pattern.matcher(testClassFilePath);
+
+									if (matcher.find()) {
+										return matcher.group(1);
+									}
+
+									return null;
+								}
+
+								public static String getTestProjectName(String testClassFilePath) {
+									String projectDir = project.getProperty("project.dir");
+
+									String regex = projectDir + "/modules(\\/+.+)/src/test";
+
+									Pattern pattern = Pattern.compile(regex);
+
+									Matcher matcher = pattern.matcher(testClassFilePath);
+
+									if (matcher.find()) {
+										String testProjectName = matcher.group(1);
+
+										return testProjectName.replaceAll("/", ":");
+									}
+
+									return null;
+								}
+
+								public static void addProjectToMap(String projectName, String testName, Map modulesTestMap){
+									if (!modulesTestMap.containsKey(projectName)) {
+										List testList = new ArrayList();
+
+										testList.add(testName);
+
+										modulesTestMap.put(projectName, testList);
+									}
+									else {
+										List currentTestList = testMap.get(projectName);
+
+										if (!currentTestList.contains(testName)) {
+											currentTestList.add(testName);
+
+											modulesTestMap.put(projectName, currentTestList);
+										}
+									}
+								}
+
+								File projectDir = new File(project.getProperty("project.dir"));
+
+								String testClassGroup = "@{test.class.group}";
+
+								String[] testClassList = testClassGroup.split(",");
+
+								Map modulesTestMap = new HashMap();
+
+								File baseDir = getPortalGitWorkingDirectory();
+
+								for (String testClass : testClassList){
+									testClass = testClass.replaceAll("\\.class", "\\.java");
+
+									project.setProperty("test.class.java.path", testClass);
+
+									File testClassFile = JenkinsResultsParserUtil.getFileFromPathSnippet(projectDir, testClass);
+
+									String testProjectName = getTestProjectName(testClassFile.toString());
+
+									String testName = getTestName(file.toString());
+
+									addProjectToMap(testProjectName, testName, modulesTestMap);
+								}
+
+								File mapFile = new File(project.getProperty("project.dir") + "/projectTestMap.txt");
+
+								if (mapFile.exists()) {
+									mapFile.delete();
+
+									mapFile.createNewFile();
+								}
+
+								for (Map.Entry projectInfo : modulesTestMap.entrySet()){
+									List testList = projectInfo.getValue();
+
+									String projectKey = projectInfo.getKey();
+
+									StringBuilder sb = new StringBuilder();
+									sb.append(projectKey);
+									sb.append(">");
+
+									for (String test : testList) {
+										sb.append("--tests ");
+										sb.append(test);
+										sb.append(" ");
+									}
+
+									sb.append(">");
+									sb.append(testList.size());
+									sb.append("\n");
+
+									JenkinsResultsParserUtil.append(mapFile, sb.toString());
+								}
+							]]>
+						</beanshell>
+
+						<loadfile
+							property="test.class.map"
+							srcFile="${project.dir}/projectTestMap.txt"
 						/>
-					</move>
+
+						<for delimiter="${line.separator}" list="${test.class.map}" param="projectName">
+							<sequential>
+								<var name="project.test.name" unset="true" />
+								<var name="project.test.commands" unset="true" />
+								<var name="test.project.results.dir" unset="true" />
+								<var name="test.list.size" unset="true" />
+								<var name="test.class.tests.timeout.minutes" unset="true" />
+								<var name="test.class.tests.timeout.seconds" unset="true" />
+
+								<propertyregex
+									property="project.test.name"
+									input="@{projectName}"
+									regexp="(.*)>(.*)>(.*)"
+									select="\1"
+								/>
+
+								<propertyregex
+									property="project.test.commands"
+									input="@{projectName}"
+									regexp="(.*)>(.*)>(.*)"
+									select="\2"
+								/>
+
+								<propertyregex
+									property="test.list.size"
+									input="@{projectName}"
+									regexp="(.*)>(.*)>(.*)"
+									select="\3"
+								/>
+
+								<propertyregex
+									input="${project.dir}/modules${testProject}/test-results"
+									override="true"
+									property="test.project.results.dir"
+									regexp=":"
+									replace="/"
+								/>
+
+								<math
+									datatype="int"
+									operand1="${test.class.timeout.minutes}"
+									operand2="${test.list.size}"
+									operation="+"
+									result="test.class.tests.timeout.minutes"
+								/>
+
+								<math
+									datatype="int"
+									operand1="${test.class.tests.timeout.minutes}"
+									operand2="60"
+									operation="*"
+									result="test.class.tests.timeout.seconds"
+								/>
+
+								<limit failonerror="true" maxwait="${test.class.tests.timeout.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} ${testCommands} failed to complete in ${test.class.tests.timeout.minutes} minutes">
+									<gradle-execute dir="modules" task="${testProject}:@{test.task}" test.name="${testCommands}">
+									</gradle-execute>
+								</limit>
+
+								<move
+									flatten="true"
+									todir="modules/test-results"
+								>
+									<fileset
+										dir="${test.project.results.dir}"
+										includes="**/TEST-*.xml"
+									/>
+								</move>
+							</sequential>
+						</for>
+
+						<delete file="${project.dir}/projectTestMap.txt" />
+					</sequential>
 				</try>
 				<catch>
 					<var name="junit.failure.message" value="" />
@@ -2743,10 +2938,10 @@ log.sanitizer.enabled=false</echo>
 					<local name="test.class.name" />
 
 					<propertyregex
-						input="@{test.class}"
+						input="${test.class.java.path}"
 						override="true"
 						property="test.class.name"
-						regexp="(.*)\.class"
+						regexp="(.*)\.java"
 						replace="\1"
 					/>
 
