@@ -2747,7 +2747,7 @@ log.sanitizer.enabled=false</echo>
 
 						<for delimiter="${line.separator}" list="${test.class.map}" param="project.info.line">
 							<sequential>
-								<var name="project.test.name" unset="true" />
+								<var name="project.name" unset="true" />
 								<var name="project.test.commands" unset="true" />
 								<var name="test.project.results.dir" unset="true" />
 								<var name="test.list.size" unset="true" />
