@@ -946,6 +946,7 @@ information.
 									String testName = project.getProperty("test.name");
 
 									if ((testName != null) && !testName.isEmpty()) {
+										sb.append(" ");
 										sb.append(testName);
 									}
 
