@@ -2608,7 +2608,6 @@ log.sanitizer.enabled=false</echo>
 			<trycatch property="test.failure.message">
 				<try>
 					<sequential>
-
 						<beanshell>
 							<![CDATA[
 								import com.liferay.jenkins.results.parser.GitWorkingDirectory;
@@ -2669,7 +2668,7 @@ log.sanitizer.enabled=false</echo>
 										modulesTestMap.put(projectName, testList);
 									}
 									else {
-										List currentTestList = testMap.get(projectName);
+										List currentTestList = modulesTestMap.get(projectName);
 
 										if (!currentTestList.contains(testName)) {
 											currentTestList.add(testName);
