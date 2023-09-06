@@ -2683,7 +2683,11 @@ log.sanitizer.enabled=false</echo>
 
 								String testClassGroup = "@{test.class.group}";
 
+								System.out.println("test class group : " + testClassGroup);
+
 								String[] testClassList = testClassGroup.split(",");
+
+								System.out.println("test class list : " + testClassList);
 
 								Map modulesTestMap = new HashMap();
 
@@ -2698,10 +2702,12 @@ log.sanitizer.enabled=false</echo>
 
 									String testProjectName = getTestProjectName(testClassFile.toString());
 
-									String testName = getTestName(file.toString());
+									String testName = getTestName(testClassFile.toString());
 
 									addProjectToMap(testProjectName, testName, modulesTestMap);
 								}
+
+								System.out.println("modules test map : " + modulesTestMap);
 
 								File mapFile = new File(project.getProperty("project.dir") + "/projectTestMap.txt");
 
