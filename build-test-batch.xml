@@ -2602,12 +2602,12 @@ log.sanitizer.enabled=false</echo>
 		<element implicit="true" name="args" optional="true" />
 
 		<sequential>
+			<var name="test.class.java.path" unset="true" />
 			<var name="test.timeout" unset="true" />
 
 			<trycatch property="test.failure.message">
 				<try>
 					<sequential>
-						<local name="test.class.java.path" />
 
 						<beanshell>
 							<![CDATA[
