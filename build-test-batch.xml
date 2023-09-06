@@ -2602,18 +2602,12 @@ log.sanitizer.enabled=false</echo>
 		<element implicit="true" name="args" optional="true" />
 
 		<sequential>
+			<var name="test.class.java.path" unset="true" />
 			<var name="test.timeout" unset="true" />
-			<var name="test.class.path" unset="true" />
 
 			<trycatch property="test.failure.message">
 				<try>
 					<sequential>
-						<var name="test.name" unset="true" />
-						<var name="test.project.name" unset="true" />
-						<var name="test.project.results.dir" unset="true" />
-
-						<local name="test.class.java.path" />
-
 						<beanshell>
 							<![CDATA[
 								import com.liferay.jenkins.results.parser.GitWorkingDirectory;
@@ -2674,7 +2668,7 @@ log.sanitizer.enabled=false</echo>
 										modulesTestMap.put(projectName, testList);
 									}
 									else {
-										List currentTestList = testMap.get(projectName);
+										List currentTestList = modulesTestMap.get(projectName);
 
 										if (!currentTestList.contains(testName)) {
 											currentTestList.add(testName);
@@ -2703,7 +2697,7 @@ log.sanitizer.enabled=false</echo>
 
 									String testProjectName = getTestProjectName(testClassFile.toString());
 
-									String testName = getTestName(file.toString());
+									String testName = getTestName(testClassFile.toString());
 
 									addProjectToMap(testProjectName, testName, modulesTestMap);
 								}
@@ -2745,9 +2739,9 @@ log.sanitizer.enabled=false</echo>
 							srcFile="${project.dir}/projectTestMap.txt"
 						/>
 
-						<for delimiter="${line.separator}" list="${test.class.map}" param="projectName">
+						<for delimiter="${line.separator}" list="${test.class.map}" param="project.info.line">
 							<sequential>
-								<var name="project.test.name" unset="true" />
+								<var name="project.name" unset="true" />
 								<var name="project.test.commands" unset="true" />
 								<var name="test.project.results.dir" unset="true" />
 								<var name="test.list.size" unset="true" />
@@ -2755,28 +2749,28 @@ log.sanitizer.enabled=false</echo>
 								<var name="test.class.tests.timeout.seconds" unset="true" />
 
 								<propertyregex
-									property="project.test.name"
-									input="@{projectName}"
+									property="project.name"
+									input="@{project.info.line}"
 									regexp="(.*)>(.*)>(.*)"
 									select="\1"
 								/>
 
 								<propertyregex
 									property="project.test.commands"
-									input="@{projectName}"
+									input="@{project.info.line}"
 									regexp="(.*)>(.*)>(.*)"
 									select="\2"
 								/>
 
 								<propertyregex
 									property="test.list.size"
-									input="@{projectName}"
+									input="@{project.info.line}"
 									regexp="(.*)>(.*)>(.*)"
 									select="\3"
 								/>
 
 								<propertyregex
-									input="${project.dir}/modules${testProject}/test-results"
+									input="${project.dir}/modules${project.name}/test-results"
 									override="true"
 									property="test.project.results.dir"
 									regexp=":"
@@ -2799,8 +2793,8 @@ log.sanitizer.enabled=false</echo>
 									result="test.class.tests.timeout.seconds"
 								/>
 
-								<limit failonerror="true" maxwait="${test.class.tests.timeout.seconds}" property="test.timeout" value="FAILURE: ${testProject}:@{test.task} ${testCommands} failed to complete in ${test.class.tests.timeout.minutes} minutes">
-									<gradle-execute dir="modules" task="${testProject}:@{test.task}" test.name="${testCommands}">
+								<limit failonerror="true" maxwait="${test.class.tests.timeout.seconds}" property="test.timeout" value="FAILURE: ${project.name}:@{test.task} ${project.test.commands} failed to complete in ${test.class.tests.timeout.minutes} minutes">
+									<gradle-execute dir="modules" task="${project.name}:@{test.task}" test.name="${project.test.commands}">
 									</gradle-execute>
 								</limit>
 
