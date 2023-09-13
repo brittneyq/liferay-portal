@@ -2198,6 +2198,10 @@ rerun your task.
 		</if>
 	</target>
 
+	<target name="gradle-execute-modules">
+		<gradle-execute dir="${dir}" test.name="${test.name}" task="${test.task}"/>
+	</target>
+	
 	<target name="print-properties">
 		<echoproperties />
 	</target>
