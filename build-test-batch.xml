@@ -2781,7 +2781,7 @@ log.sanitizer.enabled=false</echo>
 
 									System.out.println("PROJECT RESULTS DIR : " + getTestProjectResultsDir(modulesName));
 
-									int timeout = Integer.parseInt("test.class.timeout.minutes");
+									int timeout = Integer.parseInt(project.getProperty("test.class.timeout.minutes"));
 
 									System.out.println("timeout : " + timeout);
 
