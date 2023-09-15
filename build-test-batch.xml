@@ -2610,6 +2610,7 @@ log.sanitizer.enabled=false</echo>
 					<sequential>
 						<beanshell>
 							<![CDATA[
+								import com.liferay.jenkins.results.parser.AntUtil;
 								import com.liferay.jenkins.results.parser.GitWorkingDirectory;
 								import com.liferay.jenkins.results.parser.GitWorkingDirectoryFactory;
 								import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -2622,6 +2623,14 @@ log.sanitizer.enabled=false</echo>
 								import java.nio.file.attribute.BasicFileAttributes;
 
 								import java.util.Properties;
+								import java.util.concurrent.Callable;
+								import java.util.concurrent.ExecutionException;
+								import java.util.concurrent.ExecutorService;
+								import java.util.concurrent.Executors;
+								import java.util.concurrent.Future;
+								import java.util.concurrent.InterruptedException;
+								import java.util.concurrent.TimeUnit;
+								import java.util.concurrent.TimeoutException;
 								import java.util.regex.Matcher;
 								import java.util.regex.Pattern;
 
@@ -2659,6 +2668,10 @@ log.sanitizer.enabled=false</echo>
 									return null;
 								}
 
+								public static File getTestProjectResultsDir(String testProjectName) {
+									return new File(project.getProperty("project.dir") + "/modules/" + testProjectName.replaceAll(":", "/") + "/test-results/");
+								}
+
 								public static void addProjectToMap(String projectName, String testName, Map modulesTestMap){
 									if (!modulesTestMap.containsKey(projectName)) {
 										List testList = new ArrayList();
@@ -2678,9 +2691,41 @@ log.sanitizer.enabled=false</echo>
 									}
 								}
 
+								public static String getTestResultFileName(File file){
+									Pattern pattern = Pattern.compile("TEST-.*.xml");
+
+									Matcher matcher = pattern.matcher(file.toString());
+
+									if(matcher.find()){
+										return matcher.group(0);
+									}
+
+									return null;
+								}
+
+								public static void moveTestResultFiles(File testProjectResultsDir) throws IOException {
+									String[] globList = {"**/TEST-**.xml"};
+									List fileList = JenkinsResultsParserUtil.getIncludedFiles(testProjectResultsDir, null, globList);
+
+									String testResultsDir = "/opt/dev/projects/github/liferay-portal/modules/test-results";
+									for (File resultFile : fileList){
+										String testResultFileName = getTestResultFileName(resultFile);
+
+										File destinationFile = new File(testResultsDir + "/" + testResultFileName);
+
+										JenkinsResultsParserUtil.copy(resultFile, destinationFile);
+
+										if (resultFile.delete()) {
+											System.out.println("deleted :" + resultFile.getName());
+										}
+									}
+								}
+
 								File projectDir = new File(project.getProperty("project.dir"));
 
-								String testClassGroup = "@{test.class.group}";
+								String testClassGroup = project.getProperty("test.class.group");
+
+								System.out.println("TEST CLASS GROUP : " + testClassGroup);
 
 								String[] testClassList = testClassGroup.split(",");
 
@@ -2689,6 +2734,8 @@ log.sanitizer.enabled=false</echo>
 								File baseDir = getPortalGitWorkingDirectory();
 
 								for (String testClass : testClassList){
+									System.out.println("test class: " + testClass);
+
 									testClass = testClass.replaceAll("\\.class", "\\.java");
 
 									project.setProperty("test.class.java.path", testClass);
@@ -2697,120 +2744,54 @@ log.sanitizer.enabled=false</echo>
 
 									String testProjectName = getTestProjectName(testClassFile.toString());
 
+									System.out.println("test project Name : " + testProjectName);
+
 									String testName = getTestName(testClassFile.toString());
 
 									addProjectToMap(testProjectName, testName, modulesTestMap);
 								}
 
-								File mapFile = new File(project.getProperty("project.dir") + "/projectTestMap.txt");
+								System.out.println("MODULES TEST MAP : " + modulesTestMap);
 
-								if (mapFile.exists()) {
-									mapFile.delete();
+								for (Map.Entry modulesTestEntry : modulesTestMap.entrySet()){
+									Map parameters = new HashMap();
 
-									mapFile.createNewFile();
-								}
+									List modulesTestList = modulesTestEntry.getValue();
 
-								for (Map.Entry projectInfo : modulesTestMap.entrySet()){
-									List testList = projectInfo.getValue();
+									String modulesName = modulesTestEntry.getKey();
 
-									String projectKey = projectInfo.getKey();
+									parameters.put("test.task", modulesName + ":test");
 
 									StringBuilder sb = new StringBuilder();
-									sb.append(projectKey);
-									sb.append(">");
 
-									for (String test : testList) {
+									int testCount = 1;
+
+									for (String test : modulesTestList) {
 										sb.append("--tests ");
 										sb.append(test);
 										sb.append(" ");
+										testCount++;
 									}
 
-									sb.append(">");
-									sb.append(testList.size());
-									sb.append("\n");
+									parameters.put("test.name", sb.toString());
 
-									JenkinsResultsParserUtil.append(mapFile, sb.toString());
+									parameters.put("dir", "modules");
+
+									System.out.println("parameters : " + parameters);
+
+									System.out.println("PROJECT RESULTS DIR : " + getTestProjectResultsDir(modulesName));
+
+									int timeout = Integer.parseInt("test.class.timeout.minutes");
+
+									System.out.println("timeout : " + timeout);
+
+									AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, timeout+testCount);
+
+									moveTestResultFiles(getTestProjectResultsDir(modulesName));
+
 								}
 							]]>
 						</beanshell>
-
-						<loadfile
-							property="test.class.map"
-							srcFile="${project.dir}/projectTestMap.txt"
-						/>
-
-						<for delimiter="${line.separator}" list="${test.class.map}" param="project.info.line">
-							<sequential>
-								<var name="project.name" unset="true" />
-								<var name="project.test.commands" unset="true" />
-								<var name="test.project.results.dir" unset="true" />
-								<var name="test.list.size" unset="true" />
-								<var name="test.class.tests.timeout.minutes" unset="true" />
-								<var name="test.class.tests.timeout.seconds" unset="true" />
-
-								<propertyregex
-									property="project.name"
-									input="@{project.info.line}"
-									regexp="(.*)>(.*)>(.*)"
-									select="\1"
-								/>
-
-								<propertyregex
-									property="project.test.commands"
-									input="@{project.info.line}"
-									regexp="(.*)>(.*)>(.*)"
-									select="\2"
-								/>
-
-								<propertyregex
-									property="test.list.size"
-									input="@{project.info.line}"
-									regexp="(.*)>(.*)>(.*)"
-									select="\3"
-								/>
-
-								<propertyregex
-									input="${project.dir}/modules${project.name}/test-results"
-									override="true"
-									property="test.project.results.dir"
-									regexp=":"
-									replace="/"
-								/>
-
-								<math
-									datatype="int"
-									operand1="${test.class.timeout.minutes}"
-									operand2="${test.list.size}"
-									operation="+"
-									result="test.class.tests.timeout.minutes"
-								/>
-
-								<math
-									datatype="int"
-									operand1="${test.class.tests.timeout.minutes}"
-									operand2="60"
-									operation="*"
-									result="test.class.tests.timeout.seconds"
-								/>
-
-								<limit failonerror="true" maxwait="${test.class.tests.timeout.seconds}" property="test.timeout" value="FAILURE: ${project.name}:@{test.task} ${project.test.commands} failed to complete in ${test.class.tests.timeout.minutes} minutes">
-									<gradle-execute dir="modules" task="${project.name}:@{test.task}" test.name="${project.test.commands}">
-									</gradle-execute>
-								</limit>
-
-								<move
-									flatten="true"
-									todir="modules/test-results"
-								>
-									<fileset
-										dir="${test.project.results.dir}"
-										includes="**/TEST-*.xml"
-									/>
-								</move>
-							</sequential>
-						</for>
-
-						<delete file="${project.dir}/projectTestMap.txt" />
 					</sequential>
 				</try>
 				<catch>
