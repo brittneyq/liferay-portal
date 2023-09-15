@@ -2753,6 +2753,8 @@ log.sanitizer.enabled=false</echo>
 
 								System.out.println("MODULES TEST MAP : " + modulesTestMap);
 
+								String task = project.getProperty("test.task");
+
 								for (Map.Entry modulesTestEntry : modulesTestMap.entrySet()){
 									Map parameters = new HashMap();
 
@@ -2760,7 +2762,7 @@ log.sanitizer.enabled=false</echo>
 
 									String modulesName = modulesTestEntry.getKey();
 
-									parameters.put("test.task", modulesName + ":test");
+									parameters.put("test.task", modulesName + ":" + task);
 
 									StringBuilder sb = new StringBuilder();
 
