@@ -2597,7 +2597,7 @@ log.sanitizer.enabled=false</echo>
 
 	<macrodef name="run-modules-junit-test">
 		<attribute name="test.class.group" />
-		<attribute name="test.task" />
+		<attribute name="test.task"/>
 
 		<element implicit="true" name="args" optional="true" />
 
@@ -2753,8 +2753,6 @@ log.sanitizer.enabled=false</echo>
 
 								System.out.println("MODULES TEST MAP : " + modulesTestMap);
 
-								String task = project.getProperty("test.task");
-
 								for (Map.Entry modulesTestEntry : modulesTestMap.entrySet()){
 									Map parameters = new HashMap();
 
@@ -2762,7 +2760,7 @@ log.sanitizer.enabled=false</echo>
 
 									String modulesName = modulesTestEntry.getKey();
 
-									parameters.put("test.task", modulesName + ":" + task);
+									parameters.put("test.task", modulesName + ":" + "@{test.task}");
 
 									StringBuilder sb = new StringBuilder();
 
