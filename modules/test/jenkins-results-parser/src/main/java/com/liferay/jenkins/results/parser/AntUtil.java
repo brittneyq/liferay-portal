@@ -234,7 +234,7 @@ public class AntUtil {
 			});
 
 		try {
-			System.out.println(future.get(timeout, TimeUnit.MINUTES));
+			future.get(timeout, TimeUnit.MINUTES);
 		}
 		catch (TimeoutException timeoutException) {
 			System.err.println(
