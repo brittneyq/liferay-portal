@@ -2785,7 +2785,9 @@ log.sanitizer.enabled=false</echo>
 
 									System.out.println("timeout : " + timeout);
 
-									AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, timeout+testCount);
+									System.out.println("timeout plus test count : " + 10+testCount);
+
+									AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, 10+testCount);
 
 									moveTestResultFiles(getTestProjectResultsDir(modulesName));
 
