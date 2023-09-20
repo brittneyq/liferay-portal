@@ -217,8 +217,10 @@ public class AntUtil {
 	}
 
 	public static void callTargetWithTimeout(
-		final File baseDir, final String buildFileName, final String targetName,
-		final Map<String, String> parameters, int timeout) {
+			final File baseDir, final String buildFileName,
+			final String targetName, final Map<String, String> parameters,
+			int timeout, boolean runningModulesTests)
+		throws AntException, IOException {
 
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -247,8 +249,17 @@ public class AntUtil {
 		catch (InterruptedException interruptedException) {
 			interruptedException.printStackTrace();
 		}
+		finally {
+			if (runningModulesTests) {
+				String projectName = parameters.get("test.task");
 
-		executor.shutdownNow();
+				JenkinsResultsParserUtil.moveTestResultFiles(
+					JenkinsResultsParserUtil.getProjectTestResultDir(
+						projectName, baseDir));
+			}
+
+			executor.shutdownNow();
+		}
 	}
 
 }
