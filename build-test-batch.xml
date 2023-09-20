@@ -2602,7 +2602,7 @@ log.sanitizer.enabled=false</echo>
 		<element implicit="true" name="args" optional="true" />
 
 		<sequential>
-			<var name="test.class.java.path" unset="true" />
+			<var name="modules.test.class.name" unset="true" />
 			<var name="test.timeout" unset="true" />
 
 			<trycatch property="test.failure.message">
@@ -2708,8 +2708,6 @@ log.sanitizer.enabled=false</echo>
 
 									testClass = testClass.replaceAll("\\.class", "\\.java");
 
-									project.setProperty("test.class.java.path", testClass);
-
 									File testClassFile = JenkinsResultsParserUtil.getFileFromPathSnippet(projectDir, testClass);
 
 									String testProjectName = getTestProjectName(testClassFile.toString());
@@ -2729,6 +2727,8 @@ log.sanitizer.enabled=false</echo>
 									List modulesTestList = modulesTestEntry.getValue();
 
 									String modulesName = modulesTestEntry.getKey();
+
+									project.setProperty("modules.test.class.name");
 
 									parameters.put("test.task", modulesName + ":" + "@{test.task}");
 
@@ -2792,19 +2792,11 @@ log.sanitizer.enabled=false</echo>
 					<local name="test.class.name" />
 
 					<propertyregex
-						input="${test.class.java.path}"
-						override="true"
-						property="test.class.name"
-						regexp="(.*)\.java"
-						replace="\1"
-					/>
-
-					<propertyregex
 						global="true"
-						input="${test.class.name}"
+						input="${modules.test.class.name}"
 						override="true"
 						property="test.class.name"
-						regexp="/"
+						regexp=":"
 						replace="."
 					/>
 
