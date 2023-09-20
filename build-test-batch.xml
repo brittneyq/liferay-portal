@@ -2597,7 +2597,7 @@ log.sanitizer.enabled=false</echo>
 
 	<macrodef name="run-modules-junit-test">
 		<attribute name="test.class.group" />
-		<attribute name="test.task"/>
+		<attribute name="test.task" />
 
 		<element implicit="true" name="args" optional="true" />
 
@@ -2691,36 +2691,6 @@ log.sanitizer.enabled=false</echo>
 									}
 								}
 
-								public static String getTestResultFileName(File file){
-									Pattern pattern = Pattern.compile("TEST-.*.xml");
-
-									Matcher matcher = pattern.matcher(file.toString());
-
-									if(matcher.find()){
-										return matcher.group(0);
-									}
-
-									return null;
-								}
-
-								public static void moveTestResultFiles(File testProjectResultsDir) throws IOException {
-									String[] globList = {"**/TEST-**.xml"};
-									List fileList = JenkinsResultsParserUtil.getIncludedFiles(testProjectResultsDir, null, globList);
-
-									String testResultsDir = "/opt/dev/projects/github/liferay-portal/modules/test-results";
-									for (File resultFile : fileList){
-										String testResultFileName = getTestResultFileName(resultFile);
-
-										File destinationFile = new File(testResultsDir + "/" + testResultFileName);
-
-										JenkinsResultsParserUtil.copy(resultFile, destinationFile);
-
-										if (resultFile.delete()) {
-											System.out.println("deleted :" + resultFile.getName());
-										}
-									}
-								}
-
 								File projectDir = new File(project.getProperty("project.dir"));
 
 								String testClassGroup = project.getProperty("test.class.group");
@@ -2789,9 +2759,12 @@ log.sanitizer.enabled=false</echo>
 
 									System.out.println("timeout plus test count : " + timeout);
 
-									AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, timeout);
-
-									moveTestResultFiles(getTestProjectResultsDir(modulesName));
+									try{
+										AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, timeout, true);
+									}
+									catch(Exception exception){
+										throw new RuntimeException("Unable to run gradle execute modules target.");
+									}
 
 								}
 							]]>
