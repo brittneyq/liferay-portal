@@ -2106,6 +2106,16 @@ rerun your task.
 		</java>
 	</target>
 
+	<target name="generate-backend-batch-junit-report-modules">
+		<generate-backend-batch-junit-report
+			junit.failure.count="1"
+			junit.failure.message.element="Failed to run."
+			test.class.name="${test.class.name}"
+			test.command.name="testCompile"
+			test.results.dir="modules/test-results"
+		/>
+	</target>
+
 	<target name="generate-code-coverage-report">
 		<delete dir="${jacoco.report.folder}" />
 		<mkdir dir="${jacoco.report.folder}" />
@@ -2199,9 +2209,9 @@ rerun your task.
 	</target>
 
 	<target name="gradle-execute-modules">
-		<gradle-execute dir="${dir}" test.name="${test.name}" task="${test.task}"/>
+		<gradle-execute dir="${dir}" task="${test.task}" test.name="${test.name}" />
 	</target>
-	
+
 	<target name="print-properties">
 		<echoproperties />
 	</target>
