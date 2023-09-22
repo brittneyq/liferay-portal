@@ -2794,7 +2794,7 @@ log.sanitizer.enabled=false</echo>
 							System.out.println("timeout plus test count : " + timeout);
 
 							try{
-								AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, 13, true);
+								AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, timeout, true);
 							}
 							catch(Exception exception){
 								throw new RuntimeException("Unable to run gradle execute modules target.");
