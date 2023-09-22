@@ -2109,7 +2109,7 @@ rerun your task.
 	<target name="generate-backend-batch-junit-report-modules">
 		<generate-backend-batch-junit-report
 			junit.failure.count="1"
-			junit.failure.message.element="Failed to run."
+			junit.failure.message.element="&lt;failure message=&quot;Failed to run test on CI&quot; /&gt;"
 			test.class.name="${test.class.name}"
 			test.command.name="testCompile"
 			test.results.dir="modules/test-results"
