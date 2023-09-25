@@ -3707,7 +3707,8 @@ public class JenkinsResultsParserUtil {
 		}
 	}
 
-	public static void moveTestResultFiles(File testProjectResultsDir)
+	public static void moveTestResultFiles(
+			File testProjectResultsDir, File baseDir)
 		throws IOException {
 
 		String[] globList = {"**/TEST-**.xml"};
@@ -3715,10 +3716,13 @@ public class JenkinsResultsParserUtil {
 		List<File> fileList = getIncludedFiles(
 			testProjectResultsDir, null, globList);
 
-		String testResultsDir =
-			"/opt/dev/projects/github/liferay-portal/modules/test-results";
+		String baseDirString = baseDir.toString();
+
+		String testResultsDir = baseDirString + "/modules/test-results";
 
 		System.out.println("file list : " + fileList);
+
+		System.out.println("test results dir : " + testResultsDir);
 
 		for (File resultFile : fileList) {
 			String testResultFileName = getTestResultFileName(resultFile);

@@ -255,7 +255,8 @@ public class AntUtil {
 
 				JenkinsResultsParserUtil.moveTestResultFiles(
 					JenkinsResultsParserUtil.getProjectTestResultDir(
-						projectName, baseDir));
+						projectName, baseDir),
+					baseDir);
 			}
 
 			executor.shutdownNow();
