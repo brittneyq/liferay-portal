@@ -241,7 +241,7 @@ public class AntUtil {
 		catch (TimeoutException timeoutException) {
 			System.err.println(
 				"FAILURE: Unable to run " + targetName + " with " + parameters +
-					"in " + timeout + " minutes.");
+					" in " + timeout + " minutes.");
 		}
 		catch (ExecutionException executionException) {
 			executionException.printStackTrace();

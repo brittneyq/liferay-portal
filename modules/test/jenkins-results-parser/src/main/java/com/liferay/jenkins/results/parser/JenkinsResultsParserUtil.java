@@ -3716,21 +3716,13 @@ public class JenkinsResultsParserUtil {
 		List<File> fileList = getIncludedFiles(
 			testProjectResultsDir, null, globList);
 
-		String baseDirString = baseDir.toString();
-
-		String testResultsDir = baseDirString + "/modules/test-results";
-
-		System.out.println("file list : " + fileList);
-
-		System.out.println("test results dir : " + testResultsDir);
+		String testResultsDir = baseDir.toString() + "/modules/test-results";
 
 		for (File resultFile : fileList) {
 			String testResultFileName = getTestResultFileName(resultFile);
 
 			File destinationFile = new File(
 				testResultsDir + "/" + testResultFileName);
-
-			System.out.println("destination file : " + destinationFile);
 
 			copy(resultFile, destinationFile);
 
