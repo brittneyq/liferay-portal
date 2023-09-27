@@ -110,32 +110,45 @@ public class PortalRelease {
 			throw new RuntimeException("Invalid URL " + bundleURL);
 		}
 
+		System.out.println("BUNDLE URL MATCHER : " + bundleURLMatcher.group());
+
 		String portalVersion = null;
 
 		String bundleFileName = bundleURLMatcher.group("bundleFileName");
+
+		System.out.println("BUNDLE FILE NAME : " + bundleFileName);
 
 		Matcher bundleFileNameMatcher = _bundleFileNamePattern.matcher(
 			bundleFileName);
 
 		if (bundleFileNameMatcher.find()) {
 			portalVersion = bundleFileNameMatcher.group("portalVersion");
+
+			System.out.println("PORTAL VERSION : " + portalVersion);
 		}
 
 		String bundlesBaseURLString = bundleURLMatcher.group("bundlesBaseURL");
 
+		System.out.println("BUNDLES BASE URL STRING : " + bundlesBaseURLString);
+
 		if (portalVersion == null) {
-			Matcher bundlesBaseURLMatcher = _bundlesBaseURLPattern.matcher(
+			Matcher bundlesBaseURLMatcher = _bundlesBaseURLPattern.find(
 				bundlesBaseURLString);
 
-			if (!bundlesBaseURLMatcher.find()) {
+			if (bundlesBaseURLMatcher == null) {
 				throw new RuntimeException(
 					"Invalid bundle file name " + bundleFileName);
 			}
 
 			portalVersion = bundlesBaseURLMatcher.group("portalVersion");
+
+			System.out.println("PORTAL VERSION 2 : " + portalVersion);
 		}
 
 		_bundlesBaseURL = _getLocalURL(bundlesBaseURLString);
+
+		System.out.println("_BUNDLES BASE URL : " + _bundlesBaseURL);
+
 		_portalVersion = portalVersion;
 
 		_initializeURLs();
@@ -561,12 +574,19 @@ public class PortalRelease {
 			_pluginsWarZipURLString = pluginsWarZipURLString;
 		}
 
+		System.out.println(
+			"PLUGINS WAR ZIP URL STRING  : " + pluginsWarZipURLString);
+
 		String portalBundleGlassFishURLString =
 			_getURLStringFromBuildProperties("portal.bundle.glassfish");
 
 		if (JenkinsResultsParserUtil.isURL(portalBundleGlassFishURLString)) {
 			_portalBundleGlassFishURLString = portalBundleGlassFishURLString;
 		}
+
+		System.out.println(
+			"portal bundle glass URL STRING  : " +
+				portalBundleGlassFishURLString);
 
 		String portalBundleJBossURLString = _getURLStringFromBuildProperties(
 			"portal.bundle.jboss");
@@ -582,12 +602,19 @@ public class PortalRelease {
 			_portalBundleTomcatURLString = portalBundleTomcatURLString;
 		}
 
+		System.out.println(
+			"PORTAL BUNDLE TOMCAT URL STRING : " + portalBundleTomcatURLString);
+
 		String portalBundleWildFlyURLString = _getURLStringFromBuildProperties(
 			"portal.bundle.wildfly");
 
 		if (JenkinsResultsParserUtil.isURL(portalBundleWildFlyURLString)) {
 			_portalBundleWildFlyURLString = portalBundleWildFlyURLString;
 		}
+
+		System.out.println(
+			"PORTAL BUNDLE WILDFLY URL STRING : " +
+				portalBundleWildFlyURLString);
 
 		String portalDependenciesZipURLString =
 			_getURLStringFromBuildProperties("portal.dependencies.zip.url");
@@ -596,12 +623,18 @@ public class PortalRelease {
 			_portalDependenciesZipURLString = portalDependenciesZipURLString;
 		}
 
+		System.out.println(
+			"PORTAL DEPENDENCIES ZIP URL : " + portalDependenciesZipURLString);
+
 		String portalOSGiZipURLString = _getURLStringFromBuildProperties(
 			"portal.osgi.zip.url");
 
 		if (JenkinsResultsParserUtil.isURL(portalOSGiZipURLString)) {
 			_portalOSGiZipURLString = portalOSGiZipURLString;
 		}
+
+		System.out.println(
+			"PORTAL OSGI ZIP URL STRING : " + portalOSGiZipURLString);
 
 		String portalSQLZipURLString = _getURLStringFromBuildProperties(
 			"portal.sql.zip.url");
@@ -610,12 +643,18 @@ public class PortalRelease {
 			_portalSQLZipURLString = portalSQLZipURLString;
 		}
 
+		System.out.println(
+			"PORTAL SQL ZIP URL STRING : " + portalSQLZipURLString);
+
 		String portalToolsZipURLString = _getURLStringFromBuildProperties(
 			"portal.tools.zip.url");
 
 		if (JenkinsResultsParserUtil.isURL(portalToolsZipURLString)) {
 			_portalToolsZipURLString = portalToolsZipURLString;
 		}
+
+		System.out.println(
+			"PORTAL TOOLS ZIP STRING : " + portalToolsZipURLString);
 
 		String portalWarURLString = _getURLStringFromBuildProperties(
 			"portal.war.url");
@@ -624,8 +663,14 @@ public class PortalRelease {
 			_portalWarURLString = portalWarURLString;
 		}
 
+		System.out.println("PORTAL WAR URL STRING : " + portalWarURLString);
+
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(
 				_portalBundleTomcatURLString)) {
+
+			System.out.println(
+				"PORTAL BUNDLE TOMCAT URL STRING IS EMPTY : " +
+					_portalBundleTomcatURLString);
 
 			return;
 		}
@@ -635,6 +680,9 @@ public class PortalRelease {
 		try {
 			bundlesBaseURLContent = JenkinsResultsParserUtil.toString(
 				getBundlesBaseLocalURL() + "/", false, 0, 5, 0);
+
+			System.out.println(
+				"BUNDLES BASE URL CONTENT STRING : " + bundlesBaseURLContent);
 		}
 		catch (IOException ioException) {
 			return;
@@ -662,6 +710,9 @@ public class PortalRelease {
 			bundlesBaseURLContent, _portalToolsZipFileNamePattern);
 		_portalWarURLString = _getURLString(
 			bundlesBaseURLContent, _portalWarFileNamePattern);
+
+		System.out.println(
+			"_PORTALBUNDLETOMCATURLSTRING :  " + _portalBundleTomcatURLString);
 	}
 
 	private static final String[] _BASE_URL_STRINGS = {
@@ -675,10 +726,14 @@ public class PortalRelease {
 		"(?<portalVersion>\\d\\.([u\\d\\.]+)(-ee)?(-dxp-\\d+)?" +
 			"(\\-(ep|ga|rc|sp)\\d+)?)";
 
+	private static final String _QUARTERLY_RELEASE_VERSION_REGEX =
+		"(?<portalVersion>\\d+\\.([q\\d\\.]+))";
+
 	private static final Pattern _bundleFileNamePattern = Pattern.compile(
 		".+\\-" + _PORTAL_VERSION_REGEX + ".*\\.(7z|tar.gz|zip)");
-	private static final Pattern _bundlesBaseURLPattern = Pattern.compile(
-		"https?://.+/" + _PORTAL_VERSION_REGEX);
+	private static final MultiPattern _bundlesBaseURLPattern = new MultiPattern(
+		"https?://.+/" + _PORTAL_VERSION_REGEX,
+		"https?://.+/" + _QUARTERLY_RELEASE_VERSION_REGEX);
 	private static final Pattern _bundleURLPattern = Pattern.compile(
 		"(?<bundlesBaseURL>https?://.+)/(?<bundleFileName>[^\\/]+" +
 			"\\.(7z|tar.gz|zip))");
