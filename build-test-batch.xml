@@ -2743,7 +2743,7 @@ log.sanitizer.enabled=false</echo>
 
 							int testCount = 1;
 
-							for (String test : modulesTestList) {
+							for (String test : projectTestList) {
 								sb.append("--tests ");
 								sb.append(test);
 								sb.append(" ");
