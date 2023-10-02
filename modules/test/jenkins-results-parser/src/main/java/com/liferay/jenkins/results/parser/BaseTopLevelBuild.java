@@ -520,6 +520,22 @@ public abstract class BaseTopLevelBuild
 		return Collections.emptyList();
 	}
 
+	public String getReleaseRepositoryName() {
+		String portalBranchName = getParameterValue("TEST_PORTAL_BRANCH_NAME");
+
+		String portalReleaseVersion = getParameterValue(
+			"TEST_PORTAL_RELEASE_VERSION");
+
+		if ((portalBranchName.equals("master") &&
+			 !portalReleaseVersion.matches("\\d.+(-|.)(ga|u)\\d+")) ||
+			!portalBranchName.equals("master")) {
+
+			return "liferay-portal-ee";
+		}
+
+		return "liferay-portal";
+	}
+
 	@Override
 	public String getResult() {
 		if ((this.result == null) && (getBuildURL() != null)) {
@@ -675,6 +691,10 @@ public abstract class BaseTopLevelBuild
 		}
 
 		return false;
+	}
+
+	public boolean isReleaseBuild() {
+		return getJobName().equals("test-portal-release");
 	}
 
 	@Override
@@ -1316,11 +1336,19 @@ public abstract class BaseTopLevelBuild
 		String senderBranchSHA =
 			workspaceBranchInformation.getSenderBranchSHA();
 
-		GitHubRemoteGitCommit gitHubRemoteGitCommit =
-			GitCommitFactory.newGitHubRemoteGitCommit(
+		GitHubRemoteGitCommit gitHubRemoteGitCommit;
+
+		if (isReleaseBuild()) {
+			gitHubRemoteGitCommit = GitCommitFactory.newGitHubRemoteGitCommit(
+				workspaceBranchInformation.getSenderUsername(),
+				getReleaseRepositoryName(), senderBranchSHA);
+		}
+		else {
+			gitHubRemoteGitCommit = GitCommitFactory.newGitHubRemoteGitCommit(
 				workspaceBranchInformation.getSenderUsername(),
 				workspaceBranchInformation.getRepositoryName(),
 				senderBranchSHA);
+		}
 
 		return Dom4JUtil.getNewElement(
 			"div", null,
