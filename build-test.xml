@@ -2122,6 +2122,24 @@ war.path=${app.server.portal.dir}/</echo>
 		</sequential>
 	</macrodef>
 
+	<macrodef name="is-quarterly-release">
+		<sequential>
+			<if>
+				<and>
+					<equals arg1="${env.TEST_PORTAL_BRANCH_NAME}" arg2="master" />
+					<not>
+						<matches pattern="\d.+(-|.)(ga|u)\d+" string="${env.TEST_PORTAL_RELEASE_VERSION}" />
+					</not>
+				</and>
+				<then>
+					<property name="quarterly.release" value="true" />
+				</then>
+			</if>
+
+			<echo>QUARTERLY RELEASE : ${quarterly.release}</echo>
+		</sequential>
+	</macrodef>
+
 	<macrodef name="poshi-execute">
 		<attribute default="portal-web/build-test.gradle" name="build.gradle.file" />
 		<attribute default="${basedir}" name="build.gradle.dir" />
@@ -6821,12 +6839,17 @@ go</echo>
 				</else>
 			</if>
 
-			<property name="test.batch.name" unless:set="test.batch.name" value="${env.TEST_BATCH_NAME}" />
+			<if>
+				<contains string="${env.JOB_NAME}" substring="release" />
+				<then>
+					<is-quarterly-release/>
+				</then>
+			</if>
 
 			<if>
-				<contains string="test.batch.name" substring="release" />
+				<isset property="quarterly.release" />
 				<then>
-					<echo>TEST BATCH NAME EQUALS RELEASE</echo>
+					<echo>job name EQUALS RELEASE</echo>
 					<var name="app.server.tomcat.dir" value="${app.server.parent.dir}/tomcat" />
 					<var name="app.server.tomcat.bin.dir" value="${app.server.parent.dir}/tomcat/bin" />
 					<var name="app.server.tomcat.classes.portal.dir" value="${app.server.parent.dir}/tomcat/webapps/ROOT/WEB-INF/classes" />
@@ -10616,6 +10639,20 @@ org.apache.catalina.tribes.level = FINE]]>
 					/>
 					<mapper
 						from="[^/]+/(create.*)"
+						to="\1"
+						type="regexp"
+					/>
+				</unzip>
+
+				<unzip
+					dest="sql/"
+					src="sql/release-sql.zip"
+				>
+					<patternset
+						includes="**"
+					/>
+					<mapper
+						from="(create.*)"
 						to="\1"
 						type="regexp"
 					/>
