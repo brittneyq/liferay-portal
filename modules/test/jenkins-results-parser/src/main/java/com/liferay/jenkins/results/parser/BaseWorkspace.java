@@ -251,6 +251,20 @@ public abstract class BaseWorkspace implements Workspace {
 		);
 
 		try {
+			String workspaceDirNames =
+				JenkinsResultsParserUtil.removeDuplicates(
+					",",
+					JenkinsResultsParserUtil.getProperty(
+						JenkinsResultsParserUtil.getBuildProperties(),
+						"workspace.repository.dir.names",
+						_primaryWorkspaceGitRepository.getName(),
+						_primaryWorkspaceGitRepository.getUpstreamBranchName(),
+						jobName));
+
+			System.out.println(
+				"JSON OBJECT PUT workspace repository dir names : " +
+					workspaceDirNames);
+
 			jsonObject.put(
 				"workspace_repository_dir_names",
 				JenkinsResultsParserUtil.removeDuplicates(
@@ -275,6 +289,9 @@ public abstract class BaseWorkspace implements Workspace {
 	protected final JSONObject jsonObject;
 
 	private void _validateKeys() {
+		System.out.println("REQUIRED KEYS : " + _REQUIRED_KEYS);
+		System.out.println("JSON OBJECT : " + jsonObject);
+
 		for (String requiredKey : _REQUIRED_KEYS) {
 			if (!jsonObject.has(requiredKey)) {
 				throw new RuntimeException("Missing " + requiredKey);

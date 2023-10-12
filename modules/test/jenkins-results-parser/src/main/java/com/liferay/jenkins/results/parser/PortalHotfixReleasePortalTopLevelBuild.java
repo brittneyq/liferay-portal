@@ -290,6 +290,12 @@ public class PortalHotfixReleasePortalTopLevelBuild
 
 	@Override
 	public Workspace getWorkspace() {
+		System.out.println("WORKSPACE INFORMATION : ");
+		System.out.println(
+			"base git repository name : " + getBaseGitRepositoryName());
+		System.out.println("get branch name: " + getBranchName());
+		System.out.println("job name: " + getJobName());
+
 		Workspace workspace = WorkspaceFactory.newWorkspace(
 			getBaseGitRepositoryName(), getBranchName(), getJobName());
 
