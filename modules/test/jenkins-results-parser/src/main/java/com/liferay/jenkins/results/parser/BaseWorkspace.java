@@ -251,8 +251,22 @@ public abstract class BaseWorkspace implements Workspace {
 		);
 
 		try {
-			String workspaceDirNames =
-				JenkinsResultsParserUtil.removeDuplicates(
+			String workspaceDirNames = null;
+
+			if (PortalRelease.isQuarterlyRelease(upstreamBranchName)) {
+				workspaceDirNames = JenkinsResultsParserUtil.removeDuplicates(
+					",",
+					JenkinsResultsParserUtil.getProperty(
+						JenkinsResultsParserUtil.getBuildProperties(),
+						"workspace.repository.dir.names", "liferay-portal",
+						"master", jobName));
+
+				System.out.println(
+					"JSON OBJECT PUT workspace repository dir names : " +
+						workspaceDirNames);
+			}
+			else {
+				workspaceDirNames = JenkinsResultsParserUtil.removeDuplicates(
 					",",
 					JenkinsResultsParserUtil.getProperty(
 						JenkinsResultsParserUtil.getBuildProperties(),
@@ -261,20 +275,12 @@ public abstract class BaseWorkspace implements Workspace {
 						_primaryWorkspaceGitRepository.getUpstreamBranchName(),
 						jobName));
 
-			System.out.println(
-				"JSON OBJECT PUT workspace repository dir names : " +
-					workspaceDirNames);
+				System.out.println(
+					"JSON OBJECT PUT workspace repository dir names 2: " +
+						workspaceDirNames);
+			}
 
-			jsonObject.put(
-				"workspace_repository_dir_names",
-				JenkinsResultsParserUtil.removeDuplicates(
-					",",
-					JenkinsResultsParserUtil.getProperty(
-						JenkinsResultsParserUtil.getBuildProperties(),
-						"workspace.repository.dir.names",
-						_primaryWorkspaceGitRepository.getName(),
-						_primaryWorkspaceGitRepository.getUpstreamBranchName(),
-						jobName)));
+			jsonObject.put("workspace_repository_dir_names", workspaceDirNames);
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(ioException);
