@@ -28,9 +28,7 @@ public class PortalHotfixReleasePortalTopLevelBuild
 	public String getBaseGitRepositoryName() {
 		String branchName = getBranchName();
 
-		if (branchName.equals("master") &&
-			!PortalRelease.isQuarterlyRelease(branchName)) {
-
+		if (branchName.equals("master")) {
 			return "liferay-portal";
 		}
 
@@ -58,9 +56,9 @@ public class PortalHotfixReleasePortalTopLevelBuild
 			"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
 
 		if (PortalRelease.isQuarterlyRelease(portalVersion)) {
-			System.out.println("get branch name equals master");
+			System.out.println("get branch name is quarterly release");
 
-			return "master";
+			return portalVersion;
 		}
 
 		String majorVersion = matcher.group("majorVersion");
