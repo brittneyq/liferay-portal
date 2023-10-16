@@ -258,7 +258,7 @@ public abstract class BaseWorkspace implements Workspace {
 					",",
 					JenkinsResultsParserUtil.getProperty(
 						JenkinsResultsParserUtil.getBuildProperties(),
-						"workspace.repository.dir.names", "liferay-portal",
+						"workspace.repository.dir.names", "liferay-portal-ee",
 						"master", jobName));
 
 				System.out.println(

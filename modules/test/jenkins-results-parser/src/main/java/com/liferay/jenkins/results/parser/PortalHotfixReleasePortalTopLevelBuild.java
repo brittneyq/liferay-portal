@@ -56,7 +56,7 @@ public class PortalHotfixReleasePortalTopLevelBuild
 			"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
 
 		if (PortalRelease.isQuarterlyRelease(portalVersion)) {
-			return portalVersion;
+			return "master";
 		}
 
 		String majorVersion = matcher.group("majorVersion");
@@ -331,11 +331,11 @@ public class PortalHotfixReleasePortalTopLevelBuild
 			portalRepositoryName = "liferay-portal-ee";
 		}
 
+		String patcherPortalVersion = getParameterValue(
+			"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(portalBranchName) ||
 			JenkinsResultsParserUtil.isNullOrEmpty(portalBranchUsername)) {
-
-			String patcherPortalVersion = getParameterValue(
-				"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(patcherPortalVersion)) {
 				return null;
@@ -367,6 +367,13 @@ public class PortalHotfixReleasePortalTopLevelBuild
 
 			portalBranchUsername = "liferay";
 			portalBranchName = sb.toString();
+			portalRepositoryName = "liferay-portal-ee";
+		}
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(portalBranchName) &&
+			!JenkinsResultsParserUtil.isNullOrEmpty(portalBranchUsername) &&
+			PortalRelease.isQuarterlyRelease(patcherPortalVersion)) {
+
 			portalRepositoryName = "liferay-portal-ee";
 		}
 
