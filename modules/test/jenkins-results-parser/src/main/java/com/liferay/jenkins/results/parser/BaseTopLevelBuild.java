@@ -72,9 +72,7 @@ public abstract class BaseTopLevelBuild
 
 		System.out.println("PORTAL RELEASE VERSION : " + portalReleaseVersion);
 
-		if (JenkinsResultsParserUtil.isNullOrEmpty(portalBranchName) &&
-			JenkinsResultsParserUtil.isNullOrEmpty(portalReleaseVersion)) {
-
+		if (JenkinsResultsParserUtil.isNullOrEmpty(portalReleaseVersion)) {
 			String patcherPortalVersion = System.getenv(
 				"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
 
