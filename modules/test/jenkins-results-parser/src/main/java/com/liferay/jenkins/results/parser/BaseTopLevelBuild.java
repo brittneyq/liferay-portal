@@ -65,14 +65,22 @@ public abstract class BaseTopLevelBuild
 	public static String getReleaseRepositoryName() {
 		String portalBranchName = System.getenv("TEST_PORTAL_BRANCH_NAME");
 
+		System.out.println("PORTAL BRANCH NAME : " + portalBranchName);
+
 		String portalReleaseVersion = System.getenv(
 			"TEST_PORTAL_RELEASE_VERSION");
+
+		System.out.println("PORTAL RELEASE VERSION : " + portalReleaseVersion);
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(portalBranchName) &&
 			JenkinsResultsParserUtil.isNullOrEmpty(portalReleaseVersion)) {
 
 			String patcherPortalVersion = System.getenv(
 				"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
+
+			System.out.println(
+				"PATCHERBUILD PATCHER PORTAL VESRION : " +
+					patcherPortalVersion);
 
 			if (!JenkinsResultsParserUtil.isNullOrEmpty(patcherPortalVersion) &&
 				PortalRelease.isQuarterlyRelease(patcherPortalVersion)) {
