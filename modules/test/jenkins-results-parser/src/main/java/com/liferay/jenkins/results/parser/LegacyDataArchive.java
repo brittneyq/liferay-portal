@@ -8,7 +8,9 @@ package com.liferay.jenkins.results.parser;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Michael Hashimoto
@@ -17,6 +19,30 @@ public class LegacyDataArchive {
 
 	public String getDataArchiveType() {
 		return _dataArchiveType;
+	}
+
+	public String getFullDatabaseName(
+		String databaseName, String portalVersion, Properties properties) {
+
+		String batchNamesString = properties.getProperty(
+			"test.batch.names[" + portalVersion + "]");
+
+		List<String> batchNames = Arrays.asList(batchNamesString.split(","));
+
+		for (String batchName : batchNames) {
+			if (batchName.contains(databaseName)) {
+				String fullDatabaseName = batchName.substring(
+					batchName.indexOf(databaseName));
+
+				System.out.println("DATABASE NAME 1 : " + fullDatabaseName);
+
+				return fullDatabaseName;
+			}
+		}
+
+		System.out.println("DATABASE NAME 2: " + databaseName);
+
+		return databaseName;
 	}
 
 	public File getLegacyDataArchiveFile() {
@@ -88,13 +114,16 @@ public class LegacyDataArchive {
 		LegacyDataArchiveGroup legacyDataArchiveGroup, String databaseName) {
 
 		_legacyDataArchiveGroup = legacyDataArchiveGroup;
-		_databaseName = databaseName;
 
 		_legacyDataArchivePortalVersion =
 			legacyDataArchiveGroup.getLegacyDataArchivePortalVersion();
 
 		_legacyDataArchiveHelper =
 			_legacyDataArchivePortalVersion.getLegacyDataArchiveHelper();
+
+		_databaseName = getFullDatabaseName(
+			databaseName, _legacyDataArchivePortalVersion.getPortalVersion(),
+			_legacyDataArchiveHelper.getBuildProperties());
 
 		_legacyGitWorkingDirectory =
 			_legacyDataArchiveHelper.getLegacyGitWorkingDirectory();
@@ -110,6 +139,9 @@ public class LegacyDataArchive {
 				_legacyDataArchivePortalVersion.getPortalVersion(),
 				"/data-archive/", _dataArchiveType, "-", _databaseName,
 				".zip"));
+
+		System.out.println(
+			"LEGACY DATA ARCHIVE FILE : " + _legacyDataArchiveFile);
 	}
 
 	private final String _dataArchiveType;
