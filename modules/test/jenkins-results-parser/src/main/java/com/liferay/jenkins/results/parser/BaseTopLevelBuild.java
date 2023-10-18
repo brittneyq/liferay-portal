@@ -68,6 +68,19 @@ public abstract class BaseTopLevelBuild
 		String portalReleaseVersion = System.getenv(
 			"TEST_PORTAL_RELEASE_VERSION");
 
+		if (JenkinsResultsParserUtil.isNullOrEmpty(portalBranchName) &&
+			JenkinsResultsParserUtil.isNullOrEmpty(portalReleaseVersion)) {
+
+			String patcherPortalVersion = System.getenv(
+				"PATCHER_BUILD_PATCHER_PORTAL_VERSION");
+
+			if (!JenkinsResultsParserUtil.isNullOrEmpty(patcherPortalVersion) &&
+				PortalRelease.isQuarterlyRelease(patcherPortalVersion)) {
+
+				return "liferay-portal-ee";
+			}
+		}
+
 		if (PortalRelease.isQuarterlyRelease(portalReleaseVersion) ||
 			!portalBranchName.equals("master")) {
 
@@ -80,7 +93,7 @@ public abstract class BaseTopLevelBuild
 	public static boolean isReleaseBuild() {
 		String jobName = System.getenv("JOB_NAME");
 
-		return jobName.equals("test-portal-release");
+		return jobName.contains("release");
 	}
 
 	@Override
