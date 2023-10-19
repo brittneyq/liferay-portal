@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.Portal;
 
 /**
- * @author Preston Crary
+ * @author Preston Crarys
  */
 public class JournalArticleDDMFieldsUpgradeProcess extends UpgradeProcess {
 
