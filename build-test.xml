@@ -2070,6 +2070,8 @@ war.path=${app.server.portal.dir}/</echo>
 
 			<get-patch-requirements patch.file.zip.url="@{patch.file.zip.url}" />
 
+			<echo>patch requirements ${patch.requirements}</echo>
+
 			<if>
 				<and>
 					<not>
@@ -2113,10 +2115,18 @@ war.path=${app.server.portal.dir}/</echo>
 						</else>
 					</if>
 
-					<mirrors-get
-						dest="@{patching.tool.dir}/patches"
-						src="http://files.liferay.com/private/ee/fix-packs/${patch.portal.version}/dxp/liferay-fix-pack-${fixpack.build.name}.zip"
-					/>
+					<if>
+						<and>
+							<isset property="patch.portal.version" />
+							<isset property="fixpack.build.name" />
+						</and>
+						<then>
+							<mirrors-get
+								dest="@{patching.tool.dir}/patches"
+								src="http://files.liferay.com/private/ee/fix-packs/${patch.portal.version}/dxp/liferay-fix-pack-${fixpack.build.name}.zip"
+							/>
+						</then>
+					</if>
 				</then>
 			</if>
 		</sequential>
@@ -11203,6 +11213,8 @@ send_user $expect_out(buffer)]]></echo>
 						<install-patch-dependencies patch.file.zip.url="${patch.file.zip.url}" />
 					</then>
 				</if>
+
+				<echo>patch file zip url in install-patches : ${patch.file.zip.url}</echo>
 
 				<install-patch patch.file.zip.url="${patch.file.zip.url}" patching.tool.dir="${patching.tool.dir}" />
 
