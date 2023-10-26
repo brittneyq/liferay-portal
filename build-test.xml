@@ -8431,7 +8431,7 @@ war.path=${app.server.portal.dir}/</echo>
 			<propertyregex
 				input="@{patch.file.zip.url}"
 				property="patch.name"
-				regexp=".*liferay-(fix-pack-)?(.*-\d{4})(-build\d*)?(-src)?.zip"
+				regexp=".*liferay-(fix-pack-|dxp-\d{4}.q\d+.\d-)?(.*-\d{4}|.*\d+)(-build\d*)?(-src)?.zip"
 				replace="\2"
 			/>
 
