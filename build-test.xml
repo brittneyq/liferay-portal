@@ -2147,8 +2147,11 @@ war.path=${app.server.portal.dir}/</echo>
 			<if>
 				<and>
 					<contains string="${env.JOB_NAME}" substring="release" />
-					<equals arg1="${env.TEST_PORTAL_BRANCH_NAME}" arg2="master" />
-					<matches pattern="\d{4}.q\d+.\d+" string="${env.TEST_PORTAL_RELEASE_VERSION}" />
+					<or>
+						<matches pattern="\d{4}.q\d+.\d+" string="${env.TEST_PORTAL_RELEASE_VERSION}" />
+						<matches pattern="\d{4}.q\d+.\d+" string="${env.PATCHER_BUILD_PATCHER_PORTAL_VERSION}" />
+						<matches pattern="\d{4}.q\d+.\d+" string="${test.build.fix.pack.zip.url}" />
+					</or>
 				</and>
 				<then>
 					<property name="quarterly.release" value="true" />
@@ -3013,7 +3016,19 @@ tenantId=&quot;${ms.exchange.tenant.id}&quot;</echo>
 		<sequential>
 			<local name="patching.tool.version.url" />
 
-			<property name="patching.tool.version.url" value="${test.fix.pack.base.url}/patching-tool/${patching.tool.latest.txt}" />
+			<is-quarterly-release />
+
+			<if>
+				<isset property="quarterly.release" />
+				<then>
+					<property name="patching.tool.txt" value="LATEST-4.0.txt" />
+				</then>
+				<else>
+					<property name="patching.tool.txt" value="${patching.tool.latest.txt}" />
+				</else>
+			</if>
+
+			<property name="patching.tool.version.url" value="${test.fix.pack.base.url}/patching-tool/${patching.tool.txt}" />
 
 			<if>
 				<contains string="${patching.tool.version.url}" substring="mirrors.lax.liferay.com" />
@@ -3038,7 +3053,7 @@ tenantId=&quot;${ms.exchange.tenant.id}&quot;</echo>
 
 			<loadfile
 				property="patching.tool.version"
-				srcFile="${patching.tool.latest.txt}"
+				srcFile="${patching.tool.txt}"
 			>
 				<filterchain>
 					<striplinebreaks />
@@ -3076,7 +3091,7 @@ tenantId=&quot;${ms.exchange.tenant.id}&quot;</echo>
 				</fileset>
 			</chmod>
 
-			<delete file="${basedir}/${patching.tool.latest.txt}" />
+			<delete file="${basedir}/${patching.tool.txt}" />
 			<delete file="${basedir}/${patching.tool.name}" />
 		</sequential>
 	</macrodef>
