@@ -2145,14 +2145,11 @@ war.path=${app.server.portal.dir}/</echo>
 	<macrodef name="is-quarterly-release">
 		<sequential>
 			<if>
-				<and>
-					<contains string="${env.JOB_NAME}" substring="release" />
-					<or>
-						<matches pattern="\d{4}.q\d+.\d+" string="${env.TEST_PORTAL_RELEASE_VERSION}" />
-						<matches pattern="\d{4}.q\d+.\d+" string="${env.PATCHER_BUILD_PATCHER_PORTAL_VERSION}" />
-						<matches pattern="\d{4}.q\d+.\d+" string="${test.build.fix.pack.zip.url}" />
-					</or>
-				</and>
+				<or>
+					<matches pattern="\d{4}.q\d+.\d+" string="${env.TEST_PORTAL_RELEASE_VERSION}" />
+					<matches pattern="\d{4}.q\d+.\d+" string="${env.PATCHER_BUILD_PATCHER_PORTAL_VERSION}" />
+					<matches pattern="\d{4}.q\d+.\d+" string="${test.build.fix.pack.zip.url}" />
+				</or>
 				<then>
 					<property name="quarterly.release" value="true" />
 				</then>
