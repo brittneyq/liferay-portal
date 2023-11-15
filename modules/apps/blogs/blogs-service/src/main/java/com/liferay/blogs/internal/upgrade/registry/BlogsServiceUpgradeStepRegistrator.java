@@ -39,7 +39,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Adolfo Pérez
+ * @author Adolfo Pérezs
  */
 @Component(service = UpgradeStepRegistrator.class)
 public class BlogsServiceUpgradeStepRegistrator
