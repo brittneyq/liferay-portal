@@ -185,6 +185,9 @@ public class PortalReleasePortalTopLevelBuild
 			"TEST_PORTAL_REPOSITORY_NAME");
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(portalRepositoryName)) {
+			System.out.println(
+				"PORTAL REPOSITORY NAME IS : " + portalRepositoryName);
+
 			return portalRepositoryName;
 		}
 
