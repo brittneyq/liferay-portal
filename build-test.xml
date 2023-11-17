@@ -13634,6 +13634,24 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 					</fileset>
 				</chmod>
 
+				<dirset
+					dir="${app.server.parent.dir}"
+					id="tomcat.directory"
+				>
+					<include name="tomcat*" />
+				</dirset>
+
+				<property name="bundles.tomcat.dir" refid="tomcat.directory" />
+
+				<move
+					todir="${app.server.parent.dir}/tomcat"
+				>
+					<fileset
+						dir="${app.server.parent.dir}/${bundles.tomcat.dir}"
+						includes="**"
+					/>
+				</move>
+
 				<delete dir="${app.server.parent.dir}/logs" />
 
 				<mkdir dir="${app.server.parent.dir}/logs" />
