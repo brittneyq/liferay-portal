@@ -196,8 +196,15 @@ public class JobFactory {
 			"PORTAL_UPSTREAM_BRANCH_NAME");
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(portalUpstreamBranchName)) {
+			System.out.println(
+				"portal upstream branch name parameter was null");
+
 			portalUpstreamBranchName = topLevelBuild.getBranchName();
 		}
+
+		System.out.println(
+			"PORTAL UPSTREAM BRANCH NAME IN NEW JOB : " +
+				portalUpstreamBranchName);
 
 		return _newJob(
 			topLevelBuild.getBuildProfile(), topLevelBuild.getJobName(), null,

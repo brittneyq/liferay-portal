@@ -28,12 +28,24 @@ public class GitWorkingDirectoryFactory {
 		String gitRepositoryDirName = gitRepositoryName;
 
 		if (gitRepositoryDir == null) {
+			System.out.println(
+				"git repository dir is null and git repository name is : " +
+					gitRepositoryName);
+
 			if (gitRepositoryName.equals("liferay-portal") &&
 				!upstreamBranchName.equals("master")) {
 
 				gitRepositoryName += "-ee";
 
+				System.out.println(
+					"upstream branch name in git working dir : " +
+						upstreamBranchName);
+
 				gitRepositoryDirName = "liferay-portal-" + upstreamBranchName;
+
+				if (upstreamBranchName.contains("release")) {
+					gitRepositoryDirName = "liferay-portal-ee";
+				}
 			}
 
 			if (gitRepositoryName.startsWith("com-liferay-") &&
@@ -42,12 +54,21 @@ public class GitWorkingDirectoryFactory {
 				gitRepositoryDirName = gitRepositoryName + "-private";
 			}
 
+			System.out.println("setting git repository dir ..");
+
 			gitRepositoryDir = new File(
 				JenkinsResultsParserUtil.getBaseGitRepositoryDir(),
 				gitRepositoryDirName);
 		}
 
+		System.out.println("GIT REPOSITORY DIR is : " + gitRepositoryDir);
+		System.out.println("git repository name is : " + gitRepositoryName);
+
 		if (gitRepositoryName == null) {
+			System.out.println(
+				"git repository name is null and setting to :" +
+					gitRepositoryDir.getName());
+
 			gitRepositoryName = gitRepositoryDir.getName();
 		}
 
