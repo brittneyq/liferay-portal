@@ -1301,12 +1301,6 @@ public abstract class BaseBuild implements Build {
 		return Collections.emptyList();
 	}
 
-	public String getUpstreamBranchName() {
-		TopLevelBuild topLevelBuild = getTopLevelBuild();
-
-		return topLevelBuild.getParameterValue("GITHUB_UPSTREAM_BRANCH_NAME");
-	}
-
 	@Override
 	public List<TestResult> getUpstreamJobFailureTestResults() {
 		return Collections.emptyList();
@@ -2902,16 +2896,6 @@ public abstract class BaseBuild implements Build {
 
 		if (matcher.find()) {
 			_branchName = matcher.group("branchName");
-
-			if (_branchName.equals("release") &&
-				!JenkinsResultsParserUtil.isNullOrEmpty(
-					getUpstreamBranchName())) {
-
-				System.out.println(
-					"SETTING _BRANCH NAME : " + getUpstreamBranchName());
-
-				_branchName = getUpstreamBranchName();
-			}
 
 			return;
 		}
