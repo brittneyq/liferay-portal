@@ -24,6 +24,8 @@ public class BuildFactory {
 	public static Build newBuild(
 		String url, Build parentBuild, String jobVariant) {
 
+		System.out.println("url for new build is : " + url);
+
 		url = JenkinsResultsParserUtil.getLocalURL(url);
 
 		Matcher matcher = _buildURLMultiPattern.find(url);
@@ -38,6 +40,8 @@ public class BuildFactory {
 		if (jobVariant == null) {
 			jobVariant = "";
 		}
+
+		System.out.println("job variant : " + jobVariant);
 
 		if (axisVariable != null) {
 			if (JenkinsResultsParserUtil.isNullOrEmpty(jobVariant) &&
@@ -63,6 +67,8 @@ public class BuildFactory {
 		}
 
 		String jobName = matcher.group("jobName");
+
+		System.out.println("JOB NAME : " + jobName);
 
 		if (jobName.contains("-controller")) {
 			return new DefaultTopLevelBuild(url, (TopLevelBuild)parentBuild);
