@@ -475,8 +475,13 @@ public abstract class BaseTopLevelBuild
 	public File getJobSummaryDir() {
 		File jobSummaryDir = new File(getBuildDirPath(), "job-summary");
 
+		System.out.println("job summary dir : " + jobSummaryDir);
+
 		if (!jobSummaryDir.exists()) {
 			try {
+				System.out.println(
+					"write job summary report : " + jobSummaryDir);
+
 				CIJobSummaryReportUtil.writeJobSummaryReport(
 					jobSummaryDir, getJob());
 			}

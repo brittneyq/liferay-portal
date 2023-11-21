@@ -16,6 +16,8 @@ public class CIJobSummaryReportUtil {
 	public static void writeJobSummaryReport(File summaryDir, Job job)
 		throws IOException {
 
+		System.out.println("IN WRITE JOB SUMMARY REPORT : " + summaryDir);
+
 		if (!summaryDir.exists()) {
 			summaryDir.mkdirs();
 		}
@@ -35,6 +37,8 @@ public class CIJobSummaryReportUtil {
 		indexHTMLContent = indexHTMLContent.replace(
 			"<script src=\"js/job-data.js\"></script>",
 			"<script>\ndata=" + job.getJSONObject() + "\n</script>");
+
+		System.out.println("INDEX HTML CONTENT : " + indexHTMLContent);
 
 		JenkinsResultsParserUtil.write(
 			new File(summaryDir, "index.html"), indexHTMLContent);
