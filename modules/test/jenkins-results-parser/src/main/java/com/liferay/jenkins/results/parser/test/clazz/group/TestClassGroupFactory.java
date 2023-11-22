@@ -209,11 +209,19 @@ public class TestClassGroupFactory {
 	private static BatchTestClassGroup _newBatchTestClassGroup(
 		String batchName, Job job, JSONObject jsonObject) {
 
+		System.out.println("BATCH NAME in new btcg: " + batchName);
+		System.out.println("job name in new btcg: " + job.getJobName());
+		System.out.println("JSON OBJECT in new btcg: " + jsonObject);
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(batchName)) {
 			batchName = jsonObject.getString("batch_name");
+
+			System.out.println("batch name null or empty : " + batchName);
 		}
 
 		String key = JobFactory.getKey(job) + "_" + batchName;
+
+		System.out.println("KEY : " + key);
 
 		BatchTestClassGroup batchTestClassGroup = _batchTestClassGroups.get(
 			key);
@@ -236,6 +244,9 @@ public class TestClassGroupFactory {
 		if ((batchTestClassGroup == null) &&
 			(job instanceof PortalTestClassJob)) {
 
+			System.out.println(
+				"BTCG null and instance of portal test class job");
+
 			PortalTestClassJob portalTestClassJob = (PortalTestClassJob)job;
 
 			if (batchName.startsWith("functional-") ||
@@ -243,10 +254,16 @@ public class TestClassGroupFactory {
 				batchName.startsWith("subrepository-functional-")) {
 
 				if (jsonObject != null) {
+					System.out.println(
+						"json object is not null creating fbtcg");
+
 					batchTestClassGroup = new FunctionalBatchTestClassGroup(
 						jsonObject, portalTestClassJob);
 				}
 				else {
+					System.out.println(
+						"json object is null using batch name creating fbtcg");
+
 					batchTestClassGroup = new FunctionalBatchTestClassGroup(
 						batchName, portalTestClassJob);
 				}

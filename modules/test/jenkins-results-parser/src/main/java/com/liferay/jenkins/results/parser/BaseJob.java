@@ -845,6 +845,8 @@ public abstract class BaseJob implements Job {
 					jobProperty.getValue())) {
 
 				testBaseDir = new File(jobProperty.getValue());
+
+				System.out.println("TEST BASE DIR : " + testBaseDir);
 			}
 
 			Callable<BatchTestClassGroup> callable =
