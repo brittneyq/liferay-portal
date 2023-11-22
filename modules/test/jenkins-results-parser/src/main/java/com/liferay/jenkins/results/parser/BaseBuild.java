@@ -302,6 +302,8 @@ public abstract class BaseBuild implements Build {
 		sb.append("/");
 		sb.append(getBuildNumber());
 
+		System.out.println("get build dir path : " + sb.toString());
+
 		return sb.toString();
 	}
 

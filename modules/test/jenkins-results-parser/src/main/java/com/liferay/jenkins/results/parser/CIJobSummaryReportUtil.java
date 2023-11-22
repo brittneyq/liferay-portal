@@ -17,6 +17,8 @@ public class CIJobSummaryReportUtil {
 		throws IOException {
 
 		if (!summaryDir.exists()) {
+			System.out.println("summary dir does not exist");
+
 			summaryDir.mkdirs();
 		}
 
