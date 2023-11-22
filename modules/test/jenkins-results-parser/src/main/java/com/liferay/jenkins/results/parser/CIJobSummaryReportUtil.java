@@ -32,15 +32,21 @@ public class CIJobSummaryReportUtil {
 			"href=\"css/main.css\"",
 			JenkinsResultsParserUtil.combine(
 				"href=\"", _JOB_SUMMARY_RESOURCE_URL, "/css/main.css\""));
+
+		System.out.println("INDEX HTML CONTENT 2 : " + indexHTMLContent);
+
 		indexHTMLContent = indexHTMLContent.replace(
 			"src=\"js/main.js\"",
 			JenkinsResultsParserUtil.combine(
 				"src=\"", _JOB_SUMMARY_RESOURCE_URL, "/js/main.js\""));
+
+		System.out.println("INDEX HTML CONTENT 3 : " + indexHTMLContent);
+
 		indexHTMLContent = indexHTMLContent.replace(
 			"<script src=\"js/job-data.js\"></script>",
 			"<script>\ndata=" + job.getJSONObject() + "\n</script>");
 
-		System.out.println("INDEX HTML CONTENT 2: " + indexHTMLContent);
+		System.out.println("INDEX HTML CONTENT 4: " + indexHTMLContent);
 
 		JenkinsResultsParserUtil.write(
 			new File(summaryDir, "index.html"), indexHTMLContent);
