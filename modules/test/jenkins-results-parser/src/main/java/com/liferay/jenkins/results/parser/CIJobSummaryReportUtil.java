@@ -26,6 +26,8 @@ public class CIJobSummaryReportUtil {
 			JenkinsResultsParserUtil.getResourceFileContent(
 				"dependencies/job/summary/index.html");
 
+		System.out.println("INDEX HTML CONTENT : " + indexHTMLContent);
+
 		indexHTMLContent = indexHTMLContent.replace(
 			"href=\"css/main.css\"",
 			JenkinsResultsParserUtil.combine(

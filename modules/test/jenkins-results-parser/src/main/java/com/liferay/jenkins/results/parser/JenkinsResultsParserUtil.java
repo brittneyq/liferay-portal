@@ -3277,6 +3277,9 @@ public class JenkinsResultsParserUtil {
 				JenkinsResultsParserUtil.class.getResourceAsStream(
 					resourceName)) {
 
+			System.out.println(
+				"RESOURCE NAME IN RESOURCE FILE CONTENT : " + resourceName);
+
 			return readInputStream(resourceInputStream);
 		}
 	}
@@ -4094,6 +4097,9 @@ public class JenkinsResultsParserUtil {
 			InputStream inputStream, boolean resetAfterReading)
 		throws IOException {
 
+		System.out.println(
+			"INPUT STREAM IN READ INPUT STREAM : " + inputStream);
+
 		if (resetAfterReading && !inputStream.markSupported()) {
 			Class<?> inputStreamClass = inputStream.getClass();
 
@@ -4121,6 +4127,8 @@ public class JenkinsResultsParserUtil {
 		if (resetAfterReading && inputStream.markSupported()) {
 			inputStream.reset();
 		}
+
+		System.out.println("INPUT STREAM STRING : " + sb.toString());
 
 		return sb.toString();
 	}
