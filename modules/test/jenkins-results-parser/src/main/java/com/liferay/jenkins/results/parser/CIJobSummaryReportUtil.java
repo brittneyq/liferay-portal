@@ -40,6 +40,8 @@ public class CIJobSummaryReportUtil {
 			"<script src=\"js/job-data.js\"></script>",
 			"<script>\ndata=" + job.getJSONObject() + "\n</script>");
 
+		System.out.println("INDEX HTML CONTENT 2: " + indexHTMLContent);
+
 		JenkinsResultsParserUtil.write(
 			new File(summaryDir, "index.html"), indexHTMLContent);
 	}

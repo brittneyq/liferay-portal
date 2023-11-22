@@ -184,12 +184,20 @@ public class JenkinsResultsParserUtil {
 					String.valueOf(content.length())));
 		}
 
+		System.out.println("IN APPEND FOR file : " + file);
+
+		System.out.println("CONTENT : " + content);
+
 		File parentDir = file.getParentFile();
+
+		System.out.println("PARENT DIR : " + parentDir);
 
 		if ((parentDir != null) && !parentDir.exists()) {
 			if (debug) {
 				System.out.println("Make parent directories for " + file);
 			}
+
+			System.out.println("PARENT DIR IS NOT NULL OR DOESNT EXIST");
 
 			parentDir.mkdirs();
 		}
@@ -197,6 +205,8 @@ public class JenkinsResultsParserUtil {
 		try (OutputStream outputStream = Files.newOutputStream(
 				Paths.get(file.toURI()), StandardOpenOption.CREATE,
 				StandardOpenOption.APPEND)) {
+
+			System.out.println("OUTPUT STREAM WRITE CONTENT TO BYTES");
 
 			outputStream.write(content.getBytes());
 		}
@@ -4097,9 +4107,6 @@ public class JenkinsResultsParserUtil {
 			InputStream inputStream, boolean resetAfterReading)
 		throws IOException {
 
-		System.out.println(
-			"INPUT STREAM IN READ INPUT STREAM : " + inputStream);
-
 		if (resetAfterReading && !inputStream.markSupported()) {
 			Class<?> inputStreamClass = inputStream.getClass();
 
@@ -4127,8 +4134,6 @@ public class JenkinsResultsParserUtil {
 		if (resetAfterReading && inputStream.markSupported()) {
 			inputStream.reset();
 		}
-
-		System.out.println("INPUT STREAM STRING : " + sb.toString());
 
 		return sb.toString();
 	}
@@ -5503,7 +5508,11 @@ public class JenkinsResultsParserUtil {
 				"Write file " + file + " with length " + content.length());
 		}
 
+		System.out.println("WRITE in jrp : " + file);
+
 		if (file.exists()) {
+			System.out.println("FILE EXISTS... DELETING FILE");
+
 			file.delete();
 		}
 
