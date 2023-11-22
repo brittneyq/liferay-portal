@@ -2271,6 +2271,13 @@ public class GitWorkingDirectory {
 
 		setWorkingDirectory(workingDirectoryPath);
 
+		System.out.println(
+			"in gwd upstream branch name is : " + upstreamBranchName);
+		System.out.println(
+			"in gwd working directory path : " + workingDirectoryPath);
+		System.out.println(
+			"in gwd git repository name is " + gitRepositoryName);
+
 		_upstreamBranchName = upstreamBranchName;
 
 		GitRemote upstreamTempGitRemote = getGitRemote("upstream-temp");
