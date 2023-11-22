@@ -76,11 +76,18 @@ public class HistoryUtil {
 			System.out.println(
 				"getting history json url..." + upstreamBranchName);
 
-			return new URL(
-				JenkinsResultsParserUtil.getProperty(
-					JenkinsResultsParserUtil.getBuildProperties(),
-					"ci.history.json.url", jobName, testSuiteName,
-					upstreamBranchName));
+			String ciHistoryJSONURL = JenkinsResultsParserUtil.getProperty(
+				JenkinsResultsParserUtil.getBuildProperties(),
+				"ci.history.json.url", jobName, testSuiteName,
+				upstreamBranchName);
+
+			System.out.println("CI HISTORY JSON URL ! : " + ciHistoryJSONURL);
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(ciHistoryJSONURL)) {
+				return null;
+			}
+
+			return new URL(ciHistoryJSONURL);
 		}
 		catch (IOException ioException) {
 			ioException.printStackTrace();
