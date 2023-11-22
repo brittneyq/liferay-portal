@@ -20,6 +20,10 @@ public class HistoryUtil {
 	public static JobHistory getJobHistory(Job job) {
 		URL ciHistoryURL = _getCIHistoryURL(job);
 
+		if (ciHistoryURL == null) {
+			return null;
+		}
+
 		System.out.println("CI HISTORY URL IS : " + ciHistoryURL);
 
 		JobHistory jobHistory = _jobHistories.get(ciHistoryURL);
