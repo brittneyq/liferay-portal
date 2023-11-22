@@ -115,6 +115,10 @@ public abstract class BaseJob implements Job {
 				new ArrayList<BatchTestClassGroup>());
 
 			if ((jsonObject != null) && jsonObject.has("batches")) {
+				System.out.println(
+					"GET BATCH TEST CLASS GROUPS json object is not null and " +
+						"has batches");
+
 				JSONArray batchesJSONArray = jsonObject.getJSONArray("batches");
 
 				for (int i = 0; i < batchesJSONArray.length(); i++) {
@@ -130,11 +134,17 @@ public abstract class BaseJob implements Job {
 							this, batchJSONObject));
 				}
 
+				System.out.println(
+					"BATCH TEST CLASS GROUP 1 : " + _batchTestClassGroups);
+
 				return _batchTestClassGroups;
 			}
 
 			_batchTestClassGroups.addAll(
 				getBatchTestClassGroups(getRawBatchNames()));
+
+			System.out.println(
+				"BATCH TEST CLASS GROUP 2 : " + _batchTestClassGroups);
 
 			return _batchTestClassGroups;
 		}
@@ -396,11 +406,16 @@ public abstract class BaseJob implements Job {
 
 			jsonObject = new JSONObject();
 
+			System.out.println("IN GET JSON OBJECT IN BASE JOB..");
+
 			List<BatchTestClassGroup> batchTestClassGroups =
 				getBatchTestClassGroups();
 
 			if ((batchTestClassGroups != null) &&
 				!batchTestClassGroups.isEmpty()) {
+
+				System.out.println(
+					"BATCH TEST CLASS GROUPS ARE NOT NULL OR EMPTY");
 
 				JSONArray batchesJSONArray = new JSONArray();
 
@@ -449,6 +464,9 @@ public abstract class BaseJob implements Job {
 				jsonObject.put(
 					"test_suite_name", testSuiteJob.getTestSuiteName());
 			}
+
+			System.out.println(
+				"JSON OBJECT AT END OF getJSONOBJECT : " + jsonObject);
 
 			return jsonObject;
 		}
@@ -784,7 +802,12 @@ public abstract class BaseJob implements Job {
 	protected List<BatchTestClassGroup> getBatchTestClassGroups(
 		Set<String> rawBatchNames) {
 
+		System.out.println(
+			"RAW BATCH NAMES in batch test class groups : " + rawBatchNames);
+
 		if ((rawBatchNames == null) || rawBatchNames.isEmpty()) {
+			System.out.println("RAW BATCH NAMES is null or empty ");
+
 			return new ArrayList<>();
 		}
 
