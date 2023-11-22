@@ -20,11 +20,13 @@ public class HistoryUtil {
 	public static JobHistory getJobHistory(Job job) {
 		URL ciHistoryURL = _getCIHistoryURL(job);
 
+		System.out.println("CI HISTORY URL IS : " + ciHistoryURL);
+
 		JobHistory jobHistory = _jobHistories.get(ciHistoryURL);
 
 		System.out.println("JOB HISTORY IS : " + jobHistory);
 
-		System.out.println("CI HISTORY URL : " + ciHistoryURL.toString());
+		System.out.println("CI HISTORY URL : " + ciHistoryURL);
 
 		if (jobHistory == null) {
 			System.out.println("JOB HISTORY IS NULL !");
@@ -40,12 +42,16 @@ public class HistoryUtil {
 	private static URL _getCIHistoryURL(Job job) {
 		String jobName = job.getJobName();
 
+		System.out.println("job name : " + jobName);
+
 		String testSuiteName = null;
 
 		if (job instanceof TestSuiteJob) {
 			TestSuiteJob testSuiteJob = (TestSuiteJob)job;
 
 			testSuiteName = testSuiteJob.getTestSuiteName();
+
+			System.out.println("test suite job name : " + testSuiteName);
 		}
 
 		String upstreamBranchName = null;
@@ -63,6 +69,9 @@ public class HistoryUtil {
 		}
 
 		try {
+			System.out.println(
+				"getting history json url..." + upstreamBranchName);
+
 			return new URL(
 				JenkinsResultsParserUtil.getProperty(
 					JenkinsResultsParserUtil.getBuildProperties(),
