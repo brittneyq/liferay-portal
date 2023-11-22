@@ -69,6 +69,8 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 			}
 		}
 		else {
+			System.out.println("BATCH HISTORY NULL IN AVG TEST DURATION ");
+
 			averageTestDuration = 0;
 		}
 
@@ -93,6 +95,11 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 				averageTestOverheadDuration =
 					testHistory.getAverageOverheadDuration();
 			}
+		}
+		else {
+			System.out.println("BATCH HISTORY NULL IN OVERHEAD");
+
+			averageTestOverheadDuration = 0;
 		}
 
 		_averageTestOverheadDurations.put(
@@ -148,6 +155,12 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		Job job = getJob();
 
 		JobHistory jobHistory = job.getJobHistory();
+
+		if (jobHistory == null) {
+			System.out.println("JOB HISTORY IS NULL in get batch history");
+
+			return null;
+		}
 
 		_batchHistory = jobHistory.getBatchHistory(getBatchName());
 
