@@ -47,8 +47,16 @@ public abstract class BalancedListSplitter<T> {
 			minNumberOfLists++;
 		}
 
+		System.out.println("MIN NUMBER OF LISTS : " + minNumberOfLists);
+
 		List<ListItemList> listItemLists = _createListItemSortedSetList(
 			minNumberOfLists);
+
+		if (listItemLists.isEmpty()) {
+			System.out.println("ITEMS LIST IS EMPTY");
+
+			return new ArrayList<>();
+		}
 
 		for (ListItem listItem : listItems) {
 			Collections.sort(listItemLists);
@@ -201,11 +209,16 @@ public abstract class BalancedListSplitter<T> {
 	}
 
 	private List<ListItemList> _createListItemSortedSetList(int size) {
+		System.out.println("SIZE IN LIST ITEM SORTED SET LIST IS : " + size);
+
 		List<ListItemList> listItemSortedSetList = new ArrayList<>();
 
 		for (int i = 0; i < size; i++) {
 			listItemSortedSetList.add(new ListItemList(this, _maxListWeight));
 		}
+
+		System.out.println(
+			"LIST ITEM SORTED SET LIST : " + listItemSortedSetList);
 
 		return listItemSortedSetList;
 	}
