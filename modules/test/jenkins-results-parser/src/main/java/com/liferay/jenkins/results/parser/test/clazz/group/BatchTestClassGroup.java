@@ -724,8 +724,13 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 	}
 
 	protected void setSegmentTestClassGroups() {
+		System.out.println("SET SEGMENT TEST CLASS GROUPS");
+
 		if (!_segmentTestClassGroups.isEmpty() ||
 			axisTestClassGroups.isEmpty()) {
+
+			System.out.println(
+				"SEGMENT IS NOT EMPTY OR axis test class group is empty");
 
 			return;
 		}
@@ -757,6 +762,10 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 			_segmentTestClassGroups.add(segmentTestClassGroup);
 		}
+
+		System.out.println(
+			"SEGMENT TEST CLASS GROUPS AFTER ADDING : " +
+				_segmentTestClassGroups);
 	}
 
 	protected static final int AXES_SIZE_MAX_DEFAULT = 5000;

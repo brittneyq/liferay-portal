@@ -230,9 +230,15 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected List<List<TestClass>> getPoshiTestClassGroups(File testBaseDir) {
+		System.out.println("get poshi test class group for : " + testBaseDir);
+
 		String query = getTestBatchRunPropertyQuery(testBaseDir);
 
+		System.out.println("query in get poshi test class group : " + query);
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(query)) {
+			System.out.println("query is null or empty");
+
 			return new ArrayList<>();
 		}
 
@@ -306,6 +312,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			}
 
 			try {
+				System.out.println("RETURNING POSHI TEST CLASS GROUPS");
+
 				return getTestClassGroups(
 					PoshiContext.getTestBatchGroups(query, getAxisMaxSize()));
 			}
@@ -340,11 +348,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 	@Override
 	protected void setAxisTestClassGroups() {
+		System.out.println("SET AXIS TEST CLASS GROUPS!");
+
 		if (!axisTestClassGroups.isEmpty()) {
+			System.out.println(
+				"axis test class groups are not empty : " +
+					axisTestClassGroups);
+
 			return;
 		}
 
 		for (File testBaseDir : getTestBaseDirs()) {
+			System.out.println("TEST BASE DIR IN LOOP : " + testBaseDir);
+
 			String query = getTestBatchRunPropertyQuery(testBaseDir);
 
 			if (query == null) {
@@ -354,7 +370,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			List<List<TestClass>> poshiTestClassGroups =
 				getPoshiTestClassGroups(testBaseDir);
 
+			System.out.println(
+				"POSHI TEST CLASS GROUPS ... : " + poshiTestClassGroups);
+
 			long targetAxisDuration = getTargetAxisDuration();
+
+			System.out.println("TARGET AXIS DURATION : " + targetAxisDuration);
 
 			for (List<TestClass> poshiTestClassGroup : poshiTestClassGroups) {
 				if (poshiTestClassGroup.isEmpty()) {
@@ -393,6 +414,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 					axisTestClassGroups.add(axisTestClassGroup);
 				}
 			}
+
+			System.out.println(
+				"AXIS TEST CLASS GROUPS AFTER ADDING : " + axisTestClassGroups);
 		}
 	}
 
@@ -669,6 +693,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			_testBatchRunPropertyQueries.put(
 				testBaseDir, testBatchRunPropertyQuery);
 		}
+
+		System.out.println(
+			"test batch run property queries  : " +
+				_testBatchRunPropertyQueries);
 	}
 
 	private static List<File> _modifiedFiles;
