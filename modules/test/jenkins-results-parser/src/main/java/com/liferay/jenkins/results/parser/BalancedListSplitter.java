@@ -41,9 +41,15 @@ public abstract class BalancedListSplitter<T> {
 
 		long totalWeight = listItems.getWeight();
 
+		System.out.println(
+			"TOTAL WEIGHT : " + totalWeight + " MAX LIST WEIGHT : " +
+				_maxListWeight);
+
 		int minNumberOfLists = (int)(totalWeight / _maxListWeight);
 
-		if ((totalWeight % _maxListWeight) > 0) {
+		if ((totalWeight % _maxListWeight) >= 0) {
+			System.out.println("INCREASING MIN NUMBER OF LISTS..");
+
 			minNumberOfLists++;
 		}
 
@@ -51,12 +57,6 @@ public abstract class BalancedListSplitter<T> {
 
 		List<ListItemList> listItemLists = _createListItemSortedSetList(
 			minNumberOfLists);
-
-		if (listItemLists.isEmpty()) {
-			System.out.println("ITEMS LIST IS EMPTY");
-
-			return new ArrayList<>();
-		}
 
 		for (ListItem listItem : listItems) {
 			Collections.sort(listItemLists);
