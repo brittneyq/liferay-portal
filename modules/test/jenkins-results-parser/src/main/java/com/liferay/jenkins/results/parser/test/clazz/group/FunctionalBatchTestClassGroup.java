@@ -378,11 +378,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			System.out.println("TARGET AXIS DURATION : " + targetAxisDuration);
 
 			for (List<TestClass> poshiTestClassGroup : poshiTestClassGroups) {
+				System.out.println(
+					"POSHI TEST CLASS GROUP : " + poshiTestClassGroup);
+
 				if (poshiTestClassGroup.isEmpty()) {
+					System.out.println("POSHI TEST CLASS GROUP IS EMPTY");
+
 					continue;
 				}
 
 				if (targetAxisDuration > 0) {
+					System.out.println(
+						"TARGET AXIS DURATION IS GREATER THAN 0");
+
 					TestClassBalancedListSplitter
 						testClassBalancedListSplitter =
 							new TestClassBalancedListSplitter(
@@ -393,6 +401,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 							poshiTestClassGroup);
 
 					for (List<TestClass> testClassList : testClassLists) {
+						System.out.println(
+							"TEST CLASS LIST : " + testClassList);
+
 						AxisTestClassGroup axisTestClassGroup =
 							TestClassGroupFactory.newAxisTestClassGroup(
 								this, testBaseDir);
@@ -400,18 +411,29 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 						axisTestClassGroup.addTestClasses(testClassList);
 
 						axisTestClassGroups.add(axisTestClassGroup);
+
+						System.out.println(
+							"ADDING TEST CLASS LIST AND TEST CLASS GROUP 1");
 					}
 				}
 				else {
+					System.out.println("TARGET AXIS DURATION IS LESS THAN 0");
+
 					AxisTestClassGroup axisTestClassGroup =
 						TestClassGroupFactory.newAxisTestClassGroup(
 							this, testBaseDir);
 
 					for (TestClass testClass : poshiTestClassGroup) {
+						System.out.println(
+							"TEST CLASS NAME : " + testClass.getName());
+
 						axisTestClassGroup.addTestClass(testClass);
 					}
 
 					axisTestClassGroups.add(axisTestClassGroup);
+
+					System.out.println(
+						"ADDING TEST CLASS LIST AND TEST CLASS GROUP 2");
 				}
 			}
 

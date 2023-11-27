@@ -34,13 +34,19 @@ public class TestClassGroupFactory {
 	public static AxisTestClassGroup newAxisTestClassGroup(
 		BatchTestClassGroup batchTestClassGroup, File testBaseDir) {
 
+		System.out.println("NEW AXIS TEST CLASS GROUP FOR : " + testBaseDir);
+
 		if (batchTestClassGroup instanceof FunctionalBatchTestClassGroup) {
+			System.out.println("BATCH TEST CLASS GROUP INSTANCE OF FUNCTIONAL");
+
 			return new FunctionalAxisTestClassGroup(
 				(FunctionalBatchTestClassGroup)batchTestClassGroup,
 				testBaseDir);
 		}
 
 		if (batchTestClassGroup instanceof JUnitBatchTestClassGroup) {
+			System.out.println("BATCH TEST CLASS GROUP INSTANCE OF JUNIT");
+
 			return new JUnitAxisTestClassGroup(
 				(JUnitBatchTestClassGroup)batchTestClassGroup);
 		}
@@ -51,9 +57,13 @@ public class TestClassGroupFactory {
 		}
 
 		if (batchTestClassGroup instanceof PluginsGulpBatchTestClassGroup) {
+			System.out.println("BATCH TEST CLASS GROUP INSTANCE OF PLUGINS");
+
 			return new PluginsGulpAxisTestClassGroup(
 				(PluginsGulpBatchTestClassGroup)batchTestClassGroup);
 		}
+
+		System.out.println("BATCH TEST CLASS GROUP INSTANCE OF DEFAULT");
 
 		return new AxisTestClassGroup(batchTestClassGroup);
 	}

@@ -218,6 +218,9 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 	protected void setBatchTestClassGroup(
 		BatchTestClassGroup batchTestClassGroup) {
 
+		System.out.println(
+			"SET BATCH TEST CLASS GROUP IN AXIS TEST CLASS GROUP");
+
 		_batchTestClassGroup = batchTestClassGroup;
 	}
 
