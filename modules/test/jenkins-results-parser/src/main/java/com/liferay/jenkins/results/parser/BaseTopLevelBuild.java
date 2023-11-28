@@ -487,6 +487,8 @@ public abstract class BaseTopLevelBuild
 				System.out.println("write job sumamry report done...");
 			}
 			catch (IOException ioException) {
+				System.out.println("IO EXCEPTION IN GET JOB SUMMARY DIR..");
+
 				throw new RuntimeException(ioException);
 			}
 		}
