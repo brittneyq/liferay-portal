@@ -63,9 +63,14 @@ public abstract class PortalAcceptanceTestSuiteJob
 			return jsonObject;
 		}
 
+		System.out.println(
+			"json object in portal acceptance test suite job : " + jsonObject);
+
 		jsonObject = super.getJSONObject();
 
 		jsonObject.put("test_suite_name", _testSuiteName);
+
+		System.out.println("after portal acceptance test suite job...");
 
 		return jsonObject;
 	}

@@ -42,11 +42,16 @@ public class CIJobSummaryReportUtil {
 
 		System.out.println("INDEX HTML CONTENT 3 : " + indexHTMLContent);
 
-		System.out.println("JOB JSON OBJECT : " + job.getJSONObject());
+		try {
+			System.out.println("JOB JSON OBJECT : " + job.getJSONObject());
 
-		indexHTMLContent = indexHTMLContent.replace(
-			"<script src=\"js/job-data.js\"></script>",
-			"<script>\ndata=" + job.getJSONObject() + "\n</script>");
+			indexHTMLContent = indexHTMLContent.replace(
+				"<script src=\"js/job-data.js\"></script>",
+				"<script>\ndata=" + job.getJSONObject() + "\n</script>");
+		}
+		catch (Exception exception) {
+			exception.printStackTrace();
+		}
 
 		System.out.println("INDEX HTML CONTENT 4: " + indexHTMLContent);
 
