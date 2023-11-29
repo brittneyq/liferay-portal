@@ -108,9 +108,19 @@ public abstract class GitRepositoryJob extends BaseJob {
 			if (matcher.find()) {
 				upstreamBranchName = matcher.group("upstreamBranchName");
 
+				System.out.println(
+					"upstream branch name in git repo job : " +
+						upstreamBranchName);
+
 				if (upstreamBranchName.equals("release")) {
+					System.out.println("upstream branch name equals release");
+
 					String githubUpstreamBranchName = System.getenv(
 						"GITHUB_UPSTREAM_BRANCH_NAME");
+
+					System.out.println(
+						"GITHUB UPSTREAM BRANCH NAME : " +
+							githubUpstreamBranchName);
 
 					if (!JenkinsResultsParserUtil.isNullOrEmpty(
 							githubUpstreamBranchName)) {

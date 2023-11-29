@@ -53,6 +53,8 @@ public class DefaultPortalJob
 			portalRepositoryName += "-ee";
 		}
 
+		System.out.println("IN DEFAULT PORTAL JOB:" + portalUpstreamBranchName);
+
 		GitWorkingDirectory gitWorkingDirectory =
 			GitWorkingDirectoryFactory.newGitWorkingDirectory(
 				portalUpstreamBranchName, portalRepositoryDir,

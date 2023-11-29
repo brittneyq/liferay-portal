@@ -426,6 +426,21 @@ public class JobFactory {
 				job = new PortalAcceptancePullRequestJob(jsonObject);
 			}
 			else {
+				if (upstreamBranchName.equals("release")) {
+					String githubUpstreamBranchName = System.getenv(
+						"GITHUB_UPSTREAM_BRANCH_NAME");
+
+					if (!JenkinsResultsParserUtil.isNullOrEmpty(
+							githubUpstreamBranchName)) {
+
+						System.out.println(
+							"setting upstream branch name 2 : " +
+								upstreamBranchName);
+
+						upstreamBranchName = githubUpstreamBranchName;
+					}
+				}
+
 				job = new PortalAcceptancePullRequestJob(
 					buildProfile, jobName, portalGitWorkingDirectory,
 					testSuiteName, upstreamBranchName);
