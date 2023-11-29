@@ -1711,11 +1711,22 @@ public class GitWorkingDirectory {
 	public RemoteGitBranch getRemoteGitBranch(
 		String remoteGitBranchName, String remoteURL, boolean required) {
 
+		System.out.println("REMOTE GIT BRANCH NAME : " + remoteGitBranchName);
+		System.out.println("REMOTE URL : " + remoteURL);
+		System.out.println("REQUIRED BOOLEAN : " + required);
+
 		List<RemoteGitBranch> remoteGitBranches = getRemoteGitBranches(
 			remoteGitBranchName, remoteURL);
 
 		for (RemoteGitBranch remoteGitBranch : remoteGitBranches) {
+			System.out.println(
+				"remote git branch get name : " + remoteGitBranch.getName());
+
 			if (remoteGitBranchName.equals(remoteGitBranch.getName())) {
+				System.out.println(
+					"remote git branch name equals : " +
+						remoteGitBranch.getName());
+
 				return remoteGitBranch;
 			}
 		}
@@ -1727,6 +1738,8 @@ public class GitWorkingDirectory {
 					"Unable to find required branch ", remoteGitBranchName,
 					" from remote URL ", remoteURL));
 		}
+
+		System.out.println("RETURNING NULL for get remote git branch...");
 
 		return null;
 	}

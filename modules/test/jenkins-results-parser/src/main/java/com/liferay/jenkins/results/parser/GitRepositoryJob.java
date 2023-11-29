@@ -140,8 +140,18 @@ public abstract class GitRepositoryJob extends BaseJob {
 
 		GitWorkingDirectory gitWorkingDirectory = getGitWorkingDirectory();
 
+		System.out.println(
+			"git working directory current branch name: " +
+				gitWorkingDirectory.getCurrentBranchName());
+
 		LocalGitBranch currentLocalGitBranch =
 			gitWorkingDirectory.getCurrentLocalGitBranch();
+
+		System.out.println(
+			"current local git branch name :  " +
+				currentLocalGitBranch.getName());
+		System.out.println(
+			"current local git branch sha : " + currentLocalGitBranch.getSHA());
 
 		branchJSONObject.put(
 			"current_branch_name", currentLocalGitBranch.getName()
