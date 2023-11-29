@@ -21,6 +21,8 @@ public abstract class BaseGitRef implements GitRef {
 	}
 
 	protected BaseGitRef(String name, String sha) {
+		System.out.println("NAME in base git ref : " + name + " SHA : " + sha);
+
 		if ((name == null) || name.isEmpty()) {
 			throw new IllegalArgumentException("Name is null");
 		}

@@ -5499,8 +5499,6 @@ public class JenkinsResultsParserUtil {
 		}
 
 		if (file.exists()) {
-			System.out.println("FILE EXISTS... DELETING FILE : " + file);
-
 			file.delete();
 		}
 

@@ -1909,6 +1909,8 @@ public class GitWorkingDirectory {
 			upstreamBranchName, getGitRemote("upstream"));
 
 		if (upstreamRemoteGitBranch == null) {
+			System.out.println("upstream remote git branch is null");
+
 			upstreamRemoteGitBranch = getRemoteGitBranch(
 				upstreamBranchName, getGitRemote("origin"));
 		}
