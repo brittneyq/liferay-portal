@@ -55,6 +55,10 @@ public abstract class PortalGitRepositoryJob
 			gitWorkingDirectory = portalGitWorkingDirectory;
 		}
 		else {
+			System.out.println(
+				"IN PORTAL GIT REPOSITORY JOB upstream branch name : " +
+					getUpstreamBranchName());
+
 			gitWorkingDirectory =
 				GitWorkingDirectoryFactory.newPortalGitWorkingDirectory(
 					getUpstreamBranchName());

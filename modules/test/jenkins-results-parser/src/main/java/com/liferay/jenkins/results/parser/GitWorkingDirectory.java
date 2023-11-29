@@ -1914,6 +1914,10 @@ public class GitWorkingDirectory {
 	public LocalGitBranch getUpstreamLocalGitBranch() {
 		String upstreamBranchName = getUpstreamBranchName();
 
+		System.out.println(
+			"upstream branch name in get upstream local git branch : " +
+				upstreamBranchName);
+
 		if (localGitBranchExists(upstreamBranchName)) {
 			return _getLocalGitBranch(upstreamBranchName, true);
 		}
