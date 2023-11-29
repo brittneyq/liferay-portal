@@ -97,6 +97,9 @@ public abstract class GitRepositoryJob extends BaseJob {
 
 		super(buildProfile, jobName);
 
+		System.out.println(
+			"GIT REPOSITORY JOB UPSTREAM BRANCH NAME : " + upstreamBranchName);
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(upstreamBranchName)) {
 			upstreamBranchName = "master";
 
