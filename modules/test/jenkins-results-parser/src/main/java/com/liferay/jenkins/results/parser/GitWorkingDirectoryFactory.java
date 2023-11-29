@@ -20,6 +20,11 @@ public class GitWorkingDirectoryFactory {
 		String upstreamBranchName, File gitRepositoryDir,
 		String gitRepositoryName) {
 
+		System.out.println(
+			"NEW GIT WORKING DIRECTORY  : " + upstreamBranchName +
+				"gitRepository dir : " + gitRepositoryDir +
+					"gitRepository name : " + gitRepositoryName);
+
 		if ((gitRepositoryDir == null) && (gitRepositoryName == null)) {
 			throw new IllegalArgumentException(
 				"Git repository directory and Git repository name are null");
@@ -59,6 +64,10 @@ public class GitWorkingDirectoryFactory {
 			throw new RuntimeException(
 				"Directory path not found " + gitRepositoryDir);
 		}
+
+		System.out.println("GIT REPOSITORY DIR : " + gitRepositoryDir);
+		System.out.println("GIT REPOSITORY NAME : " + gitRepositoryName);
+		System.out.println("UPSTREAM BRANCH NAME : " + upstreamBranchName);
 
 		try {
 			String gitRepositoryDirPath =
@@ -153,6 +162,10 @@ public class GitWorkingDirectoryFactory {
 
 	public static PortalGitWorkingDirectory newPortalGitWorkingDirectory(
 		String upstreamBranchName) {
+
+		System.out.println(
+			"UPSTREAM BRANCH NAME IN NEW PORTAL GIT WORKING DIR: " +
+				upstreamBranchName);
 
 		return (PortalGitWorkingDirectory)newGitWorkingDirectory(
 			upstreamBranchName, (File)null, "liferay-portal");
