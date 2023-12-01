@@ -107,8 +107,14 @@ public class PortalWorkspaceGitRepository extends BaseWorkspaceGitRepository {
 	public void setUpPortalProfile() {
 		String upstreamBranchName = getUpstreamBranchName();
 
+		System.out.println(
+			"upstream branch name in portal workspace git repo: " +
+				upstreamBranchName);
+
 		if (!upstreamBranchName.equals("master") &&
-			!upstreamBranchName.matches("7\\.\\d+\\.x")) {
+			!upstreamBranchName.matches("7\\.\\d+\\.x|release-.*")) {
+
+			System.out.println("upstream does not match ");
 
 			return;
 		}
