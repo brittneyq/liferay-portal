@@ -365,23 +365,37 @@ public abstract class BaseBuild implements Build {
 	public Job.BuildProfile getBuildProfile() {
 		String buildProfile = getParameterValue("TEST_PORTAL_BUILD_PROFILE");
 
+		System.out.println("get build profile 1 : " + buildProfile);
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(buildProfile)) {
 			buildProfile = System.getenv("TEST_PORTAL_BUILD_PROFILE");
+
+			System.out.println("build profile 2 : " + buildProfile);
 		}
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(buildProfile)) {
 			if (buildProfile.equals("dxp")) {
+				System.out.println("build profile is set to dxp 1");
+
 				return Job.BuildProfile.DXP;
 			}
+
+			System.out.println("build profile is set to portal 1");
 
 			return Job.BuildProfile.PORTAL;
 		}
 
 		String branchName = getBranchName();
 
+		System.out.println("BRANCH NAME 1 : " + branchName);
+
 		if (!branchName.equals("master") && !branchName.startsWith("ee-")) {
+			System.out.println("build profile is dxp 2");
+
 			return Job.BuildProfile.DXP;
 		}
+
+		System.out.println("build profile is portal 2");
 
 		return Job.BuildProfile.PORTAL;
 	}
