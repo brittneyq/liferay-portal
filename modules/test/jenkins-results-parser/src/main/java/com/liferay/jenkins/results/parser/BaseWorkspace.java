@@ -286,6 +286,15 @@ public abstract class BaseWorkspace implements Workspace {
 
 			System.out.println("job name : " + jobName);
 
+			String workspaceDirNames = JenkinsResultsParserUtil.getProperty(
+				JenkinsResultsParserUtil.getBuildProperties(),
+				"workspace.repository.dir.names",
+				_primaryWorkspaceGitRepository.getName(),
+				_primaryWorkspaceGitRepository.getUpstreamBranchName(),
+				jobName);
+
+			System.out.println("WORKSPACE DIR NAMES : " + workspaceDirNames);
+
 			jsonObject.put(
 				"workspace_repository_dir_names",
 				JenkinsResultsParserUtil.removeDuplicates(
