@@ -284,6 +284,8 @@ public abstract class BaseWorkspace implements Workspace {
 				"primary workspace git repository upstream branch name : " +
 					_primaryWorkspaceGitRepository.getUpstreamBranchName());
 
+			System.out.println("job name : " + jobName);
+
 			jsonObject.put(
 				"workspace_repository_dir_names",
 				JenkinsResultsParserUtil.removeDuplicates(
@@ -294,6 +296,9 @@ public abstract class BaseWorkspace implements Workspace {
 						_primaryWorkspaceGitRepository.getName(),
 						_primaryWorkspaceGitRepository.getUpstreamBranchName(),
 						jobName)));
+
+			System.out.println(
+				"json object after putting in keys : " + jsonObject);
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(ioException);
