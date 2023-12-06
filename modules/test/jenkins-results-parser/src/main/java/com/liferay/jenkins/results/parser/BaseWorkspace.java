@@ -276,6 +276,14 @@ public abstract class BaseWorkspace implements Workspace {
 		);
 
 		try {
+			System.out.println(
+				"primary workspace git repository get name : " +
+					_primaryWorkspaceGitRepository.getName());
+
+			System.out.println(
+				"primary workspace git repository upstream branch name : " +
+					_primaryWorkspaceGitRepository.getUpstreamBranchName());
+
 			jsonObject.put(
 				"workspace_repository_dir_names",
 				JenkinsResultsParserUtil.removeDuplicates(
@@ -302,6 +310,8 @@ public abstract class BaseWorkspace implements Workspace {
 	private void _validateKeys() {
 		for (String requiredKey : _REQUIRED_KEYS) {
 			if (!jsonObject.has(requiredKey)) {
+				System.out.println("JSON OBJECT : " + jsonObject);
+
 				throw new RuntimeException("Missing " + requiredKey);
 			}
 		}
