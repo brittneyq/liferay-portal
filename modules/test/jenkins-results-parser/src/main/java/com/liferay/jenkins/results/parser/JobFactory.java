@@ -423,12 +423,18 @@ public class JobFactory {
 
 		if (jobName.startsWith("test-portal-acceptance-pullrequest(")) {
 			if (jsonObject != null) {
+				System.out.println("JSON OBJECT : " + jsonObject);
+
 				job = new PortalAcceptancePullRequestJob(jsonObject);
 			}
 			else {
 				if (upstreamBranchName.contains("release")) {
 					String githubUpstreamBranchName = System.getenv(
 						"GITHUB_UPSTREAM_BRANCH_NAME");
+
+					System.out.println(
+						"GITHUB UPSTREAM BRANCH NAME IN JOB FACTORY : " +
+							githubUpstreamBranchName);
 
 					if (!JenkinsResultsParserUtil.isNullOrEmpty(
 							githubUpstreamBranchName)) {

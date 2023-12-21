@@ -32,6 +32,8 @@ public abstract class GitRepositoryJob extends BaseJob {
 
 		checkGitRepositoryDir();
 
+		System.out.println("get branch name in get gwd : " + getBranchName());
+
 		gitWorkingDirectory = GitWorkingDirectoryFactory.newGitWorkingDirectory(
 			getBranchName(),
 			JenkinsResultsParserUtil.getCanonicalPath(gitRepositoryDir));
@@ -104,12 +106,18 @@ public abstract class GitRepositoryJob extends BaseJob {
 			String githubUpstreamBranchName = System.getenv(
 				"GITHUB_UPSTREAM_BRANCH_NAME");
 
+			System.out.println(
+				"GITHUB UPSTREAM BRANCH NAME IS .." + githubUpstreamBranchName);
+
 			if (!JenkinsResultsParserUtil.isNullOrEmpty(
 					githubUpstreamBranchName)) {
 
 				upstreamBranchName = githubUpstreamBranchName;
 			}
 		}
+
+		System.out.println(
+			"setting upstream branch name 2 : " + upstreamBranchName);
 
 		_upstreamBranchName = upstreamBranchName;
 	}
