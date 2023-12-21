@@ -1084,14 +1084,21 @@ public class GitWorkingDirectory {
 		currentBranchName = currentBranchName.trim();
 
 		if (currentBranchName.isEmpty()) {
+			System.out.println("current branch name is empty");
+
 			return null;
 		}
+
+		System.out.println(
+			"returning current branch name : " + currentBranchName);
 
 		return currentBranchName;
 	}
 
 	public LocalGitBranch getCurrentLocalGitBranch() {
 		String currentBranchName = getCurrentBranchName();
+
+		System.out.println("current branch name : " + currentBranchName);
 
 		if (currentBranchName == null) {
 			checkoutUpstreamLocalGitBranch();
@@ -2281,6 +2288,9 @@ public class GitWorkingDirectory {
 		throws IOException {
 
 		setWorkingDirectory(workingDirectoryPath);
+
+		System.out.println(
+			"setting upstream branch name here :  " + upstreamBranchName);
 
 		_upstreamBranchName = upstreamBranchName;
 
