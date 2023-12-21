@@ -2292,6 +2292,23 @@ public class GitWorkingDirectory {
 		System.out.println(
 			"setting upstream branch name here :  " + upstreamBranchName);
 
+		if (upstreamBranchName.equals("release")) {
+			String githubUpstreamBranchName = System.getenv(
+				"GITHUB_UPSTREAM_BRANCH_NAME");
+
+			System.out.println(
+				"github upstream branch name : " + githubUpstreamBranchName);
+
+			if (!JenkinsResultsParserUtil.isNullOrEmpty(
+					githubUpstreamBranchName)) {
+
+				upstreamBranchName = githubUpstreamBranchName;
+			}
+		}
+
+		System.out.println(
+			"UPSTREAM BRANCH NAME FIXED : " + upstreamBranchName);
+
 		_upstreamBranchName = upstreamBranchName;
 
 		GitRemote upstreamTempGitRemote = getGitRemote("upstream-temp");
