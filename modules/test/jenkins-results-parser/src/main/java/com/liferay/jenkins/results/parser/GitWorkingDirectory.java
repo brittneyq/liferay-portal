@@ -1396,6 +1396,10 @@ public class GitWorkingDirectory {
 		String branchName, boolean required) {
 
 		if (branchName.equals(getUpstreamBranchName())) {
+			System.out.println(
+				"branch name equals : " + branchName + " + " +
+					getUpstreamBranchName());
+
 			return getUpstreamLocalGitBranch();
 		}
 
@@ -1901,6 +1905,8 @@ public class GitWorkingDirectory {
 	public LocalGitBranch getUpstreamLocalGitBranch() {
 		String upstreamBranchName = getUpstreamBranchName();
 
+		System.out.println("upstream branch name : " + upstreamBranchName);
+
 		if (localGitBranchExists(upstreamBranchName)) {
 			return _getLocalGitBranch(upstreamBranchName, true);
 		}
@@ -1913,7 +1919,12 @@ public class GitWorkingDirectory {
 				upstreamBranchName, getGitRemote("origin"));
 		}
 
+		System.out.println(
+			"upstream remote git branch : " + upstreamRemoteGitBranch);
+
 		String upstreamBranchSHA = upstreamRemoteGitBranch.getSHA();
+
+		System.out.println("upstream branch SHA : " + upstreamBranchSHA);
 
 		fetch(upstreamRemoteGitBranch);
 
