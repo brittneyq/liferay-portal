@@ -2913,6 +2913,17 @@ public abstract class BaseBuild implements Build {
 		if (matcher.find()) {
 			_branchName = matcher.group("branchName");
 
+			if (_branchName.equals("release")) {
+				String githubUpstreamBranchName = System.getenv(
+					"GITHUB_UPSTREAM_BRANCH_NAME");
+
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(
+						githubUpstreamBranchName)) {
+
+					_branchName = githubUpstreamBranchName;
+				}
+			}
+
 			return;
 		}
 
