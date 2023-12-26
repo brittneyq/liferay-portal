@@ -1901,7 +1901,12 @@ public class GitWorkingDirectory {
 	public LocalGitBranch getUpstreamLocalGitBranch() {
 		String upstreamBranchName = getUpstreamBranchName();
 
+		System.out.println("upstream branch name : " + upstreamBranchName);
+
 		if (localGitBranchExists(upstreamBranchName)) {
+			System.out.println(
+				"local git branch exists for " + upstreamBranchName);
+
 			return _getLocalGitBranch(upstreamBranchName, true);
 		}
 
@@ -1909,17 +1914,25 @@ public class GitWorkingDirectory {
 			upstreamBranchName, getGitRemote("upstream"));
 
 		if (upstreamRemoteGitBranch == null) {
+			System.out.println("upstream remote git branch is null");
+
 			upstreamRemoteGitBranch = getRemoteGitBranch(
 				upstreamBranchName, getGitRemote("origin"));
 		}
 
 		String upstreamBranchSHA = upstreamRemoteGitBranch.getSHA();
 
+		System.out.println("upstream branch SHA is .. " + upstreamBranchSHA);
+
 		fetch(upstreamRemoteGitBranch);
 
 		String currentBranchName = getCurrentBranchName();
 
+		System.out.println("current branch name is : " + currentBranchName);
+
 		if (currentBranchName == null) {
+			System.out.println("current branch name is null.");
+
 			checkoutLocalGitBranch(
 				createLocalGitBranch(
 					upstreamBranchName + "-temp-" +
@@ -2822,6 +2835,8 @@ public class GitWorkingDirectory {
 		List<LocalGitBranch> localGitBranches = getLocalGitBranches(branchName);
 
 		if ((localGitBranches != null) && !localGitBranches.isEmpty()) {
+			System.out.println("local git branches is not null or empty");
+
 			return localGitBranches.get(0);
 		}
 
@@ -2832,6 +2847,8 @@ public class GitWorkingDirectory {
 					"Unable to find required branch ", branchName, " from ",
 					String.valueOf(getWorkingDirectory())));
 		}
+
+		System.out.println("returning null for local git branch");
 
 		return null;
 	}
