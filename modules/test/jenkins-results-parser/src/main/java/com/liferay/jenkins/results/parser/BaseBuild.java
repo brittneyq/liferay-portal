@@ -2914,11 +2914,23 @@ public abstract class BaseBuild implements Build {
 			_branchName = matcher.group("branchName");
 
 			if (_branchName.equals("release")) {
-				String githubUpstreamBranchName = System.getenv(
+				System.out.println(
+					"*branch name equals release in base build : " +
+						_branchName);
+
+				String githubUpstreamBranchName = getParameterValue(
 					"GITHUB_UPSTREAM_BRANCH_NAME");
+
+				System.out.println(
+					"github upstream branch name 3: " +
+						githubUpstreamBranchName);
 
 				if (!JenkinsResultsParserUtil.isNullOrEmpty(
 						githubUpstreamBranchName)) {
+
+					System.out.println(
+						"*github upstream branch name : " +
+							githubUpstreamBranchName);
 
 					_branchName = githubUpstreamBranchName;
 				}

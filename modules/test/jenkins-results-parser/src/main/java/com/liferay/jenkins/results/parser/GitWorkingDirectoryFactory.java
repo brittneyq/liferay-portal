@@ -173,7 +173,8 @@ public class GitWorkingDirectoryFactory {
 	public static PortalGitWorkingDirectory newPortalGitWorkingDirectory(
 		String upstreamBranchName) {
 
-		System.out.println("new portal git working dir 2 : " + upstreamBranchName);
+		System.out.println(
+			"new portal git working dir 2 : " + upstreamBranchName);
 
 		return (PortalGitWorkingDirectory)newGitWorkingDirectory(
 			upstreamBranchName, (File)null, "liferay-portal");
