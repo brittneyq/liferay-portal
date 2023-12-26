@@ -1079,13 +1079,19 @@ public class GitWorkingDirectory {
 
 		String currentBranchName = executionResult.getStandardOut();
 
+		System.out.println("CURRENT BRANCH NAME IS 2: " + currentBranchName);
+
 		currentBranchName = currentBranchName.replaceFirst("\\*\\s*", "");
 
 		currentBranchName = currentBranchName.trim();
 
 		if (currentBranchName.isEmpty()) {
+			System.out.println("CURRENT BRANCH NAME IS EMPTY");
+
 			return null;
 		}
+
+		System.out.println("RETURNING CBN : " + currentBranchName);
 
 		return currentBranchName;
 	}
@@ -1396,6 +1402,9 @@ public class GitWorkingDirectory {
 		String branchName, boolean required) {
 
 		if (branchName.equals(getUpstreamBranchName())) {
+			System.out.println(
+				"branch name equals get upstream branch name : " + branchName);
+
 			return getUpstreamLocalGitBranch();
 		}
 
@@ -1918,6 +1927,10 @@ public class GitWorkingDirectory {
 
 			upstreamRemoteGitBranch = getRemoteGitBranch(
 				upstreamBranchName, getGitRemote("origin"));
+
+			System.out.println(
+				"upstream remote git branch for origin : " +
+					upstreamRemoteGitBranch);
 		}
 
 		String upstreamBranchSHA = upstreamRemoteGitBranch.getSHA();
@@ -2285,15 +2298,24 @@ public class GitWorkingDirectory {
 		setWorkingDirectory(workingDirectoryPath);
 
 		if (upstreamBranchName.equals("release")) {
+			System.out.println("upstream branch name equals release");
+
 			String githubUpstreamBranchName = System.getenv(
 				"GITHUB_UPSTREAM_BRANCH_NAME");
 
 			if (!JenkinsResultsParserUtil.isNullOrEmpty(
 					githubUpstreamBranchName)) {
 
+				System.out.println(
+					"github upstream branch name is not null or empty 2");
+
 				upstreamBranchName = githubUpstreamBranchName;
 			}
 		}
+
+		System.out.println(
+			"UPSTREAM BRANCH NAME IN GIT WORKING DIR CONSTRUCTOR : " +
+				upstreamBranchName);
 
 		_upstreamBranchName = upstreamBranchName;
 
