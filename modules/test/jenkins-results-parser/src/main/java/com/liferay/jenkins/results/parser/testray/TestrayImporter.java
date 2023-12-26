@@ -1599,6 +1599,9 @@ public class TestrayImporter {
 	private PortalGitWorkingDirectory _getPortalGitWorkingDirectory() {
 		String portalUpstreamBranchName = _topLevelBuild.getBranchName();
 
+		System.out.println("portal upstream branch name in testray importer : " +
+				portalUpstreamBranchName);
+
 		if (_topLevelBuild instanceof PullRequestSubrepositoryTopLevelBuild) {
 			PullRequestSubrepositoryTopLevelBuild
 				pullRequestSubrepositoryTopLevelBuild =
@@ -1608,6 +1611,8 @@ public class TestrayImporter {
 				pullRequestSubrepositoryTopLevelBuild.
 					getPortalUpstreamBranchName();
 		}
+
+		System.out.println("gwd factory new portal git working directory: " + portalUpstreamBranchName);
 
 		return GitWorkingDirectoryFactory.newPortalGitWorkingDirectory(
 			portalUpstreamBranchName);

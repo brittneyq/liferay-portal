@@ -64,6 +64,14 @@ public class GitWorkingDirectoryFactory {
 			String gitRepositoryDirPath =
 				JenkinsResultsParserUtil.getCanonicalPath(gitRepositoryDir);
 
+			System.out.println(
+				"git repository dir path : " + gitRepositoryDirPath);
+
+			System.out.println("git repository name : " + gitRepositoryName);
+
+			System.out.println(
+				"upstream Branch name in factory: " + upstreamBranchName);
+
 			String key = JenkinsResultsParserUtil.combine(
 				gitRepositoryDirPath, "-", upstreamBranchName);
 
@@ -90,6 +98,9 @@ public class GitWorkingDirectoryFactory {
 			else if (gitRepositoryName.startsWith("liferay-portal") ||
 					 gitRepositoryDirPath.matches(".*/liferay-portal[^/]*")) {
 
+				System.out.println(
+					"git repository name starts with liferay-portal");
+
 				gitWorkingDirectory = new PortalGitWorkingDirectory(
 					upstreamBranchName, gitRepositoryDirPath,
 					gitRepositoryName);
@@ -103,6 +114,8 @@ public class GitWorkingDirectoryFactory {
 					gitRepositoryName);
 			}
 			else {
+				System.out.println("new git working directory in factory..");
+
 				gitWorkingDirectory = new GitWorkingDirectory(
 					upstreamBranchName, gitRepositoryDirPath,
 					gitRepositoryName);
@@ -124,6 +137,8 @@ public class GitWorkingDirectoryFactory {
 	public static GitWorkingDirectory newGitWorkingDirectory(
 		String upstreamBranchName, String gitepositoryDirPath) {
 
+		System.out.println("new gwd 1: " + upstreamBranchName);
+
 		return newGitWorkingDirectory(
 			upstreamBranchName, new File(gitepositoryDirPath), null);
 	}
@@ -133,9 +148,13 @@ public class GitWorkingDirectoryFactory {
 		String gitRepositoryName) {
 
 		if (gitRepositoryDirPath == null) {
+			System.out.println("new gwd 2 is null " + upstreamBranchName);
+
 			return newGitWorkingDirectory(
 				upstreamBranchName, (File)null, gitRepositoryName);
 		}
+
+		System.out.println("new gwd 3 : " + upstreamBranchName);
 
 		return newGitWorkingDirectory(
 			upstreamBranchName, new File(gitRepositoryDirPath),
@@ -153,6 +172,8 @@ public class GitWorkingDirectoryFactory {
 
 	public static PortalGitWorkingDirectory newPortalGitWorkingDirectory(
 		String upstreamBranchName) {
+
+		System.out.println("new portal git working dir 2 : " + upstreamBranchName);
 
 		return (PortalGitWorkingDirectory)newGitWorkingDirectory(
 			upstreamBranchName, (File)null, "liferay-portal");

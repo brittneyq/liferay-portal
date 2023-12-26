@@ -75,6 +75,9 @@ public abstract class BaseLocalGitRepository
 			return _gitWorkingDirectory;
 		}
 
+		System.out.println(
+			"in base local git repo : " + getUpstreamBranchName());
+
 		_gitWorkingDirectory =
 			GitWorkingDirectoryFactory.newGitWorkingDirectory(
 				getUpstreamBranchName(), getDirectory(), getName());
