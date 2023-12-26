@@ -1849,6 +1849,10 @@ public abstract class BaseBuild implements Build {
 		public String getUpstreamBranchName() {
 			String branchInformationString = _getBranchInformationString();
 
+			System.out.println(
+				"branch info string in upstream branch name : " +
+					branchInformationString);
+
 			String regex =
 				"[\\S\\s]*github.upstream.branch.name=(.+)\\n[\\S\\s]*";
 
@@ -2918,7 +2922,7 @@ public abstract class BaseBuild implements Build {
 					"*branch name equals release in base build : " +
 						_branchName);
 
-				String githubUpstreamBranchName = getParameterValue(
+				String githubUpstreamBranchName = System.getenv(
 					"GITHUB_UPSTREAM_BRANCH_NAME");
 
 				System.out.println(
