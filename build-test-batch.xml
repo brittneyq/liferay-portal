@@ -7283,7 +7283,17 @@ ${output.content}</echo>
 
 								<local name="playwright.command" />
 
-								<property name="playwright.command" value="npm run playwright test ${playwright.test.project} ${playwright.test.shard}" />
+								<if>
+									<isset property="PLAYWRIGHT_PROJECT_NAME" />
+									<then>
+										<propertycopy from="PLAYWRIGHT_PROJECT_NAME" name="playwright.project.name" />
+									</then>
+									<else>
+										<property name="playwright.project.name" value="" />
+									</else>
+								</if>
+
+								<property name="playwright.command" value="npm run playwright test --project ${playwright.project.name} ${playwright.test.shard}" />
 
 								<echo>Running "${playwright.command}" from ${playwright.dir}</echo>
 
