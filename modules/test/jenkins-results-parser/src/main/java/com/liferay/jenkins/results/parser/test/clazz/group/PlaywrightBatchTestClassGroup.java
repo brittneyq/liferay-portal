@@ -10,12 +10,14 @@ import com.google.common.collect.Lists;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
+import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
 
 import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +29,16 @@ import org.json.JSONObject;
  * @author Kenji Heigel
  */
 public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
+
+	public void addProjectsToSet(String projectNames) {
+		List<String> projectList = Arrays.asList(projectNames.split(","));
+
+		for (String project : projectList) {
+			System.out.println("adding project .... : " + project);
+
+			_playwrightProjectSet.add(project);
+		}
+	}
 
 	protected PlaywrightBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
@@ -62,6 +74,8 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 				return;
 			}
 
+			addProjectsToSet(jobProperty.getValue());
+
 			recordJobProperty(jobProperty);
 		}
 
@@ -69,15 +83,32 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 			portalGitWorkingDirectory.getWorkingDirectory(),
 			"build-test-batch.xml");
 
-		for (int axisIndex = 0; axisIndex < getAxisCount(); axisIndex++) {
-			addTestClass(
-				TestClassFactory.newTestClass(
-					this, buildTestBatchFile, String.valueOf(axisIndex)));
+		for (String project : _playwrightProjectSet) {
+			SegmentTestClassGroup segmentTestClassGroup =
+				TestClassGroupFactory.newSegmentTestClassGroup(this);
+
+			if (segmentTestClassGroup instanceof
+					PlaywrightSegmentTestClassGroup) {
+
+				PlaywrightSegmentTestClassGroup
+					playwrightSegmentTestClassGroup =
+						(PlaywrightSegmentTestClassGroup)segmentTestClassGroup;
+
+				playwrightSegmentTestClassGroup.setProjectName(project);
+			}
+
+			AxisTestClassGroup axisTestClassGroup =
+				TestClassGroupFactory.newAxisTestClassGroup(this);
+
+			segmentTestClassGroup.addAxisTestClassGroup(axisTestClassGroup);
+
+			TestClass testClass = TestClassFactory.newTestClass(
+				this, buildTestBatchFile, "0");
+
+			axisTestClassGroup.addTestClass(testClass);
+
+			addTestClass(testClass);
 		}
-
-		setAxisTestClassGroups();
-
-		setSegmentTestClassGroups();
 	}
 
 	protected List<JobProperty> getRelevantPlaywrightJobProperties() {
@@ -109,6 +140,11 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 				JobProperty.Type.MODULE_TEST_DIR);
 
 			if (playwrightTestProjectJobProperty.getValue() != null) {
+				String projectNames =
+					playwrightTestProjectJobProperty.getValue();
+
+				addProjectsToSet(projectNames);
+
 				playwrightJobProperties.add(playwrightTestProjectJobProperty);
 			}
 		}
@@ -120,5 +156,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 	protected static final String PLAYWRIGHT_TEST_PROJECT_PROPERTY_NAME =
 		"playwright.test.project";
+
+	private final Set<String> _playwrightProjectSet = new HashSet<>();
 
 }

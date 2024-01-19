@@ -17,6 +17,10 @@ import org.json.JSONObject;
  */
 public class PlaywrightSegmentTestClassGroup extends SegmentTestClassGroup {
 
+	public String getProjectName() {
+		return _projectName;
+	}
+
 	@Override
 	public String getTestCasePropertiesContent() {
 		StringBuilder sb = new StringBuilder();
@@ -75,7 +79,16 @@ public class PlaywrightSegmentTestClassGroup extends SegmentTestClassGroup {
 			}
 		}
 
+		sb.append("PLAYWRIGHT_PROJECT_NAME=");
+		sb.append(getProjectName());
+
 		return sb.toString();
+	}
+
+	public void setProjectName(String projectName) {
+		System.out.println("setting project to : " + projectName);
+
+		_projectName = projectName;
 	}
 
 	protected PlaywrightSegmentTestClassGroup(
@@ -131,5 +144,7 @@ public class PlaywrightSegmentTestClassGroup extends SegmentTestClassGroup {
 
 		return filteredJobProperties;
 	}
+
+	private String _projectName;
 
 }
