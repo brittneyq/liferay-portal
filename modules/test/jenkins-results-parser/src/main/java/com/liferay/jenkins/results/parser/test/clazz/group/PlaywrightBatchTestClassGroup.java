@@ -30,6 +30,19 @@ import org.json.JSONObject;
  */
 public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
+	public void addDefaultProjectJobProperty(String batchName) {
+		JobProperty jobProperty = getJobProperty(
+			PLAYWRIGHT_TEST_PROJECT_PROPERTY_NAME, testSuiteName, batchName);
+
+		if (jobProperty.getValue() == null) {
+			return;
+		}
+
+		addProjectsToSet(jobProperty.getValue());
+
+		recordJobProperty(jobProperty);
+	}
+
 	public void addProjectsToSet(String projectNames) {
 		List<String> projectList = Arrays.asList(projectNames.split(","));
 
@@ -64,19 +77,11 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 			}
 
 			recordJobProperties(relevantPlaywrightJobProperties);
+
+			addDefaultProjectJobProperty(batchName);
 		}
 		else {
-			JobProperty jobProperty = getJobProperty(
-				PLAYWRIGHT_TEST_PROJECT_PROPERTY_NAME, testSuiteName,
-				batchName);
-
-			if (jobProperty.getValue() == null) {
-				return;
-			}
-
-			addProjectsToSet(jobProperty.getValue());
-
-			recordJobProperty(jobProperty);
+			addDefaultProjectJobProperty(batchName);
 		}
 
 		File buildTestBatchFile = new File(
