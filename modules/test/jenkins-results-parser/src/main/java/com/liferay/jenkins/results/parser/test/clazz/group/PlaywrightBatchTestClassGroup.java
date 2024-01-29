@@ -30,12 +30,17 @@ import org.json.JSONObject;
 public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 	public void addDefaultProjectJobProperty(String batchName) {
+		System.out.println(
+			"batch name : " + batchName + " testSuite : " + testSuiteName);
+
 		JobProperty jobProperty = getJobProperty(
 			PLAYWRIGHT_TEST_PROJECT_PROPERTY_NAME, testSuiteName, batchName);
 
 		if (jobProperty.getValue() == null) {
 			return;
 		}
+
+		System.out.println("job property: " + jobProperty.getValue());
 
 		_addProjectNames(jobProperty.getValue());
 
