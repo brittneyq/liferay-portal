@@ -44,7 +44,11 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 		_addProjectNames(jobProperty.getValue());
 
+		System.out.println("added project name : " + jobProperty.getValue());
+
 		recordJobProperty(jobProperty);
+
+		System.out.println("recorded job property...");
 	}
 
 	protected PlaywrightBatchTestClassGroup(
@@ -63,20 +67,22 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		if (testRelevantChanges) {
+			System.out.println("TEST RELEVANT CHANGES");
+
 			List<JobProperty> relevantPlaywrightJobProperties =
 				getRelevantPlaywrightJobProperties();
 
-			if (relevantPlaywrightJobProperties.isEmpty()) {
-				return;
+			//addDefaultProjectJobProperty(batchName);
+
+			if (!relevantPlaywrightJobProperties.isEmpty()) {
+				System.out.println(
+					"RELEVANT PLAYWRIGHT JOB PROPERTIES IS EMPTY");
+
+				recordJobProperties(relevantPlaywrightJobProperties);
 			}
-
-			recordJobProperties(relevantPlaywrightJobProperties);
-
-			addDefaultProjectJobProperty(batchName);
 		}
-		else {
-			addDefaultProjectJobProperty(batchName);
-		}
+
+		addDefaultProjectJobProperty(batchName);
 
 		File buildTestBatchFile = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(),
