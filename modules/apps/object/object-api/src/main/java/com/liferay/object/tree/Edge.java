@@ -6,7 +6,7 @@
 package com.liferay.object.tree;
 
 /**
- * @author Feliphe Marinho
+ * @author Feliphe Marinhos
  */
 public class Edge {
 
