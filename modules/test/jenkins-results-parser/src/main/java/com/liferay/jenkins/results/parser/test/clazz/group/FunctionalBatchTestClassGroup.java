@@ -554,6 +554,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			String defaultPQL = getDefaultTestBatchRunPropertyQuery(
 				testBaseDir, testSuiteName);
 
+			System.out.println("default pql :  " + defaultPQL);
+
 			JobProperty globalJobProperty = getJobProperty(
 				"test.batch.run.property.global.query", testSuiteName,
 				batchName);
@@ -568,9 +570,14 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 				recordJobProperty(globalJobProperty);
 
+				System.out.println(
+					"Adding global pql : " + globalJobPropertyValue);
+
 				return JenkinsResultsParserUtil.combine(
 					"(", globalJobPropertyValue, ") AND (", defaultPQL, ")");
 			}
+
+			System.out.println("Returning default pql for " + batchName);
 
 			return defaultPQL;
 		}
