@@ -5,8 +5,6 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.google.common.collect.Lists;
-
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
@@ -20,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
@@ -124,75 +121,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			return super.getRelevantIncludesJobProperties();
 		}
 
-		Set<File> modifiedModuleDirsSet = new HashSet<>();
-		List<File> modifiedNonposhiModulesList = new ArrayList<>();
-		List<File> modifiedPoshiModulesList = new ArrayList<>();
-
-		try {
-			modifiedModuleDirsSet.addAll(
-				portalGitWorkingDirectory.getModifiedModuleDirsList());
-			modifiedNonposhiModulesList =
-				portalGitWorkingDirectory.getModifiedNonposhiModules();
-			modifiedPoshiModulesList =
-				portalGitWorkingDirectory.getModifiedPoshiModules();
-		}
-		catch (IOException ioException) {
-			File workingDirectory =
-				portalGitWorkingDirectory.getWorkingDirectory();
-
-			throw new RuntimeException(
-				JenkinsResultsParserUtil.combine(
-					"Unable to get relevant module group directories in ",
-					workingDirectory.getPath()),
-				ioException);
-		}
-
-		if (testRelevantChanges) {
-			modifiedModuleDirsSet.addAll(
-				getRequiredModuleDirs(
-					Lists.newArrayList(modifiedModuleDirsSet)));
-		}
-
 		Set<JobProperty> includesJobProperties = new HashSet<>();
 
-		String moduleName = null;
-
-		Matcher matcher = _singleModuleBatchNamePattern.matcher(batchName);
-
-		if (matcher.find()) {
-			moduleName = matcher.group("moduleName");
-		}
-
-		for (File modifiedModuleDir : modifiedModuleDirsSet) {
-			if (modifiedPoshiModulesList.contains(modifiedModuleDir) &&
-				!modifiedNonposhiModulesList.contains(modifiedModuleDir)) {
-
-				continue;
-			}
-
-			String modifiedModuleAbsolutePath =
-				JenkinsResultsParserUtil.getCanonicalPath(modifiedModuleDir);
-
-			String modifiedModuleRelativePath =
-				modifiedModuleAbsolutePath.substring(
-					modifiedModuleAbsolutePath.indexOf("modules/"));
-
-			if ((moduleName != null) &&
-				!modifiedModuleRelativePath.contains("/" + moduleName)) {
-
-				continue;
-			}
-
-			includesJobProperties.add(
-				getJobProperty(
-					"test.batch.class.names.includes.modules",
-					modifiedModuleDir, JobProperty.Type.INCLUDE_GLOB));
-
-			includesJobProperties.add(
-				getJobProperty(
-					"modules.includes.required.test.batch.class.names.includes",
-					modifiedModuleDir, JobProperty.Type.MODULE_INCLUDE_GLOB));
-		}
+		includesJobProperties.addAll(getDefaultIncludesJobProperties());
 
 		for (File modifiedFile :
 				portalGitWorkingDirectory.getModifiedFilesList()) {
@@ -466,8 +397,5 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		return bndBndProperties.getProperty("Bundle-SymbolicName");
 	}
-
-	private static final Pattern _singleModuleBatchNamePattern =
-		Pattern.compile("modules-unit-(?<moduleName>\\S+)-jdk\\d+");
 
 }
