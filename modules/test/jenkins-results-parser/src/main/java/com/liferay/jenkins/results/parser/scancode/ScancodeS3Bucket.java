@@ -229,6 +229,8 @@ public class ScancodeS3Bucket {
 		ScancodeS3Object scancodeS3Object =
 			ScancodeS3ObjectFactory.newScancodeS3Object(this, blob);
 
+		_s3URL = scancodeS3Object.getURLString();
+
 		System.out.println(
 			JenkinsResultsParserUtil.combine(
 				"Created Scancode S3 Object ", scancodeS3Object.getURLString(),
@@ -274,6 +276,10 @@ public class ScancodeS3Bucket {
 
 	public String getName() {
 		return _name;
+	}
+
+	public String getS3URL() {
+		return _s3URL;
 	}
 
 	public String getScancodeS3BaseURL() {
@@ -359,5 +365,6 @@ public class ScancodeS3Bucket {
 		new HashMap<>();
 
 	private final String _name;
+	private String _s3URL;
 
 }
