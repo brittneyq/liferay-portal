@@ -6,6 +6,7 @@
 package com.liferay.jenkins.results.parser.scancode;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+import com.liferay.jenkins.results.parser.NotificationUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -306,9 +307,9 @@ public class ScancodeProject {
 
 		System.out.println("SENDING NOTIFICATON..");
 
-		//		NotificationUtil.sendSlackNotification(
-		//			sb.toString(), "#ci-notifications", ":liferay-ci:",
-		//			"Scancode pipeline is complete", "Liferay CI");
+		NotificationUtil.sendSlackNotification(
+			sb.toString(), "#ci-notifications", ":liferay-ci:",
+			"Scancode pipeline is complete", "Liferay CI");
 	}
 
 	public void setProjectID(String projectID) {

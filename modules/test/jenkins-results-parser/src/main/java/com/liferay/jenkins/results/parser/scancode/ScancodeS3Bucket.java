@@ -197,6 +197,10 @@ public class ScancodeS3Bucket {
 			ScancodeS3Object scancodeS3Object =
 				ScancodeS3ObjectFactory.newScancodeS3Object(this, blob);
 
+			_s3URL = scancodeS3Object.getURLString();
+
+			System.out.println("S3 URL : " + _s3URL);
+
 			System.out.println(
 				JenkinsResultsParserUtil.combine(
 					"Created S3 Object ", scancodeS3Object.getURLString(),
