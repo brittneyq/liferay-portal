@@ -80,13 +80,6 @@ public class ScancodeProject {
 	}
 
 	public void downloadResultFiles() throws IOException {
-		String projectNameFromURL =
-			"7413-u113-docker-scan-mar-21-24-123946-f63ff7ee";
-
-		String projectURL =
-			"https://scancode.liferay.com/project/7413-u113-docker-scan-mar-" +
-				"21-24-123946-f63ff7ee/";
-
 		System.out.println(
 			"project name in download results files : " + _projectNameFromURL);
 
@@ -100,19 +93,19 @@ public class ScancodeProject {
 		System.out.println("scancode results dir : " + scancodeResultsDir);
 
 		for (String extension : _RESULT_FILES_EXTENSIONS) {
-			String link = projectURL + "results/" + extension;
+			String link = _projectURL + "results/" + extension;
 
 			URL url = new URL(link);
 
 			File file = new File(
-				scancodeResultsDir + projectNameFromURL + "." + extension);
+				scancodeResultsDir + _projectNameFromURL + "." + extension);
 
 			System.out.println("FILE name : " + file);
 
 			JenkinsResultsParserUtil.toFile(url, file);
 		}
 
-		String tarGzName = projectNameFromURL + ".tar.gz";
+		String tarGzName = _projectNameFromURL + ".tar.gz";
 
 		File resultsTarGzFile = new File(scancodeResultsDir, tarGzName);
 
@@ -282,6 +275,8 @@ public class ScancodeProject {
 
 	public void sendSlackNotification(String status, String s3URL) {
 		StringBuilder sb = new StringBuilder();
+
+		System.out.println("s3 url in send slack : " + s3URL);
 
 		sb.append("*Project link:* ");
 		sb.append("<");

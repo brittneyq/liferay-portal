@@ -231,6 +231,8 @@ public class ScancodeS3Bucket {
 
 		_s3URL = scancodeS3Object.getURLString();
 
+		System.out.println("S3 URL : " + _s3URL);
+
 		System.out.println(
 			JenkinsResultsParserUtil.combine(
 				"Created Scancode S3 Object ", scancodeS3Object.getURLString(),
