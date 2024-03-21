@@ -4321,6 +4321,9 @@ public class JenkinsResultsParserUtil {
 				TarArchiveEntry tarArchiveEntry = new TarArchiveEntry(
 					file, getPathRelativeTo(file, sourceDir));
 
+				System.out.println(
+					"tar archive entry : " + tarArchiveEntry.getName());
+
 				tarArchiveOutputStream.putArchiveEntry(tarArchiveEntry);
 
 				Files.copy(file.toPath(), tarArchiveOutputStream);

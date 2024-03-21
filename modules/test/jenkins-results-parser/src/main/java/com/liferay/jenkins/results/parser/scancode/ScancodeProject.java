@@ -93,6 +93,10 @@ public class ScancodeProject {
 		String scancodeResultsDir = JenkinsResultsParserUtil.getBuildProperty(
 			"scancode.results.dir");
 
+		if (JenkinsResultsParserUtil.isNullOrEmpty(scancodeResultsDir)) {
+			scancodeResultsDir = "/tmp/scancode_results/";
+		}
+
 		System.out.println("scancode results dir : " + scancodeResultsDir);
 
 		for (String extension : _RESULT_FILES_EXTENSIONS) {
