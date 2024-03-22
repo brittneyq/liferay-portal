@@ -353,14 +353,6 @@ public class ScancodeS3Bucket {
 
 			System.out.println("CREDENTIALS 1: " + credentials);
 
-			if (JenkinsResultsParserUtil.isNullOrEmpty(credentials)) {
-				credentials =
-					"/opt/dev/projects/github/liferay-jenkins-ee/resources" +
-						"/scancode/ci-scancode.json";
-
-				System.out.println("CREDENTIALS : " + credentials);
-			}
-
 			storage = StorageOptions.newBuilder(
 			).setCredentials(
 				ServiceAccountCredentials.fromStream(
