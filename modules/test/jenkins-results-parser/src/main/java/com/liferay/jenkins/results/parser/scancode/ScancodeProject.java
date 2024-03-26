@@ -368,9 +368,7 @@ public class ScancodeProject {
 
 		System.out.println(sb);
 
-		boolean completed = false;
-
-		while (!completed) {
+		while (true) {
 			try {
 				Process process = JenkinsResultsParserUtil.executeBashCommands(
 					new String[] {sb.toString()});
@@ -410,8 +408,6 @@ public class ScancodeProject {
 
 					_projectStatuses.add(projectStatus);
 
-					completed = true;
-
 					break;
 				}
 
@@ -447,7 +443,7 @@ public class ScancodeProject {
 	private String _projectID;
 	private String _projectName;
 	private String _projectNameFromURL;
-	private ArrayList<String> _projectStatuses;
+	private final ArrayList<String> _projectStatuses = new ArrayList<>();
 	private String _projectURL;
 
 }
