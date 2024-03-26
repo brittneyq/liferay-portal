@@ -32,20 +32,16 @@ public class ScancodeProject {
 		_buildURL = buildURL;
 	}
 
-	public void addPipelineToProject(String pipeline)
+	public void addPipeline(String pipeline)
 		throws IOException, TimeoutException {
 
 		StringBuilder sb = new StringBuilder();
 
-		String api_url = "https://scancode.liferay.com/api/projects/";
-
-		String content_type = "'Content-Type: application/json;'";
-
 		sb.append("curl ");
 		sb.append("-X POST ");
-		sb.append(api_url + _projectID + "/add_pipeline/");
+		sb.append(_API_URL + _projectID + "/add_pipeline/");
 		sb.append(" -H ");
-		sb.append(content_type);
+		sb.append(_CONTENT_TYPE);
 		sb.append(" -d ");
 
 		JSONObject jsonObject = new JSONObject();
@@ -58,22 +54,11 @@ public class ScancodeProject {
 
 		sb.append("'" + jsonObject + "'");
 
-		System.out.println("NEW SB STRING : " + sb);
-
 		Process process = JenkinsResultsParserUtil.executeBashCommands(
 			sb.toString());
 
-		String output;
-
 		try {
-			output = JenkinsResultsParserUtil.readInputStream(
-				process.getInputStream());
-
-			output = output.trim();
-
-			System.out.println("output: " + output);
-
-			//JSONObject outputJSONObject = new JSONObject(output);
+			JenkinsResultsParserUtil.readInputStream(process.getInputStream());
 		}
 		catch (IOException ioException) {
 			ioException.printStackTrace();
@@ -122,22 +107,56 @@ public class ScancodeProject {
 	public JSONObject getAnalyzeDockerImageJSONObject(String dockerTag) {
 		JSONObject jsonObject = new JSONObject();
 
-		ArrayList<String> list = new ArrayList<>();
+		jsonObject.put(
+			"execute_now", true
+		).put(
+			"input_urls", "docker://liferay/" + dockerTag
+		).put(
+			"labels", _LABELS
+		).put(
+			"name",
+			dockerTag + " Docker Scan-" +
+				startTimeSimpleDateFormat.format(new Date())
+		).put(
+			"pipeline", _pipelineName
+		);
 
-		list.add("automated");
+		return jsonObject;
+	}
 
-		SimpleDateFormat dt = new SimpleDateFormat("MMM d yy HH:mm:ss");
+	public JSONObject getMapDevelopToDeployJSONObject() throws IOException {
+		JSONObject jsonObject = new JSONObject();
+
+		ArrayList<String> inputURLS = new ArrayList<>();
+
+		String tomcatURL = JenkinsResultsParserUtil.getBuildParameter(
+			_buildURL, "TEST_PORTAL_RELEASE_TOMCAT_URL");
+
+		inputURLS.add(tomcatURL + "#to");
+
+		inputURLS.add(getReleaseTarballLink());
+		inputURLS.add(
+			JenkinsResultsParserUtil.getBuildProperty("scancode.tar.gz.url"));
+		inputURLS.add(
+			JenkinsResultsParserUtil.getBuildProperty(
+				"scancode.config.file.url"));
+
+		String portalReleaseVersion =
+			JenkinsResultsParserUtil.getBuildParameter(
+				_buildURL, "TEST_PORTAL_RELEASE_VERSION");
 
 		jsonObject.put(
 			"execute_now", true
 		).put(
-			"input_urls", "docker://liferay/dxp:" + dockerTag
+			"input_urls", inputURLS
 		).put(
-			"labels", list
+			"labels", _LABELS
 		).put(
-			"name", dockerTag + " Docker Scan-" + dt.format(new Date())
+			"name",
+			portalReleaseVersion + " Scan-" +
+				startTimeSimpleDateFormat.format(new Date())
 		).put(
-			"pipeline", "analyze_docker_image"
+			"pipeline", _pipelineName
 		);
 
 		return jsonObject;
@@ -179,12 +198,6 @@ public class ScancodeProject {
 	public JSONObject getScancodeBasePackagesJSONObject() {
 		JSONObject jsonObject = new JSONObject();
 
-		ArrayList<String> list = new ArrayList<>();
-
-		list.add("automated");
-
-		SimpleDateFormat dt = new SimpleDateFormat("MMM d yy HH:mm:ss");
-
 		jsonObject.put(
 			"execute_now", true
 		).put(
@@ -192,34 +205,31 @@ public class ScancodeProject {
 			"https://github.com/liferay/liferay-portal/archive/refs/heads" +
 				"/master.tar.gz"
 		).put(
-			"labels", list
+			"labels", _LABELS
 		).put(
-			"name", "Master Daily Scan-" + dt.format(new Date())
+			"name",
+			"Master Daily Scan-" + startTimeSimpleDateFormat.format(new Date())
 		).put(
-			"pipeline", "scan_codebase_packages"
+			"pipeline", _pipelineName
 		);
 
 		return jsonObject;
 	}
 
-	public void invokeScancodeScan() throws IOException, TimeoutException {
+	public void invokeScan() throws IOException, TimeoutException {
 		StringBuilder sb = new StringBuilder();
-
-		String api_url = "https://scancode.liferay.com/api/projects/";
-
-		String content_type = "'Content-Type: application/json;'";
 
 		sb.append("curl ");
 		sb.append("-X POST ");
-		sb.append(api_url);
+		sb.append(_API_URL);
 		sb.append(" -H ");
-		sb.append(content_type);
+		sb.append(_CONTENT_TYPE);
 
 		System.out.println("pipeline name : " + _pipelineName);
 
 		JSONObject jsonObject = null;
 
-		if (_pipelineName.equals("scan_codebase_packages")) {
+		if (_pipelineName.equals("inspect_packages")) {
 			jsonObject = getScancodeBasePackagesJSONObject();
 		}
 		else if (_pipelineName.equals("analyze_docker_image")) {
@@ -230,10 +240,9 @@ public class ScancodeProject {
 
 			jsonObject = getAnalyzeDockerImageJSONObject(dockerTag);
 		}
-
-		//        else if(_pipelineName.equals("map_deploy_and_develop")) {
-		//            jsonObject = getMapDevelopAndDeployJSONObject();
-		//        }
+		else if (_pipelineName.equals("map_deploy_to_develop")) {
+			jsonObject = getMapDevelopToDeployJSONObject();
+		}
 
 		sb.append(" -d ");
 		sb.append("'" + jsonObject + "'");
@@ -248,8 +257,6 @@ public class ScancodeProject {
 				process.getInputStream());
 
 			output = output.trim();
-
-			System.out.println("output: " + output);
 
 			JSONObject outputJSONObject = new JSONObject(output);
 
@@ -270,7 +277,7 @@ public class ScancodeProject {
 		}
 	}
 
-	public void sendSlackNotification(String status, String s3URL) {
+	public void sendSlackNotification(String s3URL) {
 		StringBuilder sb = new StringBuilder();
 
 		System.out.println("s3 url in send slack : " + s3URL);
@@ -282,26 +289,27 @@ public class ScancodeProject {
 		sb.append(_projectName);
 		sb.append(">\n");
 		sb.append("*Pipeline:* ");
-		sb.append(_pipelineName);
+
+		if (_pipelineName.equals("inspect_packages")) {
+			sb.append(_pipelineName + ", populate_purldb");
+		}
+		else {
+			sb.append(_pipelineName);
+		}
+
 		sb.append("\n");
 		sb.append("*Status:* ");
-		sb.append(status);
-		sb.append("\n*Results JSON:* ");
-		sb.append("<");
-		sb.append(_projectURL + "results/json/");
-		sb.append("|");
-		sb.append("Results JSON");
-		sb.append(">");
-		sb.append("\n*S3 Tar.gz:*");
+		sb.append(
+			_projectStatuses.toString(
+			).replaceAll(
+				"(^\\[|\\]$)", ""
+			));
+		sb.append("\n*S3 Tar.gz:* ");
 		sb.append("<");
 		sb.append(s3URL);
 		sb.append("|");
 		sb.append(_projectNameFromURL + ".tar.gz");
 		sb.append(">");
-
-		System.out.println("SB TO STRING SLACK NOTIFICATION : " + sb);
-
-		System.out.println("SENDING NOTIFICATON..");
 
 		NotificationUtil.sendSlackNotification(
 			sb.toString(), "#ci-notifications", ":liferay-ci:",
@@ -329,37 +337,34 @@ public class ScancodeProject {
 			"https://scancode.liferay.com/project/" + name + "-" + uid + "/";
 	}
 
-	public void uploadResultsToBucket(String credentialsFile, String tarGzFile)
+	public void uploadResultsToBucket(
+			String credentialsFilePath, String tarGzFilePath)
 		throws IOException {
 
-		File file = new File(tarGzFile);
+		File tarGzFile = new File(tarGzFilePath);
 
 		try {
 			ScancodeS3Bucket scancodeS3Bucket = ScancodeS3Bucket.getInstance();
 
 			scancodeS3Bucket.createScancodeS3Object(
-				"inbox/" + file.getName(), file);
+				"inbox/" + tarGzFile.getName(), tarGzFile);
 
-			sendSlackNotification(_projectStatus, scancodeS3Bucket.getS3URL());
+			sendSlackNotification(scancodeS3Bucket.getS3URL());
 		}
 		catch (Exception exception) {
 			exception.printStackTrace();
 		}
 	}
 
-	public void waitForScancode(String pipelineName) {
+	public void waitForScan(String pipelineName) {
 		StringBuilder sb = new StringBuilder();
-
-		String api_url = "https://scancode.liferay.com/api/projects/";
-
-		String content_type = "'Content-Type: application/json;'";
 
 		sb.append("curl ");
 		sb.append("-X GET ");
-		sb.append(api_url);
+		sb.append(_API_URL);
 		sb.append(_projectID);
 		sb.append("/ -H ");
-		sb.append(content_type);
+		sb.append(_CONTENT_TYPE);
 
 		System.out.println(sb);
 
@@ -375,51 +380,42 @@ public class ScancodeProject {
 
 				output = output.trim();
 
-				System.out.println("output: " + output);
-
 				JSONObject outputJSONObject = new JSONObject(output);
 
 				JSONArray jsonArray = outputJSONObject.getJSONArray("runs");
 
-				System.out.println("JSON ARRAY : " + jsonArray);
-
-				Object firstRun = jsonArray.get(0);
+				Object run = jsonArray.get(0);
 
 				if (pipelineName.equals("populate_purldb")) {
 					System.out.println("setting second run..");
 
-					firstRun = jsonArray.get(1);
+					run = jsonArray.get(1);
 				}
 
-				System.out.println("FIRST RUN : " + firstRun);
-
-				JSONObject runJSONObject = new JSONObject(firstRun.toString());
+				JSONObject runJSONObject = new JSONObject(run.toString());
 
 				String projectStatus = runJSONObject.get(
 					"status"
 				).toString();
 
-				System.out.println("PROJECT STATUS: " + projectStatus);
+				System.out.println(
+					"project status for " + pipelineName + ": " +
+						projectStatus);
 
 				if (!projectStatus.equals("running") &&
 					!projectStatus.equals("queued")) {
 
-					System.out.println("it is not running or queued");
+					System.out.println(
+						"added project status : " + projectStatus);
 
-					_projectStatus = projectStatus;
+					_projectStatuses.add(projectStatus);
 
 					completed = true;
 
 					break;
 				}
 
-				System.out.println("sleeping");
-
-                Thread.sleep(10 * // minutes to sleep
-                        60 * // seconds to a minute
-                        1000);
-
-				System.out.println("sleeping ...");
+				Thread.sleep(10 * 60 * 1000);
 			}
 			catch (Exception exception) {
 				exception.printStackTrace();
@@ -431,6 +427,17 @@ public class ScancodeProject {
 		System.out.println("PROJECT URL : " + _projectURL);
 	}
 
+	protected static final SimpleDateFormat startTimeSimpleDateFormat =
+		new SimpleDateFormat("MMM d yy HH:mm:ss");
+
+	private static final String _API_URL =
+		"https://scancode.liferay.com/api/projects/";
+
+	private static final String _CONTENT_TYPE =
+		"'Content-Type: application/json;'";
+
+	private static final String[] _LABELS = {"automated"};
+
 	private static final String[] _RESULT_FILES_EXTENSIONS = {
 		"json", "xls", "spdx", "cyclonedx", "attribution"
 	};
@@ -440,7 +447,7 @@ public class ScancodeProject {
 	private String _projectID;
 	private String _projectName;
 	private String _projectNameFromURL;
-	private String _projectStatus;
+	private ArrayList<String> _projectStatuses;
 	private String _projectURL;
 
 }
