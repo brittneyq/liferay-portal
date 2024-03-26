@@ -187,7 +187,7 @@ public class ScancodeProject {
 		sb.append(portalBranchUsername);
 		sb.append("/liferay-portal-ee/archive/");
 		sb.append(portalSHA);
-		sb.append("tar.gz");
+		sb.append(".tar.gz");
 		sb.append("#from");
 
 		System.out.println("release tar gz link : " + sb);
