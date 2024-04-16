@@ -135,7 +135,7 @@ public class APIPropertyObjectDefinitionDeployerImpl
 				objectDefinition.getUserId(),
 				objectDefinition.getObjectDefinitionId(),
 				_filterFactory.create("type eq null", objectDefinition), null,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null, null);
 
 		for (Map<String, Serializable> values : valuesList) {
 			Collection<Serializable> collection = values.values();

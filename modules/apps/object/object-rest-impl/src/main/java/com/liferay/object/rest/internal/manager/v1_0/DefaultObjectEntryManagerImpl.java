@@ -107,6 +107,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -392,6 +393,15 @@ public class DefaultObjectEntryManagerImpl
 			}
 		}
 
+		UriInfo uriInfo = dtoConverterContext.getUriInfo();
+
+		MultivaluedMap<String, String> queryParameters =
+			uriInfo.getQueryParameters();
+
+		List<String> fields = Arrays.asList(
+			StringUtil.split(
+				queryParameters.getFirst("fields"), StringPool.COMMA));
+
 		return Page.of(
 			HashMapBuilder.put(
 				"create",
@@ -440,7 +450,7 @@ public class DefaultObjectEntryManagerImpl
 				objectEntryLocalService.getValuesList(
 					groupId, companyId, dtoConverterContext.getUserId(),
 					objectDefinition.getObjectDefinitionId(), predicate, search,
-					start, end, sorts),
+					start, end, sorts, fields),
 				values -> _getObjectEntry(
 					dtoConverterContext, objectDefinition, values)),
 			pagination,
