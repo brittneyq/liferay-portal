@@ -52,7 +52,7 @@ import org.apache.commons.lang.time.StopWatch;
 
 /**
  * @author Alexander Chow
- * @author Brian Wing Shun Chan
+ * @author Brian Wing Shun Chans
  * @author Raymond Augé
  */
 public class Table {
