@@ -44,7 +44,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * @author Shuyang Zhou
+ * @author Shuyang Zhous
  */
 @Ordered(2)
 public class PortalWebShieldedContainerInitializer
