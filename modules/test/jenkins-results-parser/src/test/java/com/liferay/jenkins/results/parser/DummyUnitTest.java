@@ -7,13 +7,18 @@ package com.liferay.jenkins.results.parser;
 
 import org.junit.Test;
 
+import java.io.File;
+
 /**
  * @author Michael Hashimoto
  */
 public class DummyUnitTest {
 
-	@Test
-	public void testUnit() {
+	public static void main(String[] args) {
+		File file = new File("/opt/dev/projects/github/liferay-portal/Report_04-15-2024.csv");
+
+		System.out.println(file.getPath());
+		System.out.println(file.getName());
 	}
 
 }
