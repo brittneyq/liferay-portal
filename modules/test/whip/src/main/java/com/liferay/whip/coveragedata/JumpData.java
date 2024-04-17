@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author Shuyang Zhou
+ * @author Shuyang Zhous
  */
 public class JumpData implements BranchCoverageData<JumpData>, Serializable {
 
