@@ -11,7 +11,7 @@ import com.liferay.portal.kernel.util.Time;
 import java.io.File;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Brian Wing Shun Chans
  */
 public class TestHookUtil {
 
