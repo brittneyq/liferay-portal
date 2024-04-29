@@ -5,7 +5,7 @@
 		<pluginExecution>
 			<pluginExecutionFilter>
 				<goals>
-					<goal>build</goal>
+					<goal>builds</goal>
 				</goals>
 			</pluginExecutionFilter>
 			<action>
