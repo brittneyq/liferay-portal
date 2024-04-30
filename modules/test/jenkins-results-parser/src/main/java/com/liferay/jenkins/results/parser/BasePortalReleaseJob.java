@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.json.JSONObject;
 
@@ -89,7 +90,28 @@ public abstract class BasePortalReleaseJob
 
 		recordJobProperty(jobProperty);
 
-		return getSetFromString(jobProperty.getValue());
+		Set<String> batchNames = getSetFromString(jobProperty.getValue());
+
+		String[] releaseBatchNameMarkers = {
+			"empty-osgi", "functional", "modules-integration", "playwright"
+		};
+
+		Set<String> releaseOnlyBatchNames = new TreeSet<>();
+
+		for (String batchName : batchNames) {
+			for (String releaseOnlyBatchNameMarker : releaseBatchNameMarkers) {
+				if (batchName.contains(releaseOnlyBatchNameMarker)) {
+					releaseOnlyBatchNames.add(batchName);
+
+					break;
+				}
+			}
+		}
+
+		System.out.println(
+			"release only batch names : " + releaseOnlyBatchNames);
+
+		return releaseOnlyBatchNames;
 	}
 
 	@Override
