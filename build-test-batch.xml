@@ -1743,12 +1743,18 @@ app.server.type=@{app.server.type}]]></echo>
 						<if>
 							<and>
 								<or>
-									<matches pattern="(file|https?)://" string="@{test.portal.bundle.war.url}" />
-									<matches pattern="(file|https?)://" string="@{test.portal.bundle.zip.url}" />
+									<matches pattern="(file|https?)://" string="${test.portal.bundle.war.url}" />
+									<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 								</or>
-								<matches pattern="(file|https?)://" string="@{test.sql.zip.url}" />
+								<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
 							</and>
 							<then>
+								<echo>setting tomcat version number...</echo>
+
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
+								<echo> preparing release test environment...</echo>
+
 								<prepare-release-test-environment
 									app.server.type="${app.server.type}"
 									setup.testable.jboss="@{setup.testable.jboss}"
@@ -1756,7 +1762,7 @@ app.server.type=@{app.server.type}]]></echo>
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
 									test.license.xml.url="${test.license.xml.url}"
-									test.plugins.war.zip.url="@{test.plugins.war.zip.url}"
+									test.plugins.war.zip.url="${test.plugins.war.zip.url}"
 									test.portal.bundle.dependencies.zip.url="${test.portal.bundle.dependencies.zip.url}"
 									test.portal.bundle.elasticsearch.zip.url="${test.portal.bundle.elasticsearch.zip.url}"
 									test.portal.bundle.osgi.zip.url="${test.portal.bundle.osgi.zip.url}"
