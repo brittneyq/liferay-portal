@@ -1747,6 +1747,7 @@ app.server.type=@{app.server.type}]]></echo>
 									<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 								</or>
 								<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
+								<contains string="${env.JOB_NAME}" substring="release" />
 							</and>
 							<then>
 								<echo>setting tomcat version number...</echo>
