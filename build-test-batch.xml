@@ -1743,12 +1743,17 @@ app.server.type=@{app.server.type}]]></echo>
 						<if>
 							<and>
 								<or>
-									<matches pattern="(file|https?)://" string="@{test.portal.bundle.war.url}" />
-									<matches pattern="(file|https?)://" string="@{test.portal.bundle.zip.url}" />
+									<matches pattern="(file|https?)://" string="${test.portal.bundle.war.url}" />
+									<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 								</or>
-								<matches pattern="(file|https?)://" string="@{test.sql.zip.url}" />
+								<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
+								<contains string="${env.JOB_NAME}" substring="release" />
 							</and>
 							<then>
+								<echo>scenario 1</echo>
+
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									app.server.type="${app.server.type}"
 									setup.testable.jboss="@{setup.testable.jboss}"
@@ -1756,7 +1761,7 @@ app.server.type=@{app.server.type}]]></echo>
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
 									test.license.xml.url="${test.license.xml.url}"
-									test.plugins.war.zip.url="@{test.plugins.war.zip.url}"
+									test.plugins.war.zip.url="${test.plugins.war.zip.url}"
 									test.portal.bundle.dependencies.zip.url="${test.portal.bundle.dependencies.zip.url}"
 									test.portal.bundle.elasticsearch.zip.url="${test.portal.bundle.elasticsearch.zip.url}"
 									test.portal.bundle.osgi.zip.url="${test.portal.bundle.osgi.zip.url}"
@@ -1817,6 +1822,8 @@ app.server.type=@{app.server.type}]]></echo>
 									<available file="liferay-portal-source.tar.gz" />
 								</and>
 								<then>
+									<echo>scenario 2</echo>
+
 									<prepare-test-environment
 										app.server.type="${app.server.type}"
 										app.server.version="${app.server.version}"
@@ -1825,6 +1832,8 @@ app.server.type=@{app.server.type}]]></echo>
 								</then>
 							</elseif>
 							<else>
+								<echo>scenario 3</echo>
+
 								<antcall target="compile" />
 
 								<if>
