@@ -1823,6 +1823,8 @@ app.server.type=@{app.server.type}]]></echo>
 									<available file="liferay-portal-source.tar.gz" />
 								</and>
 								<then>
+									<echo>scenario 2</echo>
+
 									<prepare-test-environment
 										app.server.type="${app.server.type}"
 										app.server.version="${app.server.version}"
@@ -1832,6 +1834,8 @@ app.server.type=@{app.server.type}]]></echo>
 							</elseif>
 							<else>
 								<antcall target="compile" />
+
+								<echo>scenario 3</echo>
 
 								<if>
 									<or>
