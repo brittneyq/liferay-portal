@@ -2429,7 +2429,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 
 							<ant dir="portal-test" inheritAll="false" target="deploy" />
 
-							<setup-test-batch-testable-tomcat test.portal.bundle.version="@{test.portal.bundle.version}" />
+							<setup-test-batch-testable-tomcat test.portal.bundle.version="${test.portal.bundle.version}" />
 
 							<get-test-batch-app-server-start-executable-arg-line />
 
@@ -2460,10 +2460,10 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 									<if>
 										<and>
 											<or>
-												<matches pattern="https?://" string="@{test.portal.bundle.war.url}" />
-												<matches pattern="https?://" string="@{test.portal.bundle.zip.url}" />
+												<matches pattern="https?://" string="${test.portal.bundle.war.url}" />
+												<matches pattern="https?://" string="${test.portal.bundle.zip.url}" />
 											</or>
-											<matches pattern="https?://" string="@{test.sql.zip.url}" />
+											<matches pattern="https?://" string="${test.sql.zip.url}" />
 										</and>
 										<then>
 											<gradle-execute dir="modules/core" task="deploy">
@@ -2491,12 +2491,17 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 					<if>
 						<and>
 							<or>
-								<matches pattern="(file|https?)://" string="@{test.portal.bundle.war.url}" />
-								<matches pattern="(file|https?)://" string="@{test.portal.bundle.zip.url}" />
+								<matches pattern="(file|https?)://" string="${test.portal.bundle.war.url}" />
+								<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 							</or>
-							<matches pattern="(file|https?)://" string="@{test.sql.zip.url}" />
+							<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
+							<contains string="${env.JOB_NAME}" substring="release" />
 						</and>
 						<then>
+							<echo>setting tomcat number...</echo>
+
+							<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 							<prepare-release-test-environment
 								app.server.type="${app.server.type}"
 								setup.testable.tomcat="@{setup.testable.tomcat}"
@@ -2585,10 +2590,14 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<available file="liferay-portal-source.tar.gz" />
 							</and>
 							<then>
+								<echo>scenario 2</echo>
+
 								<prepare-test-environment setup.testable.tomcat="@{setup.testable.tomcat}" />
 							</then>
 						</elseif>
 						<else>
+							<echo>scenario 3</echo>
+
 							<prepare-test-build />
 						</else>
 					</if>
