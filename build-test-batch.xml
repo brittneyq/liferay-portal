@@ -1747,7 +1747,7 @@ app.server.type=@{app.server.type}]]></echo>
 									<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 								</or>
 								<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
-								<contains string="${env.JOB_NAME}" substring="release" />
+								<contains string="${env.JOB_NAME}" substring="-release" />
 							</and>
 							<then>
 								<echo>setting tomcat number...</echo>
@@ -2497,7 +2497,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 							</or>
 							<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
-							<contains string="${env.JOB_NAME}" substring="release" />
+							<contains string="${env.JOB_NAME}" substring="-release" />
 						</and>
 						<then>
 							<echo>setting modules tomcat number</echo>
@@ -2921,12 +2921,15 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 					<if>
 						<and>
 							<or>
-								<matches pattern="(file|https?)://" string="@{test.portal.bundle.war.url}" />
-								<matches pattern="(file|https?)://" string="@{test.portal.bundle.zip.url}" />
+								<matches pattern="(file|https?)://" string="${test.portal.bundle.war.url}" />
+								<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 							</or>
-							<matches pattern="(file|https?)://" string="@{test.sql.zip.url}" />
+							<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
+							<contains string="${env.JOB_NAME}" substring="-release" />
 						</and>
 						<then>
+							<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 							<prepare-release-test-environment
 								app.server.type="@{app.server.type}"
 								test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
@@ -7555,24 +7558,6 @@ ${output.content}</echo>
 				<setup-test-environment />
 			</test-set-up>
 		</run-batch-test>
-	</target>
-
-	<target name="playwright-js-bundle-tomcat90-mysql57-jdk8">
-		<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
-
-		<run-playwright-js-test
-			app.server.type="tomcat"
-			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
-			test.fix.pack.base.url="${test.fix.pack.base.url}"
-			test.license.xml.url="${test.license.xml.url}"
-			test.portal.bundle.osgi.zip.url="${test.portal.bundle.osgi.zip.url}"
-			test.portal.bundle.tools.zip.url="${test.portal.bundle.tools.zip.url}"
-			test.portal.bundle.version="${test.portal.bundle.version}"
-			test.portal.bundle.war.url="${test.portal.bundle.war.url}"
-			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
-			test.portal.lpkg.name="${test.portal.lpkg.name}"
-			test.sql.zip.url="${test.sql.zip.url}"
-		/>
 	</target>
 
 	<target name="playwright-js-tomcat90-mysql57-jdk8">
