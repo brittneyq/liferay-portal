@@ -1750,7 +1750,11 @@ app.server.type=@{app.server.type}]]></echo>
 								<contains string="${env.JOB_NAME}" substring="release" />
 							</and>
 							<then>
+								<echo>setting tomcat number...</echo>
+
 								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
+								<echo>prepare release environment</echo>
 
 								<prepare-release-test-environment
 									app.server.type="${app.server.type}"
@@ -1820,6 +1824,8 @@ app.server.type=@{app.server.type}]]></echo>
 									<available file="liferay-portal-source.tar.gz" />
 								</and>
 								<then>
+									<echo>scenario 2</echo>
+
 									<prepare-test-environment
 										app.server.type="${app.server.type}"
 										app.server.version="${app.server.version}"
@@ -1828,6 +1834,8 @@ app.server.type=@{app.server.type}]]></echo>
 								</then>
 							</elseif>
 							<else>
+								<echo>scenario 3</echo>
+
 								<antcall target="compile" />
 
 								<if>
@@ -2492,7 +2500,11 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 							<contains string="${env.JOB_NAME}" substring="release" />
 						</and>
 						<then>
+							<echo>setting modules tomcat number</echo>
+
 							<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
+							<echo>preparing release environment</echo>
 
 							<prepare-release-test-environment
 								app.server.type="${app.server.type}"
@@ -2582,10 +2594,14 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<available file="liferay-portal-source.tar.gz" />
 							</and>
 							<then>
+								<echo>scenario 2...</echo>
+
 								<prepare-test-environment setup.testable.tomcat="@{setup.testable.tomcat}" />
 							</then>
 						</elseif>
 						<else>
+							<echo>scenario 3...</echo>
+
 							<prepare-test-build />
 						</else>
 					</if>
