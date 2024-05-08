@@ -1750,14 +1750,19 @@ app.server.type=@{app.server.type}]]></echo>
 								<contains string="${env.JOB_NAME}" substring="-release" />
 							</and>
 							<then>
-								<echo>setting tomcat number...</echo>
+								<if>
+									<equals arg1="@{app.sever.type}" arg2="tomcat" />
+									<then>
+										<echo>setting tomcat number....</echo>
 
-								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+										<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+									</then>
+								</if>
 
 								<echo>prepare release environment</echo>
 
 								<prepare-release-test-environment
-									app.server.type="${app.server.type}"
+									app.server.type="@{app.server.type}"
 									setup.testable.jboss="@{setup.testable.jboss}"
 									setup.testable.tomcat="@{setup.testable.tomcat}"
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
@@ -3992,6 +3997,8 @@ information. Make sure to commit in all format-javadoc results.
 	</target>
 
 	<target name="functional-jboss73-mysql57-jdk8">
+		<set-app-server-version-number app.server.type="jboss" app.server.version="7.3.0" />
+
 		<run-functional-test app.server.type="jboss" database.type="mysql" database.version="5.7" />
 	</target>
 
