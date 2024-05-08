@@ -4797,10 +4797,22 @@ information. Make sure to commit in all format-javadoc results.
 		<run-functional-test app.server.type="wildfly" app.server.version="26.1.0" database.type="mariadb" />
 	</target>
 
+	<target name="functional-weblogic122-mysql56-jdk8">
+		<set-app-server-version-number app.server.type="weblogic" app.server.version="12.2.1" />
+
+		<run-functional-test app.server.type="weblogic" database.type="mysql" database.version="5.6" />
+	</target>
+
 	<target name="functional-weblogic122-mysql57-jdk8">
 		<set-app-server-version-number app.server.type="weblogic" app.server.version="12.2.1" />
 
 		<run-functional-test app.server.type="weblogic" database.type="mysql" />
+	</target>
+
+	<target name="functional-weblogic122-oracle122-jdk8">
+		<set-app-server-version-number app.server.type="weblogic" app.server.version="12.2.1" />
+
+		<run-functional-test app.server.type="weblogic" database.type="oracle" database.version="12.2.0.0.0" />
 	</target>
 
 	<target name="functional-weblogic122-oracle193-jdk8">
@@ -4813,6 +4825,12 @@ information. Make sure to commit in all format-javadoc results.
 		<set-app-server-version-number app.server.type="weblogic" app.server.version="14.1.1" />
 
 		<run-functional-test app.server.type="weblogic" database.type="mysql" />
+	</target>
+
+	<target name="functional-weblogic141-oracle122-jdk8">
+		<set-app-server-version-number app.server.type="weblogic" app.server.version="14.1.1" />
+
+		<run-functional-test app.server.type="weblogic" database.type="oracle" database.version="12.2.0.0.0" />
 	</target>
 
 	<target name="functional-weblogic141-oracle193-jdk8">
