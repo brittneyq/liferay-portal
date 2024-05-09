@@ -12,7 +12,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Preston Crary
+ * @author Preston Crarys
  */
 public class StringParserTest {
 
