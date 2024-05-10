@@ -341,9 +341,9 @@ mariadb.executable=${mariadb.executable}]]></echo>
 									</if>
 
 									<echo></echo>
-									<echo>##</echo>
-									<echo>## ${database.executable} ${database.version.cmd}</echo>
-									<echo>##</echo>
+									<echo>###</echo>
+									<echo>### ${database.executable} ${database.version.cmd}</echo>
+									<echo>###</echo>
 									<echo></echo>
 
 									<exec executable="${database.executable}">
