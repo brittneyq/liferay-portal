@@ -3717,7 +3717,7 @@ information. Make sure to commit in all build-lib-versions results.
 		<run-empty-osgi-core-dir-test database.type="mysql" />
 	</target>
 
-	<target name="empty-osgi-core-dir-postgres153-jdk8">
+	<target name="empty-osgi-core-dir-postgresql153-jdk8">
 		<run-empty-osgi-core-dir-test database.type="postgresql" />
 	</target>
 
