@@ -1760,6 +1760,14 @@ public abstract class BaseTopLevelBuild
 	}
 
 	protected String getReleaseRepositoryName() {
+		if (getBranchName().matches(
+				"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+")) {
+
+			System.out.println("in base top level build...");
+
+			return "liferay-portal";
+		}
+
 		if (!Objects.equals(getBranchName(), "master")) {
 			return "liferay-portal-ee";
 		}
