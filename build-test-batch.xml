@@ -1751,7 +1751,7 @@ app.server.type=@{app.server.type}]]></echo>
 							</and>
 							<then>
 								<if>
-									<equals arg1="@{app.sever.type}" arg2="tomcat" />
+									<equals arg1="@{app.server.type}" arg2="tomcat" />
 									<then>
 										<echo>setting tomcat number....</echo>
 
