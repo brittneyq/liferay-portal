@@ -802,6 +802,8 @@ jdbc.default.connectionProperties=oracle.jdbc.ReadTimeout=0;oracle.net.CONNECT_T
 					propertyValue = project.getProperty(sb.toString());
 
 					if (propertyValue != null) {
+						System.out.println("Setting database property : " + propertyName + " to " + propertyValue);
+
 						project.setProperty(propertyName, propertyValue);
 					}
 				]]>
@@ -7898,6 +7900,8 @@ ${docker.start.error}</fail>
 		<sequential>
 			<lstopwatch action="start" name="stop.app.server.@{app.server.bundle.index}" />
 
+			<echo>test docker environment: ${test.docker.environment}</echo>
+
 			<if>
 				<istrue value="${test.docker.environment}" />
 				<then>
@@ -7914,7 +7918,11 @@ ${docker.start.error}</fail>
 				</else>
 			</if>
 
+			<echo>printing docker database logs...</echo>
+
 			<print-docker-database-logs />
+
+			<echo>printing docker stats...</echo>
 
 			<print-docker-stats />
 
@@ -16664,9 +16672,12 @@ CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.managemen
 	<target name="start-docker-containers">
 		<get-database-property property.name="database.docker.image" />
 
+		<echo>database docker image ${database.docker.image}</echo>
 		<if>
 			<isset property="database.docker.image" />
 			<then>
+				<echo>database docker image is set...</echo>
+				
 				<stop-docker-database />
 
 				<start-docker-database />
@@ -16713,6 +16724,8 @@ CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.managemen
 		<stop-app-server
 			app.server.bundle.index="${app.server.bundle.index}"
 		/>
+
+		<echo>stop app server target...</echo>
 	</target>
 
 	<target name="stop-docker-containers">
