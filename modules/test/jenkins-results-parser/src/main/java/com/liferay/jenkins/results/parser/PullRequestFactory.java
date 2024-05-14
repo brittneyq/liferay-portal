@@ -40,6 +40,8 @@ public class PullRequestFactory {
 	}
 
 	public static PullRequest newPullRequest(String gitHubURL, Build build) {
+		System.out.println("github url : " + gitHubURL);
+
 		PullRequest pullRequest = _pullRequests.get(gitHubURL);
 
 		if (pullRequest != null) {
