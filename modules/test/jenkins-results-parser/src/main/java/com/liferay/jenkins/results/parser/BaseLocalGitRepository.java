@@ -121,6 +121,10 @@ public abstract class BaseLocalGitRepository
 
 	@Override
 	public String getUpstreamBranchName() {
+		System.out.println(
+			"get upstream branch name in git repo : " +
+				getString("upstream_branch_name"));
+
 		return getString("upstream_branch_name");
 	}
 

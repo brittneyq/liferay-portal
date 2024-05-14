@@ -1101,6 +1101,11 @@ public class PullRequest {
 
 		_gitHubRemoteGitRepositoryName = matcher.group(
 			"gitHubRemoteGitRepositoryName");
+
+		System.out.println(
+			"_githubRemoteGitRepositoryName : " +
+				_gitHubRemoteGitRepositoryName);
+
 		_number = Integer.parseInt(matcher.group("number"));
 		_ownerUsername = matcher.group("owner");
 
