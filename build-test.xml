@@ -7909,6 +7909,14 @@ ${docker.start.error}</fail>
 						app.server.bundle.index="@{app.server.bundle.index}"
 						app.server.explicit.stop.count="@{app.server.explicit.stop.count}"
 					/>
+
+					<echo>printing docker database logs...</echo>
+
+					<print-docker-database-logs />
+
+					<echo>printing docker stats...</echo>
+
+					<print-docker-stats />
 				</then>
 				<else>
 					<stop-app-server-cmd
@@ -7917,14 +7925,6 @@ ${docker.start.error}</fail>
 					/>
 				</else>
 			</if>
-
-			<echo>printing docker database logs...</echo>
-
-			<print-docker-database-logs />
-
-			<echo>printing docker stats...</echo>
-
-			<print-docker-stats />
 
 			<lstopwatch action="total" name="stop.app.server.@{app.server.bundle.index}" />
 		</sequential>
@@ -16677,7 +16677,7 @@ CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.managemen
 			<isset property="database.docker.image" />
 			<then>
 				<echo>database docker image is set...</echo>
-				
+
 				<stop-docker-database />
 
 				<start-docker-database />
