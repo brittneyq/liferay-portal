@@ -7953,9 +7953,15 @@ ${docker.start.error}</fail>
 						<![CDATA[
 							import com.liferay.jenkins.results.parser.AppServer;
 
+							System.out.println("creating app server....");
+
 							AppServer appServer = new AppServer(project);
 
+							System.out.println("stopping app server service...");
+
 							appServer.stopService();
+
+							System.out.println("stopped app server service...");
 						]]>
 					</beanshell>
 				</daemons>
@@ -7963,9 +7969,13 @@ ${docker.start.error}</fail>
 					<if>
 						<isset property="env.HOSTNAME" />
 						<then>
+							<echo>server host is env hostname : ${env.HOSTNAME}</echo>
+
 							<property name="server.host" value="${env.HOSTNAME}" />
 						</then>
 						<else>
+							<echo>server host is localhost...</echo>
+
 							<property name="server.host" value="localhost" />
 						</else>
 					</if>
@@ -8103,6 +8113,8 @@ ${docker.start.error}</fail>
 							</if>
 						</then>
 					</if>
+
+					<echo>end of stop app server parallel</echo>
 				</sequential>
 			</parallel>
 		</sequential>
