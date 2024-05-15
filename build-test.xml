@@ -7299,9 +7299,14 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 
 			<lstopwatch action="total" name="start.app.server.@{app.server.bundle.index}" />
 
-			<print-docker-database-logs />
+			<if>
+				<istrue value="${test.docker.environment}" />
+				<then>
+					<print-docker-database-logs />
 
-			<print-docker-stats />
+					<print-docker-stats />
+				</then>
+			</if>
 		</sequential>
 	</macrodef>
 
