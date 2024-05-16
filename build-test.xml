@@ -7299,8 +7299,11 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 
 			<lstopwatch action="total" name="start.app.server.@{app.server.bundle.index}" />
 
+			<get-database-property property.name="database.docker.image" />
+
+			<echo>database docker image start app server ${database.docker.image}</echo>
 			<if>
-				<istrue value="${test.docker.environment}" />
+				<isset property="database.docker.image" />
 				<then>
 					<print-docker-database-logs />
 
@@ -7914,7 +7917,22 @@ ${docker.start.error}</fail>
 						app.server.bundle.index="@{app.server.bundle.index}"
 						app.server.explicit.stop.count="@{app.server.explicit.stop.count}"
 					/>
+				</then>
+				<else>
+					<stop-app-server-cmd
+						app.server.bundle.index="@{app.server.bundle.index}"
+						app.server.explicit.stop.count="@{app.server.explicit.stop.count}"
+					/>
+				</else>
+			</if>
 
+			<get-database-property property.name="database.docker.image" />
+
+			<echo>stop app server database docker image ${database.docker.image}</echo>
+
+			<if>
+				<isset property="database.docker.image" />
+				<then>
 					<echo>printing docker database logs...</echo>
 
 					<print-docker-database-logs />
@@ -7923,12 +7941,6 @@ ${docker.start.error}</fail>
 
 					<print-docker-stats />
 				</then>
-				<else>
-					<stop-app-server-cmd
-						app.server.bundle.index="@{app.server.bundle.index}"
-						app.server.explicit.stop.count="@{app.server.explicit.stop.count}"
-					/>
-				</else>
 			</if>
 
 			<lstopwatch action="total" name="stop.app.server.@{app.server.bundle.index}" />
