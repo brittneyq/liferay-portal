@@ -89,8 +89,9 @@ public class PullRequestPortalTopLevelBuild
 			"branch name in portal top level build: " + branchName);
 
 		if (!branchName.equals("master") &&
-			!branchName.matches(
-				"\"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+\"")) {
+			!branchName.matches("(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+")) {
+
+			System.out.println("adding -ee to github url...");
 
 			sb.append("-ee");
 		}
