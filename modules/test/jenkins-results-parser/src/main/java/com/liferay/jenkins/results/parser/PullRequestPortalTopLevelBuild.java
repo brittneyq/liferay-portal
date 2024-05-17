@@ -85,7 +85,13 @@ public class PullRequestPortalTopLevelBuild
 
 		String branchName = getBranchName();
 
-		if (!branchName.equals("master")) {
+		System.out.println(
+			"branch name in portal top level build: " + branchName);
+
+		if (!branchName.equals("master") &&
+			!branchName.matches(
+				"\"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+\"")) {
+
 			sb.append("-ee");
 		}
 
