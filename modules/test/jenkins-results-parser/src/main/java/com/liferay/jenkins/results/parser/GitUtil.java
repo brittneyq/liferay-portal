@@ -138,9 +138,18 @@ public class GitUtil {
 			throw new RuntimeException("Invalid GitHub URL " + gitHubURL);
 		}
 
+		System.out.println("github url in get remote git ref : " + gitHubURL);
+
 		String remoteGitRepositoryURL = JenkinsResultsParserUtil.combine(
 			"git@github.com:", matcher.group("username"), "/",
 			matcher.group("gitRepositoryName"), ".git");
+
+		System.out.println(
+			"remote git repository url : " + remoteGitRepositoryURL);
+
+		System.out.println("username : " + matcher.group("username"));
+
+		System.out.println("ref name : " + matcher.group("refName"));
 
 		return getRemoteGitRef(
 			matcher.group("refName"), new File("."), remoteGitRepositoryURL);
