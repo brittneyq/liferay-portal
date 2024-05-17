@@ -699,6 +699,8 @@ public abstract class BaseWorkspaceGitRepository
 	}
 
 	private void _setGitHubURL(String gitHubURL) {
+		System.out.println("IN _setGitHubURL : " + gitHubURL);
+
 		if (gitHubURL == null) {
 			throw new RuntimeException("GitHub URL is null");
 		}

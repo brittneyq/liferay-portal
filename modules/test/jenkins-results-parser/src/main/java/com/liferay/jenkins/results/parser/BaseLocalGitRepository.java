@@ -66,6 +66,8 @@ public abstract class BaseLocalGitRepository
 
 	@Override
 	public String getDirectoryName() {
+		System.out.println("get directory name : " + getDirectoryName());
+
 		return getString("directory_name");
 	}
 
