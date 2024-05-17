@@ -198,10 +198,21 @@ public class GitRepositoryFactory {
 				"Unable to find git directory name " + gitDirectoryName);
 		}
 
+		String ownerName = "liferay";
+
+		if (gitRepositoryName.equals("liferay-portal") &&
+			upstreamBranchName.matches(
+				"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+")) {
+
+			ownerName = "liferay-release";
+
+			System.out.println("owner name is liferay-release: " + ownerName);
+		}
+
 		RemoteGitRef remoteGitRef = GitUtil.getRemoteGitRef(
 			JenkinsResultsParserUtil.combine(
-				"https://github.com/liferay/", gitRepositoryName, "/tree/",
-				upstreamBranchName));
+				"https://github.com/", ownerName, "/", gitRepositoryName,
+				"/tree/", upstreamBranchName));
 
 		if (gitRepositoryName.matches("liferay-plugins(-ee)?")) {
 			workspaceGitRepository = new PluginsWorkspaceGitRepository(

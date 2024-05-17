@@ -761,6 +761,8 @@ public abstract class BaseTopLevelBuild
 			String remoteURL = null;
 
 			if (isReleaseBuild()) {
+				System.out.println("is release build...");
+
 				remoteURL = JenkinsResultsParserUtil.combine(
 					"git@github.com:", getSenderUsername(), "/",
 					getReleaseRepositoryName(), ".git");
@@ -771,12 +773,16 @@ public abstract class BaseTopLevelBuild
 					getRepositoryName(), ".git");
 			}
 
+			System.out.println("remote url : " + remoteURL);
+
 			return GitUtil.getRemoteGitRef(
 				getSenderBranchName(), new File("."), remoteURL);
 		}
 
 		@Override
 		public String getSenderUsername() {
+			System.out.println("Get sender username : " + getSenderUsername());
+
 			return _workspaceGitRepository.getSenderBranchUsername();
 		}
 
@@ -1760,6 +1766,8 @@ public abstract class BaseTopLevelBuild
 	}
 
 	protected String getReleaseRepositoryName() {
+		System.out.println("IN GET RELEASE REPOSITORY NAME!");
+
 		if (getBranchName().matches(
 				"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+")) {
 
@@ -1769,8 +1777,12 @@ public abstract class BaseTopLevelBuild
 		}
 
 		if (!Objects.equals(getBranchName(), "master")) {
+			System.out.println("RETURNING LIFERAY_PORTAL_EE...");
+
 			return "liferay-portal-ee";
 		}
+
+		System.out.println("RETURNING LIFERAY-PORTAL...");
 
 		return "liferay-portal";
 	}

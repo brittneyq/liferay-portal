@@ -1781,6 +1781,10 @@ public abstract class BaseBuild implements Build {
 
 			String regex = "[\\S\\s]*github.receiver.username=(.+)\\n[\\S\\s]*";
 
+			System.out.println(
+				"branch information string in receiver username : " +
+					branchInformationString);
+
 			if (branchInformationString.matches(regex)) {
 				return branchInformationString.replaceAll(regex, "$1");
 			}

@@ -83,6 +83,10 @@ public class PullRequestPortalTopLevelBuild
 		sb.append(getParameterValue("GITHUB_RECEIVER_USERNAME"));
 		sb.append("/liferay-portal");
 
+		System.out.println(
+			"receiver username : " +
+				getParameterValue("GITHUB_RECEIVER_USERNAME"));
+
 		String branchName = getBranchName();
 
 		System.out.println(
