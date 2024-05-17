@@ -1807,9 +1807,18 @@ public abstract class BaseBuild implements Build {
 				repositoryType = "portal";
 			}
 
-			return JenkinsResultsParserUtil.getProperty(
+			System.out.println("repository type : " + repositoryType);
+
+			System.out.println(
+				"get upstream branch name : " + getUpstreamBranchName());
+
+			String repositoryName = JenkinsResultsParserUtil.getProperty(
 				buildProperties, repositoryType + ".repository",
 				getUpstreamBranchName());
+
+			System.out.println("repository name is : " + repositoryName);
+
+			return repositoryName;
 		}
 
 		@Override
@@ -1866,10 +1875,15 @@ public abstract class BaseBuild implements Build {
 		public String getUpstreamBranchName() {
 			String branchInformationString = _getBranchInformationString();
 
+			System.out.println(
+				"branch information string : " + branchInformationString);
+
 			String regex =
 				"[\\S\\s]*github.upstream.branch.name=(.+)\\n[\\S\\s]*";
 
 			if (branchInformationString.matches(regex)) {
+				System.out.println("branch information string matches regex");
+
 				return branchInformationString.replaceAll(regex, "$1");
 			}
 
