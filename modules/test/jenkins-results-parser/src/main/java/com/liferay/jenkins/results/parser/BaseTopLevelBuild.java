@@ -445,6 +445,7 @@ public abstract class BaseTopLevelBuild
 		long start = JenkinsResultsParserUtil.getCurrentTimeMillis();
 
 		try {
+			System.out.println("in get jenkins report element...");
 			return Dom4JUtil.getNewElement(
 				"html", null, getJenkinsReportHeadElement(),
 				getJenkinsReportBodyElement());
@@ -1260,16 +1261,24 @@ public abstract class BaseTopLevelBuild
 	}
 
 	protected Element getJenkinsReportBodyElement() {
+		System.out.println("in get jenkins report body element...");
+
 		Element subheadingElement = null;
 
 		JSONObject jobJSONObject = getBuildJSONObject();
 
+		System.out.println("got job json object");
+
 		String description = jobJSONObject.optString("description");
+
+		System.out.println("description : " + description);
 
 		if (!description.isEmpty()) {
 			subheadingElement = Dom4JUtil.getNewElement("h2");
 
 			try {
+				System.out.println("adding description to html...");
+
 				Dom4JUtil.addRawXMLToElement(subheadingElement, description);
 			}
 			catch (DocumentException documentException) {
@@ -1280,6 +1289,8 @@ public abstract class BaseTopLevelBuild
 		}
 
 		String buildURL = getBuildURL();
+
+		System.out.println("build url : " + buildURL);
 
 		Element headingElement = Dom4JUtil.getNewElement(
 			"h1", null, "Jenkins report for ",
@@ -1418,6 +1429,8 @@ public abstract class BaseTopLevelBuild
 	}
 
 	protected Element getJenkinsReportHeadElement() {
+		System.out.println("in jenkins report head element");
+
 		Element headElement = Dom4JUtil.getNewElement("head");
 
 		getResourceFileContentAsElement(
