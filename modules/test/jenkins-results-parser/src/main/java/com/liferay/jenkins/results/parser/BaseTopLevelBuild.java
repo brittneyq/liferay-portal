@@ -446,11 +446,14 @@ public abstract class BaseTopLevelBuild
 
 		try {
 			System.out.println("in get jenkins report element...");
+
 			return Dom4JUtil.getNewElement(
 				"html", null, getJenkinsReportHeadElement(),
 				getJenkinsReportBodyElement());
 		}
 		finally {
+			System.out.println("getting duration ...");
+
 			String duration = JenkinsResultsParserUtil.toDurationString(
 				JenkinsResultsParserUtil.getCurrentTimeMillis() - start);
 
@@ -1295,6 +1298,8 @@ public abstract class BaseTopLevelBuild
 		Element headingElement = Dom4JUtil.getNewElement(
 			"h1", null, "Jenkins report for ",
 			Dom4JUtil.getNewAnchorElement(buildURL, buildURL));
+
+		System.out.println("returning body element...");
 
 		return Dom4JUtil.getNewElement(
 			"body", null, headingElement, subheadingElement,
@@ -2197,6 +2202,8 @@ public abstract class BaseTopLevelBuild
 				getJenkinsReport(), getArchivePath() + "/jenkins-report.html");
 		}
 		catch (Exception exception) {
+			exception.printStackTrace();
+
 			System.out.println("Unable to archive Jenkins report");
 		}
 		finally {
