@@ -38,17 +38,9 @@ public class GitWorkingDirectoryFactory {
 				if (upstreamBranchName.contains("release")) {
 					gitRepositoryDirName = "liferay-portal-ee";
 
-					if (upstreamBranchName.matches(
-							"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+")) {
-
-						System.out.println(
-							"assigning git repository dir name to " +
-								"liferay-portal");
-
-						gitRepositoryDirName = "liferay-portal";
-
-						gitRepositoryName = "liferay-portal";
-					}
+					System.out.println(
+						"git repository dir name is ... : " +
+							gitRepositoryDirName);
 				}
 			}
 

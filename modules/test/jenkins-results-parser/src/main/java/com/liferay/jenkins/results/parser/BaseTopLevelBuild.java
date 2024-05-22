@@ -447,9 +447,36 @@ public abstract class BaseTopLevelBuild
 		try {
 			System.out.println("in get jenkins report element...");
 
-			return Dom4JUtil.getNewElement(
-				"html", null, getJenkinsReportHeadElement(),
-				getJenkinsReportBodyElement());
+			Element headElement = getJenkinsReportHeadElement();
+
+			System.out.println("HEAD ELEMENT : " + headElement);
+
+			System.out.println(
+				"PRETTY HEAD : " + Dom4JUtil.format(headElement, true));
+
+			Element bodyElement = getJenkinsReportBodyElement();
+
+			System.out.println("BODY ELEMENT : " + bodyElement);
+
+			System.out.println(
+				"PRETTY BODY : " + Dom4JUtil.format(bodyElement, true));
+
+			Element element = Dom4JUtil.getNewElement(
+				"html", null, headElement, bodyElement);
+
+			System.out.println(
+				"pretty element : " + Dom4JUtil.format(element, true));
+
+			return element;
+		}
+		catch (Exception exception) {
+			System.out.println("****ERRORR*****");
+
+			exception.printStackTrace();
+
+			System.out.println("***END OF ERROR***");
+
+			return null;
 		}
 		finally {
 			System.out.println("getting duration ...");
@@ -1279,6 +1306,8 @@ public abstract class BaseTopLevelBuild
 		if (!description.isEmpty()) {
 			subheadingElement = Dom4JUtil.getNewElement("h2");
 
+			System.out.println("subheading element... : " + subheadingElement);
+
 			try {
 				System.out.println("adding description to html...");
 
@@ -1784,23 +1813,9 @@ public abstract class BaseTopLevelBuild
 	}
 
 	protected String getReleaseRepositoryName() {
-		System.out.println("IN GET RELEASE REPOSITORY NAME!");
-
-		if (getBranchName().matches(
-				"(release-7\\.[0-4]\\.[0-9]?[0-9])\\.\\d+")) {
-
-			System.out.println("in base top level build...");
-
-			return "liferay-portal";
-		}
-
 		if (!Objects.equals(getBranchName(), "master")) {
-			System.out.println("RETURNING LIFERAY_PORTAL_EE...");
-
 			return "liferay-portal-ee";
 		}
-
-		System.out.println("RETURNING LIFERAY-PORTAL...");
 
 		return "liferay-portal";
 	}
