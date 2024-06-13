@@ -108,8 +108,12 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public List<BatchTestClassGroup> getBatchTestClassGroups() {
+		System.out.println("IN GET BATCH TEST CLASS GROUPS()");
+
 		synchronized (_jobProperties) {
 			if (_batchTestClassGroups != null) {
+				System.out.println("batch test class groups is not null");
+
 				return _batchTestClassGroups;
 			}
 
@@ -131,6 +135,8 @@ public abstract class BaseJob implements Job {
 						TestClassGroupFactory.newBatchTestClassGroup(
 							this, batchJSONObject));
 				}
+
+				System.out.println("returning _batchTestClassGroups");
 
 				return _batchTestClassGroups;
 			}
