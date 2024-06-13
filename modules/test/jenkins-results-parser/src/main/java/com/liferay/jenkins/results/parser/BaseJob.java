@@ -142,11 +142,9 @@ public abstract class BaseJob implements Job {
 			try {
 				buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 
-				if (buildProperties.getProperty(
-						"relevant.engine.enabled"
-					).equals(
-						"true"
-					)) {
+				if (Objects.equals(
+						buildProperties.getProperty("relevant.engine.enabled"),
+						"true")) {
 
 					relevantEngineProperty = true;
 				}
@@ -157,7 +155,7 @@ public abstract class BaseJob implements Job {
 			}
 
 			if (relevantEngineProperty &&
-				getTestSuiteName().equals("relevant")) {
+				Objects.equals(getTestSuiteName(), "relevant")) {
 
 				System.out.println(
 					"relevant engine property is true and test suite is " +
