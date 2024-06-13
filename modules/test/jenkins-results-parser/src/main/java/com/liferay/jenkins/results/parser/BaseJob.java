@@ -152,6 +152,9 @@ public abstract class BaseJob implements Job {
 						buildProperties.getProperty("relevant.engine.enabled"),
 						"true")) {
 
+					System.out.println(
+						"Setting relevant engine property to true");
+
 					relevantEngineProperty = true;
 				}
 			}
@@ -171,6 +174,8 @@ public abstract class BaseJob implements Job {
 					getTestBatchBatchTestClassGroups(getTestBatches()));
 			}
 			else {
+				System.out.println("relevant engine is not true!");
+
 				_batchTestClassGroups.addAll(
 					getBatchTestClassGroups(getRawBatchNames()));
 			}
