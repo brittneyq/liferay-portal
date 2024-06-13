@@ -69,6 +69,8 @@ public class RelevantRuleEngine {
 
 		String relevantRuleKey = filePath + "_" + relevantRuleName;
 
+		System.out.println("relevant rule key : " + relevantRuleKey);
+
 		for (RelevantRule relevantRule : _relevantRuleMap.keySet()) {
 			if (relevantRuleKey.equals(relevantRule.getKey())) {
 				return relevantRule;

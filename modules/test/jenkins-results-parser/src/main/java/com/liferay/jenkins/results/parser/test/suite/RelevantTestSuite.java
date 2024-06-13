@@ -31,6 +31,8 @@ public class RelevantTestSuite {
 		List<RelevantRule> relevantRules =
 			_relevantRuleEngine.getMatchingRelevantRules(_modifiedFiles);
 
+		System.out.println("relevant rules : " + relevantRules);
+
 		for (RelevantRule relevantRule : relevantRules) {
 			for (TestBatch testBatch : relevantRule.getTestBatches()) {
 				if (testBatches.contains(testBatch)) {

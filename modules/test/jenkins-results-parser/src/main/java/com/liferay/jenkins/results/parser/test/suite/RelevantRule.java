@@ -97,6 +97,10 @@ public class RelevantRule {
 					getProperties(), "test.batch.names", getName(),
 					getTestSuiteName());
 
+			System.out.println(
+				"test batch names property value : " +
+					testBatchNamesPropertyValue);
+
 			if (testBatchNamesPropertyValue == null) {
 				return Collections.emptyList();
 			}
