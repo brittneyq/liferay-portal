@@ -159,6 +159,10 @@ public abstract class BaseJob implements Job {
 			if (relevantEngineProperty &&
 				getTestSuiteName().equals("relevant")) {
 
+				System.out.println(
+					"relevant engine property is true and test suite is " +
+						"relevant");
+
 				_batchTestClassGroups.addAll(
 					getTestBatchBatchTestClassGroups(getTestBatches()));
 			}
@@ -1164,6 +1168,8 @@ public abstract class BaseJob implements Job {
 
 	protected List<BatchTestClassGroup> getTestBatchBatchTestClassGroups(
 		Set<TestBatch> testBatches) {
+
+		System.out.println("in get test batch batch test class groups");
 
 		if ((testBatches == null) || testBatches.isEmpty()) {
 			return new ArrayList<>();

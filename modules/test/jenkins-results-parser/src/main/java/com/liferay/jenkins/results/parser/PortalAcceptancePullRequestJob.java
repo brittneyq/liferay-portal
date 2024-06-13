@@ -110,9 +110,14 @@ public class PortalAcceptancePullRequestJob
 
 	@Override
 	protected Set<TestBatch> getTestBatches() {
+		System.out.println(
+			"in get test batches in portal acceptance pull request job");
+
 		if (!_isRelevantTestSuite()) {
 			return super.getTestBatches();
 		}
+
+		System.out.println("it is a relevant suite!");
 
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();

@@ -24,6 +24,8 @@ public class RelevantTestSuite {
 	}
 
 	public List<TestBatch> getTestBatches() {
+		System.out.println("in relevant test suite get test batches");
+
 		List<TestBatch> testBatches = new ArrayList<>();
 
 		List<RelevantRule> relevantRules =
