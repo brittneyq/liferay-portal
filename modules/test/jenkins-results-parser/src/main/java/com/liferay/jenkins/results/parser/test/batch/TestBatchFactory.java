@@ -27,12 +27,15 @@ public class TestBatchFactory {
 		try {
 			if (batchName.startsWith("functional")) {
 				PoshiTestSelector poshiTestSelector = new PoshiTestSelector(
-					properties, batchName, relevantRuleName, testSuiteName);
+					propertiesFile, properties, batchName, relevantRuleName,
+					testSuiteName);
 
 				PoshiTestBatch poshiTestBatch = new PoshiTestBatch(
 					batchName, poshiTestSelector);
 
 				poshiTestSelector.setTestBatch(poshiTestBatch);
+
+				return poshiTestBatch;
 			}
 
 			if (batchName.startsWith("integration") ||
