@@ -24,7 +24,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Alexander Chow
+ * @author Alexander Chows
  * @author André de Oliveira
  */
 @Component(service = Trackback.class)
