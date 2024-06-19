@@ -8,6 +8,8 @@ package com.liferay.jenkins.results.parser.test.suite;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestBatch;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
+import com.liferay.jenkins.results.parser.test.batch.PoshiTestBatch;
+import com.liferay.jenkins.results.parser.test.batch.PoshiTestSelector;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
 
 import java.io.File;
@@ -26,7 +28,7 @@ public class RelevantTestSuiteTest {
 
 	@Test
 	public void testPlaywrightTestSelectorMerge() {
-		RelevantTestSuite relevantTestSuite = new RelevantTestSuite(
+		_relevantTestSuite = new RelevantTestSuite(
 			_baseDir,
 			Arrays.asList(
 				new File(_baseDir, "modules/module-1/text_file_1.txt"),
@@ -34,12 +36,14 @@ public class RelevantTestSuiteTest {
 
 		PlaywrightTestBatch playwrightTestBatch = null;
 
-		for (TestBatch testBatch : relevantTestSuite.getTestBatches()) {
+		for (TestBatch testBatch : _relevantTestSuite.getTestBatches()) {
+			System.out.println("test batch name 3: " + testBatch.getName());
+
 			if (testBatch instanceof PlaywrightTestBatch) {
 				playwrightTestBatch = (PlaywrightTestBatch)testBatch;
-			}
 
-			break;
+				break;
+			}
 		}
 
 		PlaywrightTestSelector playwrightTestSelector =
@@ -52,6 +56,44 @@ public class RelevantTestSuiteTest {
 		Assert.assertEquals(
 			expectedPlaywrightProjectNames,
 			playwrightTestSelector.getPlaywrightProjectNames());
+
+		System.out.println("DONE WITH PLAYWRIGHT");
+	}
+
+	@Test
+	public void testPoshiTestSelectorMerge() {
+		_relevantTestSuite = new RelevantTestSuite(
+			_baseDir,
+			Arrays.asList(
+				new File(
+					_baseDir,
+					"modules/module-3/module-3-submodule-1/text_file_3_1.txt"),
+				new File(_baseDir, "text_file_0.txt")));
+
+		PoshiTestBatch poshiTestBatch = null;
+
+		for (TestBatch testBatch : _relevantTestSuite.getTestBatches()) {
+			if (testBatch instanceof PoshiTestBatch) {
+				poshiTestBatch = (PoshiTestBatch)testBatch;
+
+				break;
+			}
+		}
+
+		PoshiTestSelector poshiTestSelector = poshiTestBatch.getTestSelector();
+
+		try {
+			String expectedPoshiQuery = JenkinsResultsParserUtil.read(
+				new File(
+					_baseDir,
+					"modules/module-3/module-3-submodule-1/text_file_3_1.txt"));
+
+			Assert.assertEquals(
+				expectedPoshiQuery, poshiTestSelector.getPoshiQuery());
+		}
+		catch (Exception exception) {
+			exception.printStackTrace();
+		}
 	}
 
 	private static final File _baseDir;
@@ -63,5 +105,7 @@ public class RelevantTestSuiteTest {
 
 		_baseDir = JenkinsResultsParserUtil.getCanonicalFile(baseDir);
 	}
+
+	private RelevantTestSuite _relevantTestSuite;
 
 }
