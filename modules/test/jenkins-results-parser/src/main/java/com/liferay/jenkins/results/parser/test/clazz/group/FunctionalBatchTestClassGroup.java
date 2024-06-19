@@ -12,6 +12,8 @@ import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalHotfixReleaseJob;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
+import com.liferay.jenkins.results.parser.test.batch.PoshiTestBatch;
+import com.liferay.jenkins.results.parser.test.batch.PoshiTestSelector;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassBalancedListSplitter;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
@@ -173,6 +175,23 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		_setTestBatchRunPropertyQueries();
+
+		setAxisTestClassGroups();
+
+		setSegmentTestClassGroups();
+	}
+
+	protected FunctionalBatchTestClassGroup(
+		String batchName, PortalTestClassJob portalTestClassJob,
+		PoshiTestBatch poshiTestBatch) {
+
+		super(batchName, portalTestClassJob);
+
+		if (ignore()) {
+			return;
+		}
+
+		_setTestBatchRunPropertyQueries(poshiTestBatch.getTestSelector());
 
 		setAxisTestClassGroups();
 
@@ -730,6 +749,38 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			_testBatchRunPropertyQueries.put(
 				testBaseDir, testBatchRunPropertyQuery);
 		}
+	}
+
+	private void _setTestBatchRunPropertyQueries(
+		PoshiTestSelector poshiTestSelector) {
+
+		Set<File> poshiQueryFileSet = poshiTestSelector.getPoshiQueryFileSet();
+
+		for (File file : poshiQueryFileSet) {
+			recordJobProperty(
+				getJobProperty(
+					"test.batch.run.property.query", testSuiteName, batchName,
+					file, JobProperty.Type.MODULE_TEST_DIR));
+		}
+
+		PortalGitWorkingDirectory portalGitWorkingDirectory =
+			portalTestClassJob.getPortalGitWorkingDirectory();
+
+		File portalWorkingDirectory =
+			portalGitWorkingDirectory.getWorkingDirectory();
+
+		String globalPoshiQuery = poshiTestSelector.getGlobalPoshiQuery();
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(globalPoshiQuery)) {
+			recordJobProperty(
+				getJobProperty(
+					"test.batch.run.property.global.query", testSuiteName,
+					batchName, portalWorkingDirectory,
+					JobProperty.Type.MODULE_TEST_DIR));
+		}
+
+		_testBatchRunPropertyQueries.put(
+			portalWorkingDirectory, globalPoshiQuery);
 	}
 
 	private static List<File> _modifiedFiles;
