@@ -57,6 +57,10 @@ public class RelevantRule {
 					modifiedFilesExcludes.split(","));
 		}
 
+		System.out.println(
+			"modified exclude path matchers : " +
+				_modifiedFilesExcludesPathMatchers);
+
 		return _modifiedFilesExcludesPathMatchers;
 	}
 
@@ -91,11 +95,20 @@ public class RelevantRule {
 	}
 
 	public List<TestBatch> getTestBatches() {
+		System.out.println("IN GET TEST BATCHES FOR " + _filePath);
+
+		System.out.println("GET NAME : " + _name);
+
 		if (_testBatches == null) {
+			System.out.println("test batches is null...");
+
 			String testBatchNamesPropertyValue =
 				JenkinsResultsParserUtil.getProperty(
 					getProperties(), "test.batch.names", getName(),
 					getTestSuiteName());
+
+			System.out.println(
+				"test batch property value : " + testBatchNamesPropertyValue);
 
 			if (testBatchNamesPropertyValue == null) {
 				return Collections.emptyList();
@@ -106,6 +119,7 @@ public class RelevantRule {
 			for (String testBatchName :
 					testBatchNamesPropertyValue.split(",")) {
 
+				System.out.println("added test batch..." + testBatchName);
 				_testBatches.add(
 					TestBatchFactory.newTestBatch(
 						new File(_filePath), getProperties(), testBatchName,
@@ -121,6 +135,8 @@ public class RelevantRule {
 	}
 
 	public boolean matches(File modifiedFile) {
+		System.out.println("modified file is ... " + modifiedFile);
+
 		return JenkinsResultsParserUtil.isFileIncluded(
 			getModifiedFilesExcludesPathMatchers(),
 			getModifiedFilesIncludesPathMatchers(), modifiedFile);

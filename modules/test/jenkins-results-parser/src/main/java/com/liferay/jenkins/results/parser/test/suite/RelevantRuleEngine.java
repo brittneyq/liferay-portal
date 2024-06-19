@@ -177,6 +177,8 @@ public class RelevantRuleEngine {
 			}
 
 			for (String relevantRuleName : relevantRuleNames.split(",")) {
+				System.out.println(
+					"relevant rule name 1 : " + relevantRuleName);
 				_relevantRuleMap.put(
 					_getRelevantRule(
 						testPropertiesFilePath, relevantRuleName,
