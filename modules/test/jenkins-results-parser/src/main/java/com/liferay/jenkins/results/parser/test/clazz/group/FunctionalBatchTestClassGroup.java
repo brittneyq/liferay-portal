@@ -780,7 +780,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		}
 
 		_testBatchRunPropertyQueries.put(
-			portalWorkingDirectory, globalPoshiQuery);
+			new File(
+				portalGitWorkingDirectory.getWorkingDirectory(),
+				"portal-web/test/functional/portalweb"),
+			globalPoshiQuery);
 	}
 
 	private static List<File> _modifiedFiles;
