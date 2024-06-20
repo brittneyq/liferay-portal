@@ -112,8 +112,8 @@ public class PoshiTestSelector extends BaseTestSelector {
 		else {
 			System.out.println("combining new pql!");
 
-			_poshiQuery = JenkinsResultsParserUtil.combine(
-				"(", _poshiQuery, ") AND (", newPQL, ")");
+			_poshiQuery += JenkinsResultsParserUtil.combine(
+				" OR (", newPQL, ")");
 		}
 	}
 
