@@ -759,19 +759,23 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	private void _setTestBatchRunPropertyQueries(
 		PoshiTestSelector poshiTestSelector) {
 
-		Set<File> poshiQueryFileSet = poshiTestSelector.getPoshiQueryFileSet();
+		Map<String, File> ruleFileMap = poshiTestSelector.getRuleFileMap();
 
-		System.out.println("poshi query file set : " + poshiQueryFileSet);
+		System.out.println("poshi query file set : " + ruleFileMap);
 
-		for (File file : poshiQueryFileSet) {
+		for (Map.Entry<String, File> ruleFile : ruleFileMap.entrySet()) {
 			System.out.println(
-				"FILE PARENT FILE : " + file.getParentFile() +
-					" test suite name : " + testSuiteName + "batch name : " +
-						batchName);
+				"FILE PARENT FILE : " +
+					ruleFile.getValue(
+					).getParentFile() + " test suite name : " + testSuiteName +
+						"batch name : " + batchName);
 
 			JobProperty jobProperty = getJobProperty(
 				"test.batch.run.property.query", testSuiteName, batchName,
-				file.getParentFile(), JobProperty.Type.MODULE_TEST_DIR);
+				ruleFile.getKey(),
+				ruleFile.getValue(
+				).getParentFile(),
+				JobProperty.Type.MODULE_TEST_DIR);
 
 			System.out.println(
 				"JOB PROPERTY VALUE : " + jobProperty.getValue());

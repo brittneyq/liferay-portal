@@ -10,9 +10,9 @@ import com.liferay.jenkins.results.parser.test.suite.RelevantTestSuite;
 
 import java.io.File;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * @author Kenji Heigel
@@ -38,7 +38,7 @@ public class PoshiTestSelector extends BaseTestSelector {
 
 		_poshiQuery = getProperty(TEST_BATCH_RUN_PROPERTY_QUERY);
 
-		_poshiQueryFileSet.add(propertiesFile);
+		_ruleFileMap.put(relevantRuleName, propertiesFile);
 	}
 
 	public String getGlobalPoshiQuery() {
@@ -55,12 +55,12 @@ public class PoshiTestSelector extends BaseTestSelector {
 		return _poshiQuery;
 	}
 
-	public Set<File> getPoshiQueryFileSet() {
-		return _poshiQueryFileSet;
-	}
-
 	public File getPropertiesFile() {
 		return _propertiesFile;
+	}
+
+	public Map<String, File> getRuleFileMap() {
+		return _ruleFileMap;
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class PoshiTestSelector extends BaseTestSelector {
 		}
 	}
 
-	private static final Set<File> _poshiQueryFileSet = new HashSet<>();
+	private static final Map<String, File> _ruleFileMap = new HashMap<>();
 
 	private String _globalPoshiQuery;
 	private String _poshiQuery;
