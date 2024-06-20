@@ -40,6 +40,12 @@ public abstract class BaseTestSelector implements TestSelector {
 		return _batchName;
 	}
 
+	public JobProperty getGlobalJobProperty(String basePropertyName) {
+		return JobPropertyFactory.newJobProperty(
+			basePropertyName, _testSuiteName, _batchName, _job,
+			RelevantRuleEngine.getBaseDir(), null, true);
+	}
+
 	public Job getJob() {
 		return _job;
 	}
