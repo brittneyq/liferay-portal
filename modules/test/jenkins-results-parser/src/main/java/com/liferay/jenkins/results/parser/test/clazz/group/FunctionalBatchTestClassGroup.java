@@ -767,7 +767,7 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			recordJobProperty(
 				getJobProperty(
 					"test.batch.run.property.query", testSuiteName, batchName,
-					file, JobProperty.Type.MODULE_TEST_DIR));
+					file.getParentFile(), JobProperty.Type.MODULE_TEST_DIR));
 		}
 
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
