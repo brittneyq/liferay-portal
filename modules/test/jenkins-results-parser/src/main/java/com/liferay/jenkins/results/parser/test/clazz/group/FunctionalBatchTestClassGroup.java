@@ -377,8 +377,13 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			return;
 		}
 
+		System.out.println("GET TEST BASE DIRS : " + getTestBaseDirs());
+
 		for (File testBaseDir : getTestBaseDirs()) {
 			String query = getTestBatchRunPropertyQuery(testBaseDir);
+
+			System.out.println(
+				"query in set axis test class groups : " + query);
 
 			if (query == null) {
 				continue;
@@ -769,9 +774,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		File portalWorkingDirectory =
 			portalGitWorkingDirectory.getWorkingDirectory();
 
-		String globalPoshiQuery = poshiTestSelector.getGlobalPoshiQuery();
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(
+				poshiTestSelector.getGlobalPoshiQuery())) {
 
-		if (!JenkinsResultsParserUtil.isNullOrEmpty(globalPoshiQuery)) {
 			recordJobProperty(
 				getJobProperty(
 					"test.batch.run.property.global.query", testSuiteName,
@@ -783,7 +788,11 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 			new File(
 				portalGitWorkingDirectory.getWorkingDirectory(),
 				"portal-web/test/functional/portalweb"),
-			globalPoshiQuery);
+			poshiTestSelector.getPoshiQuery());
+
+		System.out.println(
+			"TEST BATCH RUN PROPERTY QUERIES : " +
+				_testBatchRunPropertyQueries);
 	}
 
 	private static List<File> _modifiedFiles;
