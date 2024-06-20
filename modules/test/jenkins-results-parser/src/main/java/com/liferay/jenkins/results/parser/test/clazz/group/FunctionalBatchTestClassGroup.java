@@ -761,6 +761,8 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		Set<File> poshiQueryFileSet = poshiTestSelector.getPoshiQueryFileSet();
 
+		System.out.println("poshi query file set : " + poshiQueryFileSet);
+
 		for (File file : poshiQueryFileSet) {
 			recordJobProperty(
 				getJobProperty(
@@ -773,6 +775,9 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		File portalWorkingDirectory =
 			portalGitWorkingDirectory.getWorkingDirectory();
+
+		System.out.println(
+			"portal working directory " + portalWorkingDirectory);
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(
 				poshiTestSelector.getGlobalPoshiQuery())) {
