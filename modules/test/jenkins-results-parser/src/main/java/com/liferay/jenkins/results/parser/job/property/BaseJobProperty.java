@@ -142,6 +142,29 @@ public abstract class BaseJobProperty implements JobProperty {
 
 		_testSuiteName = testSuiteName;
 		_testBatchName = testBatchName;
+
+		_ruleName = null;
+	}
+
+	protected BaseJobProperty(
+		Job job, Type type, String basePropertyName,
+		boolean useBasePropertyName, String testSuiteName, String testBatchName,
+		String ruleName) {
+
+		_job = job;
+		_type = type;
+		_basePropertyName = basePropertyName;
+		_useBasePropertyName = useBasePropertyName;
+
+		if ((testSuiteName == null) && (job instanceof TestSuiteJob)) {
+			TestSuiteJob testSuiteJob = (TestSuiteJob)job;
+
+			testSuiteName = testSuiteJob.getTestSuiteName();
+		}
+
+		_testSuiteName = testSuiteName;
+		_testBatchName = testBatchName;
+		_ruleName = ruleName;
 	}
 
 	protected List<File> getJobPropertiesFiles() {
@@ -222,6 +245,7 @@ public abstract class BaseJobProperty implements JobProperty {
 	private String _name;
 	private File _propertiesFile;
 	private boolean _readJobProperties;
+	private final String _ruleName;
 	private final String _testBatchName;
 	private final String _testSuiteName;
 	private final Type _type;

@@ -764,10 +764,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println("poshi query file set : " + poshiQueryFileSet);
 
 		for (File file : poshiQueryFileSet) {
-			recordJobProperty(
-				getJobProperty(
-					"test.batch.run.property.query", testSuiteName, batchName,
-					file.getParentFile(), JobProperty.Type.MODULE_TEST_DIR));
+			System.out.println(
+				"FILE PARENT FILE : " + file.getParentFile() +
+					" test suite name : " + testSuiteName + "batch name : " +
+						batchName);
+
+			JobProperty jobProperty = getJobProperty(
+				"test.batch.run.property.query", testSuiteName, batchName,
+				file.getParentFile(), JobProperty.Type.MODULE_TEST_DIR);
+
+			System.out.println(
+				"JOB PROPERTY VALUE : " + jobProperty.getValue());
+
+			recordJobProperty(jobProperty);
 		}
 
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
