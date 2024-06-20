@@ -17,7 +17,12 @@ import java.util.List;
  */
 public class RelevantTestSuite {
 
+	public static File getBaseDir() {
+		return _baseDir;
+	}
+
 	public RelevantTestSuite(File baseDir, List<File> modifiedFiles) {
+		_baseDir = baseDir;
 		_modifiedFiles = modifiedFiles;
 
 		_relevantRuleEngine = new RelevantRuleEngine(baseDir);
@@ -46,6 +51,8 @@ public class RelevantTestSuite {
 
 		return testBatches;
 	}
+
+	private static File _baseDir = new File("");
 
 	private final List<File> _modifiedFiles;
 	private final RelevantRuleEngine _relevantRuleEngine;
