@@ -24,6 +24,10 @@ public abstract class BaseTestSelector implements TestSelector {
 		_testSuiteName = testSuiteName;
 	}
 
+	public String getBatchName() {
+		return _batchName;
+	}
+
 	public String getProperty(String propertyName) {
 		return JenkinsResultsParserUtil.getProperty(
 			_properties, propertyName, _batchName, _relevantRuleName,
@@ -32,6 +36,10 @@ public abstract class BaseTestSelector implements TestSelector {
 
 	public TestBatch getTestBatch() {
 		return _testBatch;
+	}
+
+	public String getTestSuiteName() {
+		return _testSuiteName;
 	}
 
 	public void setTestBatch(TestBatch testBatch) {
