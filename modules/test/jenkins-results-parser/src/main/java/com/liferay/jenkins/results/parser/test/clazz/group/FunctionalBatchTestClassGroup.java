@@ -764,11 +764,12 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 		System.out.println("poshi query file set : " + ruleFileMap);
 
 		for (Map.Entry<String, File> ruleFile : ruleFileMap.entrySet()) {
+			File parentFile = ruleFile.getValue(
+			).getParentFile();
+
 			System.out.println(
-				"FILE PARENT FILE : " +
-					ruleFile.getValue(
-					).getParentFile() + " test suite name : " + testSuiteName +
-						"batch name : " + batchName);
+				"FILE PARENT FILE : " + parentFile + " test suite name : " +
+					testSuiteName + "batch name : " + batchName);
 
 			JobProperty jobProperty = getJobProperty(
 				"test.batch.run.property.query", testSuiteName, batchName,

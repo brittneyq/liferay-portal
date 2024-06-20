@@ -141,6 +141,11 @@ public class JobPropertyFactory {
 		String ruleName, Job job, File testBaseDir, JobProperty.Type type,
 		boolean useBasePropertyName) {
 
+		System.out.println("BATCH NAME in NEW JOB PROPERTY : " + testBatchName);
+		System.out.println(
+			"testSuite NAME in NEW JOB PROPERTY : " + testSuiteName);
+		System.out.println("RULE NAME in NEW JOB PROPERTY : " + ruleName);
+
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(basePropertyName);
@@ -183,6 +188,8 @@ public class JobPropertyFactory {
 
 		String key = sb.toString();
 
+		System.out.println("KEY IN NEW JOB PROPERTY : " + key);
+
 		JobProperty jobProperty = _jobProperties.get(key);
 
 		if (jobProperty != null) {
@@ -217,6 +224,8 @@ public class JobPropertyFactory {
 				testSuiteName, testBatchName, ruleName);
 		}
 		else if (type == JobProperty.Type.MODULE_TEST_DIR) {
+			System.out.println("TYPE IS MODULE TEST DIR..");
+
 			jobProperty = new ModuleTestDirJobProperty(
 				job, type, testBaseDir, basePropertyName, useBasePropertyName,
 				testSuiteName, testBatchName, ruleName);

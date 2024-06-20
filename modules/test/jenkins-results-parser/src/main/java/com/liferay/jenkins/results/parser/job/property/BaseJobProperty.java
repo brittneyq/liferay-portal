@@ -92,6 +92,13 @@ public abstract class BaseJobProperty implements JobProperty {
 
 	@Override
 	public String toString() {
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(_ruleName)) {
+			return JenkinsResultsParserUtil.join(
+				"_", _job.getJobName(), _basePropertyName,
+				String.valueOf(_type), String.valueOf(_useBasePropertyName),
+				_testSuiteName, _testBatchName, _ruleName);
+		}
+
 		return JenkinsResultsParserUtil.join(
 			"_", _job.getJobName(), _basePropertyName, String.valueOf(_type),
 			String.valueOf(_useBasePropertyName), _testSuiteName,
@@ -150,6 +157,8 @@ public abstract class BaseJobProperty implements JobProperty {
 		Job job, Type type, String basePropertyName,
 		boolean useBasePropertyName, String testSuiteName, String testBatchName,
 		String ruleName) {
+
+		System.out.println("IN BASE JOB PROPERTY... : " + ruleName);
 
 		_job = job;
 		_type = type;
@@ -234,6 +243,10 @@ public abstract class BaseJobProperty implements JobProperty {
 
 		jobPropertyOptions.add(_testSuiteName);
 		jobPropertyOptions.add(_testBatchName);
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(_ruleName)) {
+			jobPropertyOptions.add(_ruleName);
+		}
 
 		jobPropertyOptions.removeAll(Collections.singleton(null));
 
