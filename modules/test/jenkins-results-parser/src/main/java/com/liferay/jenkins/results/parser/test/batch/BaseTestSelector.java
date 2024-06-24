@@ -29,6 +29,10 @@ public abstract class BaseTestSelector implements TestSelector {
 	}
 
 	public String getProperty(String propertyName) {
+		System.out.println("property name : " + propertyName);
+		System.out.println("properties : " + _properties);
+		System.out.println("relevant rule name : " + _relevantRuleName);
+		System.out.println("test suite name : " + _testSuiteName);
 		return JenkinsResultsParserUtil.getProperty(
 			_properties, propertyName, _batchName, _relevantRuleName,
 			_testSuiteName);

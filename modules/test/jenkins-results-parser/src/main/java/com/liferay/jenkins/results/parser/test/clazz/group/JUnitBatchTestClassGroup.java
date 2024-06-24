@@ -12,6 +12,8 @@ import com.liferay.jenkins.results.parser.PortalAcceptancePullRequestJob;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
+import com.liferay.jenkins.results.parser.test.batch.JUnitTestBatch;
+import com.liferay.jenkins.results.parser.test.batch.JUnitTestSelector;
 import com.liferay.jenkins.results.parser.test.clazz.JUnitTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassBalancedListSplitter;
@@ -30,11 +32,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import java.text.SimpleDateFormat;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -91,6 +89,9 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	public List<JobProperty> getFilterJobProperties() {
+		if(_jUnitTestBatch != null){
+			return getTestSelectorFilterJobProperties();
+		}
 		List<JobProperty> filterJobProperties = new ArrayList<>();
 
 		filterJobProperties.add(
@@ -241,6 +242,26 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
+	private List<JobProperty> getTestSelectorFilterJobProperties() {
+		JUnitTestSelector jUnitTestSelector = _jUnitTestBatch.getTestSelector();
+
+		Map<String, File> includesRuleFileMap = jUnitTestSelector.getFilterRuleFileMap();
+
+		List<JobProperty> filterJobProperties = new ArrayList<>();
+
+		for(Map.Entry<String, File> ruleFile : includesRuleFileMap.entrySet()) {
+			filterJobProperties.add(
+					getJobProperty(
+							"test.batch.class.names.filter", testSuiteName, batchName,
+							ruleFile.getKey(),
+							ruleFile.getValue(
+							).getParentFile(),
+							JobProperty.Type.FILTER_GLOB));
+		}
+
+		return filterJobProperties;
+	}
+
 	protected JUnitBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
@@ -297,6 +318,43 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		_loadJavaFiles(_getWorkingDirectory());
 
 		setTestClasses();
+
+		_setAutoBalanceTestFiles();
+
+		_setIncludeAutoBalanceTests();
+
+		setAxisTestClassGroups();
+
+		setSegmentTestClassGroups();
+	}
+
+	protected JUnitBatchTestClassGroup(
+			String batchName, PortalTestClassJob portalTestClassJob, JUnitTestBatch jUnitTestBatch) {
+
+		super(batchName, portalTestClassJob);
+
+		if (ignore()) {
+			_includeUnstagedTestClassFiles = false;
+
+			return;
+		}
+
+		if (portalTestClassJob instanceof PortalAcceptancePullRequestJob) {
+			PortalAcceptancePullRequestJob portalAcceptancePullRequestJob =
+					(PortalAcceptancePullRequestJob)portalTestClassJob;
+
+			_includeUnstagedTestClassFiles =
+					portalAcceptancePullRequestJob.isCentralMergePullRequest();
+		}
+		else {
+			_includeUnstagedTestClassFiles = false;
+		}
+
+		_jUnitTestBatch = jUnitTestBatch;
+
+		_loadJavaFiles(_getWorkingDirectory());
+
+		setTestClasses(jUnitTestBatch.getTestSelector());
 
 		_setAutoBalanceTestFiles();
 
@@ -674,6 +732,53 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		Collections.sort(testClasses);
 	}
 
+	protected void setTestClasses(JUnitTestSelector jUnitTestSelector) {
+		List<PathMatcher> includesPathMatchers = jUnitTestSelector.getIncludesPathMatchers();
+
+		if (includesPathMatchers.isEmpty()) {
+			return;
+		}
+
+		long start = System.currentTimeMillis();
+
+		List<PathMatcher> filterPathMatchers = jUnitTestSelector.getFilterPathMatchers();
+		List<PathMatcher> excludesPathMatchers = jUnitTestSelector.getExcludesPathMatchers();
+
+		BatchTestClassGroup batchTestClassGroup = this;
+
+		for (final File javaTestClassFile : _javaTestClassFiles) {
+			if (JenkinsResultsParserUtil.isFileExcluded(
+					excludesPathMatchers, javaTestClassFile) ||
+					!JenkinsResultsParserUtil.isFileIncluded(
+							excludesPathMatchers, includesPathMatchers,
+							javaTestClassFile) ||
+					!JenkinsResultsParserUtil.isFileIncluded(
+							null, filterPathMatchers, javaTestClassFile)) {
+
+				continue;
+			}
+
+			TestClass testClass = TestClassFactory.newTestClass(
+					batchTestClassGroup, javaTestClassFile);
+
+			if ((testClass != null) && !testClass.isIgnored() &&
+					testClass.hasTestClassMethods()) {
+
+				testClasses.add(testClass);
+			}
+		}
+
+		long duration = System.currentTimeMillis() - start;
+
+		System.out.println(
+				JenkinsResultsParserUtil.combine(
+						"[", getBatchName(), "] Found ",
+						String.valueOf(testClasses.size()), " test classes in ",
+						JenkinsResultsParserUtil.toDurationString(duration)));
+
+		Collections.sort(testClasses);
+	}
+
 	private File _getWorkingDirectory() {
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
@@ -842,5 +947,6 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	private final List<File> _autoBalanceTestFiles = new ArrayList<>();
 	private boolean _includeAutoBalanceTests;
 	private final boolean _includeUnstagedTestClassFiles;
+	private JUnitTestBatch _jUnitTestBatch = null;
 
 }

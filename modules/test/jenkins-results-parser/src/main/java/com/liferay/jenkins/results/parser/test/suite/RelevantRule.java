@@ -26,6 +26,9 @@ public class RelevantRule {
 	public RelevantRule(
 		String filePath, String name, Properties properties, String suiteName) {
 
+		System.out.println("file path : " + filePath);
+		System.out.println("name : " + name);
+		System.out.println("suite name : " + suiteName);
 		_filePath = filePath;
 		_name = name;
 		_properties = properties;

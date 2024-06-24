@@ -6,9 +6,7 @@
 package com.liferay.jenkins.results.parser.test.suite;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestBatch;
-import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
-import com.liferay.jenkins.results.parser.test.batch.TestBatch;
+import com.liferay.jenkins.results.parser.test.batch.*;
 
 import java.io.File;
 
@@ -53,6 +51,33 @@ public class RelevantTestSuiteTest {
 			expectedPlaywrightProjectNames,
 			playwrightTestSelector.getPlaywrightProjectNames());
 	}
+
+	@Test
+	public void testJUnitTestSelectorMerge() {
+		RelevantTestSuite relevantTestSuite = new RelevantTestSuite(
+				_baseDir,
+				Arrays.asList(
+						new File(_baseDir, "test_file_0.txt")));
+
+		JUnitTestBatch junitTestBatch = null;
+
+		System.out.println("relevant test suite get test batches : " + relevantTestSuite.getTestBatches());
+		for (TestBatch testBatch : relevantTestSuite.getTestBatches()) {
+			if (testBatch instanceof JUnitTestBatch) {
+				junitTestBatch = (JUnitTestBatch) testBatch;
+			}
+
+			break;
+		}
+
+		System.out.println("get name : " + junitTestBatch.getName());
+		JUnitTestSelector junitTestSelector =
+				junitTestBatch.getTestSelector();
+
+		junitTestSelector.getIncludesPathMatchers();
+
+	}
+
 
 	private static final File _baseDir;
 

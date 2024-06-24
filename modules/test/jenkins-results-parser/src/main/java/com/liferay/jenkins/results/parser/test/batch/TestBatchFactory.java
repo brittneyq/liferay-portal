@@ -24,6 +24,7 @@ public class TestBatchFactory {
 			return null;
 		}
 
+		System.out.println("BATCH NAME IN NEW TEST BATCH : " + batchName);
 		try {
 			if (batchName.startsWith("functional")) {
 				PoshiTestSelector poshiTestSelector = new PoshiTestSelector(
@@ -43,13 +44,17 @@ public class TestBatchFactory {
 				batchName.startsWith("modules-unit") ||
 				batchName.startsWith("unit")) {
 
+				System.out.println("BATCH NAME STARTS WITH MODULES!");
+
 				JUnitTestSelector jUnitTestSelector = new JUnitTestSelector(
-					properties, batchName, relevantRuleName, testSuiteName);
+					propertiesFile, properties, batchName, relevantRuleName, testSuiteName);
 
 				JUnitTestBatch jUnitTestBatch = new JUnitTestBatch(
 					batchName, jUnitTestSelector);
 
 				jUnitTestSelector.setTestBatch(jUnitTestBatch);
+
+				return jUnitTestBatch;
 			}
 
 			if (batchName.startsWith("playwright-js")) {

@@ -22,6 +22,8 @@ public class RelevantTestSuite {
 	}
 
 	public RelevantTestSuite(File baseDir, List<File> modifiedFiles) {
+		System.out.println("base dir : " + baseDir);
+		System.out.println("modified files : " + modifiedFiles);
 		_baseDir = baseDir;
 		_modifiedFiles = modifiedFiles;
 
@@ -33,6 +35,8 @@ public class RelevantTestSuite {
 
 		List<RelevantRule> relevantRules =
 			_relevantRuleEngine.getMatchingRelevantRules(_modifiedFiles);
+
+		System.out.println("RELEVANT RULES LIST : " + relevantRules);
 
 		for (RelevantRule relevantRule : relevantRules) {
 			for (TestBatch testBatch : relevantRule.getTestBatches()) {
@@ -46,6 +50,7 @@ public class RelevantTestSuite {
 				}
 
 				testBatches.add(testBatch);
+				System.out.println("ADDING : " + testBatch.getName());
 			}
 		}
 

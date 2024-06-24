@@ -41,6 +41,7 @@ public class RelevantRuleEngine {
 		_populateRelevantRuleMap(
 			_getTestPropertiesModifiedFilesMap(modifiedFiles));
 
+		System.out.println("relevant rule map : " + _relevantRuleMap);
 		List<RelevantRule> matchingRelevantRules = new ArrayList<>();
 
 		for (Map.Entry<RelevantRule, Set<File>> entry :
@@ -48,8 +49,13 @@ public class RelevantRuleEngine {
 
 			RelevantRule relevantRule = entry.getKey();
 
+			System.out.println("relevant rule : " + relevantRule.getName());
+
 			for (File modifiedFile : entry.getValue()) {
+				System.out.println("modified file is ... : " + modifiedFile);
+
 				if (relevantRule.matches(modifiedFile)) {
+					System.out.println("relevant rule matches : " + modifiedFile);
 					matchingRelevantRules.add(relevantRule);
 
 					break;
@@ -57,6 +63,7 @@ public class RelevantRuleEngine {
 			}
 		}
 
+		System.out.println("matching relevant rules : " + matchingRelevantRules);
 		return matchingRelevantRules;
 	}
 
