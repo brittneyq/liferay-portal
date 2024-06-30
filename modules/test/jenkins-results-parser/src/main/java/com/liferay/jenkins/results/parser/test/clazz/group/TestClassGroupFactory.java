@@ -352,6 +352,10 @@ public class TestClassGroupFactory {
 						jsonObject, portalTestClassJob);
 				}
 				else if (testBatch != null) {
+					System.out.println(
+						"BATCH IS NOT NULL FOR MODULES JUNIT BATCH TEST " +
+							"CLASS GROUP");
+
 					batchTestClassGroup = new ModulesJUnitBatchTestClassGroup(
 						batchName, portalTestClassJob,
 						(JUnitTestBatch)testBatch);

@@ -141,6 +141,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		if (_testBatch != null) {
+			System.out.println("GETTING TEST INCLUDES JOB PROPERTIES");
+
 			return _getTestSelectorIncludesJobProperties();
 		}
 
@@ -401,6 +403,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	}
 
 	private List<JobProperty> _getTestSelectorExcludesJobProperties() {
+		System.out.println("IN GET EXCLUDES JOB PROPERTIES");
+
 		JUnitTestSelector jUnitTestSelector = _testBatch.getTestSelector();
 
 		List<JobProperty> excludesJobProperties =
@@ -416,6 +420,9 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		List<JobProperty> includesJobProperties =
 			jUnitTestSelector.getIncludesJobProperties();
+
+		System.out.println(
+			"INCLUDES JOB PROPERTIES : " + includesJobProperties);
 
 		recordJobProperties(includesJobProperties);
 

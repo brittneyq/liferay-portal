@@ -47,6 +47,8 @@ public class JUnitTestSelector extends BaseTestSelector {
 	}
 
 	public void addJobProperties() {
+		System.out.println("ADDING JOB PROPERTIES IN JUNIT TEST SELECTOR");
+
 		_excludesJobProperties.add(getExcludesJobProperty());
 		_filterJobProperties.add(getFilterJobProperty());
 		_includesJobProperties.add(getIncludesJobProperty());
