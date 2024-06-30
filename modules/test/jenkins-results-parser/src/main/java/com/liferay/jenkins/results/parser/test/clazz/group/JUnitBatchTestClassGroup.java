@@ -32,7 +32,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import java.text.SimpleDateFormat;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -89,9 +93,18 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	public List<JobProperty> getFilterJobProperties() {
-		if(_jUnitTestBatch != null){
-			return getTestSelectorFilterJobProperties();
+		if (_jUnitTestBatch != null) {
+			JUnitTestSelector jUnitTestSelector =
+				_jUnitTestBatch.getTestSelector();
+
+			List<JobProperty> testSelectorFilterJobProperties =
+				jUnitTestSelector.getFilterJobProperties();
+
+			recordJobProperties(testSelectorFilterJobProperties);
+
+			return testSelectorFilterJobProperties;
 		}
+
 		List<JobProperty> filterJobProperties = new ArrayList<>();
 
 		filterJobProperties.add(
@@ -242,26 +255,6 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		}
 	}
 
-	private List<JobProperty> getTestSelectorFilterJobProperties() {
-		JUnitTestSelector jUnitTestSelector = _jUnitTestBatch.getTestSelector();
-
-		Map<String, File> includesRuleFileMap = jUnitTestSelector.getFilterRuleFileMap();
-
-		List<JobProperty> filterJobProperties = new ArrayList<>();
-
-		for(Map.Entry<String, File> ruleFile : includesRuleFileMap.entrySet()) {
-			filterJobProperties.add(
-					getJobProperty(
-							"test.batch.class.names.filter", testSuiteName, batchName,
-							ruleFile.getKey(),
-							ruleFile.getValue(
-							).getParentFile(),
-							JobProperty.Type.FILTER_GLOB));
-		}
-
-		return filterJobProperties;
-	}
-
 	protected JUnitBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
@@ -329,7 +322,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected JUnitBatchTestClassGroup(
-			String batchName, PortalTestClassJob portalTestClassJob, JUnitTestBatch jUnitTestBatch) {
+		String batchName, PortalTestClassJob portalTestClassJob,
+		JUnitTestBatch jUnitTestBatch) {
 
 		super(batchName, portalTestClassJob);
 
@@ -341,10 +335,10 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		if (portalTestClassJob instanceof PortalAcceptancePullRequestJob) {
 			PortalAcceptancePullRequestJob portalAcceptancePullRequestJob =
-					(PortalAcceptancePullRequestJob)portalTestClassJob;
+				(PortalAcceptancePullRequestJob)portalTestClassJob;
 
 			_includeUnstagedTestClassFiles =
-					portalAcceptancePullRequestJob.isCentralMergePullRequest();
+				portalAcceptancePullRequestJob.isCentralMergePullRequest();
 		}
 		else {
 			_includeUnstagedTestClassFiles = false;
@@ -733,7 +727,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected void setTestClasses(JUnitTestSelector jUnitTestSelector) {
-		List<PathMatcher> includesPathMatchers = jUnitTestSelector.getIncludesPathMatchers();
+		List<PathMatcher> includesPathMatchers = getPathMatchers(
+			jUnitTestSelector.getIncludesJobProperties());
 
 		if (includesPathMatchers.isEmpty()) {
 			return;
@@ -741,28 +736,30 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		long start = System.currentTimeMillis();
 
-		List<PathMatcher> filterPathMatchers = jUnitTestSelector.getFilterPathMatchers();
-		List<PathMatcher> excludesPathMatchers = jUnitTestSelector.getExcludesPathMatchers();
+		List<PathMatcher> filterPathMatchers = getPathMatchers(
+			jUnitTestSelector.getFilterJobProperties());
+		List<PathMatcher> excludesPathMatchers = getPathMatchers(
+			jUnitTestSelector.getExcludesJobProperties());
 
 		BatchTestClassGroup batchTestClassGroup = this;
 
 		for (final File javaTestClassFile : _javaTestClassFiles) {
 			if (JenkinsResultsParserUtil.isFileExcluded(
 					excludesPathMatchers, javaTestClassFile) ||
-					!JenkinsResultsParserUtil.isFileIncluded(
-							excludesPathMatchers, includesPathMatchers,
-							javaTestClassFile) ||
-					!JenkinsResultsParserUtil.isFileIncluded(
-							null, filterPathMatchers, javaTestClassFile)) {
+				!JenkinsResultsParserUtil.isFileIncluded(
+					excludesPathMatchers, includesPathMatchers,
+					javaTestClassFile) ||
+				!JenkinsResultsParserUtil.isFileIncluded(
+					null, filterPathMatchers, javaTestClassFile)) {
 
 				continue;
 			}
 
 			TestClass testClass = TestClassFactory.newTestClass(
-					batchTestClassGroup, javaTestClassFile);
+				batchTestClassGroup, javaTestClassFile);
 
 			if ((testClass != null) && !testClass.isIgnored() &&
-					testClass.hasTestClassMethods()) {
+				testClass.hasTestClassMethods()) {
 
 				testClasses.add(testClass);
 			}
@@ -771,10 +768,10 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		long duration = System.currentTimeMillis() - start;
 
 		System.out.println(
-				JenkinsResultsParserUtil.combine(
-						"[", getBatchName(), "] Found ",
-						String.valueOf(testClasses.size()), " test classes in ",
-						JenkinsResultsParserUtil.toDurationString(duration)));
+			JenkinsResultsParserUtil.combine(
+				"[", getBatchName(), "] Found ",
+				String.valueOf(testClasses.size()), " test classes in ",
+				JenkinsResultsParserUtil.toDurationString(duration)));
 
 		Collections.sort(testClasses);
 	}
@@ -947,6 +944,6 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	private final List<File> _autoBalanceTestFiles = new ArrayList<>();
 	private boolean _includeAutoBalanceTests;
 	private final boolean _includeUnstagedTestClassFiles;
-	private JUnitTestBatch _jUnitTestBatch = null;
+	private JUnitTestBatch _jUnitTestBatch;
 
 }

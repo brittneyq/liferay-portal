@@ -11,15 +11,19 @@ import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
+import com.liferay.jenkins.results.parser.test.batch.JUnitTestBatch;
+import com.liferay.jenkins.results.parser.test.batch.JUnitTestSelector;
 
 import java.io.File;
 import java.io.IOException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.liferay.jenkins.results.parser.test.batch.JUnitTestBatch;
-import com.liferay.jenkins.results.parser.test.batch.JUnitTestSelector;
 import org.json.JSONObject;
 
 /**
@@ -42,7 +46,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 	}
 
 	protected ModulesJUnitBatchTestClassGroup(
-			String batchName, PortalTestClassJob portalTestClassJob, JUnitTestBatch jUnitTestBatch) {
+		String batchName, PortalTestClassJob portalTestClassJob,
+		JUnitTestBatch jUnitTestBatch) {
 
 		super(batchName, portalTestClassJob, jUnitTestBatch);
 
@@ -87,8 +92,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 	@Override
 	protected List<JobProperty> getRelevantExcludesJobProperties() {
-		if(_testBatch != null){
-			return getTestSelectorExcludesJobProperties();
+		if (_testBatch != null) {
+			return _getTestSelectorExcludesJobProperties();
 		}
 
 		Set<File> modifiedModuleDirsList = new HashSet<>();
@@ -135,8 +140,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 			return super.getRelevantIncludesJobProperties();
 		}
 
-		if (_testBatch != null){
-			return getTestSelectorIncludesJobProperties();
+		if (_testBatch != null) {
+			return _getTestSelectorIncludesJobProperties();
 		}
 
 		Set<File> modifiedModuleDirsSet = new HashSet<>();
@@ -208,46 +213,6 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		}
 
 		return new ArrayList<>(includesJobProperties);
-	}
-
-	private List<JobProperty> getTestSelectorExcludesJobProperties() {
-		JUnitTestSelector jUnitTestSelector = _testBatch.getTestSelector();
-
-		Map<String, File> excludesRuleFileMap = jUnitTestSelector.getExcludesRuleFileMap();
-
-		List<JobProperty> excludesJobProperties = new ArrayList<>();
-
-		for(Map.Entry<String, File> ruleFile : excludesRuleFileMap.entrySet()) {
-			excludesJobProperties.add(
-					getJobProperty(
-							"modules.includes.required.test.batch.class.names.excludes", testSuiteName, batchName,
-							ruleFile.getKey(),
-							ruleFile.getValue(
-							).getParentFile(),
-							JobProperty.Type.MODULE_INCLUDE_GLOB));
-		}
-
-		return excludesJobProperties;
-	}
-
-	private List<JobProperty> getTestSelectorIncludesJobProperties() {
-		JUnitTestSelector jUnitTestSelector = _testBatch.getTestSelector();
-
-		Map<String, File> includesRuleFileMap = jUnitTestSelector.getIncludesRuleFileMap();
-
-		List<JobProperty> includesJobProperties = new ArrayList<>();
-
-		for(Map.Entry<String, File> ruleFile : includesRuleFileMap.entrySet()) {
-			includesJobProperties.add(
-					getJobProperty(
-							"modules.includes.required.test.batch.class.names.includes", testSuiteName, batchName,
-							ruleFile.getKey(),
-							ruleFile.getValue(
-							).getParentFile(),
-							JobProperty.Type.MODULE_INCLUDE_GLOB));
-		}
-
-		return includesJobProperties;
 	}
 
 	private String _getAppTitle(File appBndFile) {
@@ -435,5 +400,28 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 		return bndBndProperties.getProperty("Bundle-SymbolicName");
 	}
 
-	private JUnitTestBatch _testBatch = null;
+	private List<JobProperty> _getTestSelectorExcludesJobProperties() {
+		JUnitTestSelector jUnitTestSelector = _testBatch.getTestSelector();
+
+		List<JobProperty> excludesJobProperties =
+			jUnitTestSelector.getExcludesJobProperties();
+
+		recordJobProperties(excludesJobProperties);
+
+		return excludesJobProperties;
+	}
+
+	private List<JobProperty> _getTestSelectorIncludesJobProperties() {
+		JUnitTestSelector jUnitTestSelector = _testBatch.getTestSelector();
+
+		List<JobProperty> includesJobProperties =
+			jUnitTestSelector.getIncludesJobProperties();
+
+		recordJobProperties(includesJobProperties);
+
+		return includesJobProperties;
+	}
+
+	private JUnitTestBatch _testBatch;
+
 }

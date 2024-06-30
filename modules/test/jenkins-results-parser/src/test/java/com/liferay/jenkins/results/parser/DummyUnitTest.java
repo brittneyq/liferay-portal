@@ -7,20 +7,13 @@ package com.liferay.jenkins.results.parser;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Michael Hashimoto
  */
 public class DummyUnitTest {
 
-	public static void main(String[] args) {
-		List<String> test = new ArrayList<>();
-
-		for(String yes : test){
-			System.out.println("ok");
-		}
+	@Test
+	public void testUnit() {
 	}
 
 }

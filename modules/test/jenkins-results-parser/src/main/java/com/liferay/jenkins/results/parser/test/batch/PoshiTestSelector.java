@@ -29,7 +29,9 @@ public class PoshiTestSelector extends BaseTestSelector {
 		File propertiesFile, Properties properties, String batchName,
 		String relevantRuleName, String testSuiteName) {
 
-		super(properties, batchName, relevantRuleName, testSuiteName);
+		super(
+			propertiesFile, properties, batchName, relevantRuleName,
+			testSuiteName, RelevantTestSuite.getJob());
 
 		validate();
 

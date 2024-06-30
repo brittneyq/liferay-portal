@@ -5,6 +5,7 @@
 
 package com.liferay.jenkins.results.parser.test.suite;
 
+import com.liferay.jenkins.results.parser.Job;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
 
 import java.io.File;
@@ -21,6 +22,10 @@ public class RelevantTestSuite {
 		return _baseDir;
 	}
 
+	public static Job getJob() {
+		return _job;
+	}
+
 	public RelevantTestSuite(File baseDir, List<File> modifiedFiles) {
 		System.out.println("base dir : " + baseDir);
 		System.out.println("modified files : " + modifiedFiles);
@@ -28,6 +33,17 @@ public class RelevantTestSuite {
 		_modifiedFiles = modifiedFiles;
 
 		_relevantRuleEngine = new RelevantRuleEngine(baseDir);
+	}
+
+	public RelevantTestSuite(File baseDir, List<File> modifiedFiles, Job job) {
+		System.out.println("base dir : " + baseDir);
+		System.out.println("modified files : " + modifiedFiles);
+		_baseDir = baseDir;
+		_modifiedFiles = modifiedFiles;
+
+		_relevantRuleEngine = new RelevantRuleEngine(baseDir);
+
+		_job = job;
 	}
 
 	public List<TestBatch> getTestBatches() {
@@ -58,6 +74,7 @@ public class RelevantTestSuite {
 	}
 
 	private static File _baseDir = new File("");
+	private static Job _job;
 
 	private final List<File> _modifiedFiles;
 	private final RelevantRuleEngine _relevantRuleEngine;
