@@ -622,7 +622,12 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		List<PathMatcher> pathMatchers = new ArrayList<>();
 
 		for (JobProperty jobProperty : jobProperties) {
+			System.out.println(
+				"job property value 2 : " + jobProperty.getValue());
+
 			if (!(jobProperty instanceof GlobJobProperty)) {
+				System.out.println("not instance of glob job property");
+
 				continue;
 			}
 
@@ -631,7 +636,11 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 			List<PathMatcher> globPathMatchers =
 				globJobProperty.getPathMatchers();
 
+			System.out.println("Glob path matchers : " + globPathMatchers);
+
 			if (globPathMatchers == null) {
+				System.out.println("Glob path matcher is null");
+
 				continue;
 			}
 
@@ -639,8 +648,12 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 				if ((globPathMatcher == null) ||
 					pathMatchers.contains(globPathMatcher)) {
 
+					System.out.println("glob path matcher is null or contains");
+
 					continue;
 				}
+
+				System.out.println("adding path matcher from globpath");
 
 				pathMatchers.add(globPathMatcher);
 			}

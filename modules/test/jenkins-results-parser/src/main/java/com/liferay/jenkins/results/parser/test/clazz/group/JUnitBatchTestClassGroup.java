@@ -327,6 +327,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		super(batchName, portalTestClassJob);
 
+		System.out.println("in junit batch test class group constructor 1");
+
 		if (ignore()) {
 			_includeUnstagedTestClassFiles = false;
 
@@ -429,6 +431,10 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected List<JobProperty> getRelevantExcludesJobProperties() {
+		if (_jUnitTestBatch != null) {
+			return _getTestSelectorExcludesJobProperties();
+		}
+
 		List<JobProperty> excludesJobProperties = new ArrayList<>();
 
 		excludesJobProperties.addAll(getDefaultExcludesJobProperties());
@@ -442,6 +448,12 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected List<JobProperty> getRelevantIncludesJobProperties() {
+		if (_jUnitTestBatch != null) {
+			System.out.println("junit get relevant includes job properties");
+
+			return _getTestSelectorIncludesJobProperties();
+		}
+
 		List<File> moduleDirsList = null;
 
 		try {
@@ -730,6 +742,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		List<PathMatcher> includesPathMatchers = getPathMatchers(
 			jUnitTestSelector.getIncludesJobProperties());
 
+		System.out.println("include path matchers : " + includesPathMatchers);
+
 		if (includesPathMatchers.isEmpty()) {
 			return;
 		}
@@ -774,6 +788,33 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				JenkinsResultsParserUtil.toDurationString(duration)));
 
 		Collections.sort(testClasses);
+	}
+
+	private List<JobProperty> _getTestSelectorExcludesJobProperties() {
+		System.out.println("IN GET EXCLUDES JOB PROPERTIES 2");
+
+		JUnitTestSelector jUnitTestSelector = _jUnitTestBatch.getTestSelector();
+
+		List<JobProperty> excludesJobProperties =
+			jUnitTestSelector.getExcludesJobProperties();
+
+		recordJobProperties(excludesJobProperties);
+
+		return excludesJobProperties;
+	}
+
+	private List<JobProperty> _getTestSelectorIncludesJobProperties() {
+		JUnitTestSelector jUnitTestSelector = _jUnitTestBatch.getTestSelector();
+
+		List<JobProperty> includesJobProperties =
+			jUnitTestSelector.getIncludesJobProperties();
+
+		System.out.println(
+			"INCLUDES JOB PROPERTIES 2: " + includesJobProperties);
+
+		recordJobProperties(includesJobProperties);
+
+		return includesJobProperties;
 	}
 
 	private File _getWorkingDirectory() {

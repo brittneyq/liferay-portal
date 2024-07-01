@@ -52,6 +52,14 @@ public abstract class BaseTestSelector implements TestSelector {
 	public JobProperty getJobProperty(
 		String basePropertyName, JobProperty.Type type) {
 
+		System.out.println("base propertyn ame : " + basePropertyName);
+		System.out.println("_testsuite name : " + _testSuiteName);
+		System.out.println("batch name : " + _batchName);
+		System.out.println("_relevantRule name : " + _relevantRuleName);
+		System.out.println("job : " + _job);
+		System.out.println("job name : " + _job.getJobName());
+		System.out.println("properties file : " + _propertiesFile);
+
 		return JobPropertyFactory.newJobProperty(
 			basePropertyName, _testSuiteName, _batchName, _relevantRuleName,
 			_job, _propertiesFile, type, true);

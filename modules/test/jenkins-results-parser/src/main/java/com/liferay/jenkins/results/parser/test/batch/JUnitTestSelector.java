@@ -52,6 +52,12 @@ public class JUnitTestSelector extends BaseTestSelector {
 		_excludesJobProperties.add(getExcludesJobProperty());
 		_filterJobProperties.add(getFilterJobProperty());
 		_includesJobProperties.add(getIncludesJobProperty());
+
+		System.out.println(
+			"_Excludes job property : " + _excludesJobProperties);
+		System.out.println("_filter job property : " + _filterJobProperties);
+		System.out.println(
+			"_includes job property : " + _includesJobProperties);
 	}
 
 	public List<JobProperty> getExcludesJobProperties() {
@@ -59,9 +65,13 @@ public class JUnitTestSelector extends BaseTestSelector {
 	}
 
 	public JobProperty getExcludesJobProperty() {
-		return getJobProperty(
+		JobProperty jobProperty = getJobProperty(
 			MODULES_INCLUDES_REQUIRED_TEST_BATCH_CLASS_NAMES_EXCLUDES,
 			JobProperty.Type.EXCLUDE_GLOB);
+
+		System.out.println("Excludes property : " + jobProperty.getValue());
+
+		return jobProperty;
 	}
 
 	public List<JobProperty> getFilterJobProperties() {
@@ -69,8 +79,12 @@ public class JUnitTestSelector extends BaseTestSelector {
 	}
 
 	public JobProperty getFilterJobProperty() {
-		return getJobProperty(
+		JobProperty jobProperty = getJobProperty(
 			TEST_BATCH_CLASS_NAMES_FILTER, JobProperty.Type.FILTER_GLOB);
+
+		System.out.println("filter property :" + jobProperty.getValue());
+
+		return jobProperty;
 	}
 
 	public List<JobProperty> getIncludesJobProperties() {
@@ -78,9 +92,14 @@ public class JUnitTestSelector extends BaseTestSelector {
 	}
 
 	public JobProperty getIncludesJobProperty() {
-		return getJobProperty(
+		JobProperty jobProperty = getJobProperty(
 			MODULES_INCLUDES_REQUIRED_TEST_BATCH_CLASS_NAMES_INCLUDES,
 			JobProperty.Type.INCLUDE_GLOB);
+
+		System.out.println(
+			"includes job property 2: " + jobProperty.getValue());
+
+		return jobProperty;
 	}
 
 	@Override
@@ -94,6 +113,12 @@ public class JUnitTestSelector extends BaseTestSelector {
 		_excludesJobProperties.add(jUnitTestSelector.getExcludesJobProperty());
 		_filterJobProperties.add(jUnitTestSelector.getFilterJobProperty());
 		_includesJobProperties.add(jUnitTestSelector.getIncludesJobProperty());
+
+		System.out.println(
+			"_excludes job property 1 : " + _excludesJobProperties);
+		System.out.println("_filter job property 1 : " + _filterJobProperties);
+		System.out.println(
+			"_includes job property 1 : " + _includesJobProperties);
 	}
 
 	@Override

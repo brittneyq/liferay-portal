@@ -51,6 +51,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 		super(batchName, portalTestClassJob, jUnitTestBatch);
 
+		System.out.println("IN CONSTRUCTOR WITH JUNIT TEST BATCH");
+
 		_testBatch = jUnitTestBatch;
 	}
 
@@ -92,6 +94,8 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 	@Override
 	protected List<JobProperty> getRelevantExcludesJobProperties() {
+		System.out.println("IN MODULES J UNIT RELEVaNT EXCLUDES");
+
 		if (_testBatch != null) {
 			return _getTestSelectorExcludesJobProperties();
 		}
@@ -136,14 +140,16 @@ public class ModulesJUnitBatchTestClassGroup extends JUnitBatchTestClassGroup {
 
 	@Override
 	protected List<JobProperty> getRelevantIncludesJobProperties() {
-		if (includeStableTestSuite && isStableTestSuiteBatch()) {
-			return super.getRelevantIncludesJobProperties();
-		}
+		System.out.println("IN MODULES J UNIT RELEVaNT INCLUDES");
 
 		if (_testBatch != null) {
 			System.out.println("GETTING TEST INCLUDES JOB PROPERTIES");
 
 			return _getTestSelectorIncludesJobProperties();
+		}
+
+		if (includeStableTestSuite && isStableTestSuiteBatch()) {
+			return super.getRelevantIncludesJobProperties();
 		}
 
 		Set<File> modifiedModuleDirsSet = new HashSet<>();
