@@ -62,7 +62,7 @@ public abstract class BaseTestSelector implements TestSelector {
 
 		return JobPropertyFactory.newJobProperty(
 			basePropertyName, _testSuiteName, _batchName, _relevantRuleName,
-			_job, _propertiesFile, type, true);
+			_job, _propertiesFile.getParentFile(), type, true);
 	}
 
 	public String getProperty(String propertyName) {
