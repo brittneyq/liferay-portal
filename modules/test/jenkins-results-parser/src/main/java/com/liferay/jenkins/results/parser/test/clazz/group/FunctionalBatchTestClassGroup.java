@@ -754,33 +754,10 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 	private void _setTestBatchRunPropertyQueries(
 		PoshiTestSelector poshiTestSelector) {
 
-		Map<String, File> ruleFileMap = poshiTestSelector.getRuleFileMap();
-
-		for (Map.Entry<String, File> ruleFile : ruleFileMap.entrySet()) {
-			recordJobProperty(
-				getJobProperty(
-					"test.batch.run.property.query", testSuiteName, batchName,
-					ruleFile.getKey(),
-					ruleFile.getValue(
-					).getParentFile(),
-					JobProperty.Type.MODULE_TEST_DIR));
-		}
+		recordJobProperties(poshiTestSelector.getPoshiJobProperties());
 
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			portalTestClassJob.getPortalGitWorkingDirectory();
-
-		File portalWorkingDirectory =
-			portalGitWorkingDirectory.getWorkingDirectory();
-
-		if (!JenkinsResultsParserUtil.isNullOrEmpty(
-				poshiTestSelector.getGlobalPoshiQuery())) {
-
-			recordJobProperty(
-				getJobProperty(
-					"test.batch.run.property.global.query", testSuiteName,
-					batchName, portalWorkingDirectory,
-					JobProperty.Type.MODULE_TEST_DIR));
-		}
 
 		_testBatchRunPropertyQueries.put(
 			new File(
