@@ -44,8 +44,15 @@ public class RelevantTestSuite {
 			_relevantRuleEngine.getMatchingRelevantRules(_modifiedFiles);
 
 		for (RelevantRule relevantRule : relevantRules) {
+			System.out.println(
+				"relevant rule name 1@: " + relevantRule.getName());
+
 			for (TestBatch testBatch : relevantRule.getTestBatches()) {
+				System.out.println("TEST BATCH NAME 1: " + testBatch.getName());
+
 				if (testBatches.contains(testBatch)) {
+					System.out.println("TEST BATCHES CONTAINS TEST BATCH!");
+
 					TestBatch existingTestBatch = testBatches.get(
 						testBatches.indexOf(testBatch));
 
@@ -54,9 +61,14 @@ public class RelevantTestSuite {
 					continue;
 				}
 
+				System.out.println(
+					"ADDING TEST BATCH TO LIST OF TEST BATCHES" +
+						relevantRule.getName());
 				testBatches.add(testBatch);
 			}
 		}
+
+		System.out.println("TEST BATCHES FINAL : " + testBatches);
 
 		return testBatches;
 	}

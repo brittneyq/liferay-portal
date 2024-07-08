@@ -756,6 +756,19 @@ public class FunctionalBatchTestClassGroup extends BatchTestClassGroup {
 
 		recordJobProperties(poshiTestSelector.getPoshiJobProperties());
 
+		System.out.println("BATCH NAME : " + getBatchName());
+
+		System.out.println(
+			"POSHI TEST SELECTOR BATCH NAME : " +
+				poshiTestSelector.getBatchName());
+
+		for (JobProperty jobProperty :
+				poshiTestSelector.getPoshiJobProperties()) {
+
+			System.out.println(
+				"JOB PROPERTY VALUE : " + jobProperty.getValue());
+		}
+
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			portalTestClassJob.getPortalGitWorkingDirectory();
 

@@ -30,10 +30,25 @@ public class TestBatchFactory {
 					propertiesFile, properties, batchName, relevantRuleName,
 					testSuiteName);
 
+				System.out.println(
+					"POSHI TEST SELECTOR : " +
+						poshiTestSelector.getBatchName() + "relevant rule : " +
+							relevantRuleName);
+				System.out.println(
+					"poshi test selector job propertiessss : " +
+						poshiTestSelector.getPoshiJobProperties());
+
 				PoshiTestBatch poshiTestBatch = new PoshiTestBatch(
 					batchName, poshiTestSelector);
 
+				System.out.println(
+					"POSHI TEST BATCH : " + poshiTestBatch.getName());
+
 				poshiTestSelector.setTestBatch(poshiTestBatch);
+
+				poshiTestBatch.setTestSelector(poshiTestSelector);
+
+				System.out.println("setting test batch and test selector...");
 
 				return poshiTestBatch;
 			}

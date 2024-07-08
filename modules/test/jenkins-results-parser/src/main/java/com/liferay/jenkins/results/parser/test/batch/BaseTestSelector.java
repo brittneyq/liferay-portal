@@ -53,6 +53,11 @@ public abstract class BaseTestSelector implements TestSelector {
 	public JobProperty getJobProperty(
 		String basePropertyName, JobProperty.Type type) {
 
+		System.out.println("base property name : " + basePropertyName);
+		System.out.println("batch name : " + _batchName);
+		System.out.println("_relevant Rule name : " + _relevantRuleName);
+		System.out.println("_properties file : " + _propertiesFile);
+
 		return JobPropertyFactory.newJobProperty(
 			basePropertyName, _testSuiteName, _batchName, _relevantRuleName,
 			_job, _propertiesFile.getParentFile(), type, true);
@@ -62,6 +67,10 @@ public abstract class BaseTestSelector implements TestSelector {
 		return JenkinsResultsParserUtil.getProperty(
 			_properties, propertyName, _batchName, _relevantRuleName,
 			_testSuiteName);
+	}
+
+	public String getRelevantRuleName() {
+		return _relevantRuleName;
 	}
 
 	public TestBatch getTestBatch() {

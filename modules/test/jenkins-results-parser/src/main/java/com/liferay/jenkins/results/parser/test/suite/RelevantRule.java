@@ -126,8 +126,16 @@ public class RelevantRule {
 
 			_testBatches = new ArrayList<>();
 
+			System.out.println(
+				"test batch names property value: " +
+					testBatchNamesPropertyValue);
+
 			for (String testBatchName :
 					testBatchNamesPropertyValue.split(",")) {
+
+				System.out.println(
+					"ADDING TEST BATCH NEW TEST BATCH : " + testBatchName +
+						" " + getName());
 
 				_testBatches.add(
 					TestBatchFactory.newTestBatch(
@@ -135,6 +143,8 @@ public class RelevantRule {
 						getName(), getTestSuiteName()));
 			}
 		}
+
+		System.out.println("TEST BATCHES @: " + _testBatches);
 
 		return _testBatches;
 	}

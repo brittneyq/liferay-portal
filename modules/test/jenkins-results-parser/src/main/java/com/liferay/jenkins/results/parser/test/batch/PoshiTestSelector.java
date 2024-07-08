@@ -49,7 +49,16 @@ public class PoshiTestSelector extends BaseTestSelector {
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(
 				poshiJobProperty.getValue())) {
 
+			System.out.println(
+				"_poshi job properties before adding : " + _poshiJobProperties);
+			System.out.println(
+				"ADDING TO " + getBatchName() + " : " + poshiJobProperty);
+
 			_poshiJobProperties.add(poshiJobProperty);
+
+			System.out.println(
+				"ADDED POSHI JOB PROPERTY : " + _poshiJobProperties);
+
 			_poshiQuery = poshiJobProperty.getValue();
 		}
 	}
@@ -81,6 +90,8 @@ public class PoshiTestSelector extends BaseTestSelector {
 
 	@Override
 	public void merge(TestSelector testSelector) {
+		System.out.println("MERGING POSHI TEST SELECTORS ");
+
 		if (!(testSelector instanceof PoshiTestSelector)) {
 			throw new RuntimeException("Unable to merge test selectors");
 		}
@@ -109,6 +120,8 @@ public class PoshiTestSelector extends BaseTestSelector {
 
 		String newPQL = poshiTestSelector.getPoshiQuery();
 
+		_poshiJobProperties.addAll(poshiTestSelector.getPoshiJobProperties());
+
 		JenkinsResultsParserUtil.validatePQL(newPQL, _propertiesFile);
 
 		if (newPQL.contains(_poshiQuery)) {
@@ -120,10 +133,8 @@ public class PoshiTestSelector extends BaseTestSelector {
 		}
 	}
 
-	private static final List<JobProperty> _poshiJobProperties =
-		new ArrayList<>();
-
 	private String _globalPoshiQuery;
+	private final List<JobProperty> _poshiJobProperties = new ArrayList<>();
 	private String _poshiQuery;
 	private final File _propertiesFile;
 
