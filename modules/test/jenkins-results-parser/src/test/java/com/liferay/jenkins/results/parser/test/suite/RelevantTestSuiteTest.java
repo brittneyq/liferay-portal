@@ -13,9 +13,12 @@ import com.liferay.jenkins.results.parser.PortalAcceptancePullRequestJob;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestBatch;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
+import com.liferay.jenkins.results.parser.test.batch.PoshiTestBatch;
+import com.liferay.jenkins.results.parser.test.batch.PoshiTestSelector;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,9 +52,9 @@ public class RelevantTestSuiteTest {
 		for (TestBatch testBatch : relevantTestSuite.getTestBatches()) {
 			if (testBatch instanceof PlaywrightTestBatch) {
 				playwrightTestBatch = (PlaywrightTestBatch)testBatch;
-			}
 
-			break;
+				break;
+			}
 		}
 
 		PlaywrightTestSelector playwrightTestSelector =
@@ -64,6 +67,39 @@ public class RelevantTestSuiteTest {
 		Assert.assertEquals(
 			expectedPlaywrightProjectNames,
 			playwrightTestSelector.getPlaywrightProjectNames());
+	}
+
+	@Test
+	public void testPoshiTestSelectorMerge() throws IOException {
+		RelevantTestSuite relevantTestSuite = new RelevantTestSuite(
+			_portalAcceptancePullRequestJob);
+
+		relevantTestSuite.setModifiedFiles(
+			Arrays.asList(
+				new File(_baseDir, "test.properties"),
+				new File(_baseDir, "modules/module-2/text_file_2.txt")));
+
+		RelevantRuleEngine relevantRuleEngine =
+			RelevantRuleEngine.getInstance();
+
+		relevantRuleEngine.setBaseDir(_baseDir);
+
+		PoshiTestBatch poshiTestBatch = null;
+
+		for (TestBatch testBatch : relevantTestSuite.getTestBatches()) {
+			if (testBatch instanceof PoshiTestBatch) {
+				poshiTestBatch = (PoshiTestBatch)testBatch;
+
+				PoshiTestSelector poshiTestSelector =
+					poshiTestBatch.getTestSelector();
+
+				String pql = JenkinsResultsParserUtil.read(
+					new File(_baseDir, "modules/module-2/text_file_2.txt"));
+
+				Assert.assertTrue(
+					pql.contains(poshiTestSelector.getPoshiQuery()));
+			}
+		}
 	}
 
 	private static File _getPortalDir(File file) {
