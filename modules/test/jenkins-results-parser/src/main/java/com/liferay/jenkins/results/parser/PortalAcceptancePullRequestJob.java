@@ -14,6 +14,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -114,6 +115,10 @@ public class PortalAcceptancePullRequestJob
 		}
 
 		RelevantTestSuite relevantTestSuite = new RelevantTestSuite(this);
+
+		recordJobProperties(
+			new ArrayList<>(
+				relevantTestSuite.get_testBatchNamesJobProperties()));
 
 		return relevantTestSuite.getTestBatches();
 	}

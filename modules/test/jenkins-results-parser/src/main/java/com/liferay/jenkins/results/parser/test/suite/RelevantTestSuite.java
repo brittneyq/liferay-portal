@@ -7,13 +7,16 @@ package com.liferay.jenkins.results.parser.test.suite;
 
 import com.liferay.jenkins.results.parser.PortalAcceptancePullRequestJob;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
+import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
 
 import java.io.File;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Kenji Heigel
@@ -30,6 +33,10 @@ public class RelevantTestSuite {
 
 		_relevantRuleEngine = RelevantRuleEngine.getInstance(
 			portalAcceptancePullRequestJob);
+	}
+
+	public Set<JobProperty> get_testBatchNamesJobProperties() {
+		return _testBatchNamesJobProperties;
 	}
 
 	public List<TestBatch> getTestBatches() {
@@ -51,6 +58,9 @@ public class RelevantTestSuite {
 					continue;
 				}
 
+				_testBatchNamesJobProperties.add(
+					relevantRule.getTestBatchNamesJobProperty());
+
 				testBatches.add(testBatch);
 			}
 		}
@@ -66,5 +76,7 @@ public class RelevantTestSuite {
 
 	private List<File> _modifiedFiles;
 	private final RelevantRuleEngine _relevantRuleEngine;
+	private final Set<JobProperty> _testBatchNamesJobProperties =
+		new HashSet<>();
 
 }
