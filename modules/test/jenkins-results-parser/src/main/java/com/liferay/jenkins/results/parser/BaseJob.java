@@ -145,8 +145,7 @@ public abstract class BaseJob implements Job {
 					"Unable to get build properties", ioException);
 			}
 
-			boolean relevantEngineEnabled = Boolean.parseBoolean(
-				buildProperties.getProperty("relevant.engine.enabled"));
+			boolean relevantEngineEnabled = true;
 
 			if (relevantEngineEnabled &&
 				Objects.equals(getTestSuiteName(), "relevant")) {

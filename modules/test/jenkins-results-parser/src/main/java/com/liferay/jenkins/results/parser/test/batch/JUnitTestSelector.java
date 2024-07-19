@@ -75,6 +75,9 @@ public class JUnitTestSelector extends BaseTestSelector {
 		if (!_includesJobProperties.contains(
 				jUnitTestSelector.getIncludesJobProperty())) {
 
+			System.out.println(
+				"MERGING : " + jUnitTestSelector.getIncludesJobProperty() +
+					" INTO " + _includesJobProperties);
 			_includesJobProperties.add(
 				jUnitTestSelector.getIncludesJobProperty());
 		}

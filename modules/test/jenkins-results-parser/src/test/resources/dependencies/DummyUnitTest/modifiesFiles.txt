@@ -1,0 +1,3 @@
+modules/apps/layout/layout-page-template-test/src/testIntegration/java/com/liferay/layout/page/template/internal/importer/test/DisplayPagesImporterTest.java
+modules/apps/layout/layout-page-template-test/src/testIntegration/resources/com/liferay/layout/page/template/internal/importer/test/dependencies/display-page-template-with-collection-display/display-page-templates/display-page-template-with-collection-display/display-page-template.json
+modules/apps/layout/layout-page-template-test/src/testIntegration/resources/com/liferay/layout/page/template/internal/importer/test/dependencies/display-page-template-with-collection-display/display-page-templates/display-page-template-with-collection-display/page-definition.json
