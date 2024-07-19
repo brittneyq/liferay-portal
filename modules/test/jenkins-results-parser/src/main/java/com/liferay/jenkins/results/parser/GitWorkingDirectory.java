@@ -1588,7 +1588,29 @@ public class GitWorkingDirectory {
 	}
 
 	public List<File> getModifiedFilesList() {
-		return getModifiedFilesList(false, null, null);
+		//return getModifiedFilesList(false, null, null);
+		File file = new File(
+			"/opt/dev/projects/github/liferay-portal/modules/test/jenkins-results-parser/src/test/resources/dependencies/DummyUnitTest/modifiesFiles.txt");
+
+		String baseDir = "/opt/dev/projects/github/liferay-portal/";
+
+		String fileString = "";
+
+		try {
+			fileString = JenkinsResultsParserUtil.read(file);
+		}
+		catch (IOException ioException) {
+			ioException.printStackTrace();
+		}
+
+		List<File> modifiedFilesList = new ArrayList<>();
+
+		for (String line : fileString.split("\n")) {
+			line = baseDir + line;
+			modifiedFilesList.add(new File(line));
+		}
+
+		return modifiedFilesList;
 	}
 
 	public List<File> getModifiedFilesList(boolean checkUnstagedFiles) {

@@ -720,6 +720,20 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		recordJobProperties(includesJobProperties);
 
+		List<JobProperty> excludesJobProperties =
+			jUnitTestSelector.getExcludesJobProperties();
+
+		//		if (includeStableTestSuite) {
+		//			includesJobProperties.addAll(
+		//					getStableDefaultIncludesJobProperties());
+		//			includesJobProperties.addAll(
+		//					getStableRequiredIncludesJobProperties());
+		//			excludesJobProperties.addAll(
+		//					getStableDefaultExcludesJobProperties());
+		//			excludesJobProperties.addAll(
+		//					getStableRequiredExcludesJobProperties());
+		//		}
+
 		List<PathMatcher> includesPathMatchers = getPathMatchers(
 			includesJobProperties);
 
@@ -731,9 +745,6 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		List<PathMatcher> filterPathMatchers = getPathMatchers(
 			getFilterJobProperties());
-
-		List<JobProperty> excludesJobProperties =
-			jUnitTestSelector.getExcludesJobProperties();
 
 		List<PathMatcher> excludesPathMatchers = getPathMatchers(
 			excludesJobProperties);

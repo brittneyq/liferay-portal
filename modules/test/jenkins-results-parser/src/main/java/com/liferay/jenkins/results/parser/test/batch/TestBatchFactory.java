@@ -20,6 +20,9 @@ public class TestBatchFactory {
 		File propertiesFile, Properties properties, String batchName,
 		String relevantRuleName, String testSuiteName) {
 
+		System.out.println("RELEVANT RULE NAME : " + relevantRuleName);
+		System.out.println("BATCH NAME : " + batchName);
+
 		if (batchName == null) {
 			return null;
 		}
