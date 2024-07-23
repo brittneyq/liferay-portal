@@ -133,10 +133,10 @@ public class RelevantRule implements Comparable<RelevantRule> {
 				testBatchNamesJobProperty.getValue();
 
 			if (testBatchNamesPropertyValue == null) {
-				_testBatchNamesJobPropertyList.add(testBatchNamesJobProperty);
-
 				return Collections.emptyList();
 			}
+
+			_testBatchNamesJobPropertyList.add(testBatchNamesJobProperty);
 
 			_testBatches = new ArrayList<>();
 

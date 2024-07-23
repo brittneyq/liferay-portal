@@ -35,10 +35,6 @@ public class RelevantTestSuite {
 			portalAcceptancePullRequestJob);
 	}
 
-	public Set<JobProperty> get_testBatchNamesJobProperties() {
-		return _testBatchNamesJobProperties;
-	}
-
 	public List<TestBatch> getTestBatches() {
 		List<TestBatch> testBatches = new ArrayList<>();
 
@@ -58,16 +54,20 @@ public class RelevantTestSuite {
 					continue;
 				}
 
-				_testBatchNamesJobProperties.add(
-					relevantRule.getTestBatchNamesJobProperty());
-
 				testBatches.add(testBatch);
 			}
+
+			_testBatchNamesJobProperties.addAll(
+				relevantRule.getTestBatchNamesJobProperties());
 		}
 
 		Collections.sort(testBatches);
 
 		return testBatches;
+	}
+
+	public Set<JobProperty> getTestBatchNamesJobProperties() {
+		return _testBatchNamesJobProperties;
 	}
 
 	public void setModifiedFiles(List<File> modifiedFiles) {
