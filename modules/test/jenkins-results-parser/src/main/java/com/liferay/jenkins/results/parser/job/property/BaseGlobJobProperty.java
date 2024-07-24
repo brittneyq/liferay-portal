@@ -105,6 +105,15 @@ public abstract class BaseGlobJobProperty
 			testSuiteName, testBatchName, ruleName);
 	}
 
+	protected BaseGlobJobProperty(
+		Job job, Type type, File testBaseDir, String basePropertyName,
+		String testSuiteName, String ruleName, boolean useBasePropertyName) {
+
+		super(
+			job, type, testBaseDir, basePropertyName, testSuiteName, ruleName,
+			useBasePropertyName);
+	}
+
 	protected String getRelativePath() {
 		File gitWorkingDirectory = _getWorkingDirectory();
 		File testBaseDir = getTestBaseDir();

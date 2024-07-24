@@ -61,6 +61,17 @@ public abstract class BaseTestDirJobProperty
 		_testBaseDir = testBaseDir;
 	}
 
+	protected BaseTestDirJobProperty(
+		Job job, Type type, File testBaseDir, String basePropertyName,
+		String testSuiteName, String ruleName, boolean useBasePropertyName) {
+
+		super(
+			job, type, basePropertyName, testSuiteName, ruleName,
+			useBasePropertyName);
+
+		_testBaseDir = testBaseDir;
+	}
+
 	private final File _testBaseDir;
 
 }

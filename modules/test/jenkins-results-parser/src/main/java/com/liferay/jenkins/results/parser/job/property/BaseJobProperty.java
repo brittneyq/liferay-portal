@@ -174,6 +174,27 @@ public abstract class BaseJobProperty implements JobProperty {
 		_ruleName = ruleName;
 	}
 
+	protected BaseJobProperty(
+		Job job, Type type, String basePropertyName, String testSuiteName,
+		String ruleName, boolean useBasePropertyName) {
+
+		_job = job;
+		_type = type;
+		_basePropertyName = basePropertyName;
+		_ruleName = ruleName;
+		_useBasePropertyName = useBasePropertyName;
+
+		if ((testSuiteName == null) && (job instanceof TestSuiteJob)) {
+			TestSuiteJob testSuiteJob = (TestSuiteJob)job;
+
+			testSuiteName = testSuiteJob.getTestSuiteName();
+		}
+
+		_testSuiteName = testSuiteName;
+
+		_testBatchName = null;
+	}
+
 	protected List<File> getJobPropertiesFiles() {
 		return _job.getJobPropertiesFiles();
 	}

@@ -34,4 +34,13 @@ public class DefaultGlobJobProperty extends BaseGlobJobProperty {
 			testSuiteName, testBatchName, ruleName);
 	}
 
+	public DefaultGlobJobProperty(
+		Job job, Type type, File testBaseDir, String basePropertyName,
+		String testSuiteName, String ruleName, boolean useBasePropertyName) {
+
+		super(
+			job, type, testBaseDir, basePropertyName, useBasePropertyName,
+			testSuiteName, ruleName);
+	}
+
 }

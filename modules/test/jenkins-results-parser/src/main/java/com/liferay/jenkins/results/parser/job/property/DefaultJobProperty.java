@@ -32,6 +32,15 @@ public class DefaultJobProperty extends BaseJobProperty {
 			testBatchName, ruleName);
 	}
 
+	public DefaultJobProperty(
+		Job job, Type type, String basePropertyName, String testSuiteName,
+		String ruleName, boolean useBasePropertyName) {
+
+		super(
+			job, type, basePropertyName, testSuiteName, ruleName,
+			useBasePropertyName);
+	}
+
 	@Override
 	public Type getType() {
 		return Type.DEFAULT;

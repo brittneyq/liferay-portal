@@ -34,4 +34,13 @@ public class DefaultTestDirProperty extends BaseTestDirJobProperty {
 			testSuiteName, testBatchName, ruleName);
 	}
 
+	protected DefaultTestDirProperty(
+		Job job, Type type, File testBaseDir, String basePropertyName,
+		String testSuiteName, String ruleName, boolean useBasePropertyName) {
+
+		super(
+			job, type, testBaseDir, basePropertyName, testSuiteName, ruleName,
+			useBasePropertyName);
+	}
+
 }
