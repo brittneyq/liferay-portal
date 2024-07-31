@@ -15358,7 +15358,7 @@ if (ppstate.equals("normal")) {
 
 				CIJobSummaryReportUtil.writeJobSummaryReport(getSummaryDir(), job);
 
-				System.out.println("Generated job summary file " + new File(getSummaryDir(), "index.html"));
+				System.out.println("Generated job summary files " + new File(getSummaryDir(), "index.html"));
 			]]>
 		</beanshell>
 	</target>
