@@ -16,7 +16,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 /**
- * @author Matthew Tambara
+ * @author Matthew Tambaras
  */
 @RunWith(Arquillian.class)
 public class BundleBlacklistVerifyReinstalledTest {
