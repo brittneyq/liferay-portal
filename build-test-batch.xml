@@ -3704,11 +3704,11 @@ information. Make sure to commit in all build-lib-versions results.
 		</parallel>
 	</target>
 
-	<target name="empty-osgi-core-dir-mysql57-jdk21_zulu">
+	<target name="empty-osgi-core-dir-postgresql155-jdk8">
 		<run-empty-osgi-core-dir-test />
 	</target>
 
-	<target name="empty-osgi-core-dir-postgresql155-jdk8">
+	<target name="empty-osgi-core-dir-postgresql155-jdk21_zulu">
 		<run-empty-osgi-core-dir-test />
 	</target>
 
@@ -4022,14 +4022,14 @@ information. Make sure to commit in all format-javadoc results.
 		/>
 	</target>
 
-	<target name="functional-bundle-jboss74-mysql57-jdk21_zulu">
+	<target name="functional-bundle-jboss74-postgresql155-jdk8">
 		<set-app-server-version-number app.server.type="jboss" app.server.version="7.4.0" />
 
 		<run-functional-test
 			app.server.type="jboss"
 			app.server.version="7.4.0"
-			database.type="mysql"
-			database.version="5.7"
+			database.type="postgresql"
+			database.version="15.5"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -4046,7 +4046,7 @@ information. Make sure to commit in all format-javadoc results.
 		/>
 	</target>
 
-	<target name="functional-bundle-jboss74-postgresql155-jdk8">
+	<target name="functional-bundle-jboss74-postgresql155-jdk21_zulu">
 		<set-app-server-version-number app.server.type="jboss" app.server.version="7.4.0" />
 
 		<run-functional-test
@@ -5211,11 +5211,11 @@ information. Make sure to commit in all format-javadoc results.
 		/>
 	</target>
 
-	<target name="functional-bundle-weblogic122-mysql57-jdk21_zulu">
+	<target name="functional-bundle-weblogic122-postgresql155-jdk8">
 		<run-functional-test
 			app.server.type="weblogic"
-			database.type="mysql"
-			database.version="5.7"
+			database.type="postgresql"
+			database.version="15.5"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -5231,7 +5231,7 @@ information. Make sure to commit in all format-javadoc results.
 		/>
 	</target>
 
-	<target name="functional-bundle-weblogic122-postgresql155-jdk8">
+	<target name="functional-bundle-weblogic122-postgresql155-jdk21_zulu">
 		<run-functional-test
 			app.server.type="weblogic"
 			database.type="postgresql"
@@ -5270,11 +5270,11 @@ information. Make sure to commit in all format-javadoc results.
 		/>
 	</target>
 
-	<target name="functional-bundle-weblogic141-mysql57-jdk21_zulu">
+	<target name="functional-bundle-weblogic141-postgresql155-jdk8">
 		<run-functional-test
 			app.server.type="weblogic"
-			database.type="mysql"
-			database.version="5.7"
+			database.type="postgresql"
+			database.version="15.5"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -5290,7 +5290,7 @@ information. Make sure to commit in all format-javadoc results.
 		/>
 	</target>
 
-	<target name="functional-bundle-weblogic141-postgresql155-jdk8">
+	<target name="functional-bundle-weblogic141-postgresql155-jdk21_zulu">
 		<run-functional-test
 			app.server.type="weblogic"
 			database.type="postgresql"
@@ -8706,13 +8706,13 @@ ${output.content}</echo>
 		</sequential>
 	</target>
 
-	<target name="portal-startup-space-in-path-mysql57-jdk21_zulu">
+	<target name="portal-startup-space-in-path-postgresql155-jdk8">
 		<propertycopy from="app.server.${app.server.type}.version" name="app.server.version" />
 
 		<sequential>
 			<run-batch-test>
 				<test-action>
-					<database-test-run-test database.type="mysql" stop.app.server="true">
+					<database-test-run-test database.type="postgresql" stop.app.server="true">
 						<test-action>
 							<local name="junit.failure.count" />
 							<local name="junit.failure.message" />
@@ -8828,7 +8828,7 @@ ${output.content}</echo>
 		</sequential>
 	</target>
 
-	<target name="portal-startup-space-in-path-postgresql155-jdk8">
+	<target name="portal-startup-space-in-path-postgresql155-jdk21_zulu">
 		<propertycopy from="app.server.${app.server.type}.version" name="app.server.version" />
 
 		<sequential>
