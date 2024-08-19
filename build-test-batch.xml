@@ -3746,11 +3746,11 @@ information. Make sure to commit in all build-lib-versions results.
 		</parallel>
 	</target>
 
-	<target name="empty-osgi-core-dir-mysql57-jdk21_zulu">
+	<target name="empty-osgi-core-dir-postgresql155-jdk8">
 		<run-empty-osgi-core-dir-test />
 	</target>
 
-	<target name="empty-osgi-core-dir-postgresql155-jdk8">
+	<target name="empty-osgi-core-dir-postgresql155-jdk21_zulu">
 		<run-empty-osgi-core-dir-test />
 	</target>
 
@@ -6784,13 +6784,13 @@ ${output.content}</echo>
 		</sequential>
 	</target>
 
-	<target name="portal-startup-space-in-path-mysql57-jdk21_zulu">
+	<target name="portal-startup-space-in-path-postgresql155-jdk8">
 		<propertycopy from="app.server.${app.server.type}.version" name="app.server.version" />
 
 		<sequential>
 			<run-batch-test>
 				<test-action>
-					<database-test-run-test database.type="mysql" stop.app.server="true">
+					<database-test-run-test database.type="postgresql" stop.app.server="true">
 						<test-action>
 							<local name="junit.failure.count" />
 							<local name="junit.failure.message" />
@@ -6906,7 +6906,7 @@ ${output.content}</echo>
 		</sequential>
 	</target>
 
-	<target name="portal-startup-space-in-path-postgresql155-jdk8">
+	<target name="portal-startup-space-in-path-postgresql155-jdk21_zulu">
 		<propertycopy from="app.server.${app.server.type}.version" name="app.server.version" />
 
 		<sequential>
