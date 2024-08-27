@@ -342,6 +342,14 @@ public class PullRequest {
 		return testSuiteNames;
 	}
 
+	public boolean getDryRun() {
+		if (_dryRun != null) {
+			return _dryRun;
+		}
+
+		return false;
+	}
+
 	public List<String> getFileNames() {
 		if (!_fileNames.isEmpty()) {
 			return _fileNames;
@@ -843,6 +851,10 @@ public class PullRequest {
 		_autoCloseCommentAvailable = null;
 	}
 
+	public void setDryRun(boolean dryRun) {
+		_dryRun = dryRun;
+	}
+
 	public void setTestSuiteStatus(
 		String testSuiteName, TestSuiteStatus testSuiteStatus) {
 
@@ -1254,6 +1266,7 @@ public class PullRequest {
 	private String _ciMergeSHA = "";
 	private List<Comment> _comments;
 	private String _commonParentSHA;
+	private Boolean _dryRun;
 	private final List<String> _fileNames = new ArrayList<>();
 	private List<GitHubRemoteGitCommit> _gitHubRemoteGitCommits;
 	private GitHubRemoteGitRepository _gitHubRemoteGitRepository;
