@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -66,6 +67,72 @@ public class PortalAcceptancePullRequestJob
 		}
 
 		return super.getBatchTestClassGroups();
+	}
+
+	@Override
+	public JSONObject getJSONObject() {
+		synchronized (jobProperties) {
+			if (jsonObject != null) {
+				return jsonObject;
+			}
+
+			jsonObject = new JSONObject();
+
+			List<BatchTestClassGroup> batchTestClassGroups =
+				getBatchTestClassGroups();
+
+			if ((batchTestClassGroups != null) &&
+				!batchTestClassGroups.isEmpty()) {
+
+				JSONArray batchesJSONArray = new JSONArray();
+
+				for (BatchTestClassGroup batchTestClassGroup :
+						batchTestClassGroups) {
+
+					batchesJSONArray.put(batchTestClassGroup.getJSONObject());
+				}
+
+				jsonObject.put("batches", batchesJSONArray);
+			}
+
+			jsonObject.put(
+				"build_profile", String.valueOf(getBuildProfile())
+			).put(
+				"company_default_locale", getCompanyDefaultLocale()
+			).put(
+				"job_name", getJobName()
+			).put(
+				"job_properties", getJobPropertiesMap()
+			).put(
+				"job_property_options", getJobPropertyOptions()
+			);
+
+			List<BatchTestClassGroup> dependentBatchTestClassGroups =
+				getDependentBatchTestClassGroups();
+
+			if ((dependentBatchTestClassGroups != null) &&
+				!dependentBatchTestClassGroups.isEmpty()) {
+
+				JSONArray smokeBatchesJSONArray = new JSONArray();
+
+				for (BatchTestClassGroup batchTestClassGroup :
+						dependentBatchTestClassGroups) {
+
+					smokeBatchesJSONArray.put(
+						batchTestClassGroup.getJSONObject());
+				}
+
+				jsonObject.put("smoke_batches", smokeBatchesJSONArray);
+			}
+
+			String testSuiteName = getTestSuiteName();
+
+			if (testSuiteName != null) {
+				jsonObject.put("test_suite_name", testSuiteName);
+			}
+
+			return jsonObject;
+		}
 	}
 
 	public boolean isCentralMergePullRequest() {
