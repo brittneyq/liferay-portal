@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -35,8 +36,27 @@ public class RelevantTestSuite {
 		_modifiedFiles = portalGitWorkingDirectory.getModifiedFilesList();
 		_portalGitWorkingDirectory = portalGitWorkingDirectory;
 
+		_portalAcceptancePullRequestJob = portalAcceptancePullRequestJob;
+
 		_relevantRuleEngine = RelevantRuleEngine.getInstance(
 			portalAcceptancePullRequestJob);
+	}
+
+	public List<TestBatch> getStableTestBatches() {
+		File baseTestPropertiesFile = new File(
+			_relevantRuleEngine.getBaseDir(), "test.properties");
+
+		Properties testProperties = JenkinsResultsParserUtil.getProperties(
+			baseTestPropertiesFile);
+
+		RelevantRule stableRelevantRule = new RelevantRule(
+			baseTestPropertiesFile.toString(), _portalAcceptancePullRequestJob,
+			"stable-rule", testProperties);
+
+		_testBatchNamesJobProperties.addAll(
+			stableRelevantRule.getTestBatchNamesJobProperties());
+
+		return stableRelevantRule.getTestBatches();
 	}
 
 	public List<TestBatch> getTestBatches() {
@@ -113,6 +133,8 @@ public class RelevantTestSuite {
 	}
 
 	private List<File> _modifiedFiles;
+	private final PortalAcceptancePullRequestJob
+		_portalAcceptancePullRequestJob;
 	private final PortalGitWorkingDirectory _portalGitWorkingDirectory;
 	private final RelevantRuleEngine _relevantRuleEngine;
 	private final Set<JobProperty> _testBatchNamesJobProperties =

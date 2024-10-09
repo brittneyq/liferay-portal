@@ -145,6 +145,8 @@ public class JobFactory {
 			sb.append(upstreamBranchName);
 		}
 
+		System.out.println("KEY IS WHAT@@ : " + sb.toString());
+
 		return sb.toString();
 	}
 
@@ -423,6 +425,8 @@ public class JobFactory {
 
 		if (jobName.startsWith("test-portal-acceptance-pullrequest(")) {
 			if (jsonObject != null) {
+				System.out.println("*JSON OBJECT NOT NULL");
+
 				job = new PortalAcceptancePullRequestJob(jsonObject);
 			}
 			else {
@@ -436,6 +440,10 @@ public class JobFactory {
 						upstreamBranchName = githubUpstreamBranchName;
 					}
 				}
+
+				System.out.println(
+					"GETTING PORTAL ACCEPTANCE PULL REQUEST JOB : " +
+						testSuiteName);
 
 				job = new PortalAcceptancePullRequestJob(
 					buildProfile, jobName, portalGitWorkingDirectory,

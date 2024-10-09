@@ -280,6 +280,8 @@ public class TestClassGroupFactory {
 
 		String key = JobFactory.getKey(job) + "_" + batchName;
 
+		System.out.println("KEY : " + key);
+
 		BatchTestClassGroup batchTestClassGroup = _batchTestClassGroups.get(
 			key);
 
@@ -389,6 +391,8 @@ public class TestClassGroupFactory {
 						  "modules-unit-project-templates")) ||
 					 batchName.startsWith("subrepository-integration") ||
 					 batchName.startsWith("subrepository-unit")) {
+
+				System.out.println("BATCH NAME IN MODULES  : " + batchName);
 
 				if (jsonObject != null) {
 					batchTestClassGroup = new ModulesJUnitBatchTestClassGroup(
@@ -544,6 +548,8 @@ public class TestClassGroupFactory {
 				}
 			}
 			else {
+				System.out.println("IN ELSE FOR : " + batchName);
+
 				if (jsonObject != null) {
 					batchTestClassGroup = new DefaultBatchTestClassGroup(
 						jsonObject, portalTestClassJob);

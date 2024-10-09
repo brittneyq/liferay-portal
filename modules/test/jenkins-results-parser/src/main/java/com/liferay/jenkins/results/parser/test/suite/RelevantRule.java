@@ -136,6 +136,10 @@ public class RelevantRule implements Comparable<RelevantRule> {
 			String testBatchNamesPropertyValue =
 				testBatchNamesJobProperty.getValue();
 
+			System.out.println(
+				"TEST BATCH NAMES PROPERTY VALUE : " +
+					testBatchNamesPropertyValue);
+
 			if (testBatchNamesPropertyValue == null) {
 				return Collections.emptyList();
 			}
@@ -146,6 +150,9 @@ public class RelevantRule implements Comparable<RelevantRule> {
 
 			for (String testBatchName :
 					testBatchNamesPropertyValue.split(",")) {
+
+				System.out.println(
+					"TEST BATCH NAME IN RELEVANT RULE : " + testBatchName);
 
 				_testBatches.add(
 					TestBatchFactory.newTestBatch(
@@ -158,6 +165,10 @@ public class RelevantRule implements Comparable<RelevantRule> {
 	}
 
 	public Set<JobProperty> getTestBatchNamesJobProperties() {
+		System.out.println(
+			"TEST BATCH NAMES JOB PROPERTIES : " +
+				_testBatchNamesJobProperties);
+
 		return _testBatchNamesJobProperties;
 	}
 

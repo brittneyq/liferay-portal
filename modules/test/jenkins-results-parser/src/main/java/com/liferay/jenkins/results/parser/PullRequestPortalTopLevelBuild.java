@@ -174,6 +174,8 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	public String getStableJobResult() {
+		System.out.println("IN GET STABLE JOB RESULT...");
+
 		Job stableJob = _getStableJob();
 
 		if (stableJob == null) {
@@ -507,12 +509,16 @@ public class PullRequestPortalTopLevelBuild
 
 	private synchronized Job _getStableJob() {
 		if (_stableJob != null) {
+			System.out.println("STABLE JOB NOT NULL");
+
 			return _stableJob;
 		}
 
 		String testSuiteName = getTestSuiteName();
 
 		if (!testSuiteName.equals("relevant")) {
+			System.out.println("TEST SUITE IS NOT RELEVANT");
+
 			return null;
 		}
 
@@ -523,17 +529,27 @@ public class PullRequestPortalTopLevelBuild
 		String stableTestSuiteName = "stable";
 
 		try {
+			System.out.println("GETTING STABLE JOB....");
+
 			_stableJob = JobFactory.newJob(
 				buildProfile, jobName, null, null, null, branchName, null,
 				repositoryName, stableTestSuiteName, branchName);
 
+			System.out.println("RETRIEVED STABLE JOB...:" + _stableJob);
+
 			BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase();
 
-			buildDatabase.putJob(
-				JobFactory.getKey(
-					buildProfile, jobName, null, branchName, null,
-					repositoryName, stableTestSuiteName, branchName),
-				_stableJob);
+			System.out.println("AFTER GET BUILD DATABASE....PUTTING JOB");
+
+			String key = JobFactory.getKey(
+				buildProfile, jobName, null, branchName, null, repositoryName,
+				stableTestSuiteName, branchName);
+
+			System.out.println("JJOB KEY: " + key);
+
+			buildDatabase.putJob(key, _stableJob);
+
+			System.out.println("PUT STABLE JOB IN BUILD DATABASE...");
 		}
 		catch (Exception exception) {
 			System.out.println("Unable to create stable job for " + jobName);

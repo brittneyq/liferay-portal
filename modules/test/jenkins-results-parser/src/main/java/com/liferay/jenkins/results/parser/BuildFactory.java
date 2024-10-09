@@ -24,6 +24,8 @@ public class BuildFactory {
 	public static Build newBuild(
 		String url, Build parentBuild, String jobVariant) {
 
+		System.out.println("IN NEW BUILD IN BUILD FACTORY..");
+
 		url = JenkinsResultsParserUtil.getLocalURL(url);
 
 		Matcher matcher = _buildURLMultiPattern.find(url);
@@ -150,6 +152,8 @@ public class BuildFactory {
 		}
 
 		if (jobName.startsWith("test-portal-acceptance-pullrequest")) {
+			System.out.println("PULL REQUEST PORTAL TOP LEVEL BUILD...");
+
 			return new PullRequestPortalTopLevelBuild(
 				url, (TopLevelBuild)parentBuild);
 		}

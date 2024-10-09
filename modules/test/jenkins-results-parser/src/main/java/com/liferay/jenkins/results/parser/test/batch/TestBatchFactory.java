@@ -25,7 +25,11 @@ public class TestBatchFactory {
 		}
 
 		try {
+			System.out.println("~~~~BATCH NAME ~~~ : " + batchName);
+
 			if (batchName.startsWith("functional")) {
+				System.out.println("BATCH NAME STARTS WITH FUNCTIONAL!!!!!");
+
 				PoshiTestSelector poshiTestSelector = new PoshiTestSelector(
 					propertiesFile, properties, batchName, relevantRuleName,
 					testSuiteName);
@@ -41,6 +45,8 @@ public class TestBatchFactory {
 			if (batchName.startsWith("modules-integration") ||
 				batchName.startsWith("modules-unit")) {
 
+				System.out.println("BATCH NAME STARTS WITH MODULES!!!!!");
+
 				JUnitTestSelector jUnitTestSelector = new JUnitTestSelector(
 					propertiesFile, properties, batchName, relevantRuleName,
 					testSuiteName);
@@ -54,6 +60,8 @@ public class TestBatchFactory {
 			}
 
 			if (batchName.startsWith("playwright-js")) {
+				System.out.println("BATCH NAME STARTS WITH PLAYWRIGHT!!!!");
+
 				PlaywrightTestSelector playwrightTestSelector =
 					new PlaywrightTestSelector(
 						propertiesFile, properties, batchName, relevantRuleName,
@@ -73,6 +81,8 @@ public class TestBatchFactory {
 			RelevantRuleConfigurationException.addException(
 				relevantRuleConfigurationException);
 		}
+
+		System.out.println("RETURNING DEFAULT TEST BATCH....");
 
 		return new DefaultTestBatch(batchName);
 	}

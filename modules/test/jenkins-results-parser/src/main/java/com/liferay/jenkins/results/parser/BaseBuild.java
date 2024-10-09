@@ -458,6 +458,8 @@ public abstract class BaseBuild implements Build {
 				getBuildURL(), this instanceof TopLevelBuild);
 		}
 
+		System.out.println("IN GET CONSOLE TEXT...");
+
 		return _jenkinsConsoleTextLoader.getConsoleText();
 	}
 
@@ -1651,6 +1653,8 @@ public abstract class BaseBuild implements Build {
 			return;
 		}
 
+		System.out.println("UPDATE  BUILD UPDATER");
+
 		_buildUpdater.update();
 	}
 
@@ -1980,6 +1984,8 @@ public abstract class BaseBuild implements Build {
 	}
 
 	protected BaseBuild(String url, Build parentBuild) {
+		System.out.println("IN BASAE BUILD....");
+
 		_parentBuild = parentBuild;
 
 		if (url.contains("buildWithParameters")) {
@@ -2003,6 +2009,8 @@ public abstract class BaseBuild implements Build {
 		_buildUpdater = BuildUpdaterFactory.newBuildUpdater(this);
 
 		if (fromArchive || isFromCompletedBuild()) {
+			System.out.println("IS FROM ARCHIVE OR IS FROM COMPLETED BUILD");
+
 			update();
 		}
 	}

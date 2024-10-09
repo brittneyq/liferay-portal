@@ -108,8 +108,14 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public List<BatchTestClassGroup> getBatchTestClassGroups() {
+		System.out.println("IN GET BATCH TEST CLASS GROUPS....");
+
 		synchronized (jobProperties) {
 			if (batchTestClassGroups != null) {
+				System.out.println(
+					"BATCH TEST CLASS GROUPS IS NOT NULL.... returning batch " +
+						"test class group");
+
 				return batchTestClassGroups;
 			}
 
@@ -118,6 +124,9 @@ public abstract class BaseJob implements Job {
 
 			if ((jsonObject != null) && jsonObject.has("batches")) {
 				JSONArray batchesJSONArray = jsonObject.getJSONArray("batches");
+
+				System.out.println(
+					"JSON OBJECT HAS BATCHES : " + batchesJSONArray);
 
 				for (int i = 0; i < batchesJSONArray.length(); i++) {
 					JSONObject batchJSONObject = batchesJSONArray.getJSONObject(
@@ -134,6 +143,9 @@ public abstract class BaseJob implements Job {
 
 				return batchTestClassGroups;
 			}
+
+			System.out.println(
+				"RETURNING BATCH TEST CLASS GROUPS WITH RAW BATCH NAMES..");
 
 			batchTestClassGroups.addAll(
 				getBatchTestClassGroups(getRawBatchNames()));
@@ -484,8 +496,13 @@ public abstract class BaseJob implements Job {
 
 			jsonObject = new JSONObject();
 
+			System.out.println(
+				"GETTING BATCH TEST CLASS GROUPS IN JSON OBJECT");
+
 			List<BatchTestClassGroup> batchTestClassGroups =
 				getBatchTestClassGroups();
+
+			System.out.println("GOT BATCH TEST CLASS GROUPS...");
 
 			if ((batchTestClassGroups != null) &&
 				!batchTestClassGroups.isEmpty()) {
@@ -508,7 +525,7 @@ public abstract class BaseJob implements Job {
 			).put(
 				"job_name", getJobName()
 			).put(
-				"job_properties", _getJobPropertiesMap()
+				"job_properties", getJobPropertiesMap()
 			).put(
 				"job_property_options", getJobPropertyOptions()
 			);
@@ -1140,6 +1157,8 @@ public abstract class BaseJob implements Job {
 	protected List<BatchTestClassGroup> getBatchTestClassGroups(
 		Set<String> rawBatchNames) {
 
+		System.out.println("RAW BATCH NAMES : " + rawBatchNames);
+
 		if ((rawBatchNames == null) || rawBatchNames.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -1314,6 +1333,9 @@ public abstract class BaseJob implements Job {
 					JenkinsResultsParserUtil.getCurrentTimeMillis() - start),
 				" at ", JenkinsResultsParserUtil.toDateString(new Date())));
 
+		System.out.println(
+			"BATCH TEST CLASS GROUPS ~~!!: " + batchTestClassGroups);
+
 		return batchTestClassGroups;
 	}
 
@@ -1354,6 +1376,46 @@ public abstract class BaseJob implements Job {
 		}
 	}
 
+	protected Map<String, Properties> getJobPropertiesMap() {
+		synchronized (jobProperties) {
+			if (!_initializeJobProperties) {
+				getBatchTestClassGroups();
+
+				getDependentBatchTestClassGroups();
+
+				_initializeJobProperties = true;
+			}
+		}
+
+		Map<String, Properties> jobPropertiesMap = new TreeMap<>();
+
+		for (JobProperty jobProperty : jobProperties) {
+			if (jobProperty == null) {
+				continue;
+			}
+
+			String jobPropertyValue = jobProperty.getValue();
+
+			if (jobPropertyValue == null) {
+				continue;
+			}
+
+			String propertiesFilePath = jobProperty.getPropertiesFilePath();
+
+			Properties properties = jobPropertiesMap.get(propertiesFilePath);
+
+			if (properties == null) {
+				properties = new Properties();
+			}
+
+			properties.setProperty(jobProperty.getName(), jobPropertyValue);
+
+			jobPropertiesMap.put(propertiesFilePath, properties);
+		}
+
+		return jobPropertiesMap;
+	}
+
 	protected JobProperty getJobProperty(String basePropertyName) {
 		return JobPropertyFactory.newJobProperty(
 			basePropertyName, null, null, this, null, null, true);
@@ -1384,6 +1446,8 @@ public abstract class BaseJob implements Job {
 
 	protected Set<String> getRawBatchNames() {
 		JobProperty jobProperty = getJobProperty("test.batch.names");
+
+		System.out.println("JOB PROPERTY VALUE!!! : " + jobProperty.getValue());
 
 		recordJobProperty(jobProperty);
 
@@ -1469,46 +1533,6 @@ public abstract class BaseJob implements Job {
 		}
 
 		return 3;
-	}
-
-	private Map<String, Properties> _getJobPropertiesMap() {
-		synchronized (jobProperties) {
-			if (!_initializeJobProperties) {
-				getBatchTestClassGroups();
-
-				getDependentBatchTestClassGroups();
-
-				_initializeJobProperties = true;
-			}
-		}
-
-		Map<String, Properties> jobPropertiesMap = new TreeMap<>();
-
-		for (JobProperty jobProperty : jobProperties) {
-			if (jobProperty == null) {
-				continue;
-			}
-
-			String jobPropertyValue = jobProperty.getValue();
-
-			if (jobPropertyValue == null) {
-				continue;
-			}
-
-			String propertiesFilePath = jobProperty.getPropertiesFilePath();
-
-			Properties properties = jobPropertiesMap.get(propertiesFilePath);
-
-			if (properties == null) {
-				properties = new Properties();
-			}
-
-			properties.setProperty(jobProperty.getName(), jobPropertyValue);
-
-			jobPropertiesMap.put(propertiesFilePath, properties);
-		}
-
-		return jobPropertiesMap;
 	}
 
 	private List<PathMatcher> _getJUnitIncludePathMatchers() {

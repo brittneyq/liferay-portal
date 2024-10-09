@@ -70,14 +70,23 @@ public class BuildDatabaseUtil {
 	}
 
 	public static BuildDatabase getBuildDatabase(Build build) {
+		System.out.println("IN GET BUILD DATABASE...");
+
 		TopLevelBuild topLevelBuild = null;
 
 		if (build != null) {
+			System.out.println("build is not null....get top level build");
+
 			topLevelBuild = build.getTopLevelBuild();
 		}
 
 		if ((build instanceof TopLevelBuild) || (topLevelBuild == null)) {
+			System.out.println(
+				"Build instance of top level build in get build database");
+
 			File buildDir = _getBuildDir(build);
+
+			System.out.println("build dir : " + buildDir);
 
 			if (topLevelBuild instanceof JenkinsTopLevelBuild) {
 				buildDir = _getBuildDir(topLevelBuild);
@@ -99,6 +108,8 @@ public class BuildDatabaseUtil {
 				return buildDatabase;
 			}
 		}
+
+		System.out.println("RETURNING GETBUILD DATABASE TOP LEVEL BUILD");
 
 		return getBuildDatabase(topLevelBuild);
 	}
