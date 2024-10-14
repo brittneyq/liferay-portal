@@ -95,6 +95,14 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public Set<String> getBatchNames() {
+		if (_batchNames != null) {
+			System.out.println("BATCH NAMES IS NOT EMPTY!");
+
+			return _batchNames;
+		}
+
+		_batchNames = Collections.synchronizedSet(new TreeSet<String>());
+
 		Set<String> batchNames = new TreeSet<>();
 
 		System.out.println("IN GET BATCH NAMES BASE JOB!!!");
@@ -105,6 +113,8 @@ public abstract class BaseJob implements Job {
 			batchNames.add(batchTestClassGroup.getBatchName());
 		}
 
+		_batchNames.addAll(batchNames);
+
 		System.out.println("IN GET BATCH NAMES DONE RETURNING..");
 
 		return batchNames;
@@ -112,15 +122,24 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public List<BatchTestClassGroup> getBatchTestClassGroups() {
+		System.out.println("IN GET BATCH TEST CLASS GROUPS ....");
+
 		synchronized (jobProperties) {
 			if (batchTestClassGroups != null) {
+				System.out.println("batch test class groups is not null1");
+
 				return batchTestClassGroups;
 			}
+
+			System.out.println(
+				"get batch test class groups in base job is null");
 
 			batchTestClassGroups = Collections.synchronizedList(
 				new ArrayList<BatchTestClassGroup>());
 
 			if ((jsonObject != null) && jsonObject.has("batches")) {
+				System.out.println("JSON OBJET IS NOT NULL AND HAS BATCHES!");
+
 				JSONArray batchesJSONArray = jsonObject.getJSONArray("batches");
 
 				for (int i = 0; i < batchesJSONArray.length(); i++) {
@@ -141,6 +160,8 @@ public abstract class BaseJob implements Job {
 
 			batchTestClassGroups.addAll(
 				getBatchTestClassGroups(getRawBatchNames()));
+
+			System.out.println("ADDING ALL BATCH TEST CLASS GROUPS...");
 
 			return batchTestClassGroups;
 		}
@@ -253,8 +274,12 @@ public abstract class BaseJob implements Job {
 				return _dependentBatchTestClassGroups;
 			}
 
+			System.out.println("ADDING RAW DEPENDENT BATCH NAMES...");
+
 			_dependentBatchTestClassGroups.addAll(
 				getBatchTestClassGroups(getRawDependentBatchNames()));
+
+			System.out.println("DONE ADDING DEPENDENT BATCH NAMES");
 
 			return _dependentBatchTestClassGroups;
 		}
@@ -481,6 +506,8 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public JSONObject getJSONObject() {
+		System.out.println("IN GET JSON OBJECT....");
+
 		synchronized (jobProperties) {
 			if (jsonObject != null) {
 				return jsonObject;
@@ -488,18 +515,29 @@ public abstract class BaseJob implements Job {
 
 			jsonObject = new JSONObject();
 
+			System.out.println("GETTING BATCH TEST CLASS GROUPS....");
+
 			List<BatchTestClassGroup> batchTestClassGroups =
 				getBatchTestClassGroups();
 
 			if ((batchTestClassGroups != null) &&
 				!batchTestClassGroups.isEmpty()) {
 
+				System.out.println(
+					"batch test class groups is not null or empty");
+
 				JSONArray batchesJSONArray = new JSONArray();
 
 				for (BatchTestClassGroup batchTestClassGroup :
 						batchTestClassGroups) {
 
+					System.out.println(
+						"BATCH TEST CLASS GROUP GETTING JSON OBJECT..");
+
 					batchesJSONArray.put(batchTestClassGroup.getJSONObject());
+
+					System.out.println(
+						"BATCH TEST CLASS GROUP GETTING JSON OBJECT DONE");
 				}
 
 				jsonObject.put("batches", batchesJSONArray);
@@ -517,11 +555,18 @@ public abstract class BaseJob implements Job {
 				"job_property_options", getJobPropertyOptions()
 			);
 
+			System.out.println("GETTING DEPENDENT BATCH TEST CLASS GROUPS");
+
 			List<BatchTestClassGroup> dependentBatchTestClassGroups =
 				getDependentBatchTestClassGroups();
 
+			System.out.println("GET DEPENDENT BATCH TEST CLASS GROUPS...");
+
 			if ((dependentBatchTestClassGroups != null) &&
 				!dependentBatchTestClassGroups.isEmpty()) {
+
+				System.out.println(
+					"dependent batch test class groups is not null");
 
 				JSONArray smokeBatchesJSONArray = new JSONArray();
 
@@ -1588,6 +1633,7 @@ public abstract class BaseJob implements Job {
 	private static final ExecutorService _executorService =
 		JenkinsResultsParserUtil.getNewThreadPoolExecutor(_THREAD_COUNT, true);
 
+	private Set<String> _batchNames;
 	private final BuildProfile _buildProfile;
 	private String _companyDefaultLocale;
 	private Document _configDocument;

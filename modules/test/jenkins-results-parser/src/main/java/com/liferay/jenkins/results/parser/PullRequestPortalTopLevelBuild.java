@@ -199,6 +199,9 @@ public class PullRequestPortalTopLevelBuild
 			return _stableJobResult;
 		}
 
+		System.out.println(
+			"get stable job downstream builds in get stable job result");
+
 		List<Build> stableJobDownstreamBuilds = getStableJobDownstreamBuilds();
 
 		int stableJobDownstreamBuildsSize = stableJobDownstreamBuilds.size();
@@ -638,11 +641,15 @@ public class PullRequestPortalTopLevelBuild
 
 			BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase();
 
+			System.out.println("BUILD DATABASE PUTTING JOB....");
+
 			buildDatabase.putJob(
 				JobFactory.getKey(
 					buildProfile, jobName, null, branchName, null,
 					repositoryName, stableTestSuiteName, branchName),
 				_stableJob);
+
+			System.out.println("BUILD DATABASE DONE PUTTING JOB...");
 		}
 		catch (Exception exception) {
 			System.out.println("Unable to create stable job for " + jobName);

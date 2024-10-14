@@ -227,7 +227,11 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 
 	@Override
 	public void putJob(String key, Job job) {
+		System.out.println("PUT JOB GETTING JSON OBJECT...");
+
 		JSONObject jobJSONObject = job.getJSONObject();
+
+		System.out.println("PUT JOB GOT JSON OBJECT...");
 
 		synchronized (_buildDatabaseFile) {
 			JSONObject jobsJSONObject = _jsonObject.getJSONObject("jobs");
