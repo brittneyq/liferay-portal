@@ -97,11 +97,15 @@ public abstract class BaseJob implements Job {
 	public Set<String> getBatchNames() {
 		Set<String> batchNames = new TreeSet<>();
 
+		System.out.println("IN GET BATCH NAMES BASE JOB!!!");
+
 		for (BatchTestClassGroup batchTestClassGroup :
 				getBatchTestClassGroups()) {
 
 			batchNames.add(batchTestClassGroup.getBatchName());
 		}
+
+		System.out.println("IN GET BATCH NAMES DONE RETURNING..");
 
 		return batchNames;
 	}
@@ -508,7 +512,7 @@ public abstract class BaseJob implements Job {
 			).put(
 				"job_name", getJobName()
 			).put(
-				"job_properties", getJobPropertiesMap()
+				"job_properties", _getJobPropertiesMap()
 			).put(
 				"job_property_options", getJobPropertyOptions()
 			);
@@ -1354,46 +1358,6 @@ public abstract class BaseJob implements Job {
 		}
 	}
 
-	protected Map<String, Properties> getJobPropertiesMap() {
-		synchronized (jobProperties) {
-			if (!_initializeJobProperties) {
-				getBatchTestClassGroups();
-
-				getDependentBatchTestClassGroups();
-
-				_initializeJobProperties = true;
-			}
-		}
-
-		Map<String, Properties> jobPropertiesMap = new TreeMap<>();
-
-		for (JobProperty jobProperty : jobProperties) {
-			if (jobProperty == null) {
-				continue;
-			}
-
-			String jobPropertyValue = jobProperty.getValue();
-
-			if (jobPropertyValue == null) {
-				continue;
-			}
-
-			String propertiesFilePath = jobProperty.getPropertiesFilePath();
-
-			Properties properties = jobPropertiesMap.get(propertiesFilePath);
-
-			if (properties == null) {
-				properties = new Properties();
-			}
-
-			properties.setProperty(jobProperty.getName(), jobPropertyValue);
-
-			jobPropertiesMap.put(propertiesFilePath, properties);
-		}
-
-		return jobPropertiesMap;
-	}
-
 	protected JobProperty getJobProperty(String basePropertyName) {
 		return JobPropertyFactory.newJobProperty(
 			basePropertyName, null, null, this, null, null, true);
@@ -1509,6 +1473,46 @@ public abstract class BaseJob implements Job {
 		}
 
 		return 3;
+	}
+
+	private Map<String, Properties> _getJobPropertiesMap() {
+		synchronized (jobProperties) {
+			if (!_initializeJobProperties) {
+				getBatchTestClassGroups();
+
+				getDependentBatchTestClassGroups();
+
+				_initializeJobProperties = true;
+			}
+		}
+
+		Map<String, Properties> jobPropertiesMap = new TreeMap<>();
+
+		for (JobProperty jobProperty : jobProperties) {
+			if (jobProperty == null) {
+				continue;
+			}
+
+			String jobPropertyValue = jobProperty.getValue();
+
+			if (jobPropertyValue == null) {
+				continue;
+			}
+
+			String propertiesFilePath = jobProperty.getPropertiesFilePath();
+
+			Properties properties = jobPropertiesMap.get(propertiesFilePath);
+
+			if (properties == null) {
+				properties = new Properties();
+			}
+
+			properties.setProperty(jobProperty.getName(), jobPropertyValue);
+
+			jobPropertiesMap.put(propertiesFilePath, properties);
+		}
+
+		return jobPropertiesMap;
 	}
 
 	private List<PathMatcher> _getJUnitIncludePathMatchers() {

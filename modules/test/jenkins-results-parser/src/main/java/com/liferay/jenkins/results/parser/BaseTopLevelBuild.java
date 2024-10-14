@@ -503,12 +503,18 @@ public abstract class BaseTopLevelBuild
 	public List<Build> getJobVariantsDownstreamBuilds(
 		Iterable<String> jobVariants, String result, String status) {
 
+		System.out.println("IN GET JOB VARIANTS DOWNSTREAM BUILDS...");
+
 		List<Build> jobVariantsDownstreamBuilds = new ArrayList<>();
 
 		List<Build> downstreamBuilds = getDownstreamBuilds(result, status);
 
 		for (Build downstreamBuild : downstreamBuilds) {
 			String downstreamBuildJobVariant = downstreamBuild.getJobVariant();
+
+			System.out.println(
+				"DOWNSTREAM BUILD : " + downstreamBuild.getBuildName() +
+					downstreamBuild.getBatchName(downstreamBuildJobVariant));
 
 			for (String jobVariant : jobVariants) {
 				if (downstreamBuildJobVariant.startsWith(jobVariant)) {

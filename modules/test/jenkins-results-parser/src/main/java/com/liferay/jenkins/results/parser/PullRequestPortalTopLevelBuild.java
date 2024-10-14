@@ -174,13 +174,28 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	public String getStableJobResult() {
-		Job stableJob = _getStableJob();
+		System.out.println("IN GET STABLE JOB RESULT...");
+
+		Job stableJob;
+
+		if (_stableJob != null) {
+			System.out.println("_stable job is not null 2");
+
+			stableJob = _stableJob;
+		}
+		else {
+			System.out.println("_stablejob is null 2");
+
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob == null) {
 			return null;
 		}
 
 		if (_stableJobResult != null) {
+			System.out.println("_STABLE JOB RESULT IS : " + _stableJobResult);
+
 			return _stableJobResult;
 		}
 
@@ -214,9 +229,13 @@ public class PullRequestPortalTopLevelBuild
 			(stableJobDownstreamBuildsSuccessCount ==
 				stableJobDownstreamBuildsSize)) {
 
+			System.out.println("ASSIGNING STABLE JOB RESULT TO SUCCESS");
+
 			_stableJobResult = "SUCCESS";
 		}
 		else {
+			System.out.println("ASSIGNING STABLE JOB RESULT TO FAILURE");
+
 			_stableJobResult = "FAILURE";
 		}
 
@@ -277,7 +296,16 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	protected Element getFailedStableJobSummaryElement() {
-		Job stableJob = _getStableJob();
+		System.out.println("IN GET FAILED STABLE JOB SUMMARY ELEMENT...");
+
+		Job stableJob = null;
+
+		if (_stableJob != null) {
+			stableJob = _stableJob;
+		}
+		else {
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob == null) {
 			return Dom4JUtil.getNewElement("span");
@@ -310,9 +338,24 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	protected List<Build> getStableJobDownstreamBuilds() {
-		Job stableJob = _getStableJob();
+		System.out.println("in get stable job downstream builds...");
+
+		Job stableJob;
+
+		if (_stableJob != null) {
+			System.out.println("stable job is not null 5!");
+
+			stableJob = _stableJob;
+		}
+		else {
+			System.out.println("stable job is null 5!");
+
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob != null) {
+			System.out.println("getting job variant downstream builds....");
+
 			return getJobVariantsDownstreamBuilds(
 				stableJob.getBatchNames(), null, null);
 		}
@@ -321,7 +364,20 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	protected Element getStableJobResultElement() {
-		Job stableJob = _getStableJob();
+		System.out.println("IN GET STABLE JOB RESULT ELEMENT...");
+
+		Job stableJob;
+
+		if (_stableJob != null) {
+			System.out.println("assigning stable job to _stable job 1 ");
+
+			stableJob = _stableJob;
+		}
+		else {
+			System.out.println("_stable job is null 1");
+
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob == null) {
 			return null;
@@ -340,11 +396,17 @@ public class PullRequestPortalTopLevelBuild
 
 		sb.append("ci:test:stable - ");
 
+		System.out.println(
+			"GET BATCH NAMES FOR STABLE JOB IN JOB RESULT ELEMENT...");
+
 		sb.append(
 			getJobVariantsDownstreamBuildCount(
 				new ArrayList<>(stableJob.getBatchNames()), "SUCCESS", null));
 
 		sb.append(" out of ");
+
+		System.out.println(
+			"GETTING STABLE JOB DOWNSTERAM BUILDS AGAIN IN ELEMENT...");
 
 		List<Build> stableJobDownstreamBuilds = getStableJobDownstreamBuilds();
 
@@ -356,7 +418,16 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	protected Element getStableJobSuccessSummaryElement() {
-		Job stableJob = _getStableJob();
+		System.out.println("IN GET STABLE JOB SUCCESS SUMMARY ELEMENT...");
+
+		Job stableJob;
+
+		if (_stableJob != null) {
+			stableJob = _stableJob;
+		}
+		else {
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob == null) {
 			return Dom4JUtil.getNewElement("span");
@@ -384,7 +455,20 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	protected Element getStableJobSummaryElement() {
-		Job stableJob = _getStableJob();
+		System.out.println("IN GET STABLE JOB SUMMARY ELEMENT...");
+
+		Job stableJob;
+
+		if (_stableJob != null) {
+			System.out.println("_stable job is not null 3");
+
+			stableJob = _stableJob;
+		}
+		else {
+			System.out.println("_stable job is null 3");
+
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob == null) {
 			return Dom4JUtil.getNewElement("span");
@@ -434,13 +518,28 @@ public class PullRequestPortalTopLevelBuild
 
 		List<Build> stableJobDownstreamBuilds = new ArrayList<>();
 
-		Job stableJob = _getStableJob();
+		Job stableJob;
+
+		if (_stableJob != null) {
+			System.out.println("stable job is not null 4");
+
+			stableJob = _stableJob;
+		}
+		else {
+			System.out.println("stable job is null 4");
+
+			stableJob = _getStableJob();
+		}
 
 		if (stableJob != null) {
+			System.out.println("stable job is not null....");
+
 			stableJobDownstreamBuilds.addAll(getStableJobDownstreamBuilds());
 		}
 
 		if (!stableJobDownstreamBuilds.isEmpty()) {
+			System.out.println("stable job downstream builds is not empty...");
+
 			Dom4JUtil.insertElementAfter(
 				rootElement, null, getStableJobResultElement());
 		}
@@ -506,7 +605,13 @@ public class PullRequestPortalTopLevelBuild
 	}
 
 	private synchronized Job _getStableJob() {
+		System.out.println("in _get stable job.....!");
+
+		System.out.println("STABLE JOB IN _STABLEJOB: " + _stableJob);
+
 		if (_stableJob != null) {
+			System.out.println("stable job is not null in _get stable job");
+
 			return _stableJob;
 		}
 
@@ -523,9 +628,13 @@ public class PullRequestPortalTopLevelBuild
 		String stableTestSuiteName = "stable";
 
 		try {
+			System.out.println("SETTING _STABLE JOB...");
+
 			_stableJob = JobFactory.newJob(
 				buildProfile, jobName, null, null, null, branchName, null,
 				repositoryName, stableTestSuiteName, branchName);
+
+			System.out.println("DONE SETTING _STABLE JOB: " + _stableJob);
 
 			BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase();
 
