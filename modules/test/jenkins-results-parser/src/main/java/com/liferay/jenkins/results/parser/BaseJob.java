@@ -1521,13 +1521,19 @@ public abstract class BaseJob implements Job {
 	}
 
 	private Map<String, Properties> _getJobPropertiesMap() {
+		System.out.println("IN _GETJOBPROPERTIES MAP");
+
 		synchronized (jobProperties) {
 			if (!_initializeJobProperties) {
+				System.out.println("!_initialize job properties");
+
 				getBatchTestClassGroups();
 
 				getDependentBatchTestClassGroups();
 
 				_initializeJobProperties = true;
+
+				System.out.println("finish initializing job properties");
 			}
 		}
 

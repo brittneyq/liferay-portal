@@ -36,6 +36,10 @@ public class PortalAcceptancePullRequestJob
 
 	@Override
 	public List<BatchTestClassGroup> getBatchTestClassGroups() {
+		System.out.println(
+			"IN GET BATCH TEST CLASS GROUPS IN PORTAL ACCEPTANCE PULL " +
+				"REQUEST JOB");
+
 		synchronized (jobProperties) {
 			PortalGitWorkingDirectory portalGitWorkingDirectory =
 				getPortalGitWorkingDirectory();
