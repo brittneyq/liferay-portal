@@ -173,7 +173,7 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 			<liferay-util:param name="coverImageURL" value="<%= coverImageURL %>" />
 		</liferay-util:include>
 
-		<!-- text resume -->
+		<!-- text resumes -->
 
 		<clay:container-fluid
 			cssClass="widget-mode-detail-header"
