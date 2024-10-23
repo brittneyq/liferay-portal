@@ -27,7 +27,7 @@ import java.util.Objects;
 
 /**
  * @author Marco Leo
- * @author Brian Wing Shun Chan
+ * @author Brian Wing Shun Chans
  */
 public class ObjectEntry1toMObjectRelatedModelsProviderImpl
 	implements ObjectRelatedModelsProvider<ObjectEntry> {
