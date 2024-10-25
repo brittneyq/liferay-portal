@@ -5,6 +5,8 @@
  */
 --%>
 
+<%--test --%>
+
 <%@ include file="/init.jsp" %>
 
 <%@ page import="com.liferay.blogs.web.internal.display.context.BlogsViewEntryContentDisplayContext" %><%@
