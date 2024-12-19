@@ -6,7 +6,7 @@
 package com.liferay.account.role;
 
 /**
- * @author Drew Brokke
+ * @author Drew Brokkes
  */
 public interface AccountRole {
 
