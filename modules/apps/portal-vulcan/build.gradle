@@ -1,1 +1,7 @@
 apply plugin: "com.liferay.app.defaults.plugin"
+
+repositories {
+	maven {
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
+	}
+}
