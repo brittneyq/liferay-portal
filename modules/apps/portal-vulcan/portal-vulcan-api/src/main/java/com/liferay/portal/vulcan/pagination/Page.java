@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * @author Alejandro Hernández
- * @author Ivica Cardic
+ * @author Ivica Cardics
  * @author Brian Wing Shun Chan
  */
 @JacksonXmlRootElement(localName = "page")
