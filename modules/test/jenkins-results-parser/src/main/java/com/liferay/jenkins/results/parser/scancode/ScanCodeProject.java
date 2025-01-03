@@ -36,6 +36,8 @@ public class ScanCodeProject {
 	public ScanCodeProject(String buildURL, String pipelineName) {
 		_buildURL = buildURL;
 		_pipelineName = pipelineName;
+
+		_pipelineNames.add(pipelineName);
 	}
 
 	public void addFileInput(String filePath)
@@ -64,6 +66,8 @@ public class ScanCodeProject {
 
 	public void addPipeline(String pipelineName)
 		throws IOException, TimeoutException {
+
+		_pipelineNames.add(pipelineName);
 
 		StringBuilder sb = new StringBuilder();
 
@@ -472,15 +476,9 @@ public class ScanCodeProject {
 		sb.append("|");
 		sb.append(_projectName);
 		sb.append(">\n");
-		sb.append("*Pipeline:* ");
 
-		if (_pipelineName.equals("inspect_packages")) {
-			sb.append(_pipelineName);
-			sb.append(", populate_purldb");
-		}
-		else {
-			sb.append(_pipelineName);
-		}
+		sb.append("*Pipeline(s):* ");
+		sb.append(String.join(", ", _pipelineNames));
 
 		sb.append("\n");
 		sb.append("*Status:* ");
@@ -590,7 +588,9 @@ public class ScanCodeProject {
 
 				Object run = jsonArray.get(0);
 
-				if (pipelineName.equals("populate_purldb")) {
+				if (pipelineName.equals("populate_purldb") ||
+					pipelineName.equals("match_to_matchcode")) {
+
 					run = jsonArray.get(1);
 				}
 
@@ -697,6 +697,7 @@ public class ScanCodeProject {
 
 	private final String _buildURL;
 	private final String _pipelineName;
+	private final List<String> _pipelineNames = new ArrayList<>();
 	private String _projectAPIURL;
 	private String _projectID;
 	private String _projectName;
