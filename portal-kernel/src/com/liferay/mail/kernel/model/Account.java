@@ -10,7 +10,7 @@ import com.liferay.portal.kernel.util.Validator;
 import java.io.Serializable;
 
 /**
- * @author Thiago Moreira
+ * @author Thiago Moreiras
  */
 public abstract class Account implements Serializable {
 
