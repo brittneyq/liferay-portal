@@ -43,34 +43,50 @@
 				</then>
 			</if>
 
-			<script language="javascript"><![CDATA[
-				var bucketList = project.getProperty("bucket.list");
+			<beanshell>
+				<![CDATA[
+					import java.text.SimpleDateFormat;
 
-				var expiredBuckets = [];
+					import org.json.JSONArray;
+					import org.json.JSONObject;
 
-				var json = JSON.parse(bucketList);
+					String bucketList = project.getProperty("bucket.list");
 
-				for (var i = 0; i < json.Buckets.length; i++) {
-					var bucket = json.Buckets[i];
+					System.out.println("bucket list: " + bucketList);
 
-					var name = JSON.stringify(bucket.Name);
+					List expiredBuckets = new ArrayList();
 
-					if (name.indexOf('lfr-qa-poshi-test') > -1) {
-						var createDate = bucket.CreationDate;
+					JSONObject json = new JSONObject(bucketList);
 
-						var currentDate = new Date();
-						var bucketDate = new Date(createDate);
+			        JSONArray buckets = json.getJSONArray("Buckets");
 
-						var diffHours = (currentDate - bucketDate) / (1000 * 60 * 60);
+			        for (int i = 0; i < buckets.length(); i++) {
+			            JSONObject bucket = buckets.getJSONObject(i);
 
-						if (diffHours > 12) {
-							expiredBuckets.push(name);
-						}
-					}
-				}
+			            String name = bucket.getString("Name");
 
-				project.setProperty("expired.buckets", expiredBuckets.toString());]]>
-			</script>
+			            if (name.contains("lfr-qa-poshi-test")) {
+			                String createDateString = bucket.getString("CreationDate");
+
+            				SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD'T'HH:mm:ss");
+
+			                dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+			                Date createDate = dateFormat.parse(createDateString);
+
+			                Date currentDate = new Date();
+
+			                long diffHours = (currentDate.getTime() - createDate.getTime()) / (1000 * 60 * 60);
+
+			                if (diffHours > 12) {
+			                    expiredBuckets.add(name);
+			                }
+			            }
+			        }
+
+    				project.setProperty("expired.buckets", expiredBuckets.toString());
+				]]>
+			</beanshell>
 
 			<for list="${expired.buckets}" param="delete.name">
 				<sequential>
