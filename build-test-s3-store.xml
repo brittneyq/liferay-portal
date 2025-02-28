@@ -52,6 +52,8 @@
 
 					String bucketList = project.getProperty("bucket.list");
 
+					System.out.println("bucket list : " + bucketList);
+
 					List expiredBuckets = new ArrayList();
 
 					JSONObject json = new JSONObject(bucketList);
@@ -83,6 +85,8 @@
 					}
 
 					String expiredBucketsString = expiredBuckets.toString();
+
+					System.out.println("Expired buckets string : " + expiredBucketsString);
 
 					expiredBucketsString = expiredBucketsString.replaceAll(" ", "");
 
