@@ -765,6 +765,7 @@ information.
 		<attribute default="${basedir}" name="dir" />
 		<attribute default="true" name="failonerror" />
 		<attribute default="true" name="forcedcacheenabled" />
+		<attribute default="" name="gradlenoparallel" />
 		<attribute default="" name="gradlejvmargs" />
 		<attribute default="" name="outputproperty" />
 		<attribute default="" name="refreshdependencies" />
@@ -829,14 +830,14 @@ information.
 					<local name="tasks.output" />
 
 					<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
-						<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+						<arg if:set="env.JENKINS_HOME" value="--max-workers=1" />
 						<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
 						<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
 						<arg if:true="${gradle.profile.enabled}" value="--profile" />
 						<arg if:set="env.JENKINS_HOME" value="--profile" />
 						<arg value="--project-cache-dir=${project.dir}/.gradle" />
 						<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
-						<arg if:true="@{stacktrace}" value="--stacktrace" />
+						<arg value="--full-stacktrace" />
 						<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
 						<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
 						<arg value="-Dliferay.home=${liferay.home}" />
@@ -844,7 +845,7 @@ information.
 						<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
 						<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
 						<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
-						<arg line="@{gradlejvmargs}" />
+						<arg value="-Dorg.gradle.jvmargs=@{gradlejvmargs}" />
 						<arg value="tasks" />
 						<arg value="--all" />
 						<redirector errorproperty="tasks.error" outputproperty="tasks.output" unless:blank="tasks.output" />
@@ -943,6 +944,18 @@ information.
 						</not>
 					</condition>
 
+					<if>
+						<equals arg1="@{gradlenoparallel}" arg2="true" />
+						<then>
+							<property name="gradle.parallel.enabled" value="false" />
+						</then>
+						<else>
+							<property name="gradle.parallel.enabled" value="true" />
+						</else>
+					</if>
+
+					<echo>gradle parallel enabled : ${gradle.parallel.enabled}</echo>
+
 					<trycatch>
 						<try>
 							<beanshell>
@@ -971,14 +984,14 @@ information.
 
 							<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 								<args />
-								<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+								<arg if:set="env.JENKINS_HOME" value="--max-workers=1" />
 								<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
-								<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
+								<arg unless:true="${gradle.parallel.enabled}" value="--no-parallel" />
 								<arg if:true="${gradle.profile.enabled}" value="--profile" />
 								<arg if:set="env.JENKINS_HOME" value="--profile" />
 								<arg value="--project-cache-dir=${project.dir}/.gradle" />
 								<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
-								<arg if:true="@{stacktrace}" value="--stacktrace" />
+								<arg value="--full-stacktrace" />
 								<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
 								<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
 								<arg value="-Dliferay.home=${liferay.home}" />
@@ -986,7 +999,7 @@ information.
 								<arg if:set="env.JENKINS_HOME" value="-Dorg.gradle.internal.http.socketTimeout=120000" />
 								<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.dirs=${build.patcher.hotfix.dirs}" />
 								<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
-								<arg line="@{gradlejvmargs}" />
+								<arg value="-Dorg.gradle.jvmargs=@{gradlejvmargs}" />
 								<arg line="@{task}" />
 								<arg if:set="test.name" line="${test.name}" />
 								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
@@ -1009,14 +1022,14 @@ information.
 							<echoxml>
 								<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 									<args />
-									<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
+									<arg if:set="env.JENKINS_HOME" value="--max-workers=1" />
 									<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
-									<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
+									<arg unless:true="${gradle.parallel.enabled}" value="--no-parallel" />
 									<arg if:true="${gradle.profile.enabled}" value="--profile" />
 									<arg if:set="env.JENKINS_HOME" value="--profile" />
 									<arg value="--project-cache-dir=${project.dir}/.gradle" />
 									<arg if:true="@{refreshdependencies}" value="--refresh-dependencies" />
-									<arg if:true="@{stacktrace}" value="--stacktrace" />
+									<arg value="--full-stacktrace" />
 									<arg value="-Dapp.server.parent.dir=${app.server.parent.dir}" />
 									<arg value="-Dforced.cache.enabled=@{forcedcacheenabled}" />
 									<arg value="-Dliferay.home=${liferay.home}" />

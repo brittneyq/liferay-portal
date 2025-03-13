@@ -6986,6 +6986,22 @@ information. Make sure to commit in all format-javadoc results.
 		</run-batch-test>
 	</target>
 
+	<target name="js-unit-all">
+		<run-batch-test>
+			<test-action>
+				<property name="gradle.jvm.args" value="-Xmx8g -XX:MaxMetaspaceSize=2g -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:NativeMemoryTracking=detail" />
+
+				<echo>gradle jvm args :${gradle.jvm.args}</echo>
+
+				<gradle-execute dir="${project.dir}/modules" gradlejvmargs="${gradle.jvm.args}" gradlenoparallel="true" task="packageRunTestAll" />
+			</test-action>
+
+			<test-set-up>
+				<setup-test-environment />
+			</test-set-up>
+		</run-batch-test>
+	</target>
+
 	<target name="jsf">
 		<ant antfile="build-test-batch/jsf.xml" target="jsf" />
 	</target>
