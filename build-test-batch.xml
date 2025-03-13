@@ -6940,7 +6940,8 @@ information. Make sure to commit in all format-javadoc results.
 							<try>
 								<gradle-execute dir="modules" task="@{modules.test.class}">
 									<arg value="--continue" />
-									<arg value="--exclude-task npmInstall" />
+									<arg value="--exclude-task" />
+									<arg value="npmInstall" />
 								</gradle-execute>
 							</try>
 							<catch>
