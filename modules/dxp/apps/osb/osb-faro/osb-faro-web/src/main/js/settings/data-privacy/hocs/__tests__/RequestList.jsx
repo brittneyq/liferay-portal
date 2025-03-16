@@ -182,7 +182,7 @@ describe('RequestList', () => {
 
 		expect(
 			rowElement.querySelector('input[type=checkbox]').disabled
-		).toBeTrue();
+		).toBeFalse();
 
 		expect(
 			rowElement.querySelector('.row-inline-actions button')
