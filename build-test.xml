@@ -15060,8 +15060,6 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 						<echo file="${import.database.sh.file.path}">
 							<![CDATA[
 								#!/bin/bash
-								sudo chage -I -1 -M -1 db2inst1
-
 								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 restore database lportal user ${database.username} using ${database.password} from /opt/ibm/db2 ON /database/config/db2inst1 replace existing'"
 
 								output=$(su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 restore database lportal user ${database.username} using ${database.password} from /opt/ibm/db2 ON /database/config/db2inst1 replace existing')
@@ -15069,12 +15067,41 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								exit_code=$?
 
 								echo "${output}"
+
+								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal'"
+
+								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal'
+
+								echo "su - db2inst1 -c 'db2 terminate'"
+								su - db2inst1 -c 'db2 terminate'
+
+								echo "su - db2inst1 -c 'db2 connect to lportal'"
+
+								su - db2inst1 -c 'db2 connect to lportal'
+
+								echo "su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2cli.lst blocking all grant public'"
+
+								su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2cli.lst blocking all grant public'
+
+								echo "su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2ubind.lst blocking all grant public'"
+
+								su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2ubind.lst blocking all grant public'
+
+								echo "su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.bnd blocking all grant public'"
+
+								su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.bnd blocking all grant public'
+
+								echo "su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2look.lst blocking all grant public'"
+
+								su - db2inst1 -c 'db2 BIND /database/config/db2inst1/sqllib/bnd/@db2look.lst blocking all grant public'
 								
-								su - db2inst1 -c 'db2start'
+								echo "su - db2inst1 -c 'db2 connect to lportal'"
 
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal using root ${database.password}; /database/config/db2inst1/sqllib/bin/db2 grant dbadm on database to db2inst1'"
+								su - db2inst1 -c 'db2 connect to lportal'
 
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal; /database/config/db2inst1/sqllib/bin/db2 "GRANT DBADM ON DATABASE TO DB2INST1"'
+								echo "su - db2inst1 -c 'db2 "SELECT PKGNAME, VALID FROM SYSCAT.PACKAGES WHERE PKGSCHEMA IN (\'SYSIBM\', \'SYSCAT\', \'SYSIBMADM\') AND VALID = \'X\'"'"
+
+								su - db2inst1 -c 'db2 "SELECT PKGNAME, VALID FROM SYSCAT.PACKAGES WHERE PKGSCHEMA IN (\'SYSIBM\', \'SYSCAT\', \'SYSIBMADM\') AND VALID = \'X\'"'
 
 								if [[ (${exit_code} != "0") ]] && [[ ($output == *"SQL2519N"*) || ($output == *"SQL2555I"*) ]]
 								then
