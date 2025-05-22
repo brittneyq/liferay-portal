@@ -15075,25 +15075,11 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								echo "su - db2inst1 -c 'db2 terminate'"
 								su - db2inst1 -c 'db2 terminate'
 
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && db2 BIND /database/config/db2inst1/sqllib/bnd/@db2cli.lst blocking all grant public'"
+								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2  CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2rbind lportal -l /tmp/db2rbind.log all'
 
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/@db2cli.lst blocking all grant public'
+								echo "echoing db2rbind.log"
 
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/db2ubind.lst blocking all grant public'"
-
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/db2ubind.lst blocking all grant public'
-
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.bnd blocking all grant public'"
-
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.bnd blocking all grant public'
-
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/@db2look.lst blocking all grant public'"
-
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 BIND /database/config/db2inst1/sqllib/bnd/@db2look.lst blocking all grant public'
-					
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 \"SELECT PKGNAME, VALID FROM SYSCAT.PACKAGES WHERE PKGSCHEMA IN (\\'SYSIBM\\', \\'SYSCAT\\', \\'SYSIBMADM\\') AND VALID = \\'X\\'\"'"
-
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2 "SELECT PKGNAME, VALID FROM SYSCAT.PACKAGES WHERE PKGSCHEMA IN (\'SYSIBM\', \'SYSCAT\', \'SYSIBMADM\') AND VALID = \'X\'"'
+								su - db2inst1 -c 'cat /tmp/db2rbind.log all'
 
 								if [[ (${exit_code} != "0") ]] && [[ ($output == *"SQL2519N"*) || ($output == *"SQL2555I"*) ]]
 								then
