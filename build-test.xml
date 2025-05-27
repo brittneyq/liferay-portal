@@ -15068,14 +15068,14 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 								echo "${output}"
 
-								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal'"
+								echo "running connect to lportal; terminate and bind commands"
 
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal'
-
-								echo "su - db2inst1 -c 'db2 terminate'"
-								su - db2inst1 -c 'db2 terminate'
-
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2  CONNECT TO lportal && /database/config/db2inst1/sqllib/bin/db2rbind lportal -l /tmp/db2rbind.log all'
+								su - db2inst1 -c '
+								    db2 connect to lportal && \
+								    db2 terminate && \
+								    db2 BIND /database/config/db2inst1/sqllib/bnd/db2schema.bnd BLOCKING ALL GRANT PUBLIC SQLERROR CONTINUE && \
+								    db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.lst BLOCKING ALL GRANT PUBLIC REPLVER V115 && \
+								    db2 terminate'
 
 								echo "echoing db2rbind.log"
 
