@@ -15073,12 +15073,8 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								su - db2inst1 -c '
 								    db2 connect to lportal && \
 								    db2 BIND /database/config/db2inst1/sqllib/bnd/db2schema.bnd BLOCKING ALL GRANT PUBLIC SQLERROR CONTINUE && \
-								    db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.lst BLOCKING ALL REPLVER V115 GRANT PUBLIC && \
+								    db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.lst BLOCKING ALL GRANT PUBLIC && \
 								    db2 terminate'
-
-								echo "echoing db2rbind.log"
-
-								su - db2inst1 -c 'cat /tmp/db2rbind.log all'
 
 								if [[ (${exit_code} != "0") ]] && [[ ($output == *"SQL2519N"*) || ($output == *"SQL2555I"*) ]]
 								then
