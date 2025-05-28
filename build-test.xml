@@ -15080,7 +15080,7 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								
 								su - db2inst1 -c '
 								    db2 connect to lportal && \
-								    db2updv -d lportal && \
+								    db2updv115 -d lportal && \
 								    db2 terminate && \
 								    db2stop && \
 								    db2start
