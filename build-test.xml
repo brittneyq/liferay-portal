@@ -15068,12 +15068,15 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 								echo "${output}"
 
+								echo "running connect to lportal grant adm and terminate"
+
+								su - db2inst1 -c 'db2 CONNECT TO lportal; db2 GRANT DBADM ON DATABASE TO USER DB2INST1; db2 TERMINATE'
+
 								echo "running connect to lportal; terminate and bind commands"
 
 								su - db2inst1 -c '
 								    db2 connect to lportal && \
 								    db2 BIND /database/config/db2inst1/sqllib/bnd/db2schema.bnd BLOCKING ALL GRANT PUBLIC SQLERROR CONTINUE && \
-								    db2 BIND /database/config/db2inst1/sqllib/bnd/@db2schema.lst BLOCKING ALL GRANT PUBLIC && \
 								    db2 terminate'
 
 								echo "running connect, dp2updv lportal, terminate, stop start"
