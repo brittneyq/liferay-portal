@@ -15060,6 +15060,17 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 						<echo file="${import.database.sh.file.path}">
 							<![CDATA[
 								#!/bin/bash
+
+								su - db2inst1 -c 'db2stop'
+
+								echo "db2set db2 restoregrant admin authorities"
+
+								su - db2inst1 -c 'db2set DB2_RESTORE_GRANT_ADMIN_AUTHORITIES=ON'
+
+								su - db2inst1 -c 'db2set -all | grep DB2_RESTORE_GRANT_ADMIN_AUTHORITIES'
+
+								su - db2inst1 -c 'db2start; db2 deactivate db lportal'
+
 								echo "su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 restore database lportal user ${database.username} using ${database.password} from /opt/ibm/db2 ON /database/config/db2inst1 replace existing'"
 
 								output=$(su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 restore database lportal user ${database.username} using ${database.password} from /opt/ibm/db2 ON /database/config/db2inst1 replace existing')
@@ -15068,18 +15079,7 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 								echo "${output}"
 
-								echo "running connect to lportal grant adm and terminate"
-
-								su - db2inst1 -c 'db2 CONNECT TO lportal; db2 GRANT DBADM ON DATABASE TO USER DB2INST1; db2 TERMINATE'
-
 								echo "running connect to lportal; terminate and bind commands"
-
-								su - db2inst1 -c '
-								    db2 connect to lportal && \
-								    db2 BIND /database/config/db2inst1/sqllib/bnd/db2schema.bnd BLOCKING ALL GRANT PUBLIC SQLERROR CONTINUE && \
-								    db2 terminate'
-
-								echo "running connect, dp2updv lportal, terminate, stop start"
 								
 								su - db2inst1 -c '
 								    db2 connect to lportal && \
@@ -15088,6 +15088,10 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								    db2stop && \
 								    db2start
 								'
+
+								echo "su - db2inst1 -c 'db2 CONNECT TO lportal; db2 "SELECT GRANTEETYPE, DBADMAUTH FROM SYSCAT.DBAUTH WHERE GRANTEE = \'DB2INST1\'"; db2 TERMINATE'"
+
+								su - db2inst1 -c 'db2 CONNECT TO lportal; db2 "SELECT GRANTEETYPE, DBADMAUTH FROM SYSCAT.DBAUTH WHERE GRANTEE = \'DB2INST1\'"; db2 TERMINATE'
 
 								if [[ (${exit_code} != "0") ]] && [[ ($output == *"SQL2519N"*) || ($output == *"SQL2555I"*) ]]
 								then
