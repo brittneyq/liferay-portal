@@ -15079,6 +15079,37 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 								echo "${output}"
 
+								echo "--- Attempting db2updv115 ---"
+								
+								set +e
+
+								su - db2inst1 -c '
+								    . ~/sqllib/db2profile && \
+								    db2 connect to lportal && \
+								    db2updv115 -d lportal && \
+								    db2 terminate && \
+								    db2stop && \
+								    db2start
+								'
+								EXIT_CODE=$? 
+								set -e #)
+
+								echo "db2updv115 command exited with code: $EXIT_CODE"
+
+								echo "--- Tail of db2diag.log (relevant section) ---"
+								DIAG_PATH=$(su - db2inst1 -c 'db2 GET DBM CFG | grep DIAGPATH | cut -d "=" -f 2 | tr -d "[:space:]"')
+
+								if [ -n "$DIAG_PATH" ]; then 
+								    su - db2inst1 -c "tail -n 200 ${DIAG_PATH}/db2diag.log"
+
+								    echo "--- Searching db2diag.log for 'Package failed to rebind' and surrounding context ---"
+
+								    su - db2inst1 -c "grep -E -B 50 -A 10 'Package failed to rebind' ${DIAG_PATH}/db2diag.log || echo 'No "Package failed to rebind" found within recent context.'"
+
+								else
+								    echo "Could not determine DB2 DIAGPATH. Cannot dump db2diag.log."
+								fi
+
 								if [[ (${exit_code} != "0") ]] && [[ ($output == *"SQL2519N"*) || ($output == *"SQL2555I"*) ]]
 								then
 									exit 0
