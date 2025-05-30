@@ -15097,7 +15097,7 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								echo "db2updv115 command exited with code: $EXIT_CODE"
 
 								echo "--- Tail of db2diag.log (relevant section) ---"
-								DIAG_PATH=$(su - db2inst1 -c 'db2 GET DBM CFG | grep DIAGPATH | cut -d "=" -f 2 | tr -d "[:space:]"')
+								DIAG_PATH=$(su - db2inst1 -c 'db2 GET DBM CFG | grep DIAGPATH' | awk -F'=' '{print $2}' | xargs)
 
 								if [ -n "$DIAG_PATH" ]; then 
 								    su - db2inst1 -c "tail -n 200 ${DIAG_PATH}/db2diag.log"
