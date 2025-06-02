@@ -72,6 +72,8 @@
 			users.reminder.queries.custom.question.enabled=false
 			web.server.https.port=8443]]></echo>
 
+		<echo>TCK HOME is ${tck.home}</echo>
+
 		<exec dir="${tck.home}/.." executable="git" failonerror="true">
 			<arg value="stash" />
 		</exec>
