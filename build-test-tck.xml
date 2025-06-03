@@ -74,6 +74,10 @@
 
 		<echo>TCK HOME is ${tck.home}</echo>
 
+		<execute dir="${portal.dir}/dist">
+			ls -al
+		</execute>
+		
 		<exec dir="${tck.home}/.." executable="git" failonerror="true">
 			<arg value="stash" />
 		</exec>
