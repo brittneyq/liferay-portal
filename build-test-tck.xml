@@ -74,7 +74,7 @@
 
 		<echo>TCK HOME is ${tck.home}</echo>
 
-		<execute dir="${portal.dir}/dist">
+		<execute dir="${tck.home}/..">
 			ls -al
 		</execute>
 		
