@@ -84,7 +84,14 @@ public class CloudBucketUtil {
 
 			if (sourceS3ObjectPathMatcher.find()) {
 				createS3ObjectRef(replacedSource);
-				validateChecksumFile(replacedDestination, replacedSource);
+
+				try {
+					validateChecksumFile(replacedDestination, replacedSource);
+				}
+				catch (Exception exception) {
+					throw new RuntimeException(
+						"Failed to validate checksum file");
+				}
 			}
 		}
 
@@ -92,6 +99,10 @@ public class CloudBucketUtil {
 	}
 
 	public static void createChecksumFile(String destination, String source) {
+		if (source.contains(".sha512")) {
+			return;
+		}
+
 		File tempFile = new File(source);
 
 		File tempSHAFile = new File(tempFile + ".sha512");
@@ -388,7 +399,19 @@ public class CloudBucketUtil {
 		System.out.println("Synced " + source + " to " + destination);
 	}
 
-	public static void validateChecksumFile(String destination, String source) {
+	public static void validateChecksumFile(String destination, String source)
+		throws IOException, TimeoutException {
+
+		String s3ChecksumFilePath = source + ".sha512";
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(
+				listS3Files(s3ChecksumFilePath))) {
+
+			System.out.println(s3ChecksumFilePath + " does not exist.");
+
+			createChecksumFile(destination, s3ChecksumFilePath);
+		}
+
 		File tempFile = new File(destination);
 
 		String tempFilePath = JenkinsResultsParserUtil.getCanonicalPath(
