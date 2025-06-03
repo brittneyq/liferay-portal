@@ -74,7 +74,7 @@
 
 		<echo>TCK HOME is ${tck.home}</echo>
 
-		<execute dir="${tck.home}/..">
+	<!-- 	<execute dir="${tck.home}/..">
 			ls -al
 		</execute>
 		
@@ -88,7 +88,7 @@
 			<arg value="all,liferay" />
 			<arg value="clean" />
 			<arg value="install" />
-		</exec>
+		</exec> -->
 
 		<copy
 			flatten="true"
