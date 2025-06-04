@@ -72,6 +72,8 @@
 			users.reminder.queries.custom.question.enabled=false
 			web.server.https.port=8443]]></echo>
 
+		<echo>MASTER NETWORK NAME IS : ${env.MASTER_NETWORK_NAME}</echo>
+
 		<if>
 			<and>
 				<isset property="env.MASTER_NETWORK_NAME" />
