@@ -73,14 +73,10 @@
 			web.server.https.port=8443]]></echo>
 
 		<echo>TCK HOME is ${tck.home}</echo>
-
-	<!-- 	<execute dir="${tck.home}/..">
-			ls -al
-		</execute>
 		
-		<exec dir="${tck.home}/.." executable="git" failonerror="true">
+<!-- 		<exec dir="${tck.home}/.." executable="git" failonerror="true">
 			<arg value="stash" />
-		</exec>
+		</exec> -->
 
 		<exec dir="${tck.home}/.." executable="mvn" failonerror="true">
 			<arg value="-Dmaven.javadoc.skip=true" />
@@ -88,7 +84,7 @@
 			<arg value="all,liferay" />
 			<arg value="clean" />
 			<arg value="install" />
-		</exec> -->
+		</exec> 
 
 		<copy
 			flatten="true"
