@@ -56,6 +56,10 @@ public class CloudBucketUtil {
 		String replacedDestination = _replaceS3ObjectPath(destination);
 		String replacedSource = _replaceS3ObjectPath(source);
 
+		System.out.println("replaced destination : " + replacedDestination);
+
+		System.out.println("replaced source : " + replacedSource);
+
 		_executeCommands(
 			_getFileTransferCommand(
 				"aws s3 cp --no-progress", replacedDestination,
@@ -71,7 +75,14 @@ public class CloudBucketUtil {
 
 			if (destinationS3ObjectPathMatcher.find()) {
 				createS3ObjectRef(replacedDestination);
-				createChecksumFile(replacedDestination, replacedSource);
+
+				if (!replacedDestination.contains(".sha512")) {
+					createChecksumFile(
+						replacedDestination + ".sha512", replacedSource);
+				}
+				else {
+					createChecksumFile(replacedDestination, replacedSource);
+				}
 			}
 		}
 
@@ -99,18 +110,32 @@ public class CloudBucketUtil {
 	}
 
 	public static void createChecksumFile(String destination, String source) {
-		if (source.contains(".sha512")) {
-			return;
-		}
+		System.out.println(
+			"Creating checksum file for " + source + " to " + destination);
 
-		File tempFile = new File(source);
+		String sourcePath = source;
+
+		System.out.println("source path : " + sourcePath);
+
+		File tempFile = new File(sourcePath);
 
 		File tempSHAFile = new File(tempFile + ".sha512");
+
+		if (tempFile.getPath(
+			).contains(
+				".sha512"
+			)) {
+
+			tempSHAFile = tempFile;
+		}
 
 		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
 			tempSHAFile);
 
-		String s3SHAFilePath = destination + "/" + tempSHAFile.getName();
+		String s3SHAFilePath = destination;
+
+		System.out.println("temp file : " + tempFile);
+		System.out.println("temp SHA file : " + tempSHAFile);
 
 		try {
 			JenkinsResultsParserUtil.writeSHAFile(tempFile, tempSHAFile);
@@ -334,6 +359,20 @@ public class CloudBucketUtil {
 			process.getInputStream());
 	}
 
+	public static String listS3Files(String path, boolean file)
+		throws IOException, TimeoutException {
+
+		if (!path.endsWith("/") && !file) {
+			path += "/";
+		}
+
+		Process process = JenkinsResultsParserUtil.executeBashCommands(
+			true, "aws s3 ls " + _escapeParentheses(path));
+
+		return JenkinsResultsParserUtil.readInputStream(
+			process.getInputStream());
+	}
+
 	public static void syncGCPFiles(String destination, String source)
 		throws IOException {
 
@@ -402,14 +441,22 @@ public class CloudBucketUtil {
 	public static void validateChecksumFile(String destination, String source)
 		throws IOException, TimeoutException {
 
+		System.out.println("in validate checksum file...");
+
 		String s3ChecksumFilePath = source + ".sha512";
 
+		System.out.println("s3 checksum file path : " + s3ChecksumFilePath);
+
+		if (source.contains(".sha512")) {
+			s3ChecksumFilePath = source;
+		}
+
 		if (JenkinsResultsParserUtil.isNullOrEmpty(
-				listS3Files(s3ChecksumFilePath))) {
+				listS3Files(s3ChecksumFilePath, true))) {
 
 			System.out.println(s3ChecksumFilePath + " does not exist.");
 
-			createChecksumFile(destination, s3ChecksumFilePath);
+			createChecksumFile(s3ChecksumFilePath, destination);
 		}
 
 		File tempFile = new File(destination);
@@ -417,7 +464,13 @@ public class CloudBucketUtil {
 		String tempFilePath = JenkinsResultsParserUtil.getCanonicalPath(
 			tempFile);
 
-		File tempSHAFile = new File(destination + ".sha512");
+		String destinationPath = destination + ".sha512";
+
+		if (destination.contains(".sha512")) {
+			destinationPath = destination;
+		}
+
+		File tempSHAFile = new File(destinationPath);
 
 		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
 			tempSHAFile);
@@ -425,8 +478,8 @@ public class CloudBucketUtil {
 		try {
 			_executeCommands(
 				_getFileTransferCommand(
-					"aws s3 cp --no-progress", source + ".sha512",
-					tempSHAFilePath));
+					"aws s3 cp --no-progress", tempSHAFilePath,
+					s3ChecksumFilePath));
 
 			System.out.println(
 				"Copied " + source + ".sha512 to " + tempSHAFilePath);
