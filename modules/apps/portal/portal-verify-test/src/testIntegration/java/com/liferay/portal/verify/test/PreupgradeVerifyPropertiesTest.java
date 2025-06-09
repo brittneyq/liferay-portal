@@ -6,6 +6,7 @@
 package com.liferay.portal.verify.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.jenkins.results.parser.AntUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -18,7 +19,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.verify.PreupgradeVerifyProperties;
 import com.liferay.portal.verify.VerifyProcess;
 import com.liferay.portal.verify.test.util.BaseVerifyProcessTestCase;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 
 /**
  * @author Manuel de la Peña
@@ -347,48 +349,17 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 	}
 
 	private void _runPostgresqlDB() throws Exception {
-		StringBundler sb = new StringBundler(1);
+		String liferayHome = SystemProperties.get("liferay.home");
 
-		if (!OSDetector.isWindows()) {
-			sb.append(
-				"/bin/bash ant -f build-test.xml start-docker-database -Ddatabase.type=postgresql");
-		}
-		else {
-			sb.append(
-				"cmd /c ant -f build-test.xml start-docker-database -Ddatabase.type=postgresql");
-		}
+		System.out.println("liferay home : " + liferayHome);
 
-		Runtime runtime = Runtime.getRuntime();
+		File baseDir = new File(liferayHome).getParentFile();
 
-		Process process = runtime.exec(
-			sb.toString(), null,
-			new File("/opt/dev/projects/github/liferay-portal/"));
+		Map<String, String> parameters = new HashMap<>();
 
-		InputStreamReader inputStreamReader = new InputStreamReader(
-			process.getInputStream());
+   		parameters.put("database.type", "postgresql");
 
-		BufferedReader inputBufferedReader = new BufferedReader(
-			inputStreamReader);
-
-		String line = null;
-
-		while ((line = inputBufferedReader.readLine()) != null) {
-			System.out.println("PostgreSQL: " + line);
-		}
-
-		InputStreamReader errorStreamReader = new InputStreamReader(
-			process.getErrorStream());
-
-		BufferedReader errorBufferedReader = new BufferedReader(
-			errorStreamReader);
-
-		if (errorBufferedReader.ready()) {
-			while ((line = errorBufferedReader.readLine()) != null) {
-				System.out.println("PostgreSQL: " + line);
-			}
-
-			throw new Exception();
-		}
+		AntUtil.callTarget(baseDir, "build-test.xml", "start-docker-database",parameters);
 	}
 
 	private <T> T _setPropertyKeys(String fieldName, T value) {
