@@ -113,19 +113,13 @@ public class CloudBucketUtil {
 		System.out.println(
 			"Creating checksum file for " + source + " to " + destination);
 
-		String sourcePath = source;
+		System.out.println("source path : " + source);
 
-		System.out.println("source path : " + sourcePath);
-
-		File tempFile = new File(sourcePath);
+		File tempFile = new File(source);
 
 		File tempSHAFile = new File(tempFile + ".sha512");
 
-		if (tempFile.getPath(
-			).contains(
-				".sha512"
-			)) {
-
+		if (source.contains(".sha512")) {
 			tempSHAFile = tempFile;
 		}
 
@@ -482,7 +476,7 @@ public class CloudBucketUtil {
 					s3ChecksumFilePath));
 
 			System.out.println(
-				"Copied " + source + ".sha512 to " + tempSHAFilePath);
+				"Copied " + s3ChecksumFilePath + " to " + tempSHAFilePath);
 
 			if (!JenkinsResultsParserUtil.isMatchingSHAFile(
 					tempFile, tempSHAFile)) {
