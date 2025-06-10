@@ -351,7 +351,7 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		if (!OSDetector.isWindows()) {
 			sb.append(
-				"/bin/bash ant -f build-test.xml start-docker-database -Ddatabase.type=postgresql");
+				"/bin/sh -c ant -Ddatabase.type=postgresql -f build-test.xml start-docker-database");
 		}
 		else {
 			sb.append(
@@ -384,7 +384,7 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		if (errorBufferedReader.ready()) {
 			while ((line = errorBufferedReader.readLine()) != null) {
-				System.out.println("PostgreSQL: " + line);
+				System.out.println("PostgreSQL Error: " + line);
 			}
 
 			throw new Exception();
