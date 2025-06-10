@@ -7,6 +7,7 @@ package com.liferay.portal.verify.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.jenkins.results.parser.AntUtil;
+import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -360,7 +361,32 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
    		parameters.put("database.type", "postgresql");
 
-		AntUtil.callTarget(baseDir, "build-test.xml", "start-docker-database",parameters);
+		Map<String, String> envVariables = new HashMap<>();
+
+		Properties buildProperties = JenkinsResultsParserUtil.getBuildProperties();
+
+		String path = System.getenv("PATH");
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(path)) {
+			return null;
+		}
+
+		Matcher javaHomeMatcher = _javaHomePattern.matcher(path);
+
+		if (javaHomeMatcher.find()) {
+			path = path.replace(
+				javaHomeMatcher.group(), getJavaHome(batchName) + "/bin");
+		}
+		else {
+			path = getJavaHome(batchName) + "/bin:" + path;
+		}
+
+		envVariables.put("ANT_OPTS", buildProperties.getProperty("java.jdk.opts.default.runtime"));
+		envVariables.put("JAVA_HOME", buildProperties.getProperty("java.jdk.default.compile"));
+		envVariables.put("JAVA_OPTS", buildProperties.getProperty("java.jdk.opts.default.runtime") + " -XX:+IgnoreUnrecognizedVMOptions");
+		envVariables.put("PATH", path);
+
+		AntUtil.callTarget(baseDir, "build-test.xml", "start-docker-database", parameters, envVariables);
 	}
 
 	private <T> T _setPropertyKeys(String fieldName, T value) {
