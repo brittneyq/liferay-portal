@@ -375,10 +375,10 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		if (javaHomeMatcher.find()) {
 			path = path.replace(
-				javaHomeMatcher.group(), getJavaHome(batchName) + "/bin");
+				javaHomeMatcher.group(), buildProperties.getProperty("java.jdk.default.compile") + "/bin");
 		}
 		else {
-			path = getJavaHome(batchName) + "/bin:" + path;
+			path = buildProperties.getProperty("java.jdk.default.compile") + "/bin:" + path;
 		}
 
 		envVariables.put("ANT_OPTS", buildProperties.getProperty("java.jdk.opts.default.runtime"));
