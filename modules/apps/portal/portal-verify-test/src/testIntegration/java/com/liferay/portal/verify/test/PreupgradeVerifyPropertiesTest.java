@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -357,14 +360,31 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		System.out.println("liferay home : " + liferayHome);
 
-		File baseDir = new File(liferayHome);
+		File baseDir = new File(liferayHome).getParentFile();
+
+		String hostName = SystemProperties.get("env.HOSTNAME");
+
+		System.out.println("host name : " + hostName);
+
+		if (hostName != null && !hostName.isEmpty()) {
+			File hostNamePropertiesFile = new File(
+				baseDir,
+				_combine(
+					"test.", hostName, ".properties"));
+
+			File testPropertiesFile = new File(
+				baseDir, "test.properties");
+
+			Files.move(
+					hostNamePropertiesFile.toPath(), testPropertiesFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+		}
 
 		Map<String, String> parameters = new HashMap<>();
 		Map<String, String> envVariables = new HashMap<>();
 		envVariables.put("ANT_OPTS", "-Xlog:gc:/tmp/tomcat-gc.log -Xms1024m -Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:MaxNewSize=32m -XX:MaxTenuringThreshold=0 -XX:MetaspaceSize=256m -XX:NewSize=32m -XX:ParallelGCThreads=2 -XX:SurvivorRatio=2048 -XX:TargetSurvivorRatio=0");
 		parameters.put("database.type", "postgresql");
 
-		callTarget(baseDir.getParentFile(), "build-test.xml", "start-docker-database", parameters, envVariables);
+		_callTarget(baseDir, "build-test.xml", "start-docker-database", parameters, envVariables);
 
 		// StringBundler sb = new StringBundler(1);
 
@@ -410,7 +430,7 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 		// }
 	}
 
-	private void callTarget(
+	private void _callTarget(
 			File baseDir, String buildFileName, String targetName,
 			Map<String, String> parameters, Map<String, String> envVariables)
 		throws IOException {
@@ -548,6 +568,20 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 			throw new IOException(exception);
 		}
+	}
+
+	private String _combine(String... strings) {
+		if ((strings == null) || (strings.length == 0)) {
+			return "";
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		for (String string : strings) {
+			sb.append(string);
+		}
+
+		return sb.toString();
 	}
 
 	private <T> T _setPropertyKeys(String fieldName, T value) {
