@@ -362,7 +362,7 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		File baseDir = new File(liferayHome).getParentFile();
 
-		String hostName = SystemProperties.get("env.HOSTNAME");
+		String hostName = System.getProperty("env.HOSTNAME");
 
 		System.out.println("host name : " + hostName);
 
