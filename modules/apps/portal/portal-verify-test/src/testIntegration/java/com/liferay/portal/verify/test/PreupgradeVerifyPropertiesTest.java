@@ -22,7 +22,11 @@ import com.liferay.portal.verify.test.util.BaseVerifyProcessTestCase;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.io.IOException;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -77,6 +81,8 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 			(key, value) -> System.out.println(key + "=" + value)
 		);
 
+		System.out.println("RUN POSTGRESQL");
+		
 		_runPostgresqlDB();
 
 		String migratedPortalKey = _getFirstPortalPropertyKey();
@@ -347,47 +353,200 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 	}
 
 	private void _runPostgresqlDB() throws Exception {
-		StringBundler sb = new StringBundler(1);
+		String liferayHome = System.getProperty("liferay.home");
 
-		if (!OSDetector.isWindows()) {
-			sb.append(
-				"/bin/sh -c ant -Ddatabase.type=postgresql -f build-test.xml start-docker-database");
+		System.out.println("liferay home : " + liferayHome);
+
+		File baseDir = new File(liferayHome);
+
+		Map<String, String> parameters = new HashMap<>();
+		Map<String, String> envVariables = new HashMap<>();
+		envVariables.put("ANT_OPTS", "-Xlog:gc:/tmp/tomcat-gc.log -Xms1024m -Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:MaxNewSize=32m -XX:MaxTenuringThreshold=0 -XX:MetaspaceSize=256m -XX:NewSize=32m -XX:ParallelGCThreads=2 -XX:SurvivorRatio=2048 -XX:TargetSurvivorRatio=0");
+		parameters.put("database.type", "postgresql");
+
+		callTarget(baseDir.getParentFile(), "build-test.xml", "start-docker-database", parameters, envVariables);
+
+		// StringBundler sb = new StringBundler(1);
+
+		// if (!OSDetector.isWindows()) {
+		// 	sb.append(
+		// 		"export ANT_OPTS=-Xlog:gc:/tmp/tomcat-gc.log -Xms1024m -Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:MaxNewSize=32m -XX:MaxTenuringThreshold=0 -XX:MetaspaceSize=256m -XX:NewSize=32m -XX:ParallelGCThreads=2 -XX:SurvivorRatio=2048 -XX:TargetSurvivorRatio=0 -XX:+IgnoreUnrecognizedVMOptions ; /bin/sh -c ant -Ddatabase.type=postgresql -f build-test.xml start-docker-database");
+		// }
+		// else {
+		// 	sb.append(
+		// 		"cmd /c ant -f build-test.xml start-docker-database -Ddatabase.type=postgresql");
+		// }
+
+		// Runtime runtime = Runtime.getRuntime();
+
+		// Process process = runtime.exec(
+		// 	sb.toString(), null,
+		// 	new File("/opt/dev/projects/github/liferay-portal/"));
+
+		// InputStreamReader inputStreamReader = new InputStreamReader(
+		// 	process.getInputStream());
+
+		// BufferedReader inputBufferedReader = new BufferedReader(
+		// 	inputStreamReader);
+
+		// String line = null;
+
+		// while ((line = inputBufferedReader.readLine()) != null) {
+		// 	System.out.println("PostgreSQL: " + line);
+		// }
+
+		// InputStreamReader errorStreamReader = new InputStreamReader(
+		// 	process.getErrorStream());
+
+		// BufferedReader errorBufferedReader = new BufferedReader(
+		// 	errorStreamReader);
+
+		// if (errorBufferedReader.ready()) {
+		// 	while ((line = errorBufferedReader.readLine()) != null) {
+		// 		System.out.println("PostgreSQL Error: " + line);
+		// 	}
+
+		// 	throw new Exception();
+		// }
+	}
+
+	private void callTarget(
+			File baseDir, String buildFileName, String targetName,
+			Map<String, String> parameters, Map<String, String> envVariables)
+		throws IOException {
+
+		String[] bashCommands = new String[3];
+
+		if (OSDetector.isWindows()) {
+			bashCommands[0] = "cmd";
+			bashCommands[1] = "/c";
 		}
 		else {
-			sb.append(
-				"cmd /c ant -f build-test.xml start-docker-database -Ddatabase.type=postgresql");
+			bashCommands[0] = "/bin/sh";
+			bashCommands[1] = "-c";
 		}
 
-		Runtime runtime = Runtime.getRuntime();
+		StringBuilder sb = new StringBuilder();
 
-		Process process = runtime.exec(
-			sb.toString(), null,
-			new File("/opt/dev/projects/github/liferay-portal/"));
+		if (envVariables != null) {
+			for (Map.Entry<String, String> envVariable :
+					envVariables.entrySet()) {
 
-		InputStreamReader inputStreamReader = new InputStreamReader(
-			process.getInputStream());
+				sb.append("export ");
+				sb.append(envVariable.getKey());
+				sb.append("=");
 
-		BufferedReader inputBufferedReader = new BufferedReader(
-			inputStreamReader);
+				String value = envVariable.getValue();
 
-		String line = null;
+				value = value.trim();
 
-		while ((line = inputBufferedReader.readLine()) != null) {
-			System.out.println("PostgreSQL: " + line);
+				value = value.replaceAll("\"", "\\\\\"");
+
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+
+				sb.append(" ; ");
+			}
 		}
 
-		InputStreamReader errorStreamReader = new InputStreamReader(
-			process.getErrorStream());
+		sb.append("ant");
 
-		BufferedReader errorBufferedReader = new BufferedReader(
-			errorStreamReader);
+		if (parameters != null) {
+			for (Map.Entry<String, String> parameter : parameters.entrySet()) {
+				sb.append(" -D");
+				sb.append(parameter.getKey());
+				sb.append("=");
 
-		if (errorBufferedReader.ready()) {
-			while ((line = errorBufferedReader.readLine()) != null) {
-				System.out.println("PostgreSQL Error: " + line);
+				String value = parameter.getValue();
+
+				value = value.trim();
+
+				value = value.replaceAll("\"", "\\\\\"");
+
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+		}
+
+		if (buildFileName != null) {
+			sb.append(" -f ");
+			sb.append(buildFileName);
+		}
+
+		if (targetName != null) {
+			sb.append(" ");
+			sb.append(targetName);
+		}
+
+		System.out.println("SB TO STRING:");
+		System.out.println(sb.toString());
+
+		bashCommands[2] = sb.toString();
+
+		System.out.println("BASH COMMANDS 0 : " + bashCommands[0]);
+		System.out.println("BASH COMMANDS 1 : " + bashCommands[1]);
+		System.out.println("BASH COMMANDS 2 : " + bashCommands[2]);
+
+		try {
+			ProcessBuilder processBuilder = new ProcessBuilder(bashCommands);
+
+			if (baseDir == null) {
+				baseDir = new File(".");
 			}
 
-			throw new Exception();
+			processBuilder.directory(baseDir.getAbsoluteFile());
+
+			final Process process = processBuilder.start();
+
+			Thread thread = new Thread() {
+
+				@Override
+				public void run() {
+					try (BufferedReader bufferedReader = new BufferedReader(
+							new InputStreamReader(process.getInputStream()))) {
+
+						String line = bufferedReader.readLine();
+
+						while (line != null) {
+							System.out.println(line);
+
+							line = bufferedReader.readLine();
+						}
+					}
+					catch (IOException ioException) {
+						ioException.printStackTrace();
+					}
+				}
+
+			};
+
+			thread.start();
+
+			process.waitFor();
+
+			int exitValue = process.exitValue();
+
+			if (exitValue != 0) {
+				InputStreamReader errorStreamReader = new InputStreamReader(
+			process.getErrorStream());
+
+			BufferedReader errorBufferedReader = new BufferedReader(
+				errorStreamReader);
+
+			String line;
+			if (errorBufferedReader.ready()) {
+				while ((line = errorBufferedReader.readLine()) != null) {
+					System.out.println("PostgreSQL Error: " + line);
+					}
+				}
+			}
+	}
+		catch (InterruptedException | IOException exception) {
+			exception.printStackTrace();
+
+			throw new IOException(exception);
 		}
 	}
 
