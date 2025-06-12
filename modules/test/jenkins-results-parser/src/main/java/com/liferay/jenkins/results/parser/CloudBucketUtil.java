@@ -117,7 +117,7 @@ public class CloudBucketUtil {
 
 		File tempFile = new File(source);
 
-		if (!tempFile.exists()){
+		if (!tempFile.exists()) {
 			return;
 		}
 
@@ -394,20 +394,24 @@ public class CloudBucketUtil {
 					listS3Files(destination));
 
 				while (listS3FilesMatcher.find()) {
-					System.out.println("file :" + listS3FilesMatcher.group("fileName"));
+					System.out.println(
+						"file :" + listS3FilesMatcher.group("fileName"));
 
 					System.out.println("Destination : " + destination);
 
 					System.out.println("source: " + source);
+
 					createS3ObjectRef(
 						JenkinsResultsParserUtil.combine(
 							destination, "/",
 							listS3FilesMatcher.group("fileName")));
 
+					String s3FileDestination = JenkinsResultsParserUtil.combine(
+						destination, "/", listS3FilesMatcher.group("fileName"),
+						".sha512");
+
 					createChecksumFile(
-						JenkinsResultsParserUtil.combine(
-							destination, "/",
-							listS3FilesMatcher.group("fileName")) + ".sha512",
+						s3FileDestination,
 						JenkinsResultsParserUtil.combine(
 							source, "/", listS3FilesMatcher.group("fileName")));
 				}
