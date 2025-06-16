@@ -673,6 +673,10 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 						JenkinsResultsParserUtil.copy(
 							_buildDatabaseFile, tempFile);
 
+						System.out.println(
+							"Copying s3 file :" + path + " from : " +
+								tempFilePath);
+
 						CloudBucketUtil.copyS3File(path, tempFilePath);
 					}
 					catch (IOException ioException) {

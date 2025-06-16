@@ -56,6 +56,8 @@ public class CloudBucketUtil {
 		String replacedDestination = _replaceS3ObjectPath(destination);
 		String replacedSource = _replaceS3ObjectPath(source);
 
+		System.out.println("destination : " + destination);
+
 		System.out.println("replaced destination : " + replacedDestination);
 
 		System.out.println("replaced source : " + replacedSource);
