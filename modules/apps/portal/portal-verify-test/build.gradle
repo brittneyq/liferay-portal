@@ -15,11 +15,7 @@ tasks.named('testIntegration', Test) {
 		if (hostName != null && !hostName.isEmpty()) {
 			def envSpecificPropsFileName = "test.${hostName}.properties"
 			def testPropsFileName = "test.properties"
-			def propsFile = rootDir.file(envSpecificPropsFileName)
-
-			if (!propsFile.exists()) {
-				propsFile = file("src/test/resources/${testPropsFileName}")
-			}
+			def propsFile = new File(rootDir, envSpecificPropsFileName)
 
 			if (propsFile.exists()) {
 				println "Loading environment-specific properties from: ${propsFile.absolutePath}"
