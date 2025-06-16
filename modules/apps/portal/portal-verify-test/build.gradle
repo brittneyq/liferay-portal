@@ -15,8 +15,13 @@ tasks.named('testIntegration', Test) {
 		if (hostName != null && !hostName.isEmpty()) {
 			def envSpecificPropsFileName = "test.${hostName}.properties"
 			def testPropsFileName = "test.properties"
-			def propsFile = new File(rootDir, envSpecificPropsFileName)
 
+			println "Root dir : ${rootDir.absolutePath}"
+
+			def propsFile = new File(rootDir.ParentFile, envSpecificPropsFileName)
+
+			println "root dir parent file props file : ${propsFile.absolutePath}"
+			 
 			if (propsFile.exists()) {
 				println "Loading environment-specific properties from: ${propsFile.absolutePath}"
 				def loadedProperties = new Properties()
@@ -27,7 +32,7 @@ tasks.named('testIntegration', Test) {
 
 				loadedProperties.each {
 					key, value ->
-					systemProperty key, value // This is how you pass them to the test JVM
+					systemProperty key, value 
 					println "  - Set JVM system property: ${key}=${value}"
 				}
 			} else {
