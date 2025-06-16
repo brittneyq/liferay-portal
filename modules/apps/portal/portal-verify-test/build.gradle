@@ -5,3 +5,40 @@ dependencies {
 	testIntegrationImplementation project(":apps:portal:portal-verify-test-util")
 	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }
+
+test{
+	doFirst {
+		def hostName = System.getenv('HOSTNAME')
+
+		println "host name is ... ${hostName}"
+
+		if (hostName != null && !hostName.isEmpty()) {
+			def envSpecificPropsFileName = "test.${hostName}.properties"
+			def testPropsFileName = "test.properties"
+			def propsFile = rootDir.file(envSpecificPropsFileName)
+
+			if (!propsFile.exists()) {
+				propsFile = file("src/test/resources/${testPropsFileName}")
+			}
+
+			if (propsFile.exists()) {
+				println "Loading environment-specific properties from: ${propsFile.absolutePath}"
+				def loadedProperties = new Properties()
+
+				propsFile.withInputStream {
+					loadedProperties.load(it)
+				}
+
+				loadedProperties.each {
+					key, value ->
+					systemProperty key, value // This is how you pass them to the test JVM
+					println "  - Set JVM system property: ${key}=${value}"
+				}
+			} else {
+				println "Warning: Environment-specific properties file not found: ${envSpecificPropsFileName} rootDir"
+			}
+		} else {
+			println "Warning: HOST_NAME environment variable not set. Skipping environment-specific properties loading."
+		}
+	}
+}
