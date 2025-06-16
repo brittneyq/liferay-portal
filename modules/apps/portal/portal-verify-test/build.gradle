@@ -6,7 +6,7 @@ dependencies {
 	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }
 
-test{
+tasks.named('testIntegration', Test) {
 	doFirst {
 		def hostName = System.getenv('HOSTNAME')
 
