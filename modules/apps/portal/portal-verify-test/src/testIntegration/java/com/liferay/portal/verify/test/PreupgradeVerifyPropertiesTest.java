@@ -366,18 +366,22 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		System.out.println("host name : " + hostName);
 
-		if (hostName != null && !hostName.isEmpty()) {
-			File hostNamePropertiesFile = new File(
-				baseDir,
-				_combine(
-					"test.", hostName, ".properties"));
+		String hostName2 = System.getProperty("HOSTNAME");
 
-			File testPropertiesFile = new File(
-				baseDir, "test.properties");
+		System.out.println("host name 2 : " + hostName2);
 
-			Files.move(
-					hostNamePropertiesFile.toPath(), testPropertiesFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
-		}
+		// if (hostName != null && !hostName.isEmpty()) {
+		// 	File hostNamePropertiesFile = new File(
+		// 		baseDir,
+		// 		_combine(
+		// 			"test.", hostName, ".properties"));
+
+		// 	File testPropertiesFile = new File(
+		// 		baseDir, "test.properties");
+
+		// 	Files.move(
+		// 			hostNamePropertiesFile.toPath(), testPropertiesFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+		// }
 
 		Map<String, String> parameters = new HashMap<>();
 		Map<String, String> envVariables = new HashMap<>();
