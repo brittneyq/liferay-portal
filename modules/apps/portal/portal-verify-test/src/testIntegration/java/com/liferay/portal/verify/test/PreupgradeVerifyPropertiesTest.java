@@ -394,9 +394,9 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 		Map<String, String> envVariables = new HashMap<>();
 		envVariables.put("ANT_OPTS", "-Xlog:gc:/tmp/tomcat-gc.log -Xms1024m -Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:MaxNewSize=32m -XX:MaxTenuringThreshold=0 -XX:MetaspaceSize=256m -XX:NewSize=32m -XX:ParallelGCThreads=2 -XX:SurvivorRatio=2048 -XX:TargetSurvivorRatio=0");
 		
-		if (hostNameTest != null && !hostNameTest.isEmpty()) {
-			envVariables.put("HOSTNAME", hostNameTest);
-		} 
+		// if (hostNameTest != null && !hostNameTest.isEmpty()) {
+		// 	envVariables.put("HOSTNAME", hostNameTest);
+		// } 
 
 		parameters.put("database.type", "postgresql");
 
