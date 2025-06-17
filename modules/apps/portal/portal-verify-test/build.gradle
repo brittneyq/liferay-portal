@@ -7,5 +7,9 @@ dependencies {
 }
 
 tasks.named('testIntegration', Test) {
-	 systemProperty 'HOSTNAME', System.getenv('HOSTNAME')
+	systemProperty 'host.name', System.getenv('HOSTNAME')
+
+	doFirst{
+		
+	}
 }

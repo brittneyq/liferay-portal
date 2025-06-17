@@ -9,6 +9,8 @@
 			<available file="${test.base.dir.name}/test.properties" />
 		</and>
 		<then>
+			<echo>PROPERTY FILES ${test.base.dir.name} / test.${env.HOSTNAME}.properties</echo>
+			
 			<property file="${test.base.dir.name}/test.${user.name}.properties" />
 			<property file="${test.base.dir.name}/test.${env.COMPUTERNAME}.properties" />
 			<property file="${test.base.dir.name}/test.${env.HOST}.properties" />

@@ -68,6 +68,10 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 			"database.postgresql.password: " +
 				properties.getProperty("database.postgresql.password"));
 
+	 	String hostName = System.getProperty("host.name");
+
+        System.out.println("Java Test: Retrieved host.name system property: " + hostName);
+
 		properties = System.getProperties();
 
 		List<String> keys = Collections.list(
@@ -370,6 +374,8 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		System.out.println("host name 2 : " + hostName2);
 
+		String hostNameTest = System.getProperty("host.name")
+
 		// if (hostName != null && !hostName.isEmpty()) {
 		// 	File hostNamePropertiesFile = new File(
 		// 		baseDir,
@@ -386,6 +392,11 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 		Map<String, String> parameters = new HashMap<>();
 		Map<String, String> envVariables = new HashMap<>();
 		envVariables.put("ANT_OPTS", "-Xlog:gc:/tmp/tomcat-gc.log -Xms1024m -Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:MaxNewSize=32m -XX:MaxTenuringThreshold=0 -XX:MetaspaceSize=256m -XX:NewSize=32m -XX:ParallelGCThreads=2 -XX:SurvivorRatio=2048 -XX:TargetSurvivorRatio=0");
+		
+		if (!hostNameTest == null && !hostNameTest.isEmpty()) {
+			envVariables.put("HOSTNAME", hostNameTest);
+		} 
+
 		parameters.put("database.type", "postgresql");
 
 		_callTarget(baseDir, "build-test.xml", "start-docker-database", parameters, envVariables);
