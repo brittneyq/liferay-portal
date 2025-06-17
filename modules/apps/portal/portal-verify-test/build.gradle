@@ -7,5 +7,22 @@ dependencies {
 }
 
 tasks.named('testIntegration', Test) {
-	systemProperty 'host.name', System.getenv('HOSTNAME')
+	def hostNameEnvVarValueAtConfigTime = System.getenv('HOSTNAME')
+    println "--------------------------------------------------------------------------------"
+    println "DEBUG Gradle (Configuration Phase):"
+    println "  OS Environment Variable 'HOSTNAME' as seen by Gradle Daemon: '${hostNameEnvVarValueAtConfigTime}'"
+    println "  Is 'hostNameEnvVarValueAtConfigTime' null or empty? ${hostNameEnvVarValueAtConfigTime == null || hostNameEnvVarValueAtConfigTime.isEmpty()}"
+    println "--------------------------------------------------------------------------------"
+
+    systemProperty 'host.name', hostNameEnvVarValueAtConfigTime
+
+  	doFirst {
+        def hostNameEnvVarValueAtExecTime = System.getenv('HOSTNAME')
+        println "--------------------------------------------------------------------------------"
+        println "DEBUG Gradle (Execution Phase - doFirst for testIntegration):"
+        println "  OS Environment Variable 'HOSTNAME' as seen by Gradle Daemon (again): '${hostNameEnvVarValueAtExecTime}'"
+        println "  Is 'hostNameEnvVarValueAtExecTime' null or empty? ${hostNameEnvVarValueAtExecTime == null || hostNameEnvVarValueAtExecTime.isEmpty()}"
+        println "  Value actually passed to systemProperty 'host.name': '${hostNameEnvVarValueAtConfigTime}' (from config phase)"
+        println "--------------------------------------------------------------------------------"
+    }
 }

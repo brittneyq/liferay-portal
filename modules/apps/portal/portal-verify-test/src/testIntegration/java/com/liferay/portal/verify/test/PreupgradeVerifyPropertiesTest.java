@@ -366,17 +366,16 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		File baseDir = new File(liferayHome).getParentFile();
 
-		String hostName = System.getProperty("env.HOSTNAME");
+		String hostNameFromJvm = System.getProperty("host.name");
+        String hostNameFromJvmEnv = System.getenv("HOSTNAME");
 
-		System.out.println("host name : " + hostName);
+        System.out.println("host name from jvm : " + hostNameFromJvm);
+        System.out.println("host name from jvm env : " + hostNameFromJvmEnv);
 
-		String hostName2 = System.getProperty("HOSTNAME");
-
-		System.out.println("host name 2 : " + hostName2);
-
-		String hostNameTest = System.getProperty("host.name");
-
-		System.out.println("host name test : " + hostNameTest);
+        System.out.println("DEBUG Java Test (Inside Test JVM):");
+        System.out.println("  System Property 'host.name': '" + hostNameFromJvm + "'");
+        System.out.println("  Is 'hostNameFromJvm' null or empty? " + (hostNameFromJvm == null || hostNameFromJvm.isEmpty()));
+        System.out.println("  Environment Variable 'HOSTNAME' in Test JVM: '" + hostNameFromJvmEnv + "'");
 		
 		// if (hostName != null && !hostName.isEmpty()) {
 		// 	File hostNamePropertiesFile = new File(
