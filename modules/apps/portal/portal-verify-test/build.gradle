@@ -8,8 +8,4 @@ dependencies {
 
 tasks.named('testIntegration', Test) {
 	systemProperty 'host.name', System.getenv('HOSTNAME')
-
-	doFirst{
-		
-	}
 }

@@ -376,6 +376,8 @@ public class PreupgradeVerifyPropertiesTest extends BaseVerifyProcessTestCase {
 
 		String hostNameTest = System.getProperty("host.name");
 
+		System.out.println("host name test : " + hostNameTest);
+		
 		// if (hostName != null && !hostName.isEmpty()) {
 		// 	File hostNamePropertiesFile = new File(
 		// 		baseDir,
