@@ -67,44 +67,43 @@ public class CloudBucketUtil {
 				"aws s3 cp --no-progress", replacedDestination,
 				replacedSource));
 
-		if (!destination.equals(replacedDestination)) {
-			System.out.println(
-				"Replaced destination " + destination + " with " +
-					replacedDestination);
+		Matcher destinationS3ObjectPathMatcher = _s3ObjectPathPattern.matcher(
+			replacedDestination);
 
-			Matcher destinationS3ObjectPathMatcher =
-				_s3ObjectPathPattern.matcher(replacedDestination);
-
-			if (destinationS3ObjectPathMatcher.find()) {
+		if (destinationS3ObjectPathMatcher.find()) {
+			if (!destination.equals(replacedDestination)) {
 				createS3ObjectRef(replacedDestination);
 
-				if (!replacedDestination.contains(".sha512")) {
-					createChecksumFile(
-						replacedDestination + ".sha512", replacedSource);
-				}
-				else {
-					createChecksumFile(replacedDestination, replacedSource);
-				}
+				System.out.println(
+					"Replaced destination " + destination + " with " +
+						replacedDestination);
+			}
+
+			if (!replacedDestination.contains(".sha512")) {
+				createChecksumFile(
+					replacedDestination + ".sha512", replacedSource);
+			}
+			else {
+				createChecksumFile(replacedDestination, replacedSource);
 			}
 		}
 
-		if (!source.equals(replacedSource)) {
+		Matcher sourceS3ObjectPathMatcher = _s3ObjectPathPattern.matcher(
+			replacedSource);
+
+		if (sourceS3ObjectPathMatcher.find()) {
 			System.out.println(
 				"Replaced source " + source + " with " + replacedSource);
 
-			Matcher sourceS3ObjectPathMatcher = _s3ObjectPathPattern.matcher(
-				replacedSource);
-
-			if (sourceS3ObjectPathMatcher.find()) {
+			if (!source.equals(replacedSource)) {
 				createS3ObjectRef(replacedSource);
+			}
 
-				try {
-					validateChecksumFile(replacedDestination, replacedSource);
-				}
-				catch (Exception exception) {
-					throw new RuntimeException(
-						"Failed to validate checksum file");
-				}
+			try {
+				validateChecksumFile(replacedDestination, replacedSource);
+			}
+			catch (Exception exception) {
+				throw new RuntimeException("Failed to validate checksum file");
 			}
 		}
 
