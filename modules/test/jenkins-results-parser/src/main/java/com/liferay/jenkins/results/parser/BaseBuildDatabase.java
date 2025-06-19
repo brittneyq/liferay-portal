@@ -647,10 +647,6 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 		}
 
 		synchronized (_buildDatabaseFile) {
-			String shaPath = path.replace(
-				FILE_NAME_BUILD_DATABASE_JSON,
-				FILE_NAME_BUILD_DATABASE_JSON_SHA);
-
 			Retryable<JSONObject> retryable = new Retryable<JSONObject>(
 				true, 3, 5, true) {
 
@@ -666,14 +662,9 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 
 					File tempFile = new File(
 						baseTempDirPath + "/" + FILE_NAME_BUILD_DATABASE_JSON);
-					File tempSHAFile = new File(
-						baseTempDirPath + "/" +
-							FILE_NAME_BUILD_DATABASE_JSON_SHA);
 
 					String tempFilePath =
 						JenkinsResultsParserUtil.getCanonicalPath(tempFile);
-					String tempSHAFilePath =
-						JenkinsResultsParserUtil.getCanonicalPath(tempSHAFile);
 
 					try {
 						JenkinsResultsParserUtil.write(
@@ -682,10 +673,9 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 						JenkinsResultsParserUtil.copy(
 							_buildDatabaseFile, tempFile);
 
-						JenkinsResultsParserUtil.writeSHAFile(
-							tempFile, tempSHAFile);
-
-						CloudBucketUtil.copyS3File(shaPath, tempSHAFilePath);
+						System.out.println(
+							"Copying s3 file :" + path + " from : " +
+								tempFilePath);
 
 						CloudBucketUtil.copyS3File(path, tempFilePath);
 					}
@@ -696,35 +686,9 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 						if (tempFile.exists()) {
 							JenkinsResultsParserUtil.delete(tempFile);
 						}
-
-						if (tempSHAFile.exists()) {
-							JenkinsResultsParserUtil.delete(tempSHAFile);
-						}
 					}
-
-					CloudBucketUtil.copyS3File(tempSHAFilePath, shaPath);
 
 					CloudBucketUtil.copyS3File(tempFilePath, path);
-
-					try {
-						if (!JenkinsResultsParserUtil.isMatchingSHAFile(
-								tempFile, tempSHAFile)) {
-
-							throw new RuntimeException(
-								JenkinsResultsParserUtil.combine(
-									"Invalid file uploaded to ", path,
-									" has mismatched SHA"));
-						}
-					}
-					finally {
-						if (tempFile.exists()) {
-							JenkinsResultsParserUtil.delete(tempFile);
-						}
-
-						if (tempSHAFile.exists()) {
-							JenkinsResultsParserUtil.delete(tempSHAFile);
-						}
-					}
 
 					return null;
 				}
