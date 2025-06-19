@@ -79,7 +79,7 @@ public class CloudBucketUtil {
 					" to ", destination + " in ",
 					JenkinsResultsParserUtil.toDurationString(end)));
 
-			createChecksumFile(replacedDestination, replacedSource);
+			createChecksumFile(replacedDestination + ".sha512", replacedSource);
 
 			if (!destination.equals(replacedDestination)) {
 				System.out.println(
@@ -132,6 +132,10 @@ public class CloudBucketUtil {
 			return;
 		}
 
+		if (!destination.contains(".sha512")) {
+			destination = destination + ".sha512";
+		}
+
 		File tempSHAFile = new File(tempFile + ".sha512");
 
 		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
@@ -149,15 +153,14 @@ public class CloudBucketUtil {
 
 			_executeCommands(
 				_getFileTransferCommand(
-					"aws s3 cp --no-progress", destination + ".sha512",
-					tempSHAFilePath));
+					"aws s3 cp --no-progress", destination, tempSHAFilePath));
 
 			System.out.println(
 				JenkinsResultsParserUtil.combine(
-					"Uploaded", tempSHAFilePath, " with file size ",
+					"Uploaded ", tempSHAFilePath, " with file size ",
 					JenkinsResultsParserUtil.toFileSizeString(
 						tempSHAFile.length()),
-					" to ", destination + ".sha512 in ",
+					" to ", destination + " in ",
 					JenkinsResultsParserUtil.toDurationString(
 						System.currentTimeMillis() - start)));
 
