@@ -71,6 +71,8 @@ public class CloudBucketUtil {
 
 			if (destinationS3ObjectPathMatcher.find()) {
 				createS3ObjectRef(replacedDestination);
+
+				createChecksumFile(replacedDestination, replacedSource);
 			}
 		}
 
@@ -83,10 +85,51 @@ public class CloudBucketUtil {
 
 			if (sourceS3ObjectPathMatcher.find()) {
 				createS3ObjectRef(replacedSource);
+
+				try {
+					validateChecksumFile(replacedDestination, replacedSource);
+				}
+				catch (Exception exception) {
+					throw new RuntimeException(
+						"Failed to validate checksum file");
+				}
 			}
 		}
 
 		System.out.println("Copied " + source + " to " + destination);
+	}
+
+	public static void createChecksumFile(String destination, String source) {
+		System.out.println(
+			"Creating checksum file for " + source + " to " + destination);
+
+		File tempFile = new File(source);
+
+		if (!tempFile.exists()) {
+			return;
+		}
+
+		File tempSHAFile = new File(tempFile + ".sha512");
+
+		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
+			tempSHAFile);
+
+		try {
+			if (tempSHAFile.length() == 0) {
+				JenkinsResultsParserUtil.writeSHAFile(tempFile, tempSHAFile);
+			}
+
+			_executeCommands(
+				_getFileTransferCommand(
+					"aws s3 cp --no-progress", destination + ".sha512",
+					tempSHAFilePath));
+
+			System.out.println(
+				"Copied " + tempSHAFilePath + " to " + destination);
+		}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	public static void createS3ObjectRef(String s3ObjectPath) {
@@ -296,6 +339,20 @@ public class CloudBucketUtil {
 			process.getInputStream());
 	}
 
+	public static String listS3Files(String path, boolean file)
+		throws IOException, TimeoutException {
+
+		if (!path.endsWith("/") && !file) {
+			path += "/";
+		}
+
+		Process process = JenkinsResultsParserUtil.executeBashCommands(
+			true, "aws s3 ls " + _escapeParentheses(path));
+
+		return JenkinsResultsParserUtil.readInputStream(
+			process.getInputStream());
+	}
+
 	public static void syncGCPFiles(String destination, String source)
 		throws IOException {
 
@@ -323,6 +380,15 @@ public class CloudBucketUtil {
 						JenkinsResultsParserUtil.combine(
 							destination, "/",
 							listS3FilesMatcher.group("fileName")));
+
+					String s3FileDestination = JenkinsResultsParserUtil.combine(
+						destination, "/", listS3FilesMatcher.group("fileName"),
+						".sha512");
+
+					createChecksumFile(
+						s3FileDestination,
+						JenkinsResultsParserUtil.combine(
+							source, "/", listS3FilesMatcher.group("fileName")));
 				}
 			}
 
@@ -337,6 +403,13 @@ public class CloudBucketUtil {
 					createS3ObjectRef(
 						JenkinsResultsParserUtil.combine(
 							source, "/", listS3FilesMatcher.group("fileName")));
+
+					validateChecksumFile(
+						JenkinsResultsParserUtil.combine(
+							destination, "/",
+							listS3FilesMatcher.group("fileName")),
+						JenkinsResultsParserUtil.combine(
+							source, "/", listS3FilesMatcher.group("fileName")));
 				}
 			}
 		}
@@ -345,6 +418,51 @@ public class CloudBucketUtil {
 		}
 
 		System.out.println("Synced " + source + " to " + destination);
+	}
+
+	public static void validateChecksumFile(String destination, String s3Source)
+		throws IOException, TimeoutException {
+
+		String s3ChecksumFilePath = s3Source + ".sha512";
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(
+				listS3Files(s3ChecksumFilePath, true))) {
+
+			System.out.println(s3ChecksumFilePath + " does not exist on s3.");
+
+			createChecksumFile(s3ChecksumFilePath, destination);
+		}
+
+		File tempFile = new File(destination);
+
+		String tempFilePath = JenkinsResultsParserUtil.getCanonicalPath(
+			tempFile);
+
+		File tempSHAFile = new File(destination + ".sha512");
+
+		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
+			tempSHAFile);
+
+		try {
+			_executeCommands(
+				_getFileTransferCommand(
+					"aws s3 cp --no-progress", tempSHAFilePath,
+					s3ChecksumFilePath));
+
+			System.out.println(
+				"Copied " + s3ChecksumFilePath + " to " + tempSHAFilePath);
+
+			if (!JenkinsResultsParserUtil.isMatchingSHAFile(
+					tempFile, tempSHAFile)) {
+
+				throw new RuntimeException(
+					JenkinsResultsParserUtil.combine(
+						tempFilePath + " has failed checksum."));
+			}
+		}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	private static String _escapeParentheses(String s) {
