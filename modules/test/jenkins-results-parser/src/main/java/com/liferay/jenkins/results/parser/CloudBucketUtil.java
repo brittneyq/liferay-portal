@@ -56,15 +56,31 @@ public class CloudBucketUtil {
 		String replacedDestination = _replaceS3ObjectPath(destination);
 		String replacedSource = _replaceS3ObjectPath(source);
 
+		long start = JenkinsResultsParserUtil.getCurrentTimeMillis();
+
 		_executeCommands(
 			_getFileTransferCommand(
 				"aws s3 cp --no-progress", replacedDestination,
 				replacedSource));
 
+		long end = JenkinsResultsParserUtil.getCurrentTimeMillis() - start;
+
 		Matcher destinationS3ObjectPathMatcher = _s3ObjectPathPattern.matcher(
 			replacedDestination);
 
 		if (destinationS3ObjectPathMatcher.find()) {
+			System.out.println(
+				JenkinsResultsParserUtil.combine(
+					"Uploaded", source, " with file size ",
+					JenkinsResultsParserUtil.toFileSizeString(
+						new File(
+							source
+						).length()),
+					" to ", destination + " in ",
+					JenkinsResultsParserUtil.toDurationString(end)));
+
+			createChecksumFile(replacedDestination, replacedSource);
+
 			if (!destination.equals(replacedDestination)) {
 				System.out.println(
 					"Replaced destination " + destination + " with " +
@@ -72,26 +88,34 @@ public class CloudBucketUtil {
 
 				createS3ObjectRef(replacedDestination);
 			}
-
-			createChecksumFile(replacedDestination, replacedSource);
 		}
 
 		Matcher sourceS3ObjectPathMatcher = _s3ObjectPathPattern.matcher(
 			replacedSource);
 
 		if (sourceS3ObjectPathMatcher.find()) {
-			if (!source.equals(replacedSource)) {
-				System.out.println(
-					"Replaced source " + source + " with " + replacedSource);
-
-				createS3ObjectRef(replacedSource);
-			}
+			System.out.println(
+				JenkinsResultsParserUtil.combine(
+					"Downloaded", destination, " with file size ",
+					JenkinsResultsParserUtil.toFileSizeString(
+						new File(
+							destination
+						).length()),
+					" from ", source + " in ",
+					JenkinsResultsParserUtil.toDurationString(end)));
 
 			try {
 				validateChecksumFile(replacedDestination, replacedSource);
 			}
 			catch (Exception exception) {
 				throw new RuntimeException("Failed to validate checksum file");
+			}
+
+			if (!source.equals(replacedSource)) {
+				System.out.println(
+					"Replaced source " + source + " with " + replacedSource);
+
+				createS3ObjectRef(replacedSource);
 			}
 		}
 
@@ -113,10 +137,15 @@ public class CloudBucketUtil {
 		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
 			tempSHAFile);
 
+		System.out.println(
+			"temp sha file path in create checksum file: " + tempSHAFilePath);
+
 		try {
 			if (tempSHAFile.length() == 0) {
 				JenkinsResultsParserUtil.writeSHAFile(tempFile, tempSHAFile);
 			}
+
+			long start = JenkinsResultsParserUtil.getCurrentTimeMillis();
 
 			_executeCommands(
 				_getFileTransferCommand(
@@ -124,7 +153,15 @@ public class CloudBucketUtil {
 					tempSHAFilePath));
 
 			System.out.println(
-				"Copied " + tempSHAFilePath + " to " + destination);
+				JenkinsResultsParserUtil.combine(
+					"Uploaded", tempSHAFilePath, " with file size ",
+					JenkinsResultsParserUtil.toFileSizeString(
+						tempSHAFile.length()),
+					" to ", destination + ".sha512 in ",
+					JenkinsResultsParserUtil.toDurationString(
+						System.currentTimeMillis() - start)));
+
+			createS3ObjectRef(destination + ".sha512");
 		}
 		catch (Exception exception) {
 			throw new RuntimeException(exception);
@@ -375,11 +412,6 @@ public class CloudBucketUtil {
 					listS3Files(destination));
 
 				while (listS3FilesMatcher.find()) {
-					createS3ObjectRef(
-						JenkinsResultsParserUtil.combine(
-							destination, "/",
-							listS3FilesMatcher.group("fileName")));
-
 					String s3FileDestination = JenkinsResultsParserUtil.combine(
 						destination, "/", listS3FilesMatcher.group("fileName"),
 						".sha512");
@@ -388,6 +420,11 @@ public class CloudBucketUtil {
 						s3FileDestination,
 						JenkinsResultsParserUtil.combine(
 							source, "/", listS3FilesMatcher.group("fileName")));
+
+					createS3ObjectRef(
+						JenkinsResultsParserUtil.combine(
+							destination, "/",
+							listS3FilesMatcher.group("fileName")));
 				}
 			}
 
@@ -399,14 +436,14 @@ public class CloudBucketUtil {
 					listS3Files(source));
 
 				while (listS3FilesMatcher.find()) {
-					createS3ObjectRef(
-						JenkinsResultsParserUtil.combine(
-							source, "/", listS3FilesMatcher.group("fileName")));
-
 					validateChecksumFile(
 						JenkinsResultsParserUtil.combine(
 							destination, "/",
 							listS3FilesMatcher.group("fileName")),
+						JenkinsResultsParserUtil.combine(
+							source, "/", listS3FilesMatcher.group("fileName")));
+
+					createS3ObjectRef(
 						JenkinsResultsParserUtil.combine(
 							source, "/", listS3FilesMatcher.group("fileName")));
 				}
@@ -422,7 +459,11 @@ public class CloudBucketUtil {
 	public static void validateChecksumFile(String destination, String s3Source)
 		throws IOException, TimeoutException {
 
+		System.out.println("In validate checksum file");
+
 		String s3ChecksumFilePath = s3Source + ".sha512";
+
+		System.out.println("s3 checksum file path : " + s3ChecksumFilePath);
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(
 				listS3Files(s3ChecksumFilePath, true))) {
@@ -442,11 +483,26 @@ public class CloudBucketUtil {
 		String tempSHAFilePath = JenkinsResultsParserUtil.getCanonicalPath(
 			tempSHAFile);
 
+		System.out.println(
+			"tempSHAFilePath in validate checksum file: " + tempSHAFilePath);
+
 		try {
+			long start = JenkinsResultsParserUtil.getCurrentTimeMillis();
+
 			_executeCommands(
 				_getFileTransferCommand(
 					"aws s3 cp --no-progress", tempSHAFilePath,
 					s3ChecksumFilePath));
+
+			System.out.println(
+				JenkinsResultsParserUtil.combine(
+					"Finished downloading ", tempSHAFilePath,
+					" with file size ",
+					JenkinsResultsParserUtil.toFileSizeString(
+						tempSHAFile.length()),
+					" in ",
+					JenkinsResultsParserUtil.toDurationString(
+						System.currentTimeMillis() - start)));
 
 			System.out.println(
 				"Copied " + s3ChecksumFilePath + " to " + tempSHAFilePath);

@@ -688,8 +688,6 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 						}
 					}
 
-					CloudBucketUtil.copyS3File(tempFilePath, path);
-
 					return null;
 				}
 
