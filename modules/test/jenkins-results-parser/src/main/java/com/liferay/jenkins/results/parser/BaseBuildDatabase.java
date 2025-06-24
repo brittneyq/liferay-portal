@@ -674,7 +674,7 @@ public abstract class BaseBuildDatabase implements BuildDatabase {
 							_buildDatabaseFile, tempFile);
 
 						System.out.println(
-							"Copying s3 file :" + path + " from : " +
+							"Copying s3 file : " + path + " from : " +
 								tempFilePath);
 
 						CloudBucketUtil.copyS3File(path, tempFilePath);

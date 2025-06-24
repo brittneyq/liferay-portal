@@ -71,12 +71,12 @@ public class CloudBucketUtil {
 		if (destinationS3ObjectPathMatcher.find()) {
 			System.out.println(
 				JenkinsResultsParserUtil.combine(
-					"Uploaded", source, " with file size ",
+					"Uploaded ", replacedSource, " with file size ",
 					JenkinsResultsParserUtil.toFileSizeString(
 						new File(
-							source
+							replacedSource
 						).length()),
-					" to ", destination + " in ",
+					" to ", replacedDestination + " in ",
 					JenkinsResultsParserUtil.toDurationString(end)));
 
 			createChecksumFile(replacedDestination + ".sha512", replacedSource);
@@ -94,12 +94,30 @@ public class CloudBucketUtil {
 			replacedSource);
 
 		if (sourceS3ObjectPathMatcher.find()) {
+			File destinationFile = new File(replacedDestination);
+
+			if (destinationFile.isDirectory()) {
+				System.out.println("Destination file is a directory!");
+
+				Matcher fileNameMatcher = _s3ObjectFilePattern.matcher(
+					replacedSource);
+
+				if (fileNameMatcher.find()) {
+					System.out.println(
+						"file name is : " + fileNameMatcher.group("fileName"));
+
+					replacedDestination = JenkinsResultsParserUtil.combine(
+						replacedDestination, "/",
+						fileNameMatcher.group("fileName"));
+				}
+			}
+
 			System.out.println(
 				JenkinsResultsParserUtil.combine(
-					"Downloaded", destination, " with file size ",
+					"Downloaded ", replacedDestination, " with file size ",
 					JenkinsResultsParserUtil.toFileSizeString(
 						new File(
-							destination
+							replacedDestination
 						).length()),
 					" from ", source + " in ",
 					JenkinsResultsParserUtil.toDurationString(end)));
@@ -108,6 +126,8 @@ public class CloudBucketUtil {
 				validateChecksumFile(replacedDestination, replacedSource);
 			}
 			catch (Exception exception) {
+				exception.printStackTrace();
+
 				throw new RuntimeException("Failed to validate checksum file");
 			}
 
@@ -123,6 +143,10 @@ public class CloudBucketUtil {
 	}
 
 	public static void createChecksumFile(String destination, String source) {
+		if (!destination.contains(".sha512")) {
+			destination = destination + ".sha512";
+		}
+
 		System.out.println(
 			"Creating checksum file for " + source + " to " + destination);
 
@@ -130,10 +154,6 @@ public class CloudBucketUtil {
 
 		if (!tempFile.exists()) {
 			return;
-		}
-
-		if (!destination.contains(".sha512")) {
-			destination = destination + ".sha512";
 		}
 
 		File tempSHAFile = new File(tempFile + ".sha512");
@@ -163,8 +183,6 @@ public class CloudBucketUtil {
 					" to ", destination + " in ",
 					JenkinsResultsParserUtil.toDurationString(
 						System.currentTimeMillis() - start)));
-
-			createS3ObjectRef(destination + ".sha512");
 		}
 		catch (Exception exception) {
 			throw new RuntimeException(exception);
@@ -388,8 +406,12 @@ public class CloudBucketUtil {
 		Process process = JenkinsResultsParserUtil.executeBashCommands(
 			true, "aws s3 ls " + _escapeParentheses(path));
 
-		return JenkinsResultsParserUtil.readInputStream(
+		String output = JenkinsResultsParserUtil.readInputStream(
 			process.getInputStream());
+
+		System.out.println("list s3 files : " + output);
+
+		return output;
 	}
 
 	public static void syncGCPFiles(String destination, String source)
@@ -464,7 +486,20 @@ public class CloudBucketUtil {
 
 		System.out.println("In validate checksum file");
 
-		String s3ChecksumFilePath = s3Source + ".sha512";
+		if (s3Source.contains(".sha512")) {
+
+			// if this file is already a checksum file do not validate
+
+			System.out.println("source is already .sha512");
+
+			return;
+		}
+
+		String s3ChecksumFilePath = s3Source;
+
+		if (!s3Source.contains(".sha512")) {
+			s3ChecksumFilePath = s3Source + ".sha512";
+		}
 
 		System.out.println("s3 checksum file path : " + s3ChecksumFilePath);
 
@@ -499,8 +534,7 @@ public class CloudBucketUtil {
 
 			System.out.println(
 				JenkinsResultsParserUtil.combine(
-					"Finished downloading ", tempSHAFilePath,
-					" with file size ",
+					"Downloaded ", tempSHAFilePath, " with file size ",
 					JenkinsResultsParserUtil.toFileSizeString(
 						tempSHAFile.length()),
 					" in ",
@@ -732,6 +766,8 @@ public class CloudBucketUtil {
 	private static final Properties _buildProperties;
 	private static final Pattern _listS3FilesPattern = Pattern.compile(
 		"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2} +\\d+ (?<fileName>.+)");
+	private static final Pattern _s3ObjectFilePattern = Pattern.compile(
+		"s3://[^/]+(?:/[^/]+)*/(?<fileName>[^/]+)/?");
 	private static final Pattern _s3ObjectPathPattern = Pattern.compile(
 		"s3://(?<bucketName>[^/]+)/(?<objectPath>.+)");
 	private static final Pattern _signedURLPattern = Pattern.compile(
