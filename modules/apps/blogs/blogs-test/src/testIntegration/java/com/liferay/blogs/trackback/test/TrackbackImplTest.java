@@ -37,7 +37,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
 /**
- * @author Adolfo Pérez
+ * @author Adolfo Pérezs
  */
 @RunWith(Arquillian.class)
 public class TrackbackImplTest {
