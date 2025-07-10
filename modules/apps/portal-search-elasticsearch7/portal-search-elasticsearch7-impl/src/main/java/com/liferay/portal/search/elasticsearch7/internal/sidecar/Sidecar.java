@@ -20,12 +20,13 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OSDetector;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch7.internal.configuration.ElasticsearchConfigurationWrapper;
 import com.liferay.portal.search.elasticsearch7.internal.sidecar.constants.SidecarConstants;
 import com.liferay.portal.search.elasticsearch7.internal.util.ResourceUtil;
-import com.liferay.portal.search.elasticsearch7.sidecar.agent.SidecarAgent;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -208,7 +209,7 @@ public class Sidecar {
 	private ProcessConfig _createProcessConfig() {
 		ProcessConfig.Builder builder = new ProcessConfig.Builder();
 
-		URL bundleURL = _getBundleURL(Sidecar.class);
+		URL bundleURL = _getBundleURL();
 
 		String bootstrapClassPath = _getBootstrapClassPath();
 
@@ -263,8 +264,8 @@ public class Sidecar {
 			path -> _fileNameContains(path, "petra"));
 	}
 
-	private URL _getBundleURL(Class<?> clazz) {
-		ProtectionDomain protectionDomain = clazz.getProtectionDomain();
+	private URL _getBundleURL() {
+		ProtectionDomain protectionDomain = Sidecar.class.getProtectionDomain();
 
 		CodeSource codeSource = protectionDomain.getCodeSource();
 
@@ -386,9 +387,11 @@ public class Sidecar {
 
 		// Apply agent to load modified classes
 
-		URL sidecarAgentBundleURL = _getBundleURL(SidecarAgent.class);
+		Path path = Path.of(
+			PropsUtil.get(PropsKeys.LIFERAY_HOME), "elasticsearch-sidecar",
+			"com.liferay.portal.search.elasticsearch7.sidecar.agent.jar");
 
-		arguments.add("-javaagent:" + sidecarAgentBundleURL.getPath());
+		arguments.add("-javaagent:" + path.toAbsolutePath());
 
 		return arguments;
 	}
