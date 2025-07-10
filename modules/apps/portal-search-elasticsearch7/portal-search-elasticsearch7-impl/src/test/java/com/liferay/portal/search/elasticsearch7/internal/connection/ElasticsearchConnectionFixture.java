@@ -50,7 +50,6 @@ public class ElasticsearchConnectionFixture
 	}
 
 	public ElasticsearchConnection createElasticsearchConnection() {
-		PropsUtil.set(PropsKeys.LIFERAY_HOME, _TMP_PATH.toString());
 		PropsUtil.set(
 			PropsKeys.LIFERAY_SHIELDED_CONTAINER_LIB_PORTAL_DIR,
 			String.valueOf(_TMP_PATH.resolve("lib-process-executor")));
