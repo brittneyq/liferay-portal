@@ -415,6 +415,10 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return JenkinsMaster.getSlaveRAMMinimumDefault();
 	}
 
+	public Map<String, List<String>> getPathMatcherTestClassMethodMap() {
+		return _pathMatcherTestClassMethodMap;
+	}
+
 	public PortalGitWorkingDirectory getPortalGitWorkingDirectory() {
 		return portalGitWorkingDirectory;
 	}
@@ -637,6 +641,7 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 					continue;
 				}
 
+				System.out.println("ADDING RELATIVE GLOB : " + relativeGlob);
 				globs.add(relativeGlob);
 			}
 		}
@@ -644,6 +649,60 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		Collections.sort(globs);
 
 		return globs;
+	}
+
+	protected List<PathMatcher> getIncludePathMatchers(
+		List<JobProperty> jobProperties) {
+
+		List<PathMatcher> pathMatchers = new ArrayList<>();
+
+		for (JobProperty jobProperty : jobProperties) {
+			if (!(jobProperty instanceof GlobJobProperty)) {
+				continue;
+			}
+
+			GlobJobProperty globJobProperty = (GlobJobProperty)jobProperty;
+
+			System.out.println(
+				"GLOB JOB PROPERTY  NAME: " + globJobProperty.getName());
+			System.out.println(
+				"GLOB JOB PROPERTY VALUE : " + globJobProperty.getValue());
+
+			List<PathMatcher> globPathMatchers =
+				globJobProperty.getPathMatchers();
+
+			System.out.println(
+				"glob path matchers size : " + globPathMatchers.size());
+
+			if (globPathMatchers == null) {
+				continue;
+			}
+
+			Map<String, List<String>> pathMatcherTestClassMethodsMap =
+				globJobProperty.getPathMatcherTestClassMethodsMap();
+
+			if ((pathMatcherTestClassMethodsMap != null) &&
+				!pathMatcherTestClassMethodsMap.isEmpty()) {
+
+				_pathMatcherTestClassMethodMap.putAll(
+					pathMatcherTestClassMethodsMap);
+			}
+
+			for (PathMatcher globPathMatcher : globPathMatchers) {
+				if ((globPathMatcher == null) ||
+					pathMatchers.contains(globPathMatcher)) {
+
+					continue;
+				}
+
+				pathMatchers.add(globPathMatcher);
+				System.out.println("ADDING GLOB PATH MATCHER...");
+			}
+		}
+
+		System.out.println("PATH MATCHERS SIZE : " + pathMatchers.size());
+
+		return pathMatchers;
 	}
 
 	protected List<JobProperty> getJobProperties(
@@ -1545,6 +1604,8 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		new HashMap<>();
 	private BatchHistory _batchHistory;
 	private final List<JobProperty> _jobProperties = new ArrayList<>();
+	private final Map<String, List<String>> _pathMatcherTestClassMethodMap =
+		new HashMap<>();
 	private final List<SegmentTestClassGroup> _segmentTestClassGroups =
 		new ArrayList<>();
 	private Boolean _testAnalyticsCloud;

@@ -16,7 +16,9 @@ import java.nio.file.PathMatcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -36,11 +38,17 @@ public abstract class BaseGlobJobProperty
 		return pathMatchers;
 	}
 
+	public Map<String, List<String>> getPathMatcherTestClassMethodsMap() {
+		return _testClassMethodsMap;
+	}
+
 	@Override
 	public List<String> getRelativeGlobs() {
 		List<String> relativeGlobs = new ArrayList<>();
 
 		String value = getValue();
+
+		System.out.println("VALUE IN RELATIvE GLOBS: " + value);
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(value)) {
 			return relativeGlobs;
@@ -48,17 +56,67 @@ public abstract class BaseGlobJobProperty
 
 		String relativePath = getRelativePath();
 
+		System.out.println("RELATIVE PATH : " + relativePath);
+
 		for (String glob : value.split(",(?![^{}]*})")) {
 			String relativeGlob = relativePath + "/" + glob;
 
 			relativeGlob = relativeGlob.replaceAll("/+", "/");
 
+			System.out.println("relative glob : " + relativeGlob);
+
 			if (relativeGlob.startsWith("/")) {
 				relativeGlob = relativeGlob.substring(1);
+
+				System.out.println("relative glob 2 : " + relativeGlob);
 			}
 
+			if (relativeGlob.contains("#")) {
+				String[] testMethods = relativeGlob.split("#");
+
+				if (testMethods.length == 2) {
+					String testClassGlob = testMethods[0];
+
+					System.out.println("testClass glob : " + testClassGlob);
+					System.out.println(
+						"GET WORKING DIRECTORY : " + _getWorkingDirectory());
+					PathMatcher pathMatcher =
+						JenkinsResultsParserUtil.toPathMatcher(
+							_getWorkingDirectory() + "/", testClassGlob);
+
+					String testClassMethodName = testMethods[1];
+
+					relativeGlob = testClassGlob;
+
+					List<String> testClassMethodNames;
+
+					if (_testClassMethodsMap.containsKey(testClassGlob)) {
+						System.out.println("HAS KEY...");
+
+						testClassMethodNames = _testClassMethodsMap.get(
+							testClassGlob);
+						testClassMethodNames.add(testClassMethodName);
+						_testClassMethodsMap.replace(
+							relativeGlob, testClassMethodNames);
+					}
+					else {
+						System.out.println("MAP DOES NOT HAVE KEY");
+						testClassMethodNames = new ArrayList<>();
+						testClassMethodNames.add(testClassMethodName);
+						_testClassMethodsMap.put(
+							relativeGlob, testClassMethodNames);
+					}
+
+					System.out.println(
+						"TEST CLASS METHOD MAPS : " + _testClassMethodsMap);
+				}
+			}
+
+			System.out.println("ADDING RELATIVE GLOB");
 			relativeGlobs.add(relativeGlob);
 		}
+
+		System.out.println("LIST OF RELATIVE GLOBS: " + relativeGlobs);
 
 		return relativeGlobs;
 	}
@@ -137,5 +195,11 @@ public abstract class BaseGlobJobProperty
 
 		return portalGitWorkingDirectory.getWorkingDirectory();
 	}
+
+	private void _initializeTestClassMethodMap() {
+	}
+
+	private final Map<String, List<String>> _testClassMethodsMap =
+		new HashMap<>();
 
 }

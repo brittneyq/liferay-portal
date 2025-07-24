@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -113,6 +114,29 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		return filterJobProperties;
 	}
 
+	public List<String> getGlobMatch(
+		File file, Map<String, List<String>> pathMatcherClassMethodMap) {
+
+		System.out.println("FILE : " + file);
+		System.out.println(
+			"PATH MATCHER CLASS METHOD MAP : " + pathMatcherClassMethodMap);
+
+		for (String glob : pathMatcherClassMethodMap.keySet()) {
+			PathMatcher pathMatcher = JenkinsResultsParserUtil.toPathMatcher(
+				_getWorkingDirectory() + "/", glob);
+
+			if (pathMatcher.matches(file.toPath())) {
+				System.out.println("PATH MATCHER MATCHES FILE TO PATH");
+
+				return pathMatcherClassMethodMap.get(glob);
+			}
+		}
+
+		System.out.println("returning null");
+
+		return null;
+	}
+
 	public List<JobProperty> getIncludesJobProperties() {
 		if (_jUnitTestBatch != null) {
 			List<JobProperty> testBatchJobProperties =
@@ -134,7 +158,14 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 			includesJobProperties.addAll(getRelevantIncludesJobProperties());
 		}
 		else {
+			System.out.println("get default includes job properties..");
+
 			includesJobProperties.addAll(getDefaultIncludesJobProperties());
+
+			for (JobProperty jobProperty : includesJobProperties) {
+				System.out.println("name : " + jobProperty.getName());
+				System.out.println("value : " + jobProperty.getValue());
+			}
 		}
 
 		if (includeStableTestSuite && isStableTestSuiteBatch()) {
@@ -389,7 +420,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 	protected List<PathMatcher> getIncludesPathMatchers() {
 		if (!isRootCauseAnalysis()) {
-			return getPathMatchers(getIncludesJobProperties());
+			return getIncludePathMatchers(getIncludesJobProperties());
 		}
 
 		List<String> includeGlobs = new ArrayList<>();
@@ -704,8 +735,12 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		long start = System.currentTimeMillis();
 
+		System.out.println("GETTING FILTER PATH MATCHERS...");
+
 		List<PathMatcher> filterPathMatchers = getPathMatchers(
 			getFilterJobProperties());
+
+		System.out.println("GETTING EXCLUDEDS PATH MATHCERS..");
 		List<PathMatcher> excludesPathMatchers = getPathMatchers(
 			getExcludesJobProperties());
 
@@ -723,8 +758,28 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				continue;
 			}
 
-			TestClass testClass = TestClassFactory.newTestClass(
-				batchTestClassGroup, javaTestClassFile);
+			Map<String, List<String>> pathMatcherTestClassMethodMap =
+				getPathMatcherTestClassMethodMap();
+
+			List<String> testClassMethodList = getGlobMatch(
+				javaTestClassFile, pathMatcherTestClassMethodMap);
+
+			TestClass testClass = null;
+
+			if ((testClassMethodList != null) &&
+				!testClassMethodList.isEmpty()) {
+
+				System.out.println(
+					"is not null or empty : " + testClassMethodList);
+				testClass = TestClassFactory.newTestClass(
+					batchTestClassGroup, javaTestClassFile,
+					testClassMethodList);
+			}
+			else {
+				System.out.println("Creating test class..");
+				testClass = TestClassFactory.newTestClass(
+					batchTestClassGroup, javaTestClassFile);
+			}
 
 			if ((testClass != null) && !testClass.isIgnored() &&
 				testClass.hasTestClassMethods()) {

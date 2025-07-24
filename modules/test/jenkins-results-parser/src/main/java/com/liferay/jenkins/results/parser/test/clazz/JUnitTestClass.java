@@ -195,6 +195,66 @@ public class JUnitTestClass extends BaseTestClass {
 	}
 
 	protected JUnitTestClass(
+		BatchTestClassGroup batchTestClassGroup, File testClassFile,
+		List<String> testClassMethodNames) {
+
+		super(batchTestClassGroup, testClassFile);
+
+		System.out.println("IN TEST CLASS METHOD NAMES JUNIT CLASS");
+
+		File modulesBaseDir = _getPortalModulesBaseDir();
+
+		if ((modulesBaseDir != null) && modulesBaseDir.exists()) {
+			_modulesBaseDir = modulesBaseDir;
+		}
+		else {
+			_modulesBaseDir = new File(".");
+		}
+
+		File testPropertiesBaseDir = getTestPropertiesBaseDir(
+			getTestClassFile());
+
+		if ((testPropertiesBaseDir != null) && testPropertiesBaseDir.exists()) {
+			_testPropertiesFile = new File(
+				testPropertiesBaseDir, "test.properties");
+
+			String testrayMainComponentName =
+				JenkinsResultsParserUtil.getProperty(
+					JenkinsResultsParserUtil.getProperties(_testPropertiesFile),
+					"testray.main.component.name");
+
+			if ((testrayMainComponentName == null) &&
+				_modulesBaseDir.exists()) {
+
+				testrayMainComponentName = JenkinsResultsParserUtil.getProperty(
+					JenkinsResultsParserUtil.getProperties(
+						_getParentTestPropertiesFile(testPropertiesBaseDir)),
+					"testray.main.component.name");
+			}
+
+			_testrayMainComponentName = testrayMainComponentName;
+		}
+		else {
+			_testPropertiesFile = null;
+			_testrayMainComponentName = null;
+		}
+
+		String testClassFileName = testClassFile.getName();
+
+		if (!testClassFileName.endsWith(".java")) {
+			return;
+		}
+
+		boolean methodIgnored = false;
+
+		for (String methodName : testClassMethodNames) {
+			System.out.println("ADDING METHOD NAME : " + methodName);
+
+			addTestClassMethod(methodIgnored, methodName);
+		}
+	}
+
+	protected JUnitTestClass(
 		BatchTestClassGroup batchTestClassGroup, JSONObject jsonObject) {
 
 		super(batchTestClassGroup, jsonObject);
@@ -407,6 +467,8 @@ public class JUnitTestClass extends BaseTestClass {
 					while (matcher.find()) {
 						issuesList.add(matcher.group());
 					}
+
+					System.out.println("ISSUES LIST : " + issuesList);
 
 					addTestClassMethod(
 						methodIgnored, methodName,
