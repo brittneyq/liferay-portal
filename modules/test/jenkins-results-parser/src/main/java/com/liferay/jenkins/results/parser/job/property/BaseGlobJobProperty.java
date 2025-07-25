@@ -48,27 +48,19 @@ public abstract class BaseGlobJobProperty
 
 		String value = getValue();
 
-		System.out.println("VALUE IN RELATIvE GLOBS: " + value);
-
 		if (JenkinsResultsParserUtil.isNullOrEmpty(value)) {
 			return relativeGlobs;
 		}
 
 		String relativePath = getRelativePath();
 
-		System.out.println("RELATIVE PATH : " + relativePath);
-
 		for (String glob : value.split(",(?![^{}]*})")) {
 			String relativeGlob = relativePath + "/" + glob;
 
 			relativeGlob = relativeGlob.replaceAll("/+", "/");
 
-			System.out.println("relative glob : " + relativeGlob);
-
 			if (relativeGlob.startsWith("/")) {
 				relativeGlob = relativeGlob.substring(1);
-
-				System.out.println("relative glob 2 : " + relativeGlob);
 			}
 
 			if (relativeGlob.contains("#")) {
@@ -78,11 +70,6 @@ public abstract class BaseGlobJobProperty
 					String testClassGlob = testMethods[0];
 
 					System.out.println("testClass glob : " + testClassGlob);
-					System.out.println(
-						"GET WORKING DIRECTORY : " + _getWorkingDirectory());
-					PathMatcher pathMatcher =
-						JenkinsResultsParserUtil.toPathMatcher(
-							_getWorkingDirectory() + "/", testClassGlob);
 
 					String testClassMethodName = testMethods[1];
 
@@ -95,14 +82,19 @@ public abstract class BaseGlobJobProperty
 
 						testClassMethodNames = _testClassMethodsMap.get(
 							testClassGlob);
+
 						testClassMethodNames.add(testClassMethodName);
+
 						_testClassMethodsMap.replace(
 							relativeGlob, testClassMethodNames);
 					}
 					else {
 						System.out.println("MAP DOES NOT HAVE KEY");
+
 						testClassMethodNames = new ArrayList<>();
+
 						testClassMethodNames.add(testClassMethodName);
+
 						_testClassMethodsMap.put(
 							relativeGlob, testClassMethodNames);
 					}
@@ -112,7 +104,6 @@ public abstract class BaseGlobJobProperty
 				}
 			}
 
-			System.out.println("ADDING RELATIVE GLOB");
 			relativeGlobs.add(relativeGlob);
 		}
 
@@ -194,9 +185,6 @@ public abstract class BaseGlobJobProperty
 			portalTestClassJob.getPortalGitWorkingDirectory();
 
 		return portalGitWorkingDirectory.getWorkingDirectory();
-	}
-
-	private void _initializeTestClassMethodMap() {
 	}
 
 	private final Map<String, List<String>> _testClassMethodsMap =

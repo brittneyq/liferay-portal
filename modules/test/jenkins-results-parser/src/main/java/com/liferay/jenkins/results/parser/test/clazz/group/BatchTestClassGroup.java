@@ -696,7 +696,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 				}
 
 				pathMatchers.add(globPathMatcher);
-				System.out.println("ADDING GLOB PATH MATCHER...");
 			}
 		}
 

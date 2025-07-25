@@ -118,10 +118,15 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		File file, Map<String, List<String>> pathMatcherClassMethodMap) {
 
 		System.out.println("FILE : " + file);
+
 		System.out.println(
 			"PATH MATCHER CLASS METHOD MAP : " + pathMatcherClassMethodMap);
 
-		for (String glob : pathMatcherClassMethodMap.keySet()) {
+		for (Map.Entry<String, List<String>> pathMatcherClassMethodEntry :
+				pathMatcherClassMethodMap.entrySet()) {
+
+			String glob = pathMatcherClassMethodEntry.getKey();
+
 			PathMatcher pathMatcher = JenkinsResultsParserUtil.toPathMatcher(
 				_getWorkingDirectory() + "/", glob);
 
@@ -741,6 +746,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 			getFilterJobProperties());
 
 		System.out.println("GETTING EXCLUDEDS PATH MATHCERS..");
+
 		List<PathMatcher> excludesPathMatchers = getPathMatchers(
 			getExcludesJobProperties());
 
@@ -758,11 +764,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				continue;
 			}
 
-			Map<String, List<String>> pathMatcherTestClassMethodMap =
-				getPathMatcherTestClassMethodMap();
-
 			List<String> testClassMethodList = getGlobMatch(
-				javaTestClassFile, pathMatcherTestClassMethodMap);
+				javaTestClassFile, getPathMatcherTestClassMethodMap());
 
 			TestClass testClass = null;
 
@@ -771,12 +774,14 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 				System.out.println(
 					"is not null or empty : " + testClassMethodList);
+
 				testClass = TestClassFactory.newTestClass(
 					batchTestClassGroup, javaTestClassFile,
 					testClassMethodList);
 			}
 			else {
 				System.out.println("Creating test class..");
+
 				testClass = TestClassFactory.newTestClass(
 					batchTestClassGroup, javaTestClassFile);
 			}
