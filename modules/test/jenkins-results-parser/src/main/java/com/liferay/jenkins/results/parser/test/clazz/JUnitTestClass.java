@@ -95,6 +95,10 @@ public class JUnitTestClass extends BaseTestClass {
 		return _cachedTestClassReports;
 	}
 
+	public List<String> getExecutableMethods() {
+		return _executableMethods;
+	}
+
 	@Override
 	public JSONObject getJSONObject() {
 		JSONObject jsonObject = super.getJSONObject();
@@ -249,7 +253,7 @@ public class JUnitTestClass extends BaseTestClass {
 
 		for (String methodName : testClassMethodNames) {
 			System.out.println("ADDING METHOD NAME : " + methodName);
-
+			_executableMethods.add(methodName);
 			addTestClassMethod(methodIgnored, methodName);
 		}
 	}
@@ -477,6 +481,8 @@ public class JUnitTestClass extends BaseTestClass {
 				else {
 					addTestClassMethod(methodIgnored, methodName);
 				}
+
+				_executableMethods.add(methodName);
 			}
 		}
 
@@ -529,6 +535,7 @@ public class JUnitTestClass extends BaseTestClass {
 	private List<TestClassReport> _cachedTestClassReports;
 	private boolean _cachedTestReportSearched;
 	private boolean _classIgnored;
+	private final List<String> _executableMethods = new ArrayList<>();
 	private final File _modulesBaseDir;
 	private final File _testPropertiesFile;
 	private final String _testrayMainComponentName;

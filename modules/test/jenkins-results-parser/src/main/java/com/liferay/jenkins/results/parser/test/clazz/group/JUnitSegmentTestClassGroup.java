@@ -6,8 +6,8 @@
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-
-import java.io.File;
+import com.liferay.jenkins.results.parser.test.clazz.JUnitTestClass;
+import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,27 +35,48 @@ public class JUnitSegmentTestClassGroup extends SegmentTestClassGroup {
 			AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup(
 				axisIndex);
 
-			List<File> testClassFiles = axisTestClassGroup.getTestClassFiles();
+			List<TestClass> testClasses = axisTestClassGroup.getTestClasses();
 
 			sb.append("TEST_CLASS_GROUP_");
 			sb.append(axisIndex);
 			sb.append("=");
 
-			for (File testClassFile : testClassFiles) {
-				Matcher matcher = _pattern.matcher(testClassFile.toString());
+			for (TestClass testClass : testClasses) {
+				Matcher matcher = _pattern.matcher(
+					String.valueOf(testClass.getTestClassFile()));
 
 				if (!matcher.find()) {
 					continue;
 				}
 
+				JUnitTestClass jUnitTestClass = (JUnitTestClass)testClass;
+
+				List<String> executableMethods =
+					jUnitTestClass.getExecutableMethods();
+
 				String classFileName = matcher.group("classFileName");
 
-				sb.append(classFileName.replace(".java", ".class"));
+				if ((executableMethods != null) &&
+					!executableMethods.isEmpty()) {
 
-				sb.append(",");
+					System.out.println(
+						"looping through test class methods in segment group.");
+
+					for (String testMethod : executableMethods) {
+						sb.append(classFileName.replace(".java", ".class"));
+						sb.append("#");
+						sb.append(testMethod);
+						sb.append(",");
+					}
+				}
+				else {
+					sb.append(classFileName.replace(".java", ".class"));
+
+					sb.append(",");
+				}
 			}
 
-			if (!testClassFiles.isEmpty()) {
+			if (!testClasses.isEmpty()) {
 				sb.setLength(sb.length() - 1);
 			}
 
@@ -65,6 +86,8 @@ public class JUnitSegmentTestClassGroup extends SegmentTestClassGroup {
 		sb.append("TEST_CLASS_GROUPS=");
 		sb.append(JenkinsResultsParserUtil.join(" ", axisIndexes));
 		sb.append("\n");
+
+		System.out.println("TEST CLASS GROUPS : " + sb.toString());
 
 		return sb.toString();
 	}
