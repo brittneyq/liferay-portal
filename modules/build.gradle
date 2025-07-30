@@ -690,6 +690,8 @@ gradle.beforeProject {
 				doLast {
 					String databaseType = System.properties["database.type"]
 
+					System.out.println("databaseType = " + databaseType);
+
 					if (!databaseType) {
 						return
 					}
@@ -955,10 +957,24 @@ gradle.taskGraph.whenReady {
 		}
 		else if (task.name == "testIntegration") {
 			if (!_hasTestClasses(task, "src/testIntegration/java")) {
+				System.out.println("SETTING ENABLED TO FALSE");
 				task.setEnabled(false)
 			}
 		}
 	}
+}
+
+task printEnv {
+    doLast {
+        println "--- Environment Variables ---"
+        System.getenv().each { name, value ->
+            println "$name = $value"
+        }
+        println "\n--- System Properties ---"
+        System.getProperties().each { name, value ->
+            println "$name = $value"
+        }
+    }
 }
 
 @CacheableTransform
@@ -1068,23 +1084,38 @@ private boolean _hasTestClasses(Task task, String testClassesDirName) {
 
 	File testClassesDir = project.file(testClassesDirName)
 
+	System.out.println("test classes dir: " + testClassesDir);
+
 	if (!testClassesDir.exists()) {
+		System.out.println("test classes dir does not exist");
+
 		return false
 	}
 
 	if (project.gradle.hasProperty("testClassGroupIndex")) {
+		System.out.println(project.gradle.hasProperty("testClassGroupIndex"));
+
 		List<String> testJavaClasses = _getTestClasses(task).collect {
 			String testClass ->
 
 			return testClass.replace(".class", ".java")
 		}
 
-		FileTree testJavaClassesFileTree = project.fileTree(dir: testClassesDir, includes: testJavaClasses)
+		System.out.println("test Java Classes : " + testJavaClasses);
+
+		def includesList = testJavaClasses.collect { "**/$it" }
+
+		FileTree testJavaClassesFileTree = project.fileTree(dir: testClassesDir, includes: includesList)
 
 		if (testJavaClassesFileTree.empty) {
+
+			System.out.println("test Java Classes File Tree is empty");
+
 			return false
 		}
 	}
+
+	System.out.println("RETURNING TRUE...");
 
 	return true
 }

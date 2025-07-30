@@ -8,6 +8,7 @@ package com.liferay.jenkins.results.parser.test.clazz.group;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.test.clazz.JUnitTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
+import com.liferay.jenkins.results.parser.test.clazz.TestClassMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,17 @@ public class JUnitSegmentTestClassGroup extends SegmentTestClassGroup {
 
 				List<String> executableMethods =
 					jUnitTestClass.getExecutableMethods();
+
+				List<TestClassMethod> testClassMethods =
+					jUnitTestClass.getTestClassMethods();
+
+				System.out.println(
+					"length of executable methods : " +
+						executableMethods.size());
+
+				System.out.println(
+					"length of test class methods : " +
+						testClassMethods.size());
 
 				String classFileName = matcher.group("classFileName");
 

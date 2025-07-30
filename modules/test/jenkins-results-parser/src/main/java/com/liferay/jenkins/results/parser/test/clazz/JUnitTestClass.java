@@ -256,6 +256,14 @@ public class JUnitTestClass extends BaseTestClass {
 			_executableMethods.add(methodName);
 			addTestClassMethod(methodIgnored, methodName);
 		}
+
+		try {
+			_initTestClassMethods(
+				JenkinsResultsParserUtil.read(getTestClassFile()));
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
 	protected JUnitTestClass(
@@ -481,8 +489,6 @@ public class JUnitTestClass extends BaseTestClass {
 				else {
 					addTestClassMethod(methodIgnored, methodName);
 				}
-
-				_executableMethods.add(methodName);
 			}
 		}
 

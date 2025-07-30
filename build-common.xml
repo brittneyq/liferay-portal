@@ -760,6 +760,20 @@ information.
 		</sequential>
 	</macrodef>
 
+	<macrodef name="debug-gradle-env">
+		<attribute default="${basedir}" name="dir" />
+
+		<sequential>
+			<echo>base dir = ${basedir}</echo>
+			<echo> dir = "${dir}" @{dir}</echo>
+
+		    <exec executable="${project.dir}/gradlew" dir="${basedir}/${dir}">
+		        <arg value="printEnv"/>
+		        <arg value="--info"/>
+		    </exec>
+		</sequential>
+	</macrodef>
+
 	<macrodef name="gradle-execute">
 		<attribute default="false" name="checktask" />
 		<attribute default="${basedir}" name="dir" />
@@ -775,6 +789,9 @@ information.
 		<element implicit="true" name="args" optional="true" />
 
 		<sequential>
+			<echo>test.name is @{test.name}</echo>
+			<echo>test.name 2 is ${test.name}</echo>
+
 			<if>
 				<equals arg1="@{setupbinariescache}" arg2="true" />
 				<then>
@@ -902,11 +919,17 @@ information.
 							/>
 
 							<property name="gradle.executable.task" value="${gradle.project.path}:@{task}" />
+							<echo> setting gradle executable task 1</echo>
+
+
 						</then>
 						<else>
 							<property name="gradle.executable.task" value="@{task}" />
+							<echo> setting gradle executable task 2</echo>
 						</else>
 					</if>
+
+					<echo>gradle executable task: ${gradle.executable.task}</echo>
 
 					<local name="redirector.error.property" />
 					<local name="redirector.output.property" />
@@ -968,6 +991,10 @@ information.
 									}
 								]]>
 							</beanshell>
+
+							<echo>DIR IS @{dir}</echo>
+
+							<echo>TEST NAME : ${test.name}</echo>
 
 							<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 								<args />
@@ -2381,6 +2408,10 @@ rerun your task.
 				<lstopwatch action="total" name="test.execution.duration${test.task.name}" />
 			</finally>
 		</trycatch>
+	</target>
+
+	<target name="debug-gradle-env">
+		<debug-gradle-env dir="${dir}" />
 	</target>
 
 	<target name="print-properties">
