@@ -2779,7 +2779,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 									sb.deleteCharAt(sb.length() - 1);
 								}
 
-								JenkinsResultsParserUtil.write(baseDir, sb.toString());
+								JenkinsResultsParserUtil.write(testClassFileNamesFile, sb.toString());
 
 								System.out.println("STRING BUILDER : " + sb.toString());
 							}
