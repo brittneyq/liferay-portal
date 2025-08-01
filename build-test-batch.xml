@@ -2728,9 +2728,68 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 							return new File(project.getProperty("project.dir") + "/modules/" + testProjectName.replaceAll(":", "/") + "/test-results/");
 						}
 
+						public void updateTestClassFileNamesFile() throws IOException {
+							String projectDir = project.getProperty("project.dir");
+
+							File testClassFileNamesFile = new File(projectDir + "/test.class.file.names.properties");
+
+							String fileContent = JenkinsResultsParserUtil.read(testClassFileNamesFile);
+
+							if (!fileContent.contains("#")) {
+								return;
+							}
+
+							Set testClasses = new HashSet();
+
+							Pattern pattern = Pattern.compile("(TEST_CLASS_GROUP_\\d+=)(.*)");
+
+							Matcher matcher = pattern.matcher(fileContent);
+
+							if (matcher.find()) {
+								String testClassGroupIndex = matcher.group(1);
+								System.out.println("TEST CLASS GROUP INDEX : " + testClassGroupIndex);
+								String classes = matcher.group(2);
+								System.out.println(classes);
+
+								String[] classList = classes.split(",");
+
+								for(int i=0; i < classList.length; i++){
+									String className = classList[i];
+
+									int hashIndex = className.indexOf('#');
+
+									if (hashIndex != -1) {
+										testClasses.add(className.substring(0, hashIndex));
+									}
+									else{
+										testClasses.add(className);
+									}
+								}
+								System.out.println("TEST CLASSES : " + testClasses);
+
+								StringBuilder sb = new StringBuilder();
+								sb.append(testClassGroupIndex);
+
+								for (String testClass : testClasses) {
+									sb.append(testClass);
+									sb.append(",");
+								}
+
+								if (testClasses.size() > 0) {
+									sb.deleteCharAt(sb.length() - 1);
+								}
+
+								JenkinsResultsParserUtil.write(baseDir, sb.toString());
+
+								System.out.println("STRING BUILDER : " + sb.toString());
+							}
+						}
+
 						File projectDir = new File(project.getProperty("project.dir"));
 
 						String testClassGroup = project.getProperty("test.class.group");
+
+						System.out.println("test class group : " + testClassGroup);
 
 						String[] testClassList = testClassGroup.split(",");
 
@@ -2777,6 +2836,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 							int timeout = Integer.parseInt(project.getProperty("test.class.timeout.minutes"));
 
 							try {
+								updateTestClassFileNamesFile();
+
 								System.out.println("\"gradle-execute-modules\" will timeout in " + timeout);
 
 								AntUtil.callTargetWithTimeout(projectDir, "build-common.xml", "gradle-execute-modules", parameters, timeout, true);
