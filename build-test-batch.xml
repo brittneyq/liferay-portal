@@ -3240,7 +3240,11 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 
 						File projectDir = new File(project.getProperty("project.dir"));
 
+						System.out.println("project dir : " + projectDir);
+
 						String testClassGroup = project.getProperty("test.class.group");
+
+						System.out.println("test class group: " + testClassGroup);
 
 						String[] testClassFilePathList = testClassGroup.split(",");
 
@@ -3251,9 +3255,15 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						for (String testClassFilePath : testClassFilePathList) {
 							testClassFilePath = testClassFilePath.replaceAll("\\.class", "\\.java");
 
+							System.out.println("test class file path : " + testClassFilePath);
+
 							String testClassName = getTestClassNameForTestResults(testClassFilePath);
 
+							System.out.println("test class name : " + testClassName);
+
 							File testClassFile = JenkinsResultsParserUtil.getFileFromPathSnippet(projectDir, testClassName);
+
+							System.out.println("test class file : " + testClassFile);
 
 							String testProjectName = getTestProjectName(testClassFile.toString());
 
