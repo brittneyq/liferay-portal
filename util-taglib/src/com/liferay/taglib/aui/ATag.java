@@ -30,7 +30,7 @@ import java.io.CharArrayWriter;
 import java.util.Map;
 
 /**
- * @author Julio Camarero
+ * @author Julio Camareros
  * @author Jorge Ferrer
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
