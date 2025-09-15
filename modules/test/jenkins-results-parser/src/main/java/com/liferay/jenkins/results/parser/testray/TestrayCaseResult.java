@@ -34,6 +34,12 @@ import org.json.JSONObject;
  */
 public class TestrayCaseResult {
 
+	public static final String[] CSV_REPORT_FIELD_NAMES = {
+		"buildToCaseResult", "caseToCaseResult", "componentToCaseResult",
+		"dateCreated", "dateModified", "dueStatus { key name }", "errors", "id",
+		"startDate"
+	};
+
 	public static final String[] FIELD_NAMES = {
 		"attachments", "buildToCaseResult", "caseToCaseResult",
 		"componentToCaseResult", "dateCreated", "dateModified",
@@ -90,7 +96,7 @@ public class TestrayCaseResult {
 		}
 
 		for (TestrayCaseResult previousTestrayCaseResult :
-				getTestrayCaseResultHistory(10, 10)) {
+				getTestrayCaseResultHistory(5, 5)) {
 
 			if (Objects.equals(getID(), previousTestrayCaseResult.getID())) {
 				continue;
@@ -424,6 +430,10 @@ public class TestrayCaseResult {
 		testrayAttachments = new TreeMap<>();
 
 		String attachments = _jsonObject.getString("attachments");
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(attachments)) {
+			return;
+		}
 
 		JSONArray attachmentsJSONArray;
 

@@ -198,7 +198,11 @@ public class TestrayBuild implements Comparable<TestrayBuild> {
 
 		List<TestrayCaseResult> testrayCaseResults = new ArrayList<>();
 
+		int pageSize = 500;
+
 		StringBuilder sb = new StringBuilder();
+
+		String[] fieldNames = TestrayCaseResult.FIELD_NAMES;
 
 		if ((testrayRun != null) && (testrayRun.getID() > 0)) {
 			sb.append("r_runToCaseResult_c_runId eq '");
@@ -215,12 +219,14 @@ public class TestrayBuild implements Comparable<TestrayBuild> {
 			sb.append("and (dueStatus eq 'FAILED'");
 			sb.append(" ");
 			sb.append("or dueStatus eq 'UNTESTED')");
+			pageSize = 50;
+			fieldNames = TestrayCaseResult.CSV_REPORT_FIELD_NAMES;
 		}
 
 		try {
 			Set<JSONObject> entityJSONObjects = _testrayServer.requestGraphQL(
-				true, "caseResults", TestrayCaseResult.FIELD_NAMES,
-				sb.toString(), null, 0, 1000);
+				true, "caseResults", fieldNames, sb.toString(), null, 0,
+				pageSize);
 
 			for (JSONObject entityJSONObject : entityJSONObjects) {
 				TestrayCaseResult testrayCaseResult =
