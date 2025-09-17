@@ -41,6 +41,18 @@ public class JUnitTestSelector extends BaseTestSelector {
 			_excludesJobProperties.add(jobProperty);
 		}
 
+		String masterNetworkName = System.getenv("MASTER_NETWORK_NAME");
+
+		if (masterNetworkName.equals("aws-network")) {
+			JobProperty awsExcludeJobProperty = getJobProperty(
+				"test.batch.class.names.excludes.aws",
+				JobProperty.Type.MODULE_EXCLUDE_GLOB);
+
+			if (!_excludesJobProperties.contains(awsExcludeJobProperty)) {
+				_excludesJobProperties.add(awsExcludeJobProperty);
+			}
+		}
+
 		return _excludesJobProperties;
 	}
 
