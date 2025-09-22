@@ -231,6 +231,22 @@ public abstract class BaseWorkspaceGitRepository
 	}
 
 	public boolean isSnapshot() {
+		GitWorkingDirectory gitWorkingDirectory = getGitWorkingDirectory();
+
+		List<File> modifiedFiles = gitWorkingDirectory.getModifiedFilesList();
+
+		for (File modifiedFile : modifiedFiles) {
+			String modifiedFilePath = modifiedFile.toString();
+
+			if (modifiedFilePath.contains("jenkins-results-parser")) {
+				String jobVariant = System.getenv("JOB_VARIANT");
+
+				if (jobVariant.contains("modules-unit")) {
+					return false;
+				}
+			}
+		}
+
 		String jobName = System.getenv("JOB_NAME");
 
 		if (jobName.equals("forward-pullrequest") ||
