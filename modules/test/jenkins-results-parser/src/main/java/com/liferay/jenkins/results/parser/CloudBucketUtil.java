@@ -201,6 +201,68 @@ public class CloudBucketUtil {
 			});
 	}
 
+	public static void downloadGitShallowCloneArchive(String repositoryDirPath)
+		throws IOException, TimeoutException {
+
+		try {
+			File repositoryDir = new File(repositoryDirPath);
+
+			if (repositoryDir.exists()) {
+				File gitDirectory = new File(repositoryDir, ".git");
+
+				if (gitDirectory.exists()) {
+					return;
+				}
+			}
+
+			String fileName = repositoryDir.getName() + ".tar.gz";
+
+			File archiveFile = new File(repositoryDirPath, fileName);
+
+			downloadS3File(
+				archiveFile,
+				JenkinsResultsParserUtil.combine(
+					S3_BUCKET_PATH_FILE_PROPAGATOR,
+					"/git-shallow-clone-archives/", fileName));
+
+			if (repositoryDir.exists()) {
+				try {
+					Process process =
+						JenkinsResultsParserUtil.executeBashCommands(
+							"rm -rf " + repositoryDir);
+
+					JenkinsResultsParserUtil.readInputStream(
+						process.getInputStream());
+
+					System.out.println(
+						"Deleting Git repository " + repositoryDir);
+				}
+				catch (IOException | TimeoutException exception) {
+					exception.printStackTrace();
+				}
+			}
+
+			Process process = JenkinsResultsParserUtil.executeBashCommands(
+				JenkinsResultsParserUtil.combine(
+					"tar -xzf ", archiveFile.getCanonicalPath(), " -C ",
+					repositoryDir.getCanonicalPath()),
+				"rm -rf " + archiveFile.getCanonicalPath());
+
+			if (process.exitValue() != 0) {
+				String errorText = JenkinsResultsParserUtil.readInputStream(
+					process.getErrorStream());
+
+				throw new RuntimeException(
+					JenkinsResultsParserUtil.combine(
+						"Unable to expand ", archiveFile.getCanonicalPath(),
+						"\n\n", errorText));
+			}
+		}
+		catch (IOException | TimeoutException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
 	public static void downloadS3File(File destinationFile, String s3SourcePath)
 		throws IOException {
 
