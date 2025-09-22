@@ -5,31 +5,16 @@
 
 package com.liferay.jenkins.results.parser.test.suite;
 
-import com.liferay.jenkins.results.parser.CloudBucketUtil;
-import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.util.TestPropertiesValues;
-
 import java.io.IOException;
 
 import org.json.JSONObject;
 
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Kenji Heigel
  */
 public class RelevantRuleValidationTest {
-
-	@Before
-	public void setUp() throws Exception {
-		if (JenkinsResultsParserUtil.isCloudCINode()) {
-			String baseRepositoryDir =
-				TestPropertiesValues.FILE_PATH_REPOSITORY;
-
-			CloudBucketUtil.downloadGitShallowCloneArchive(baseRepositoryDir);
-		}
-	}
 
 	@Test
 	public void testValidate() throws IOException {

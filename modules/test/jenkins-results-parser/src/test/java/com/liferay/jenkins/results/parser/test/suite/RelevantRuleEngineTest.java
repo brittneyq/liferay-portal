@@ -5,13 +5,10 @@
 
 package com.liferay.jenkins.results.parser.test.suite;
 
-import com.liferay.jenkins.results.parser.CloudBucketUtil;
-import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestBatch;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
-import com.liferay.jenkins.results.parser.util.TestPropertiesValues;
 
 import java.io.File;
 
@@ -23,25 +20,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Kenji Heigel
  */
 public class RelevantRuleEngineTest extends BaseRelevantRuleTestCase {
-
-	@Before
-	public void setUp() throws Exception {
-		if (JenkinsResultsParserUtil.isCloudCINode()) {
-			String baseRepositoryDir =
-				TestPropertiesValues.FILE_PATH_REPOSITORY;
-
-			System.out.println("repository dir: " + baseRepositoryDir);
-
-			CloudBucketUtil.downloadGitShallowCloneArchive(baseRepositoryDir);
-		}
-	}
 
 	@Test
 	public void testExcludedModifiedFileInModule1Dir() {
