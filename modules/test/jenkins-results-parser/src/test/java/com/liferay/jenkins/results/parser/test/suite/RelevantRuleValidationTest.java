@@ -7,6 +7,7 @@ package com.liferay.jenkins.results.parser.test.suite;
 
 import com.liferay.jenkins.results.parser.CloudBucketUtil;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+import com.liferay.jenkins.results.parser.util.TestPropertiesValues;
 
 import java.io.IOException;
 
@@ -24,8 +25,7 @@ public class RelevantRuleValidationTest {
 	public void setUp() throws Exception {
 		if (JenkinsResultsParserUtil.isCloudCINode()) {
 			String baseRepositoryDir =
-				JenkinsResultsParserUtil.getBuildProperty(
-					"base.repository.dir");
+				TestPropertiesValues.FILE_PATH_REPOSITORY;
 
 			CloudBucketUtil.downloadGitShallowCloneArchive(baseRepositoryDir);
 		}

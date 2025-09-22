@@ -5,14 +5,27 @@
 
 package com.liferay.jenkins.results.parser;
 
+import com.liferay.jenkins.results.parser.util.TestPropertiesValues;
+
 import java.io.File;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Michael Hashimoto
  */
 public class LocalGitBranchTest extends GitRefTest {
+
+	@Before
+	public void setUp() throws Exception {
+		if (JenkinsResultsParserUtil.isCloudCINode()) {
+			String baseRepositoryDir =
+				TestPropertiesValues.FILE_PATH_REPOSITORY;
+
+			CloudBucketUtil.downloadGitShallowCloneArchive(baseRepositoryDir);
+		}
+	}
 
 	@Test
 	public void testGetDirectory() {

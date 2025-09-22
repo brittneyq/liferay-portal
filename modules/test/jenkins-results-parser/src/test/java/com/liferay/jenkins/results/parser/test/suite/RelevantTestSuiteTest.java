@@ -5,6 +5,7 @@
 
 package com.liferay.jenkins.results.parser.test.suite;
 
+import com.liferay.jenkins.results.parser.CloudBucketUtil;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.batch.JUnitTestBatch;
@@ -14,6 +15,7 @@ import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
 import com.liferay.jenkins.results.parser.test.batch.PoshiTestBatch;
 import com.liferay.jenkins.results.parser.test.batch.PoshiTestSelector;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
+import com.liferay.jenkins.results.parser.util.TestPropertiesValues;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,12 +26,23 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Kenji Heigel
  */
 public class RelevantTestSuiteTest extends BaseRelevantRuleTestCase {
+
+	@Before
+	public void setUp() throws Exception {
+		if (JenkinsResultsParserUtil.isCloudCINode()) {
+			String baseRepositoryDir =
+				TestPropertiesValues.FILE_PATH_REPOSITORY;
+
+			CloudBucketUtil.downloadGitShallowCloneArchive(baseRepositoryDir);
+		}
+	}
 
 	@Test
 	public void testJUnitTestSelectorMerge() throws IOException {

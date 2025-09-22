@@ -11,6 +11,7 @@ import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestBatch;
 import com.liferay.jenkins.results.parser.test.batch.PlaywrightTestSelector;
 import com.liferay.jenkins.results.parser.test.batch.TestBatch;
+import com.liferay.jenkins.results.parser.util.TestPropertiesValues;
 
 import java.io.File;
 
@@ -34,8 +35,9 @@ public class RelevantRuleEngineTest extends BaseRelevantRuleTestCase {
 	public void setUp() throws Exception {
 		if (JenkinsResultsParserUtil.isCloudCINode()) {
 			String baseRepositoryDir =
-				JenkinsResultsParserUtil.getBuildProperty(
-					"base.repository.dir");
+				TestPropertiesValues.FILE_PATH_REPOSITORY;
+
+			System.out.println("repository dir: " + baseRepositoryDir);
 
 			CloudBucketUtil.downloadGitShallowCloneArchive(baseRepositoryDir);
 		}
