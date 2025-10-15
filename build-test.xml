@@ -2448,6 +2448,20 @@ war.path=${app.server.portal.dir}/</echo>
 		</sequential>
 	</macrodef>
 
+	<macrodef name="is-cloud-ci-node">
+		<sequential>
+			<var name="is.cloud.ci.node" unset="true" />
+
+			<beanshell>
+				<![CDATA[
+					import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
+					project.setProperty("is.cloud.ci.node", String.valueOf(JenkinsResultsParserUtil.isCloudCINode()));
+				]]>
+			</beanshell>
+		</sequential>
+	</macrodef>
+
 	<macrodef name="poshi-execute">
 		<attribute default="portal-web/build-test.gradle" name="build.gradle.file" />
 		<attribute default="${basedir}" name="build.gradle.dir" />
@@ -6604,6 +6618,42 @@ ${custom.upgrade.properties}</echo>
 			<execute>
 				rsync -avz ${rsync.src} ${master.hostname}::${rsync.dest}
 			</execute>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="s3-bucket-download">
+		<attribute name="destination" />
+		<attribute name="source" />
+
+		<sequential>
+			<local name="s3.bucket.download.error" />
+
+			<retry retrycount="3" retrydelay="60000">
+				<trycatch property="s3.bucket.download.error">
+					<try>
+						<echo>s3.bucket.download.error=${s3.bucket.download.error}</echo>
+
+						<beanshell>
+							<![CDATA[
+								import com.liferay.jenkins.results.parser.CloudBucketUtil;
+
+								CloudBucketUtil.downloadS3File(new File("@{destination}"), "@{source}");
+							]]>
+						</beanshell>
+					</try>
+					<catch>
+						<slack-notification
+							slack.body="Build URL: ${env.BUILD_URL}\n\n${s3.bucket.download.error}"
+							slack.channel="ci-aws-notifications"
+							slack.icon.emoji=":aws:"
+							slack.subject="Failed to download @{source} from S3 on ${HOSTNAME}"
+							slack.username="AWS CI - S3"
+						/>
+
+						<fail message="${s3.bucket.download.error}" />
+					</catch>
+				</trycatch>
+			</retry>
 		</sequential>
 	</macrodef>
 
@@ -14627,6 +14677,8 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 
 		<lstopwatch action="start" name="prepare.bundles.${app.server.name}" />
 
+		<is-cloud-ci-node />
+
 		<if>
 			<and>
 				<equals arg1="${app.server.type}" arg2="tomcat" />
@@ -14647,10 +14699,21 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 					replace="gs://"
 				/>
 
-				<mirrors-get
-					dest="${java.io.tmpdir}/${bundle.file.name}"
-					src="${test.build.bundle.zip.url}"
-				/>
+				<if>
+					<equals arg1="${is.cloud.ci.node}" arg2="true" />
+					<then>
+						<s3-bucket-download
+							dest="${java.io.tmpdir}/${bundle.file.name}"
+							source="${env.S3_BUCKET_DIST_PATH}/${bundle.file.name}"
+						/>
+					</then>
+					<else>
+						<mirrors-get
+							dest="${java.io.tmpdir}/${bundle.file.name}"
+							src="${test.build.bundle.zip.url}"
+						/>
+					</else>
+				</if>
 
 				<decompress
 					dest="${java.io.tmpdir}/bundle"
@@ -14733,10 +14796,25 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 							replace="gs://"
 						/>
 
-						<mirrors-get
-							dest="liferay-portal.war"
-							src="${test.build.portal.war.url}"
-						/>
+						<if>
+							<equals arg1="${is.cloud.ci.node}" arg2="true" />
+							<then>
+								<local name="war.file.name" />
+
+								<basename file="${test.build.portal.war.url}" property="war.file.name" />
+
+								<s3-bucket-download
+									dest="liferay-portal.war"
+									source="${env.S3_BUCKET_DIST_PATH}/${war.file.name}"
+								/>
+							</then>
+							<else>
+								<mirrors-get
+									dest="liferay-portal.war"
+									src="${test.build.portal.war.url}"
+								/>
+							</else>
+						</if>
 					</then>
 				</if>
 
@@ -14758,10 +14836,21 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 							replace="\1"
 						/>
 
-						<mirrors-get
-							dest="${test.build.portal.elasticsearch.zip.name}"
-							src="${test.build.portal.elasticsearch.zip.url}"
-						/>
+						<if>
+							<equals arg1="${is.cloud.ci.node}" arg2="true" />
+							<then>
+								<s3-bucket-download
+									dest="${test.build.portal.elasticsearch.zip.name}"
+									source="${env.S3_BUCKET_DIST_PATH}/${test.build.portal.elasticsearch.zip.name}"
+								/>
+							</then>
+							<else>
+								<mirrors-get
+									dest="${test.build.portal.elasticsearch.zip.name}"
+									src="${test.build.portal.elasticsearch.zip.url}"
+								/>
+							</else>
+						</if>
 
 						<tstamp>
 							<format pattern="yyyyMMddkkmmssSSS" property="tstamp.value" />
@@ -14795,10 +14884,25 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 							replace="gs://"
 						/>
 
-						<mirrors-get
-							dest="liferay-portal-osgi.zip"
-							src="${test.build.portal.osgi.zip.url}"
-						/>
+						<if>
+							<equals arg1="${is.cloud.ci.node}" arg2="true" />
+							<then>
+								<local name="osgi.file.name" />
+
+								<basename file="${test.build.portal.osgi.zip.url}" property="osgi.file.name" />
+
+								<s3-bucket-download
+									dest="liferay-portal-osgi.zip"
+									source="${env.S3_BUCKET_DIST_PATH}/${osgi.file.name}"
+								/>
+							</then>
+							<else>
+								<mirrors-get
+									dest="liferay-portal-osgi.zip"
+									src="${test.build.portal.osgi.zip.url}"
+								/>
+							</else>
+						</if>
 					</then>
 				</if>
 
@@ -14826,10 +14930,25 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 							replace="gs://"
 						/>
 
-						<mirrors-get
-							dest="liferay-portal-tools.zip"
-							src="${test.build.portal.tools.zip.url}"
-						/>
+						<if>
+							<equals arg1="${is.cloud.ci.node}" arg2="true" />
+							<then>
+								<local name="portal.tools.file.name" />
+
+								<basename file="${test.build.portal.tools.zip.url}" property="portal.tools.file.name" />
+
+								<s3-bucket-download
+									dest="liferay-portal-tools.zip"
+									source="${env.S3_BUCKET_DIST_PATH}/${portal.tools.file.name}"
+								/>
+							</then>
+							<else>
+								<mirrors-get
+									dest="liferay-portal-tools.zip"
+									src="${test.build.portal.tools.zip.url}"
+								/>
+							</else>
+						</if>
 					</then>
 				</if>
 
@@ -14988,10 +15107,21 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 
 				<trycatch>
 					<try>
-						<mirrors-get
-							dest="${java.io.tmpdir}/${bundle.file.name}"
-							src="${bundle.zip.url}"
-						/>
+						<if>
+							<equals arg1="${is.cloud.ci.node}" arg2="true" />
+							<then>
+								<s3-bucket-download
+									dest="${java.io.tmpdir}/${bundle.file.name}"
+									source="${env.S3_BUCKET_DIST_PATH}/${bundle.file.name}"
+								/>
+							</then>
+							<else>
+								<mirrors-get
+									dest="${java.io.tmpdir}/${bundle.file.name}"
+									src="${bundle.zip.url}"
+								/>
+							</else>
+						</if>
 					</try>
 					<catch>
 						<propertyregex
@@ -15006,10 +15136,21 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 
 						<basename file="${bundle.zip.url}" property="bundle.file.name" />
 
-						<mirrors-get
-							dest="${java.io.tmpdir}/${bundle.file.name}"
-							src="${bundle.zip.url}"
-						/>
+						<if>
+							<equals arg1="${is.cloud.ci.node}" arg2="true" />
+							<then>
+								<s3-bucket-download
+									dest="${java.io.tmpdir}/${bundle.file.name}"
+									source="${env.S3_BUCKET_DIST_PATH}/${bundle.file.name}"
+								/>
+							</then>
+							<else>
+								<mirrors-get
+									dest="${java.io.tmpdir}/${bundle.file.name}"
+									src="${bundle.zip.url}"
+								/>
+							</else>
+						</if>
 					</catch>
 				</trycatch>
 
