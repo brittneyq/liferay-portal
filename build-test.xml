@@ -15467,13 +15467,15 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 									mysql --password=${database.password} --user=${database.username} < /tmp/${database.type}.sql
 
-									if echo "$MYSQL_VERSION" | grep -Eq "^[0-7].*"; then
-										echo "MySQL version $MYSQL_VERSION is less than 8.0. Running mysql_upgrade..."
+									if [[ "${MYSQL_VERSION}" =~ ^[0-7]\..* ]]
+									then
+										echo "MySQL version ${MYSQL_VERSION} is less than 8.0. Running mysql_upgrade."
 
 										mysql_upgrade --force --password=${database.password} --user=${database.username}
 									else
-										echo "MySQL version $MYSQL_VERSION is 8.0 or higher. Skipping mysql_upgrade."
-									fi								]]>
+										echo "MySQL version ${MYSQL_VERSION} is 8.0 or higher. Skipping mysql_upgrade."
+									fi
+								]]>
 							</echo>
 
 							<property name="docker.database.dest.path" value="/tmp/${database.type}.sql" />
@@ -15497,11 +15499,13 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 									mysql --database=${database.schema} --password=${database.password} --user=${database.username} < /tmp/${database.type}.sql
 
-									if echo "$MYSQL_VERSION" | grep -Eq "^[0-7].*"; then
+									if [[ "${MYSQL_VERSION}" =~ ^[0-7]\..* ]]
+									then
+										echo "MySQL version ${MYSQL_VERSION} is less than 8.0. Running mysql_upgrade."
 
 										mysql_upgrade --force --password=${database.password} --user=${database.username}
 									else
-										echo "MySQL version $MYSQL_VERSION is 8.0 or higher. Skipping mysql_upgrade."
+										echo "MySQL version ${MYSQL_VERSION} is 8.0 or higher. Skipping mysql_upgrade."
 									fi
 								]]>
 							</echo>
