@@ -7854,6 +7854,14 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 					</echo>
 				</then>
 				<else>
+					<echo>docker network run options: ${docker.network.run.options}</echo>
+
+					<echo>run options: @{run.options}</echo>
+
+					<echo>image: @{image}</echo>
+					
+					<echo>options: @{options}</echo>
+
 					<echo file="${docker.start.script}">
 						<![CDATA[
 							docker run \
