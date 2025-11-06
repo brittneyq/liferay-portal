@@ -2060,6 +2060,8 @@ app.server.type=@{app.server.type}]]></echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -3430,6 +3432,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -3783,6 +3787,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -3925,6 +3931,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -4040,6 +4048,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -4168,6 +4178,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -4302,6 +4314,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
@@ -4416,6 +4430,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 						</and>
 						<then>
 							<sequential>
+								<set-tomcat-version-number liferay.portal.bundle="${test.portal.bundle.version}" />
+
 								<prepare-release-test-environment
 									test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 									test.fix.pack.base.url="${test.fix.pack.base.url}"
