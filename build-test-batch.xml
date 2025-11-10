@@ -3832,8 +3832,6 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<propertyfile file="build.${env.HOSTNAME}.properties">
 									<entry key="liferay.home" value="${project.dir}/bundles" />
 								</propertyfile>
-
-
 							</sequential>
 						</then>
 						<elseif>
