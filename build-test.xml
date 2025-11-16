@@ -6611,6 +6611,10 @@ ${custom.upgrade.properties}</echo>
 				result="test.app.server.leading.port.number"
 			/>
 
+			<echo>app sever bin dir in set app server properties: @{app.server.bin.dir}</echo>
+
+			<echo>app server classes portal dir : ${app.server.classes.portal.dir}</echo>
+
 			<if>
 				<equals arg1="@{app.server.bundle.index}" arg2="0" />
 				<then>

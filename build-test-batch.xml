@@ -3863,14 +3863,24 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 												tofile="bun dles"
 											/>
 
+											<echo>app server tomcat bin dir: ${app.server.tomcat.bin.dir}</echo>
+
 											<propertyfile file="app.server.${env.HOSTNAME}.properties">
 												<entry key="app.server.parent.dir" value="${project.dir}/bun dles" />
 											</propertyfile>
+
+											<loadfile property="app.server.hostname.properties.content" srcFile="app.server.${env.HOSTNAME}.properties" />
+
+											<echo>app server hostname properties content: ${app.server.hostname.properties.content}</echo>
 
 											<propertyfile file="build.${env.HOSTNAME}.properties">
 												<entry key="liferay.home" value="${project.dir}/bun dles" />
 											</propertyfile>
 
+											<loadfile property="build.hostname.properties.content" srcFile="build.${env.HOSTNAME}.properties" />
+
+											<echo>build hostname properties content: ${build.hostname.properties.content}</echo>
+		
 											<antcall inheritAll="false" target="start-app-server">
 												<param name="delete.liferay.home" value="false" />
 											</antcall>
