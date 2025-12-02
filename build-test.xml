@@ -17634,6 +17634,10 @@ CATALINA_OPTS="$CATALINA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.managemen
 			<finally>
 				<lstopwatch action="total" name="upgrade-legacy-database" />
 
+				<echo>database type: ${database.type}</echo>
+
+				<echo>database version: ${database.version}</echo>
+
 				<if>
 					<and>
 						<contains string="${database.version}" substring="11.5" />
