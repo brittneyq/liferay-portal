@@ -5,6 +5,9 @@
 
 package com.liferay.jenkins.results.parser;
 
+import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
+import com.liferay.jenkins.results.parser.testray.TestrayImporter;
+
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -146,6 +149,12 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 			DownstreamBuild downstreamBuild = (DownstreamBuild)_build;
 
 			downstreamBuild.generateBuildReport();
+
+			AxisTestClassGroup downstreamAxisTestClassGroup =
+				downstreamBuild.getAxisTestClassGroup();
+
+			TestrayImporter.recordAxisTestClassGroup(
+				downstreamAxisTestClassGroup);
 		}
 	}
 
