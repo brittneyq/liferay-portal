@@ -66,6 +66,8 @@ import org.dom4j.Element;
  */
 public class TestrayImporter {
 
+	public static TopLevelBuildReport topLevelBuildReport;
+
 	public static PortalFixpackRelease getPortalFixpackRelease() {
 		if (_portalFixpackReleases.isEmpty()) {
 			return null;
@@ -204,13 +206,13 @@ public class TestrayImporter {
 
 	public static Date getTestrayBuildDate() {
 		ControllerBuildReport controllerBuildReport =
-			_topLevelBuildReport.getControllerBuildReport();
+			topLevelBuildReport.getControllerBuildReport();
 
 		if (controllerBuildReport != null) {
 			return controllerBuildReport.getStartDate();
 		}
 
-		return _topLevelBuildReport.getStartDate();
+		return topLevelBuildReport.getStartDate();
 	}
 
 	public static String getTestrayBuildDescription() {
@@ -241,7 +243,7 @@ public class TestrayImporter {
 		}
 
 		sb.append("<a href=\"");
-		sb.append(_topLevelBuildReport.getJenkinsReportURL());
+		sb.append(topLevelBuildReport.getJenkinsReportURL());
 		sb.append("\">Jenkins Report</a>");
 		sb.append("; ");
 
@@ -390,7 +392,7 @@ public class TestrayImporter {
 				}
 			}
 
-			String jobName = _topLevelBuildReport.getJobName();
+			String jobName = topLevelBuildReport.getJobName();
 
 			if ((testrayProductVersion == null) &&
 				(jobName.equals("test-qa-websites-functional-daily") ||
@@ -810,12 +812,12 @@ public class TestrayImporter {
 
 		propertiesMap.put(
 			"testray.build.date",
-			_topLevelBuildReport.getTestrayBuildDateString());
+			topLevelBuildReport.getTestrayBuildDateString());
 		propertiesMap.put("testray.build.name", testrayBuild.getName());
 		propertiesMap.put(
 			"testray.build.time",
 			JenkinsResultsParserUtil.toDurationString(
-				_topLevelBuildReport.getDuration()));
+				topLevelBuildReport.getDuration()));
 
 		TestrayRoutine testrayRoutine = testrayBuild.getTestrayRoutine();
 
@@ -837,7 +839,7 @@ public class TestrayImporter {
 		propertiesMap.put(
 			"testray.total.cpu.use.time",
 			JenkinsResultsParserUtil.toDurationString(
-				_topLevelBuildReport.getTotalActualDuration()));
+				topLevelBuildReport.getTotalActualDuration()));
 
 		_addPropertyElements(
 			rootElement.addElement("properties"), propertiesMap);
@@ -854,7 +856,7 @@ public class TestrayImporter {
 			PortalLogBatchBuildTestrayCaseResult
 				portalLogBatchBuildTestrayCaseResult =
 					TestrayFactory.newPortalLogTestrayCaseResult(
-						axisTestClassGroup, testrayBuild, _topLevelBuildReport);
+						axisTestClassGroup, testrayBuild, topLevelBuildReport);
 
 			if (!JenkinsResultsParserUtil.isNullOrEmpty(
 					portalLogBatchBuildTestrayCaseResult.getErrors())) {
@@ -866,7 +868,7 @@ public class TestrayImporter {
 				testrayCaseResults.add(
 					TestrayFactory.newBuildTestrayCaseResult(
 						axisTestClassGroup, testClass, testrayBuild,
-						_topLevelBuildReport));
+						topLevelBuildReport));
 			}
 		}
 		else if (axisTestClassGroup instanceof PlaywrightAxisTestClassGroup) {
@@ -877,14 +879,14 @@ public class TestrayImporter {
 					testrayCaseResults.add(
 						TestrayFactory.newBuildTestrayCaseResult(
 							axisTestClassGroup, testClass, testClassMethod,
-							testrayBuild, _topLevelBuildReport));
+							testrayBuild, topLevelBuildReport));
 				}
 			}
 		}
 		else {
 			testrayCaseResults.add(
 				TestrayFactory.newBuildTestrayCaseResult(
-					axisTestClassGroup, testrayBuild, _topLevelBuildReport));
+					axisTestClassGroup, testrayBuild, topLevelBuildReport));
 		}
 
 		for (TestrayCaseResult testrayCaseResult : testrayCaseResults) {
@@ -927,7 +929,7 @@ public class TestrayImporter {
 			Element propertiesElement = testcaseElement.addElement(
 				"properties");
 
-			String testSuiteName = _topLevelBuildReport.getTestSuiteName();
+			String testSuiteName = topLevelBuildReport.getTestSuiteName();
 
 			if (testSuiteName.equals("upstream-dxp")) {
 				if (testrayCaseResult instanceof
@@ -995,7 +997,7 @@ public class TestrayImporter {
 
 		TestrayServer testrayServer = testrayBuild.getTestrayServer();
 
-		JenkinsMaster jenkinsMaster = _topLevelBuildReport.getJenkinsMaster();
+		JenkinsMaster jenkinsMaster = topLevelBuildReport.getJenkinsMaster();
 
 		try {
 			String axisName = axisTestClassGroup.getAxisName();
@@ -1003,8 +1005,8 @@ public class TestrayImporter {
 			testrayServer.writeCaseResult(
 				JenkinsResultsParserUtil.combine(
 					"TESTS-", jenkinsMaster.getName(), "_",
-					_topLevelBuildReport.getJobName(), "_",
-					String.valueOf(_topLevelBuildReport.getBuildNumber()), "_",
+					topLevelBuildReport.getJobName(), "_",
+					String.valueOf(topLevelBuildReport.getBuildNumber()), "_",
 					axisName.replace("/", "_"), ".xml"),
 				Dom4JUtil.format(rootElement));
 		}
@@ -1031,7 +1033,7 @@ public class TestrayImporter {
 				"Please provide a valid top level build report");
 		}
 
-		_topLevelBuildReport = topLevelBuildReport;
+		TestrayImporter.topLevelBuildReport = topLevelBuildReport;
 
 		_jobs = buildDatabase.getJobs();
 		_portalFixpackReleases = buildDatabase.getPortalFixpackReleases();
@@ -1051,14 +1053,14 @@ public class TestrayImporter {
 			_getJenkinsBuildDescriptionElement(
 				"Jenkins Build",
 				JenkinsResultsParserUtil.combine(
-					_topLevelBuildReport.getJobName(), "#",
-					String.valueOf(_topLevelBuildReport.getBuildNumber())),
-				String.valueOf(_topLevelBuildReport.getBuildURL())),
+					topLevelBuildReport.getJobName(), "#",
+					String.valueOf(topLevelBuildReport.getBuildNumber())),
+				String.valueOf(topLevelBuildReport.getBuildURL())),
 			_getJenkinsBuildDescriptionElement(
 				"Jenkins Report", "jenkins-report.html",
-				String.valueOf(_topLevelBuildReport.getJenkinsReportURL())),
+				String.valueOf(topLevelBuildReport.getJenkinsReportURL())),
 			_getJenkinsBuildDescriptionElement(
-				"Jenkins Suite", _topLevelBuildReport.getTestSuiteName()));
+				"Jenkins Suite", topLevelBuildReport.getTestSuiteName()));
 
 		PullRequest pullRequest = getPullRequest();
 
@@ -1179,7 +1181,7 @@ public class TestrayImporter {
 				TestSuiteJob testSuiteJob = (TestSuiteJob)job;
 
 				if (!Objects.equals(
-						_topLevelBuildReport.getTestSuiteName(),
+						topLevelBuildReport.getTestSuiteName(),
 						testSuiteJob.getTestSuiteName())) {
 
 					continue;
@@ -1205,7 +1207,7 @@ public class TestrayImporter {
 			TopLevelStandaloneBuildTestrayCaseResult
 				topLevelStandaloneBuildTestrayCaseResult =
 					TestrayFactory.newTopLevelStandaloneBuildTestrayCaseResult(
-						testrayBuild, _topLevelBuildReport);
+						testrayBuild, topLevelBuildReport);
 
 			topLevelStandaloneBuildTestrayCaseResult.recordTestrayCaseResult(
 				job);
@@ -1213,7 +1215,7 @@ public class TestrayImporter {
 			AppServerBundleStandaloneBuildTestrayCaseResult
 				portalAppServerBundleStandaloneBuildTestrayCaseResult =
 					new AppServerBundleStandaloneBuildTestrayCaseResult(
-						"portal", testrayBuild, _topLevelBuildReport);
+						"portal", testrayBuild, topLevelBuildReport);
 
 			BuildReport portalAppServerBundleBuildReport =
 				portalAppServerBundleStandaloneBuildTestrayCaseResult.
@@ -1227,7 +1229,7 @@ public class TestrayImporter {
 			AppServerBundleStandaloneBuildTestrayCaseResult
 				analyticsCloudAppServerBundleStandaloneBuildTestrayCaseResult =
 					new AppServerBundleStandaloneBuildTestrayCaseResult(
-						"analytics.cloud", testrayBuild, _topLevelBuildReport);
+						"analytics.cloud", testrayBuild, topLevelBuildReport);
 
 			BuildReport analyticsCloudAppServerBundleBuildReport =
 				analyticsCloudAppServerBundleStandaloneBuildTestrayCaseResult.
@@ -1260,7 +1262,7 @@ public class TestrayImporter {
 
 			TestrayServer testrayServer = testrayBuild.getTestrayServer();
 
-			testrayServer.importCaseResults(_topLevelBuildReport);
+			testrayServer.importCaseResults(topLevelBuildReport);
 		}
 
 		_sendPullRequestNotification();
@@ -1330,13 +1332,13 @@ public class TestrayImporter {
 		Map<String, String> buildParameters = new HashMap<>();
 
 		ControllerBuildReport controllerBuildReport =
-			_topLevelBuildReport.getControllerBuildReport();
+			topLevelBuildReport.getControllerBuildReport();
 
 		if (controllerBuildReport != null) {
 			buildParameters.putAll(controllerBuildReport.getBuildParameters());
 		}
 
-		buildParameters.putAll(_topLevelBuildReport.getBuildParameters());
+		buildParameters.putAll(topLevelBuildReport.getBuildParameters());
 
 		return buildParameters.get(buildParameterName);
 	}
@@ -1449,7 +1451,7 @@ public class TestrayImporter {
 		string = _replaceEnvVarsQAWebsitesTopLevelBuild(string);
 		string = _replaceEnvVarsTopLevelBuild(string);
 
-		String jobName = _topLevelBuildReport.getJobName();
+		String jobName = topLevelBuildReport.getJobName();
 
 		if (jobName.contains("subrepository")) {
 			string = _replaceEnvVarsSubrepository(string);
@@ -1466,7 +1468,7 @@ public class TestrayImporter {
 
 	private static String _replaceEnvVarsControllerBuild(String string) {
 		ControllerBuildReport controllerBuildReport =
-			_topLevelBuildReport.getControllerBuildReport();
+			topLevelBuildReport.getControllerBuildReport();
 
 		if (controllerBuildReport == null) {
 			return string;
@@ -1520,7 +1522,7 @@ public class TestrayImporter {
 
 	private static String _replaceEnvVarsPluginsTopLevelBuild(String string) {
 		Map<String, String> buildParameters =
-			_topLevelBuildReport.getBuildParameters();
+			topLevelBuildReport.getBuildParameters();
 
 		String pluginName = buildParameters.get("TEST_PLUGIN_NAME");
 
@@ -1535,7 +1537,7 @@ public class TestrayImporter {
 		String string) {
 
 		Map<String, String> buildParameters =
-			_topLevelBuildReport.getBuildParameters();
+			topLevelBuildReport.getBuildParameters();
 
 		String portalAppName = buildParameters.get("TEST_PORTAL_APP_NAME");
 
@@ -1549,7 +1551,7 @@ public class TestrayImporter {
 	private static String _replaceEnvVarsPortalBranchInformationBuild(
 		String string) {
 
-		Job.BuildProfile buildProfile = _topLevelBuildReport.getBuildProfile();
+		Job.BuildProfile buildProfile = topLevelBuildReport.getBuildProfile();
 
 		if (buildProfile != null) {
 			string = string.replace(
@@ -1629,7 +1631,7 @@ public class TestrayImporter {
 			}
 
 			Map<String, String> buildParameters =
-				_topLevelBuildReport.getBuildParameters();
+				topLevelBuildReport.getBuildParameters();
 
 			String portalReleaseBuildVersion = buildParameters.get(
 				"TEST_PORTAL_RELEASE_VERSION");
@@ -1746,7 +1748,7 @@ public class TestrayImporter {
 		String string) {
 
 		Map<String, String> buildParameters =
-			_topLevelBuildReport.getBuildParameters();
+			topLevelBuildReport.getBuildParameters();
 
 		String projectNames = buildParameters.get("PROJECT_NAMES");
 
@@ -1760,7 +1762,7 @@ public class TestrayImporter {
 
 	private static String _replaceEnvVarsSubrepository(String string) {
 		Map<String, String> buildParameters =
-			_topLevelBuildReport.getBuildParameters();
+			topLevelBuildReport.getBuildParameters();
 
 		String githubUpstreamBranchName = buildParameters.get(
 			"GITHUB_UPSTREAM_BRANCH_NAME");
@@ -1781,29 +1783,29 @@ public class TestrayImporter {
 
 	private static String _replaceEnvVarsTopLevelBuild(String string) {
 		string = string.replace(
-			"$(ci.test.suite)", _topLevelBuildReport.getTestSuiteName());
+			"$(ci.test.suite)", topLevelBuildReport.getTestSuiteName());
 		string = string.replace(
 			"$(jenkins.build.number)",
-			String.valueOf(_topLevelBuildReport.getBuildNumber()));
+			String.valueOf(topLevelBuildReport.getBuildNumber()));
 		string = string.replace(
 			"$(jenkins.build.start)",
 			JenkinsResultsParserUtil.toDateString(
-				_topLevelBuildReport.getStartDate(), "yyyy-MM-dd[HH:mm:ss]",
+				topLevelBuildReport.getStartDate(), "yyyy-MM-dd[HH:mm:ss]",
 				"America/Los_Angeles"));
 		string = string.replace(
 			"$(jenkins.build.url)",
-			String.valueOf(_topLevelBuildReport.getBuildURL()));
+			String.valueOf(topLevelBuildReport.getBuildURL()));
 		string = string.replace(
-			"$(jenkins.job.name)", _topLevelBuildReport.getJobName());
+			"$(jenkins.job.name)", topLevelBuildReport.getJobName());
 
-		JenkinsMaster jenkinsMaster = _topLevelBuildReport.getJenkinsMaster();
+		JenkinsMaster jenkinsMaster = topLevelBuildReport.getJenkinsMaster();
 
 		string = string.replace(
 			"$(jenkins.master.hostname)", jenkinsMaster.getName());
 
 		return string.replace(
 			"$(jenkins.report.url)",
-			String.valueOf(_topLevelBuildReport.getJenkinsReportURL()));
+			String.valueOf(topLevelBuildReport.getJenkinsReportURL()));
 	}
 
 	private String _fixSlackString(String string) {
@@ -1942,8 +1944,8 @@ public class TestrayImporter {
 		}
 
 		return JenkinsResultsParserUtil.combine(
-			_topLevelBuildReport.getJobName(), "#",
-			String.valueOf(_topLevelBuildReport.getBuildNumber()));
+			topLevelBuildReport.getJobName(), "#",
+			String.valueOf(topLevelBuildReport.getBuildNumber()));
 	}
 
 	private String _getSlackUsername(File testBaseDir) {
@@ -2087,7 +2089,6 @@ public class TestrayImporter {
 		Collections.synchronizedMap(new HashMap<File, TestrayRoutine>());
 	private static final Map<File, TestrayServer> _testrayServers =
 		Collections.synchronizedMap(new HashMap<File, TestrayServer>());
-	private static final TopLevelBuildReport _topLevelBuildReport;
 	private static List<Workspace> _workspaces = new ArrayList<>();
 
 }
