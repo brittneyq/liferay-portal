@@ -7,6 +7,7 @@ package com.liferay.jenkins.results.parser.testray;
 
 import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.BuildReport;
+import com.liferay.jenkins.results.parser.BuildReportFactory;
 import com.liferay.jenkins.results.parser.ControllerBuildReport;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
@@ -40,6 +41,9 @@ import com.liferay.jenkins.results.parser.test.clazz.group.PlaywrightAxisTestCla
 
 import java.io.File;
 import java.io.IOException;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -781,7 +785,15 @@ public class TestrayImporter {
 	}
 
 	public static void recordAxisTestClassGroup(
-		AxisTestClassGroup axisTestClassGroup) {
+			AxisTestClassGroup axisTestClassGroup)
+		throws MalformedURLException {
+
+		if (topLevelBuildReport == null) {
+			URL buildURL = new URL(System.getenv("BUILD_URL"));
+
+			topLevelBuildReport = BuildReportFactory.newTopLevelBuildReport(
+				buildURL);
+		}
 
 		Job job = axisTestClassGroup.getJob();
 

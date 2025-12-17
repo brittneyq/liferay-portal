@@ -10,6 +10,8 @@ import com.liferay.jenkins.results.parser.testray.TestrayImporter;
 
 import java.io.IOException;
 
+import java.net.MalformedURLException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -153,8 +155,13 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 			AxisTestClassGroup downstreamAxisTestClassGroup =
 				downstreamBuild.getAxisTestClassGroup();
 
-			TestrayImporter.recordAxisTestClassGroup(
-				downstreamAxisTestClassGroup);
+			try {
+				TestrayImporter.recordAxisTestClassGroup(
+					downstreamAxisTestClassGroup);
+			}
+			catch (MalformedURLException malformedURLException) {
+				throw new RuntimeException(malformedURLException);
+			}
 		}
 	}
 
