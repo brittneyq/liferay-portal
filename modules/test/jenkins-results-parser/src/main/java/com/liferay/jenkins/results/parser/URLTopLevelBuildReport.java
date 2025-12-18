@@ -45,6 +45,9 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 				getBuildReportJSONTestrayURL());
 		}
 
+		System.out.println(
+			"_buildreportjsonobject : " + _buildReportJSONObject);
+
 		initialize(_buildReportJSONObject);
 
 		return _buildReportJSONObject;

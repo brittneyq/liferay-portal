@@ -155,6 +155,10 @@ public abstract class BaseTopLevelBuildReport
 
 		JSONObject buildReportJSONObject = getBuildReportJSONObject();
 
+		System.out.println(
+			"build report json object in get controller : " +
+				buildReportJSONObject);
+
 		if (buildReportJSONObject == null) {
 			return null;
 		}
@@ -389,6 +393,10 @@ public abstract class BaseTopLevelBuildReport
 	}
 
 	protected void initialize(JSONObject buildReportJSONObject) {
+		if (buildReportJSONObject == null) {
+			return;
+		}
+
 		JSONArray batchesJSONArray = buildReportJSONObject.optJSONArray(
 			"batches");
 
