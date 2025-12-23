@@ -129,10 +129,10 @@ public abstract class BaseDownstreamBuildReport
 		return testReports;
 	}
 
-	@Override
-	public TopLevelBuildReport getTopLevelBuildReport() {
-		return _topLevelBuildReport;
-	}
+	/*	@Override
+		public TopLevelBuildReport getTopLevelBuildReport() {
+			return _topLevelBuildReport;
+		}*/
 
 	@Override
 	public boolean isBuildCached() {
@@ -145,7 +145,7 @@ public abstract class BaseDownstreamBuildReport
 		_batchName = downstreamBuild.getBatchName();
 		_buildCached = false;
 		_buildReportJSONObject = downstreamBuild.getBuildReportJSONObject();
-		_topLevelBuildReport = null;
+		//_topLevelBuildReport = null;
 	}
 
 	protected BaseDownstreamBuildReport(
@@ -156,7 +156,7 @@ public abstract class BaseDownstreamBuildReport
 
 		_batchName = batchName;
 		_buildReportJSONObject = buildReportJSONObject;
-		_topLevelBuildReport = topLevelBuildReport;
+		//_topLevelBuildReport = topLevelBuildReport;
 
 		_buildCached = buildReportJSONObject.optBoolean("buildCached", false);
 	}
@@ -165,6 +165,7 @@ public abstract class BaseDownstreamBuildReport
 	private final boolean _buildCached;
 	private final JSONObject _buildReportJSONObject;
 	private Map<String, TestClassReport> _testClassReportsMap;
-	private final TopLevelBuildReport _topLevelBuildReport;
+
+	//private final TopLevelBuildReport _topLevelBuildReport;
 
 }

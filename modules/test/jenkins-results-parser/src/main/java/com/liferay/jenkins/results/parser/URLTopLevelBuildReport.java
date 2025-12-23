@@ -30,7 +30,15 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 		TestrayCloudObject buildReportTestrayCloudObject =
 			getBuildReportTestrayCloudObject();
 
+		System.out.println(
+			"build report testray cloud object : " +
+				buildReportTestrayCloudObject);
+
 		if (buildReportTestrayCloudObject != null) {
+			System.out.println(
+				"Build report testray cloud object : " +
+					buildReportTestrayCloudObject.getValue());
+
 			_buildReportJSONObject = new JSONObject(
 				buildReportTestrayCloudObject.getValue());
 		}
@@ -38,12 +46,22 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 		if (_buildReportJSONObject == null) {
 			_buildReportJSONObject = getJSONObjectFromURL(
 				getBuildReportJSONUserContentURL());
+
+			System.out.println(
+				"build report json object from url : " +
+					_buildReportJSONObject);
 		}
 
 		if (_buildReportJSONObject == null) {
 			_buildReportJSONObject = getJSONObjectFromURL(
 				getBuildReportJSONTestrayURL());
+
+			System.out.println(
+				"json object from testray url:" + _buildReportJSONObject);
 		}
+
+		System.out.println(
+			"Build report json object : " + _buildReportJSONObject);
 
 		initialize(_buildReportJSONObject);
 
@@ -82,6 +100,8 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 				return JenkinsResultsParserUtil.toJSONObject(urlString);
 			}
 			catch (IOException ioException) {
+				System.out.println("retruning null 1...");
+
 				return null;
 			}
 		}
@@ -95,6 +115,8 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 
 			String fileContent = JenkinsResultsParserUtil.read(file);
 
+			System.out.println("FILE CONTENT : " + fileContent);
+
 			if (JenkinsResultsParserUtil.isNullOrEmpty(fileContent)) {
 				return null;
 			}
@@ -102,6 +124,8 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 			return new JSONObject(fileContent);
 		}
 		catch (Exception exception) {
+			System.out.println("Something went wrong returning null...");
+
 			return null;
 		}
 		finally {

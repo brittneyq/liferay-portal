@@ -272,6 +272,9 @@ public abstract class BaseTopLevelBuildReport
 	public String getTestSuiteName() {
 		JSONObject buildReportJSONObject = getBuildReportJSONObject();
 
+		System.out.println(
+			"Build report json object : " + buildReportJSONObject);
+
 		if (buildReportJSONObject == null) {
 			return null;
 		}
@@ -389,6 +392,10 @@ public abstract class BaseTopLevelBuildReport
 	}
 
 	protected void initialize(JSONObject buildReportJSONObject) {
+		if (buildReportJSONObject == null) {
+			return;
+		}
+
 		JSONArray batchesJSONArray = buildReportJSONObject.optJSONArray(
 			"batches");
 
