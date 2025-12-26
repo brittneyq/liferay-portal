@@ -9,7 +9,7 @@ import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.BuildReport;
 import com.liferay.jenkins.results.parser.ControllerBuildReport;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
-import com.liferay.jenkins.results.parser.DownstreamBuildReport;
+import com.liferay.jenkins.results.parser.InProgressTopLevelBuildReport;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
@@ -67,7 +67,19 @@ import org.dom4j.Element;
  */
 public class TestrayImporter {
 
-	private final DownstreamBuildReport _downstreamBuildReport;
+	public TestrayImporter(
+		BuildDatabase buildDatabase,
+		InProgressTopLevelBuildReport inProgressTopLevelBuildReport) {
+
+		_topLevelBuildReport = inProgressTopLevelBuildReport;
+
+		_jobs = buildDatabase.getJobs();
+		_portalFixpackReleases = buildDatabase.getPortalFixpackReleases();
+		_portalHotfixReleases = buildDatabase.getPortalHotfixReleases();
+		_portalReleases = buildDatabase.getPortalReleases();
+		_pullRequests = buildDatabase.getPullRequests();
+		_workspaces = buildDatabase.getWorkspaces();
+	}
 
 	public TestrayImporter(
 		BuildDatabase buildDatabase, TopLevelBuildReport topLevelBuildReport) {
@@ -79,32 +91,11 @@ public class TestrayImporter {
 
 		_topLevelBuildReport = topLevelBuildReport;
 
-		_downstreamBuildReport = null;
-
 		_jobs = buildDatabase.getJobs();
 		_portalFixpackReleases = buildDatabase.getPortalFixpackReleases();
 		_portalHotfixReleases = buildDatabase.getPortalHotfixReleases();
 		_portalReleases = buildDatabase.getPortalReleases();
 		_pullRequests = buildDatabase.getPullRequests();
-		_workspaces = buildDatabase.getWorkspaces();
-	}
-
-	public TestrayImporter(
-			BuildDatabase buildDatabase, DownstreamBuildReport downstreamBuildReport) {
-
-		if (downstreamBuildReport == null) {
-			throw new RuntimeException(
-					"Please provide a valid top level build report");
-		}
-
-		_downstreamBuildReport = downstreamBuildReport;
-
-		_jobs = buildDatabase.getJobs();
-		_portalFixpackReleases = buildDatabase.getPortalFixpackReleases();
-		_portalHotfixReleases = buildDatabase.getPortalHotfixReleases();
-		_portalReleases = buildDatabase.getPortalReleases();
-		_pullRequests = buildDatabase.getPullRequests();
-		_topLevelBuildReport = null;
 		_workspaces = buildDatabase.getWorkspaces();
 	}
 
@@ -980,10 +971,10 @@ public class TestrayImporter {
 			"testray.build.date",
 			_topLevelBuildReport.getTestrayBuildDateString());
 		propertiesMap.put("testray.build.name", testrayBuild.getName());
-		propertiesMap.put(
-			"testray.build.time",
-			JenkinsResultsParserUtil.toDurationString(
-				_topLevelBuildReport.getDuration()));
+		//		propertiesMap.put(
+		//			"testray.build.time",
+		//			JenkinsResultsParserUtil.toDurationString(
+		//				_topLevelBuildReport.getDuration()));
 
 		TestrayRoutine testrayRoutine = testrayBuild.getTestrayRoutine();
 
@@ -1002,10 +993,10 @@ public class TestrayImporter {
 		propertiesMap.put("testray.project.name", testrayProject.getName());
 
 		propertiesMap.put("testray.run.id", testrayRun.getRunIDString());
-		propertiesMap.put(
-			"testray.total.cpu.use.time",
-			JenkinsResultsParserUtil.toDurationString(
-				_topLevelBuildReport.getTotalActualDuration()));
+		//		propertiesMap.put(
+		//			"testray.total.cpu.use.time",
+		//			JenkinsResultsParserUtil.toDurationString(
+		//				_topLevelBuildReport.getTotalActualDuration()));
 
 		_addPropertyElements(
 			rootElement.addElement("properties"), propertiesMap);
@@ -1189,6 +1180,8 @@ public class TestrayImporter {
 				" case results for ", axisTestClassGroup.getAxisName(), " in ",
 				JenkinsResultsParserUtil.toDurationString(
 					currentTimeMillis - start)));
+
+		testrayServer.importCaseResults(_topLevelBuildReport);
 	}
 
 	public void recordTestrayCaseResults() {

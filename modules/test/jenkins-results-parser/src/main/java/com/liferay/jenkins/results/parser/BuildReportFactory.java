@@ -67,6 +67,13 @@ public class BuildReportFactory {
 			batchName, buildReportJSONObject, topLevelBuildReport);
 	}
 
+	public static InProgressTopLevelBuildReport
+		newInProgressTopLevelBuildReport(
+			Build build, DownstreamBuildReport downstreamBuildReport) {
+
+		return new InProgressTopLevelBuildReport(build, downstreamBuildReport);
+	}
+
 	public static TopLevelBuildReport newTopLevelBuildReport(
 		JSONObject buildReportJSONObject) {
 
