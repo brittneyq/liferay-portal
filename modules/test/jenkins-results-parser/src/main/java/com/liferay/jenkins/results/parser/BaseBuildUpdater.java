@@ -174,7 +174,6 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 			System.out.println(
 				"TESTRAY CASE RESULTS in build updater: " + testrayCaseResults);
 
-			topLevelBuild.addTestrayCaseResults(testrayCaseResults);
 		}
 	}
 

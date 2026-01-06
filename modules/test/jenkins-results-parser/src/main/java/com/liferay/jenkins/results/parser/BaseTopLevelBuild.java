@@ -91,7 +91,11 @@ public abstract class BaseTopLevelBuild
 
 		System.out.println(
 			"ADDING TESTRAY CASE RESULTS : " + testrayCaseResults);
+
 		_testrayCaseResults.addAll(testrayCaseResults);
+
+		System.out.println(
+			"_TESTRAY CASE RESULTS LIST: " + _testrayCaseResults);
 	}
 
 	@Override

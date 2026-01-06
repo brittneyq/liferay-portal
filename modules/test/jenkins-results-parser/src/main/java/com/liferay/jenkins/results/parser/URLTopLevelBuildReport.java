@@ -61,7 +61,7 @@ public class URLTopLevelBuildReport extends BaseTopLevelBuildReport {
 		}
 
 		System.out.println(
-			"Build report json object : " + _buildReportJSONObject);
+			"Build report json object 3: " + _buildReportJSONObject);
 
 		initialize(_buildReportJSONObject);
 

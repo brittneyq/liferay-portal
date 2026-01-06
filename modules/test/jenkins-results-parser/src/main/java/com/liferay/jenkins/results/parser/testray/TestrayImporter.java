@@ -1189,6 +1189,8 @@ public class TestrayImporter {
 				JenkinsResultsParserUtil.toDurationString(
 					currentTimeMillis - start)));
 
+		testrayServer.importCaseResults(_topLevelBuildReport);
+
 		return testrayCaseResults;
 	}
 
@@ -1260,7 +1262,11 @@ public class TestrayImporter {
 					recordTestrayCaseResult(job);
 			}
 
+			System.out.println("BUILD : " + _build);
+
 			if (_build instanceof TopLevelBuild) {
+				System.out.println("INSTANCE OF TOP LEVEL BUILD");
+
 				TopLevelBuild topLevelBuild = (TopLevelBuild)_build;
 
 				for (TestrayCaseResult testrayCaseResult :
@@ -1269,6 +1275,10 @@ public class TestrayImporter {
 					DownstreamBuildReport downstreamBuildReport =
 						(DownstreamBuildReport)
 							testrayCaseResult.getBuildReport();
+
+					System.out.println(
+						"DOWNSTREAM BUILD REPORT for testray case result : " +
+							downstreamBuildReport);
 
 					_topLevelBuildReport.addDownstreamBuildReport(
 						downstreamBuildReport);

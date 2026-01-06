@@ -35,6 +35,8 @@ public abstract class BaseTopLevelBuildReport
 	public void addDownstreamBuildReport(
 		DownstreamBuildReport downstreamBuildReport) {
 
+		System.out.println("ADDING DOWNSTREAM BUILD REPORT!!");
+
 		if (downstreamBuildReport == null) {
 			return;
 		}
@@ -396,30 +398,7 @@ public abstract class BaseTopLevelBuildReport
 			return;
 		}
 
-		JSONArray batchesJSONArray = buildReportJSONObject.optJSONArray(
-			"batches");
-
-		if (batchesJSONArray != null) {
-			for (int i = 0; i < batchesJSONArray.length(); i++) {
-				JSONObject batchJSONObject = batchesJSONArray.getJSONObject(i);
-
-				String batchName = batchJSONObject.optString("batchName");
-				JSONArray buildsJSONArray = batchJSONObject.optJSONArray(
-					"builds");
-
-				if (JenkinsResultsParserUtil.isNullOrEmpty(batchName) ||
-					(buildsJSONArray == null)) {
-
-					continue;
-				}
-
-				for (int j = 0; j < buildsJSONArray.length(); j++) {
-					addDownstreamBuildReport(
-						BuildReportFactory.newDownstreamBuildReport(
-							batchName, buildsJSONArray.getJSONObject(j), this));
-				}
-			}
-		}
+		System.out.println("INITIALIZING BUILD REPORT...");
 
 		JSONObject controllerJSONObject = buildReportJSONObject.optJSONObject(
 			"controller");

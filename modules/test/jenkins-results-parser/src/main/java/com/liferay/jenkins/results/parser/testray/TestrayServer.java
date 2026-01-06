@@ -301,9 +301,13 @@ public class TestrayServer {
 	}
 
 	public void importCaseResults(TopLevelBuildReport topLevelBuildReport) {
+		System.out.println("IMPORTING CASE RESULTS..");
+
 		TestrayResultsParserUtil.processTestrayResultFiles(getResultsDir());
 
 		if (TestrayCloudBucket.hasGoogleApplicationCredentials()) {
+			System.out.println("IMPORTING CASE RESULT TO GCP..");
+
 			_importCaseResultsToGCP(topLevelBuildReport);
 		}
 	}
