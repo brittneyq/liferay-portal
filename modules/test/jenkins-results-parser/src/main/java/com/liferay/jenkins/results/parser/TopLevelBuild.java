@@ -5,6 +5,9 @@
 
 package com.liferay.jenkins.results.parser;
 
+import com.liferay.jenkins.results.parser.testray.TestrayCaseResult;
+import com.liferay.jenkins.results.parser.testray.TestrayImporter;
+
 import java.io.File;
 
 import java.util.List;
@@ -19,6 +22,9 @@ public interface TopLevelBuild extends ParentBuild {
 
 	public void addCachedDownstreamBuildReport(
 		DownstreamBuildReport downstreamBuildReport);
+
+	public void addTestrayCaseResults(
+		List<TestrayCaseResult> testrayCaseResults);
 
 	public String getAcceptanceUpstreamJobName();
 
@@ -58,6 +64,10 @@ public interface TopLevelBuild extends ParentBuild {
 
 	public String getStatusSummary();
 
+	public List<TestrayCaseResult> getTestrayCaseResults();
+
+	public TestrayImporter getTestrayImporter();
+
 	public TopLevelBuildReport getTopLevelBuildReport();
 
 	public long getTotalActualDuration();
@@ -69,5 +79,7 @@ public interface TopLevelBuild extends ParentBuild {
 	public int getTotalCachedSlavesUsedCount();
 
 	public Element getValidationGitHubMessageElement();
+
+	public void setTestrayImporter(TestrayImporter testrayImporter);
 
 }

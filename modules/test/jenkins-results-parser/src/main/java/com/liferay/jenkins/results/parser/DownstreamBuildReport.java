@@ -28,7 +28,7 @@ public interface DownstreamBuildReport extends BuildReport {
 
 	public List<TestReport> getTestReports();
 
-	//public TopLevelBuildReport getTopLevelBuildReport();
+	public TopLevelBuildReport getTopLevelBuildReport();
 
 	public boolean isBuildCached();
 

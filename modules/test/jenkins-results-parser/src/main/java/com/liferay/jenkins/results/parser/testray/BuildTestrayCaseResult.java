@@ -28,6 +28,13 @@ import org.json.JSONObject;
 public abstract class BuildTestrayCaseResult extends TestrayCaseResult {
 
 	@Override
+	public BuildReport getBuildReport() {
+		System.out.println("RETRUNING BUILD REPORT IN BUILDTESTRAYCASERESULT");
+
+		return _buildReport;
+	}
+
+	@Override
 	public long getDuration() {
 		BuildReport buildReport = getBuildReport();
 
@@ -73,10 +80,6 @@ public abstract class BuildTestrayCaseResult extends TestrayCaseResult {
 		_testrayUploadBaseDir = new File(
 			workspace,
 			"testray/" + JenkinsResultsParserUtil.getDistinctTimeStamp());
-	}
-
-	protected BuildReport getBuildReport() {
-		return _buildReport;
 	}
 
 	protected TestrayAttachment getTestrayAttachment(

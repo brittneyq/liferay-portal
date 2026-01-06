@@ -20,24 +20,18 @@ public class InProgressTopLevelBuildReport extends BaseTopLevelBuildReport {
 			return _buildReportJSONObject;
 		}
 
-		initializeBuildReportJSONObject();
-
-		return _buildReportJSONObject;
+		return null;
 	}
 
-	protected InProgressTopLevelBuildReport(
-		Build build, DownstreamBuildReport downstreamBuildReport) {
-
+	protected InProgressTopLevelBuildReport(Build build) {
 		super(build.getBuildURL());
 
 		_buildJSONObject = JenkinsAPIUtil.getAPIJSONObject(
 			String.valueOf(getBuildURL()));
 
-		_buildReportJSONObject = null;
-
 		_build = build;
 
-		addDownstreamBuildReport(downstreamBuildReport);
+		initializeBuildReportJSONObject();
 	}
 
 	protected void initializeBuildReportJSONObject() {

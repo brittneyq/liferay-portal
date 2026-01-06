@@ -5,6 +5,7 @@
 
 package com.liferay.jenkins.results.parser.testray;
 
+import com.liferay.jenkins.results.parser.BuildReport;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 
 import java.io.IOException;
@@ -39,6 +40,12 @@ public class TestrayCaseResult {
 		"componentToCaseResult", "dateCreated", "dateModified",
 		"dueStatus { key name }", "errors", "id", "startDate"
 	};
+
+	public BuildReport getBuildReport() {
+		System.out.println("GETTING BUILD REPORT... in testray case result");
+
+		return null;
+	}
 
 	public TestrayAttachment getBuildResultTestrayAttachment() {
 		initTestrayAttachments();

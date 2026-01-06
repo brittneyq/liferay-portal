@@ -5,7 +5,7 @@
 
 package com.liferay.jenkins.results.parser;
 
-import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
+import com.liferay.jenkins.results.parser.testray.TestrayCaseResult;
 import com.liferay.jenkins.results.parser.testray.TestrayImporter;
 
 import java.io.IOException;
@@ -150,21 +150,31 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 
 			downstreamBuild.generateBuildReport();
 
-			AxisTestClassGroup downstreamAxisTestClassGroup =
-				downstreamBuild.getAxisTestClassGroup();
+			BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase();
 
-			BuildDatabase buildDatabase = downstreamBuild.getBuildDatabase();
+			TopLevelBuild topLevelBuild = downstreamBuild.getTopLevelBuild();
 
 			InProgressTopLevelBuildReport inProgressTopLevelBuildReport =
 				BuildReportFactory.newInProgressTopLevelBuildReport(
-					downstreamBuild.getTopLevelBuild(),
-					downstreamBuild.getDownstreamBuildReport());
+					topLevelBuild);
+
+			System.out.println(
+				"in progress top level build report : " +
+					inProgressTopLevelBuildReport);
 
 			TestrayImporter testrayImporter = new TestrayImporter(
-				buildDatabase, inProgressTopLevelBuildReport);
+				topLevelBuild, buildDatabase, inProgressTopLevelBuildReport);
 
-			testrayImporter.recordAxisTestClassGroup(
-				downstreamAxisTestClassGroup);
+			System.out.println("testray importer 2: " + testrayImporter);
+
+			List<TestrayCaseResult> testrayCaseResults =
+				testrayImporter.recordAxisTestClassGroup(
+					downstreamBuild.getAxisTestClassGroup());
+
+			System.out.println(
+				"TESTRAY CASE RESULTS in build updater: " + testrayCaseResults);
+
+			topLevelBuild.addTestrayCaseResults(testrayCaseResults);
 		}
 	}
 

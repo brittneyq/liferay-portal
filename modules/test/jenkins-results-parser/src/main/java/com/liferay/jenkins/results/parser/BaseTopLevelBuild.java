@@ -23,6 +23,8 @@ import com.liferay.jenkins.results.parser.failure.message.generator.PoshiValidat
 import com.liferay.jenkins.results.parser.failure.message.generator.RebaseFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.RelevantRuleValidationFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.testray.TestrayBuild;
+import com.liferay.jenkins.results.parser.testray.TestrayCaseResult;
+import com.liferay.jenkins.results.parser.testray.TestrayImporter;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +84,14 @@ public abstract class BaseTopLevelBuild
 		}
 
 		_testrayAttachmentURLs.add(testrayAttachmentURL);
+	}
+
+	public void addTestrayCaseResults(
+		List<TestrayCaseResult> testrayCaseResults) {
+
+		System.out.println(
+			"ADDING TESTRAY CASE RESULTS : " + testrayCaseResults);
+		_testrayCaseResults.addAll(testrayCaseResults);
 	}
 
 	@Override
@@ -608,6 +618,14 @@ public abstract class BaseTopLevelBuild
 		return _testrayAttachmentURLs;
 	}
 
+	public List<TestrayCaseResult> getTestrayCaseResults() {
+		return _testrayCaseResults;
+	}
+
+	public TestrayImporter getTestrayImporter() {
+		return _testrayImporter;
+	}
+
 	@Override
 	public JSONObject getTestReportJSONObject(boolean cache) {
 		return null;
@@ -768,6 +786,10 @@ public abstract class BaseTopLevelBuild
 	@Override
 	public void setCompareToUpstream(boolean compareToUpstream) {
 		_compareToUpstream = compareToUpstream;
+	}
+
+	public void setTestrayImporter(TestrayImporter testrayImporter) {
+		_testrayImporter = testrayImporter;
 	}
 
 	@Override
@@ -2618,6 +2640,9 @@ public abstract class BaseTopLevelBuild
 	private int _metricsHostPort;
 	private final boolean _sendBuildMetrics;
 	private final List<URL> _testrayAttachmentURLs = new ArrayList<>();
+	private final List<TestrayCaseResult> _testrayCaseResults =
+		new ArrayList<>();
+	private TestrayImporter _testrayImporter;
 	private TopLevelBuildReport _topLevelBuildReport;
 
 }

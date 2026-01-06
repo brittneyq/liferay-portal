@@ -68,10 +68,9 @@ public class BuildReportFactory {
 	}
 
 	public static InProgressTopLevelBuildReport
-		newInProgressTopLevelBuildReport(
-			Build build, DownstreamBuildReport downstreamBuildReport) {
+		newInProgressTopLevelBuildReport(Build build) {
 
-		return new InProgressTopLevelBuildReport(build, downstreamBuildReport);
+		return new InProgressTopLevelBuildReport(build);
 	}
 
 	public static TopLevelBuildReport newTopLevelBuildReport(
