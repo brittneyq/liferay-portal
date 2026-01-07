@@ -580,14 +580,16 @@ public class TestrayServer {
 		sb.append("-");
 		sb.append(topLevelBuildReport.getBuildNumber());
 
-		if (JenkinsResultsParserUtil.isNullOrEmpty(axisName)) {
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(axisName)) {
 			sb.append("-");
-			sb.append(axisName);
+			sb.append(axisName.replaceAll("/", "_"));
 		}
 
 		sb.append("-results.tar.gz");
 
 		File resultsDir = getResultsDir();
+
+		System.out.println("RESULTS DIR IS .. " + resultsDir);
 
 		File gcpResultsDir = new File(
 			resultsDir.getParentFile(), "gcp-results");
@@ -598,6 +600,10 @@ public class TestrayServer {
 		catch (IOException ioException) {
 			throw new RuntimeException(ioException);
 		}
+
+		System.out.println("get results dir size 1: " + getResultsDir().listFiles().length);
+
+		System.out.println("gcp results dir 1:" + gcpResultsDir.listFiles().length);
 
 		TestrayCloudBucket testrayCloudBucket =
 			TestrayCloudBucket.getInstance();
@@ -667,6 +673,12 @@ public class TestrayServer {
 			System.out.println("CLEANING DIRECTORY...");
 
 			FileUtils.cleanDirectory(getResultsDir());
+
+			FileUtils.cleanDirectory(gcpResultsDir);
+
+			System.out.println("get results dir size : " + getResultsDir().listFiles().length);
+
+			System.out.println("gcp results dir :" + gcpResultsDir.listFiles().length);
 		}
 		catch (IOException ioException) {
 			ioException.printStackTrace();

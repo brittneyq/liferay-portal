@@ -1187,8 +1187,8 @@ public class TestrayImporter {
 				JenkinsResultsParserUtil.toDurationString(
 					currentTimeMillis - start)));
 
-		testrayServer.importCaseResults(
-			_topLevelBuildReport, axisTestClassGroup.getAxisName());
+//		testrayServer.importCaseResults(
+//			_topLevelBuildReport, axisTestClassGroup.getAxisName());
 
 		return testrayCaseResults;
 	}

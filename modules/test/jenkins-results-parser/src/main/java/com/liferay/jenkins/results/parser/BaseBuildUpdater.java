@@ -162,6 +162,17 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 				"in progress top level build report : " +
 					inProgressTopLevelBuildReport);
 
+			inProgressTopLevelBuildReport.addDownstreamBuildReport(
+				BuildReportFactory.newDownstreamBuildReport(downstreamBuild));
+
+			DownstreamBuildReport downstreamBuildReport =
+				inProgressTopLevelBuildReport.getDownstreamBuildReport(
+					downstreamBuild.getAxisName());
+
+			System.out.println(
+				"downstream build report for " + downstreamBuild.getAxisName() +
+					downstreamBuildReport);
+
 			TestrayImporter testrayImporter = new TestrayImporter(
 				topLevelBuild, buildDatabase, inProgressTopLevelBuildReport);
 
