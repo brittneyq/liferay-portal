@@ -10,7 +10,6 @@ import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.BuildReport;
 import com.liferay.jenkins.results.parser.ControllerBuildReport;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
-import com.liferay.jenkins.results.parser.DownstreamBuildReport;
 import com.liferay.jenkins.results.parser.InProgressTopLevelBuildReport;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -27,7 +26,6 @@ import com.liferay.jenkins.results.parser.PullRequest;
 import com.liferay.jenkins.results.parser.QAWebsitesGitRepositoryJob;
 import com.liferay.jenkins.results.parser.QAWebsitesWorkspaceGitRepository;
 import com.liferay.jenkins.results.parser.TestSuiteJob;
-import com.liferay.jenkins.results.parser.TopLevelBuild;
 import com.liferay.jenkins.results.parser.TopLevelBuildReport;
 import com.liferay.jenkins.results.parser.Workspace;
 import com.liferay.jenkins.results.parser.WorkspaceGitRepository;
@@ -1189,7 +1187,8 @@ public class TestrayImporter {
 				JenkinsResultsParserUtil.toDurationString(
 					currentTimeMillis - start)));
 
-		testrayServer.importCaseResults(_topLevelBuildReport);
+		testrayServer.importCaseResults(
+			_topLevelBuildReport, axisTestClassGroup.getAxisName());
 
 		return testrayCaseResults;
 	}
@@ -1261,29 +1260,6 @@ public class TestrayImporter {
 				analyticsCloudAppServerBundleStandaloneBuildTestrayCaseResult.
 					recordTestrayCaseResult(job);
 			}
-
-			System.out.println("BUILD : " + _build);
-
-			if (_build instanceof TopLevelBuild) {
-				System.out.println("INSTANCE OF TOP LEVEL BUILD");
-
-				TopLevelBuild topLevelBuild = (TopLevelBuild)_build;
-
-				for (TestrayCaseResult testrayCaseResult :
-						topLevelBuild.getTestrayCaseResults()) {
-
-					DownstreamBuildReport downstreamBuildReport =
-						(DownstreamBuildReport)
-							testrayCaseResult.getBuildReport();
-
-					System.out.println(
-						"DOWNSTREAM BUILD REPORT for testray case result : " +
-							downstreamBuildReport);
-
-					_topLevelBuildReport.addDownstreamBuildReport(
-						downstreamBuildReport);
-				}
-			}
 		}
 
 		ParallelExecutor<Void> parallelExecutor = new ParallelExecutor<>(
@@ -1307,7 +1283,7 @@ public class TestrayImporter {
 
 			TestrayServer testrayServer = testrayBuild.getTestrayServer();
 
-			testrayServer.importCaseResults(_topLevelBuildReport);
+			testrayServer.importCaseResults(_topLevelBuildReport, null);
 		}
 
 		_sendPullRequestNotification();
@@ -1639,44 +1615,24 @@ public class TestrayImporter {
 	}
 
 	private String _replaceEnvVars(String string, boolean truncate) {
-		System.out.println("string in replace env vars : " + string);
-
 		string = _replaceEnvVarsControllerBuild(string);
-
-		System.out.println("string 2 : " + string);
 
 		string = _replaceEnvVarsPluginsBranchInformationBuild(string);
 
-		System.out.println("string 3 : " + string);
-
 		string = _replaceEnvVarsPluginsTopLevelBuild(string);
-
-		System.out.println("string 4 : " + string);
 
 		string = _replaceEnvVarsPortalAppReleaseTopLevelBuild(string);
 
-		System.out.println("string 5 : " + string);
-
 		string = _replaceEnvVarsPortalBranchInformationBuild(string);
-
-		System.out.println("string 6 : " + string);
 
 		string = _replaceEnvVarsPortalRelease(string);
 
-		System.out.println("string 7 : " + string);
-
 		string = _replaceEnvVarsPullRequestBuild(string);
-
-		System.out.println("string 8 : " + string);
 
 		string = _replaceEnvVarsQAWebsitesTopLevelBuild(string);
 
-		System.out.println("string 9 : " + string);
-
 		if (_topLevelBuildReport != null) {
 			string = _replaceEnvVarsTopLevelBuild(string);
-
-			System.out.println("string 10 : " + string);
 
 			String jobName = _topLevelBuildReport.getJobName();
 

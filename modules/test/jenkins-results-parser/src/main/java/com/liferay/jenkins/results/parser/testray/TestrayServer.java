@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -300,15 +302,30 @@ public class TestrayServer {
 		return _url;
 	}
 
-	public void importCaseResults(TopLevelBuildReport topLevelBuildReport) {
+	public void importCaseResults(
+		TopLevelBuildReport topLevelBuildReport, String axisName) {
+
 		System.out.println("IMPORTING CASE RESULTS..");
+
+		for (File file : getResultsDir().listFiles()) {
+			System.out.println(
+				"file name before importing : " + file.getName());
+
+			try {
+				System.out.println(
+					"FILE CONTENT : " + JenkinsResultsParserUtil.read(file));
+			}
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
+			}
+		}
 
 		TestrayResultsParserUtil.processTestrayResultFiles(getResultsDir());
 
 		if (TestrayCloudBucket.hasGoogleApplicationCredentials()) {
 			System.out.println("IMPORTING CASE RESULT TO GCP..");
 
-			_importCaseResultsToGCP(topLevelBuildReport);
+			_importCaseResultsToGCP(topLevelBuildReport, axisName);
 		}
 	}
 
@@ -539,7 +556,10 @@ public class TestrayServer {
 	}
 
 	private void _importCaseResultsToGCP(
-		TopLevelBuildReport topLevelBuildReport) {
+		TopLevelBuildReport topLevelBuildReport, String axisName) {
+
+		System.out.println(
+			"AXIS NAME IN IMPORT CASE RESULTS TO GCP: " + axisName);
 
 		if (!TestrayCloudBucket.hasGoogleApplicationCredentials()) {
 			return;
@@ -559,6 +579,12 @@ public class TestrayServer {
 
 		sb.append("-");
 		sb.append(topLevelBuildReport.getBuildNumber());
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(axisName)) {
+			sb.append("-");
+			sb.append(axisName);
+		}
+
 		sb.append("-results.tar.gz");
 
 		File resultsDir = getResultsDir();
@@ -630,10 +656,23 @@ public class TestrayServer {
 		File resultsTarGzFile = new File(
 			gcpResultsDir.getParentFile(), sb.toString());
 
+		System.out.println("RESULTS TAR GZ FILE : " + resultsTarGzFile);
+
 		JenkinsResultsParserUtil.tarGzip(gcpResultsDir, resultsTarGzFile);
 
 		testrayCloudBucket.createTestrayCloudObject(
 			"inbox/" + resultsTarGzFile.getName(), resultsTarGzFile);
+
+		try {
+			System.out.println("CLEANING DIRECTORY...");
+
+			FileUtils.cleanDirectory(getResultsDir());
+		}
+		catch (IOException ioException) {
+			ioException.printStackTrace();
+
+			throw new RuntimeException(ioException);
+		}
 	}
 
 	private void _sendCommunicationFailureNotification(String message) {
