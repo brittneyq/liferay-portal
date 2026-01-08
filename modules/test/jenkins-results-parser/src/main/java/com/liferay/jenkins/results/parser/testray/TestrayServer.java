@@ -601,9 +601,11 @@ public class TestrayServer {
 			throw new RuntimeException(ioException);
 		}
 
-		System.out.println("get results dir size 1: " + getResultsDir().listFiles().length);
+		System.out.println(
+			"get results dir size 1: " + getResultsDir().listFiles().length);
 
-		System.out.println("gcp results dir 1:" + gcpResultsDir.listFiles().length);
+		System.out.println(
+			"gcp results dir 1:" + gcpResultsDir.listFiles().length);
 
 		TestrayCloudBucket testrayCloudBucket =
 			TestrayCloudBucket.getInstance();
@@ -676,9 +678,11 @@ public class TestrayServer {
 
 			FileUtils.cleanDirectory(gcpResultsDir);
 
-			System.out.println("get results dir size : " + getResultsDir().listFiles().length);
+			System.out.println(
+				"get results dir size : " + getResultsDir().listFiles().length);
 
-			System.out.println("gcp results dir :" + gcpResultsDir.listFiles().length);
+			System.out.println(
+				"gcp results dir :" + gcpResultsDir.listFiles().length);
 		}
 		catch (IOException ioException) {
 			ioException.printStackTrace();
