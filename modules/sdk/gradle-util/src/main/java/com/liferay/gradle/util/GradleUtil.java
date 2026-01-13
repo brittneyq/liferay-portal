@@ -403,6 +403,12 @@ public class GradleUtil {
 			File markerFile = new File(dir, markerFileName);
 
 			if (markerFile.exists()) {
+				if (markerFileName.contains(".git") &&
+					!markerFile.isDirectory()) {
+
+					return null;
+				}
+
 				return dir;
 			}
 
