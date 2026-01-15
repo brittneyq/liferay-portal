@@ -1129,6 +1129,8 @@ information.
 							<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 								<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
 
+								<args />
+
 								<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
 								<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
 								<arg unless:true="${gradle.build.parallel.enabled}" value="--no-parallel" />
@@ -1171,6 +1173,8 @@ information.
 							<echoxml>
 								<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 									<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+
+									<args />
 
 									<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
 									<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
