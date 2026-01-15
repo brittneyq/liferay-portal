@@ -981,7 +981,6 @@ information.
 
 					<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 						<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
-						<redirector errorproperty="tasks.error" outputproperty="tasks.output" unless:blank="tasks.output" />
 
 						<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
 						<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
@@ -1004,6 +1003,8 @@ information.
 						<arg line="@{gradlejvmargs}" />
 						<arg value="tasks" />
 						<arg value="--all" />
+
+						<redirector errorproperty="tasks.error" outputproperty="tasks.output" unless:blank="tasks.output" />
 					</exec>
 
 					<condition else="false" property="task.available" value="true">
@@ -1127,7 +1128,6 @@ information.
 
 							<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 								<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
-								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 
 								<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
 								<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
@@ -1150,6 +1150,8 @@ information.
 								<arg line="@{gradlejvmargs}" />
 								<arg line="@{task}" />
 								<arg if:set="test.name" line="${test.name}" />
+
+								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 							</exec>
 						</try>
 						<catch>
@@ -1167,9 +1169,8 @@ information.
 							<echo />
 
 							<echoxml>
-								<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}" if:set="env.JENKINS_HOME">
+								<exec dir="@{dir}" executable="${project.dir}/gradlew${gradlew.suffix}" failonerror="@{failonerror}">
 									<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
-									<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 
 									<arg if:set="env.JENKINS_HOME" value="--max-workers=4" />
 									<arg if:set="env.JENKINS_HOME" value="--no-daemon" />
@@ -1192,6 +1193,8 @@ information.
 									<arg line="@{gradlejvmargs}" />
 									<arg line="@{task}" />
 									<arg if:set="test.name" line="${test.name}" />
+
+									<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 								</exec>
 							</echoxml>
 
