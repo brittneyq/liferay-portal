@@ -154,6 +154,11 @@ public abstract class BaseStandaloneBuildTestrayCaseResult
 
 		propertiesMap.put("testray.build.name", testrayBuild.getName());
 
+		propertiesMap.put(
+			"testray.build.time",
+			JenkinsResultsParserUtil.toDurationString(
+				testTopLevelBuildReport.getDuration()));
+
 		TestrayRoutine testrayRoutine = testrayBuild.getTestrayRoutine();
 
 		propertiesMap.put("testray.build.type", testrayRoutine.getName());
@@ -171,6 +176,11 @@ public abstract class BaseStandaloneBuildTestrayCaseResult
 		propertiesMap.put("testray.project.name", testrayProject.getName());
 
 		propertiesMap.put("testray.run.id", testrayRun.getRunIDString());
+
+		propertiesMap.put(
+			"testray.total.cpu.use.time",
+			JenkinsResultsParserUtil.toDurationString(
+				testTopLevelBuildReport.getTotalActualDuration()));
 
 		addPropertyElements(
 			rootElement.addElement("properties"), propertiesMap);
