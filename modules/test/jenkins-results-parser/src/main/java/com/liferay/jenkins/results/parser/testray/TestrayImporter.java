@@ -7,8 +7,10 @@ package com.liferay.jenkins.results.parser.testray;
 
 import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.BuildReport;
+import com.liferay.jenkins.results.parser.BuildReportFactory;
 import com.liferay.jenkins.results.parser.ControllerBuildReport;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
+import com.liferay.jenkins.results.parser.DownstreamBuild;
 import com.liferay.jenkins.results.parser.DownstreamResultsTopLevelBuildReport;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -80,6 +82,8 @@ public class TestrayImporter {
 		_portalReleases = buildDatabase.getPortalReleases();
 		_pullRequests = buildDatabase.getPullRequests();
 		_workspaces = buildDatabase.getWorkspaces();
+
+		System.out.println("CREATING NEW TESTRAY IMPORTER..");
 	}
 
 	public TestrayImporter(
@@ -98,6 +102,15 @@ public class TestrayImporter {
 		_portalReleases = buildDatabase.getPortalReleases();
 		_pullRequests = buildDatabase.getPullRequests();
 		_workspaces = buildDatabase.getWorkspaces();
+	}
+
+	public void addDownstreamReport(DownstreamBuild downstreamBuild) {
+		_topLevelBuildReport.addDownstreamBuildReport(
+			BuildReportFactory.newDownstreamBuildReport(downstreamBuild));
+
+		System.out.println(
+			"TOP LEVEL BUILD REPORT AFTER ADDING BUILD REPORT: " +
+				_topLevelBuildReport.getBuildReportJSONObject());
 	}
 
 	public String getJenkinsBuildDescription() {
@@ -937,6 +950,10 @@ public class TestrayImporter {
 
 	public void recordAxisTestClassGroup(
 		AxisTestClassGroup axisTestClassGroup) {
+
+		System.out.println(
+			"RECORDING AXIS TEST CLASS GROUP FOR : " +
+				axisTestClassGroup.getAxisName());
 
 		Job job = axisTestClassGroup.getJob();
 

@@ -153,21 +153,17 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 				return;
 			}
 
-			BuildDatabase buildDatabase = BuildDatabaseUtil.getBuildDatabase();
+			TopLevelBuild topLevelBuild = downstreamBuild.getTopLevelBuild();
 
-			DownstreamResultsTopLevelBuildReport
-				downstreamResultsTopLevelBuildReport =
-					BuildReportFactory.newDownstreamResultsTopLevelBuildReport(
-						downstreamBuild.getTopLevelBuild());
+			TestrayImporter testrayImporter =
+				topLevelBuild.getTestrayImporter();
 
-			downstreamResultsTopLevelBuildReport.addDownstreamBuildReport(
-				BuildReportFactory.newDownstreamBuildReport(downstreamBuild));
+			synchronized (testrayImporter) {
+				testrayImporter.addDownstreamReport(downstreamBuild);
 
-			TestrayImporter testrayImporter = new TestrayImporter(
-				buildDatabase, downstreamResultsTopLevelBuildReport);
-
-			testrayImporter.recordAxisTestClassGroup(
-				downstreamBuild.getAxisTestClassGroup());
+				testrayImporter.recordAxisTestClassGroup(
+					downstreamBuild.getAxisTestClassGroup());
+			}
 		}
 	}
 

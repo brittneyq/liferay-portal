@@ -23,6 +23,7 @@ import com.liferay.jenkins.results.parser.failure.message.generator.PoshiValidat
 import com.liferay.jenkins.results.parser.failure.message.generator.RebaseFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.RelevantRuleValidationFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.testray.TestrayBuild;
+import com.liferay.jenkins.results.parser.testray.TestrayImporter;
 
 import java.io.File;
 import java.io.IOException;
@@ -606,6 +607,23 @@ public abstract class BaseTopLevelBuild
 	@Override
 	public synchronized List<URL> getTestrayAttachmentURLs() {
 		return _testrayAttachmentURLs;
+	}
+
+	public synchronized TestrayImporter getTestrayImporter() {
+		if (_testrayImporter == null) {
+			System.out.println("TESTRAY IMPORTER IS NULL...");
+
+			DownstreamResultsTopLevelBuildReport
+				downstreamResultsTopLevelBuildReport =
+					BuildReportFactory.newDownstreamResultsTopLevelBuildReport(
+						this);
+
+			_testrayImporter = new TestrayImporter(
+				BuildDatabaseUtil.getBuildDatabase(),
+				downstreamResultsTopLevelBuildReport);
+		}
+
+		return _testrayImporter;
 	}
 
 	@Override
@@ -2618,6 +2636,7 @@ public abstract class BaseTopLevelBuild
 	private int _metricsHostPort;
 	private final boolean _sendBuildMetrics;
 	private final List<URL> _testrayAttachmentURLs = new ArrayList<>();
+	private TestrayImporter _testrayImporter;
 	private TopLevelBuildReport _topLevelBuildReport;
 
 }
