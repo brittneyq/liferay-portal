@@ -155,8 +155,12 @@ public abstract class BaseBuildUpdater implements BuildUpdater {
 
 			TopLevelBuild topLevelBuild = downstreamBuild.getTopLevelBuild();
 
+			System.out.println("top level build: " + topLevelBuild);
+
 			TestrayImporter testrayImporter =
 				topLevelBuild.getTestrayImporter();
+
+			System.out.println("testray importer : " + testrayImporter);
 
 			synchronized (testrayImporter) {
 				testrayImporter.addDownstreamReport(downstreamBuild);

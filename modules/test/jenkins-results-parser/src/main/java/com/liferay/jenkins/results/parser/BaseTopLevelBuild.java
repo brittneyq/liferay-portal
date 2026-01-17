@@ -609,21 +609,25 @@ public abstract class BaseTopLevelBuild
 		return _testrayAttachmentURLs;
 	}
 
-	public synchronized TestrayImporter getTestrayImporter() {
-		if (_testrayImporter == null) {
-			System.out.println("TESTRAY IMPORTER IS NULL...");
+	public TestrayImporter getTestrayImporter() {
+		System.out.println("TESTRAY IMPORTER IS : " + _testrayImporter);
 
-			DownstreamResultsTopLevelBuildReport
-				downstreamResultsTopLevelBuildReport =
-					BuildReportFactory.newDownstreamResultsTopLevelBuildReport(
-						this);
+		synchronized (_importerLock) {
+			if (_testrayImporter == null) {
+				System.out.println("TESTRAY IMPORTER IS NULL...");
 
-			_testrayImporter = new TestrayImporter(
-				BuildDatabaseUtil.getBuildDatabase(),
-				downstreamResultsTopLevelBuildReport);
+				DownstreamResultsTopLevelBuildReport
+					downstreamResultsTopLevelBuildReport =
+						BuildReportFactory.
+							newDownstreamResultsTopLevelBuildReport(this);
+
+				_testrayImporter = new TestrayImporter(
+					BuildDatabaseUtil.getBuildDatabase(),
+					downstreamResultsTopLevelBuildReport);
+			}
+
+			return _testrayImporter;
 		}
-
-		return _testrayImporter;
 	}
 
 	@Override
@@ -2630,6 +2634,7 @@ public abstract class BaseTopLevelBuild
 	private final Map<String, BatchBuild> _downstreamBatchBuilds =
 		new ConcurrentHashMap<>();
 	private boolean _downstreamBatchBuildsPopulated;
+	private final Object _importerLock = new Object();
 	private JenkinsCohort _jenkinsCohort;
 	private long _lastDownstreamBuildsListingTimestamp = -1L;
 	private String _metricsHostName;
