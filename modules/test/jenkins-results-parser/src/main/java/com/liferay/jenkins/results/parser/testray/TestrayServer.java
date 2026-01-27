@@ -581,6 +581,40 @@ public class TestrayServer {
 
 				Element rootElement = document.getRootElement();
 
+				Element testrayPropertiesElement = rootElement.element(
+					"properties");
+
+				if (testrayPropertiesElement != null) {
+					boolean hasTotalCpuUseTime = false;
+
+					for (Element testrayPropertyElement :
+							testrayPropertiesElement.elements("property")) {
+
+						String testrayPropertyName =
+							testrayPropertyElement.attributeValue("name");
+
+						if (testrayPropertyName.equals(
+								"testray.total.cpu.use.time")) {
+
+							hasTotalCpuUseTime = true;
+
+							break;
+						}
+					}
+
+					if (!hasTotalCpuUseTime) {
+						Element totalCpuUseTimeElement =
+							testrayPropertiesElement.addElement("property");
+
+						totalCpuUseTimeElement.addAttribute(
+							"name", "testray.total.cpu.use.time");
+						totalCpuUseTimeElement.addAttribute(
+							"value",
+							JenkinsResultsParserUtil.toDurationString(
+								topLevelBuildReport.getTotalActualDuration()));
+					}
+				}
+
 				for (Element testcaseElement :
 						rootElement.elements("testcase")) {
 
