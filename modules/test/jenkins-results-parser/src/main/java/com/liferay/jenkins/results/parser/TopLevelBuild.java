@@ -5,6 +5,8 @@
 
 package com.liferay.jenkins.results.parser;
 
+import com.liferay.jenkins.results.parser.testray.TestrayImporter;
+
 import java.io.File;
 
 import java.util.List;
@@ -57,6 +59,8 @@ public interface TopLevelBuild extends ParentBuild {
 	public List<String> getProjectNames();
 
 	public String getStatusSummary();
+
+	public TestrayImporter getTestrayImporter();
 
 	public TopLevelBuildReport getTopLevelBuildReport();
 

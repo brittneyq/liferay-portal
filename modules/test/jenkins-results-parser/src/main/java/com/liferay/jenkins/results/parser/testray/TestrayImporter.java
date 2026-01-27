@@ -7,8 +7,10 @@ package com.liferay.jenkins.results.parser.testray;
 
 import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.BuildReport;
+import com.liferay.jenkins.results.parser.BuildReportFactory;
 import com.liferay.jenkins.results.parser.ControllerBuildReport;
 import com.liferay.jenkins.results.parser.Dom4JUtil;
+import com.liferay.jenkins.results.parser.DownstreamBuild;
 import com.liferay.jenkins.results.parser.DownstreamResultsTopLevelBuildReport;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -98,6 +100,11 @@ public class TestrayImporter {
 		_portalReleases = buildDatabase.getPortalReleases();
 		_pullRequests = buildDatabase.getPullRequests();
 		_workspaces = buildDatabase.getWorkspaces();
+	}
+
+	public void addDownstreamReport(DownstreamBuild downstreamBuild) {
+		_topLevelBuildReport.addDownstreamBuildReport(
+			BuildReportFactory.newDownstreamBuildReport(downstreamBuild));
 	}
 
 	public String getJenkinsBuildDescription() {
