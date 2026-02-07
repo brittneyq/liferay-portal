@@ -974,6 +974,8 @@ information.
 
 			<local name="task.available" />
 
+			<available file="${project.dir}/.git" property="is.git.repo" type="dir" />
+
 			<if>
 				<equals arg1="@{checktask}" arg2="true" />
 				<then>
@@ -998,7 +1000,9 @@ information.
 						<arg line="@{gradlejvmargs}" />
 						<arg value="tasks" />
 						<arg value="--all" />
-						<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+						<env if:set="is.git.repo" key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+						<env key="GIT_DIR" unless:set="is.git.repo" value="/dev/null" />
+						<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" unless:set="is.git.repo" value="0" />
 						<redirector errorproperty="tasks.error" outputproperty="tasks.output" unless:blank="tasks.output" />
 					</exec>
 
@@ -1141,7 +1145,9 @@ information.
 								<arg line="@{gradlejvmargs}" />
 								<arg line="@{task}" />
 								<arg if:set="test.name" line="${test.name}" />
-								<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+								<env if:set="is.git.repo" key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+								<env key="GIT_DIR" unless:set="is.git.repo" value="/dev/null" />
+								<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" unless:set="is.git.repo" value="0" />
 								<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 							</exec>
 						</try>
@@ -1179,7 +1185,9 @@ information.
 									<arg if:set="env.FIX_PACKS_RELEASE_ENVIRONMENT" value="-Dpatcher.hotfix.qualifier=${build.patcher.hotfix.qualifier}" />
 									<arg line="@{task}" />
 									<arg if:set="test.name" line="${test.name}" />
-									<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+									<env if:set="is.git.repo" key="GIT_DISCOVERY_ACROSS_FILESYSTEM" value="1" />
+									<env key="GIT_DIR" unless:set="is.git.repo" value="/dev/null" />
+									<env key="GIT_DISCOVERY_ACROSS_FILESYSTEM" unless:set="is.git.repo" value="0" />
 									<redirector errorproperty="${redirector.error.property}" outputproperty="${redirector.output.property}" unless:blank="${redirector.output.property}" />
 								</exec>
 							</echoxml>
