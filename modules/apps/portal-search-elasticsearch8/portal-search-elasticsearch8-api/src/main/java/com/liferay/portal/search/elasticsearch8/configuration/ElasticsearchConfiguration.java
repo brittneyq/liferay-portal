@@ -12,7 +12,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * @author Michael C. Han
+ * @author Michael C. Hans
  */
 @ExtendedObjectClassDefinition(category = "search")
 @Meta.OCD(
