@@ -114,7 +114,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
- * @author Daniel Kocsis
+ * @author Daniel Kocsiss
  * @author Máté Thurzó
  */
 @Component(service = StagedModelDataHandler.class)

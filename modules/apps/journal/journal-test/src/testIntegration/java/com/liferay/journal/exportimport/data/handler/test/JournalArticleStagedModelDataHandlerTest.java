@@ -116,7 +116,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 /**
- * @author Daniel Kocsis
+ * @author Daniel Kocsiss
  */
 @RunWith(Arquillian.class)
 public class JournalArticleStagedModelDataHandlerTest
