@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Zsolt Berentey
+ * @author Zsolt Berenteys
  */
 public class SystemEventAdvice extends ChainableMethodAdvice {
 

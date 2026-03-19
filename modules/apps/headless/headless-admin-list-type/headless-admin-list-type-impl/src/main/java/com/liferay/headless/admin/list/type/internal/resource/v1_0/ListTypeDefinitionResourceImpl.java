@@ -59,7 +59,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 /**
- * @author Gabriel Albuquerque
+ * @author Gabriel Albuquerques
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/list-type-definition.properties",
