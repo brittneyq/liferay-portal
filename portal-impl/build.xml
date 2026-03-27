@@ -355,6 +355,8 @@
 
 		<ant dir="../portal-kernel" inheritAll="false" target="compile" />
 
+		<property name="service.input.files.dir.normalized" location="${basedir}/../modules" />
+
 		<java
 			classname="com.liferay.portal.tools.service.builder.ServiceBuilder"
 			classpathref="service.builder.classpath"
@@ -373,7 +375,7 @@
 			<arg value="-Dexternal-properties=com/liferay/portal/tools/dependencies/portal-tools.properties" />
 			<arg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Log4JLogger" />
 			<arg value="service.incubation.features=${service.builder.incubation.features}" />
-			<arg value="service.input.files.dir=${basedir}/../modules" />
+			<arg value="service.input.files.dir=${service.input.files.dir.normalized}" />
 		</java>
 
 		<if>
