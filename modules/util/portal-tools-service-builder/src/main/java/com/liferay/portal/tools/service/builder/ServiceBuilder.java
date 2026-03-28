@@ -182,8 +182,14 @@ public class ServiceBuilder {
 		String inputFilesDirName = arguments.get("service.input.files.dir");
 
 		if (Validator.isNotNull(inputFilesDirName)) {
+			Path inputFilesDirPath = Paths.get(inputFilesDirName);
+
+			inputFilesDirPath = inputFilesDirPath.toAbsolutePath();
+
+			inputFilesDirPath = inputFilesDirPath.normalize();
+
 			List<String> apiModulePaths = _processModuleServiceFiles(
-				Paths.get(inputFilesDirName), arguments);
+				inputFilesDirPath, arguments);
 
 			System.out.println(
 				"service.builder.baseline.tasks=" +
