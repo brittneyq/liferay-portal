@@ -59,9 +59,9 @@ public class StyleBookEntryLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = _userLocalService.getUser(userId);
+		User users = _userLocalService.getUser(userId);
 
-		long companyId = user.getCompanyId();
+		long companyIdss = user.getCompanyId();
 
 		if (serviceContext != null) {
 			companyId = serviceContext.getCompanyId();
