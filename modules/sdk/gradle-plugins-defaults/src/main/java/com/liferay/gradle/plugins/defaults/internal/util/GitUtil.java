@@ -76,6 +76,7 @@ public class GitUtil {
 				@Override
 				public void execute(ExecSpec execSpec) {
 					execSpec.args(args);
+					execSpec.setErrorOutput(new ByteArrayOutputStream());
 					execSpec.setExecutable("git");
 					execSpec.setStandardOutput(byteArrayOutputStream);
 					execSpec.setWorkingDir(workingDir);

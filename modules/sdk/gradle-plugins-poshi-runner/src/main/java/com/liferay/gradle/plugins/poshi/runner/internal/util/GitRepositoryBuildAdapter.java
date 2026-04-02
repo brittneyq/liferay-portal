@@ -80,6 +80,7 @@ public class GitRepositoryBuildAdapter extends BuildAdapter {
 				public void execute(ExecSpec execSpec) {
 					execSpec.args(args);
 					execSpec.setExecutable("git");
+					execSpec.setErrorOutput(new ByteArrayOutputStream());
 					execSpec.setIgnoreExitValue(true);
 					execSpec.setStandardOutput(byteArrayOutputStream);
 				}

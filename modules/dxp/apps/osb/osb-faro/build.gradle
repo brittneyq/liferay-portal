@@ -121,8 +121,13 @@ createDocker {
 buildAppDockerImage {
 	images.add(appDocker.imageName + ":" + appDocker.imageTags[0])
 
-	def LABEL_BUILD_DATE = ('git log -1 --format=%cd').execute().text.trim()
-	def LABEL_VCS_REF = ('git rev-parse --short=7 HEAD').execute().text.trim()
+	def LABEL_BUILD_DATE = ""
+	def LABEL_VCS_REF = ""
+
+	if (new File(rootDir.parentFile, ".git").exists()) {
+		LABEL_BUILD_DATE = ('git log -1 --format=%cd').execute().text.trim()
+		LABEL_VCS_REF = ('git rev-parse --short=7 HEAD').execute().text.trim()
+	}
 	buildArgs = ['LABEL_BUILD_DATE': LABEL_BUILD_DATE, 'LABEL_VCS_REF': LABEL_VCS_REF]
 }
 

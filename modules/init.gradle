@@ -50,17 +50,19 @@ gradle.buildFinished {
 	ByteArrayOutputStream errorByteArrayOutputStream = new ByteArrayOutputStream()
 	ByteArrayOutputStream outputByteArrayOutputStream = new ByteArrayOutputStream()
 
-	exec {
-		commandLine "git", "ls-files", "--exclude-standard", "--others"
-		ignoreExitValue = true
-		errorOutput = errorByteArrayOutputStream
-		standardOutput = outputByteArrayOutputStream
-		workingDir = gradle.gradleUserHomeDir
+	if (new File(gradle.gradleUserHomeDir, ".git").exists() || new File(gradle.gradleUserHomeDir, "../.git").exists()) {
+		exec {
+			commandLine "git", "ls-files", "--exclude-standard", "--others"
+			ignoreExitValue = true
+			errorOutput = errorByteArrayOutputStream
+			standardOutput = outputByteArrayOutputStream
+			workingDir = gradle.gradleUserHomeDir
+		}
 	}
 
 	String errorString = errorByteArrayOutputStream.toString()
 
-	if (!errorString.contains("Not a git repository")) {
+	if (errorString && !errorString.toLowerCase().contains("not a git repository")) {
 		logger.error errorString
 	}
 
