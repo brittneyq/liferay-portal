@@ -182,8 +182,17 @@ public class ServiceBuilder {
 		String inputFilesDirName = arguments.get("service.input.files.dir");
 
 		if (Validator.isNotNull(inputFilesDirName)) {
+			Path inputFilesDirPath = Paths.get(inputFilesDirName);
+
+			inputFilesDirPath = inputFilesDirPath.toAbsolutePath();
+
+			inputFilesDirPath = inputFilesDirPath.normalize();
+
+			_localChangesFileNames = new HashSet<>(
+				GitUtil.getLocalChangesFileNames(inputFilesDirPath.toString()));
+
 			List<String> apiModulePaths = _processModuleServiceFiles(
-				Paths.get(inputFilesDirName), arguments);
+				inputFilesDirPath, arguments);
 
 			System.out.println(
 				"service.builder.baseline.tasks=" +
@@ -6300,12 +6309,13 @@ public class ServiceBuilder {
 	}
 
 	private boolean _hasLocalChanges(File propsFile) throws Exception {
-		for (String localChangesFileName :
-				GitUtil.getLocalChangesFileNames("")) {
+		if (_localChangesFileNames == null) {
+			_localChangesFileNames = new HashSet<>(
+				GitUtil.getLocalChangesFileNames(""));
+		}
 
-			if (localChangesFileName.equals(propsFile.getPath())) {
-				return true;
-			}
+		if (_localChangesFileNames.contains(propsFile.getPath())) {
+			return true;
 		}
 
 		return false;
@@ -8744,6 +8754,7 @@ public class ServiceBuilder {
 	private String _implDirName;
 	private String[] _incubationFeatures;
 	private final Map<String, JavaClass> _javaClasses = new HashMap<>();
+	private static Set<String> _localChangesFileNames;
 	private String _modelHintsFileName;
 	private final Set<String> _modifiedFileNames = Collections.newSetFromMap(
 		new ConcurrentHashMap<>());
