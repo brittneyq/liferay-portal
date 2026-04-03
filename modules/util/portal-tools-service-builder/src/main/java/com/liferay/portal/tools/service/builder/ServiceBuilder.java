@@ -188,6 +188,8 @@ public class ServiceBuilder {
 
 			inputFilesDirPath = inputFilesDirPath.normalize();
 
+			System.out.println("path: " + inputFilesDirPath.toString());
+
 			_localChangesFileNames = new HashSet<>(
 				GitUtil.getLocalChangesFileNames(inputFilesDirPath.toString()));
 
@@ -8754,6 +8756,7 @@ public class ServiceBuilder {
 	private String _implDirName;
 	private String[] _incubationFeatures;
 	private final Map<String, JavaClass> _javaClasses = new HashMap<>();
+	private static Set<String> _localChangesFileNames;
 	private String _modelHintsFileName;
 	private final Set<String> _modifiedFileNames = Collections.newSetFromMap(
 		new ConcurrentHashMap<>());
