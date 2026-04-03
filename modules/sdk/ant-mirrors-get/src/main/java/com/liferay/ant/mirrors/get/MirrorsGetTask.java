@@ -410,7 +410,7 @@ public class MirrorsGetTask extends Task {
 			}
 
 			System.out.println(
-				"Unable to download file from " + gsURL + "using gcloud storage cp.");
+				"Unable to download file from " + gsURL + " using gcloud storage cp.");
 
 			process = _executeCommands(
 				new String[] {"gsutil", "cp", gsURL, targetFile.toString()});
