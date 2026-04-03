@@ -6316,11 +6316,7 @@ public class ServiceBuilder {
 				GitUtil.getLocalChangesFileNames(_implDirName));
 		}
 
-		if (_localChangesFileNames.contains(propsFile.getPath())) {
-			return true;
-		}
-
-		return false;
+		return _localChangesFileNames.contains(propsFile.getPath());
 	}
 
 	private boolean _hasModifiedSQLFiles() {
@@ -8672,6 +8668,7 @@ public class ServiceBuilder {
 			Pattern.quote("(")));
 	private static final List<String> _highCardinalityColumnNames =
 		Arrays.asList("externalReferenceCode", "uuid_");
+	private static Set<String> _localChangesFileNames;
 	private static final ClassLoader _negativeCachingClassLoader;
 	private static final Pattern _setterPattern = Pattern.compile(
 		"public void set.*" + Pattern.quote("("));
@@ -8756,7 +8753,6 @@ public class ServiceBuilder {
 	private String _implDirName;
 	private String[] _incubationFeatures;
 	private final Map<String, JavaClass> _javaClasses = new HashMap<>();
-	private static Set<String> _localChangesFileNames;
 	private String _modelHintsFileName;
 	private final Set<String> _modifiedFileNames = Collections.newSetFromMap(
 		new ConcurrentHashMap<>());
