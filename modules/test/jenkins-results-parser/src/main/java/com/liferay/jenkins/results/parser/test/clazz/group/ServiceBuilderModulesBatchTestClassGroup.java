@@ -13,8 +13,6 @@ import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
 import java.io.File;
 import java.io.IOException;
 
-import java.nio.file.PathMatcher;
-
 import java.util.List;
 
 import org.json.JSONObject;
@@ -98,10 +96,6 @@ public class ServiceBuilderModulesBatchTestClassGroup
 		File portalModulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
-		List<PathMatcher> excludesPathMatchers = getPathMatchers(
-			getExcludesJobProperties());
-		List<PathMatcher> includesPathMatchers = getIncludesPathMatchers();
-
 		if (testRelevantChanges) {
 			List<File> modifiedFiles =
 				portalGitWorkingDirectory.getModifiedFilesList();
@@ -144,17 +138,9 @@ public class ServiceBuilderModulesBatchTestClassGroup
 					}
 				}
 			}
-
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModifiedModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
 		}
 		else {
 			_buildType = BuildType.FULL;
-
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
 		}
 
 		if (_buildType != null) {
@@ -165,8 +151,6 @@ public class ServiceBuilderModulesBatchTestClassGroup
 			addTestClass(
 				TestClassFactory.newTestClass(this, portalImplBuildFile));
 		}
-
-		addTestClasses(moduleDirsList);
 	}
 
 	private BuildType _buildType;
