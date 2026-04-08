@@ -15,6 +15,7 @@
 
 		<!-- Audit fields -->
 
+		<column name="testName" type="String" />
 		<column name="companyId" type="long" />
 		<column name="userId" type="long" />
 		<column name="userName" type="String" />
