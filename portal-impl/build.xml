@@ -355,49 +355,119 @@
 
 		<ant dir="../portal-kernel" inheritAll="false" target="compile" />
 
-		<java
-			classname="com.liferay.portal.tools.service.builder.ServiceBuilder"
-			classpathref="service.builder.classpath"
-			failonerror="true"
-			fork="${fork.mode}"
-			logError="true"
-			newenvironment="${fork.mode}"
-			outputproperty="service.builder.batch.output"
-		>
-			<jvmarg if:true="${jvm.debug}" value="${jpda.settings}" />
-			<jvmarg if:true="${jvm.debug}" value="-Dfile.encoding=UTF-8" />
-			<jvmarg if:true="${jvm.debug}" value="-XX:MaxMetaspaceSize=768m" />
-			<jvmarg if:true="${jvm.debug}" value="-Xms512m" />
-			<jvmarg if:true="${jvm.debug}" value="-Xmx2048m" />
-			<jvmarg if:true="${jvm.debug}" value="-Xss2048k" />
-			<arg value="-Dexternal-properties=com/liferay/portal/tools/dependencies/portal-tools.properties" />
-			<arg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Log4JLogger" />
-			<arg value="service.incubation.features=${service.builder.incubation.features}" />
-			<arg value="service.input.files.dir=${basedir}/../modules" />
-		</java>
+		<trycatch>
+			<try>
+				<local name="gradle.task.start.time" />
 
-		<if>
-			<istrue value="${build.services.baseline.enabled}" />
-			<then>
-				<propertyregex
-					input="${service.builder.batch.output}"
-					override="true"
-					property="service.builder.baseline.tasks"
-					regexp="service\.builder\.baseline\.tasks=(.*)"
-					select="\1"
-				/>
+				<tstamp>
+					<format pattern="SSS" property="gradle.task.start.time" />
+				</tstamp>
+
+				<java
+					classname="com.liferay.portal.tools.service.builder.ServiceBuilder"
+					classpathref="service.builder.classpath"
+					failonerror="true"
+					fork="${fork.mode}"
+					logError="true"
+					newenvironment="${fork.mode}"
+					outputproperty="service.builder.batch.output"
+				>
+					<jvmarg if:true="${jvm.debug}" value="${jpda.settings}" />
+					<jvmarg if:true="${jvm.debug}" value="-Dfile.encoding=UTF-8" />
+					<jvmarg if:true="${jvm.debug}" value="-XX:MaxMetaspaceSize=768m" />
+					<jvmarg if:true="${jvm.debug}" value="-Xms512m" />
+					<jvmarg if:true="${jvm.debug}" value="-Xmx2048m" />
+					<jvmarg if:true="${jvm.debug}" value="-Xss2048k" />
+					<arg value="-Dexternal-properties=com/liferay/portal/tools/dependencies/portal-tools.properties" />
+					<arg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Log4JLogger" />
+					<arg value="service.incubation.features=${service.builder.incubation.features}" />
+					<arg value="service.input.files.dir=${basedir}/../modules" />
+				</java>
 
 				<if>
-					<isset property="service.builder.baseline.tasks" />
+					<istrue value="${build.services.baseline.enabled}" />
 					<then>
-						<gradle-execute dir="../modules" forcedcacheenabled="false" task="${service.builder.baseline.tasks}">
-							<arg value="--parallel" />
-							<arg value="--quiet" />
-						</gradle-execute>
+						<propertyregex
+							input="${service.builder.batch.output}"
+							override="true"
+							property="service.builder.baseline.tasks"
+							regexp="service\.builder\.baseline\.tasks=(.*)"
+							select="\1"
+						/>
+
+						<if>
+							<isset property="service.builder.baseline.tasks" />
+							<then>
+								<gradle-execute dir="../modules" forcedcacheenabled="false" task="${service.builder.baseline.tasks}">
+									<arg value="--parallel" />
+									<arg value="--quiet" />
+								</gradle-execute>
+							</then>
+						</if>
 					</then>
 				</if>
-			</then>
-		</if>
+
+				<local name="git.diffs" />
+
+				<exec executable="git" outputproperty="git.diffs">
+					<arg value="diff" />
+					<arg value="--" />
+					<arg value="../modules" />
+					<arg value=":!*/*-portlet-service.jar" />
+					<arg value=":!*/packageinfo" />
+					<arg value=":!*/src/main/resources/service.properties" />
+					<arg value=":!*/src/service.properties" />
+				</exec>
+
+				<if>
+					<not>
+						<equals arg1="${git.diffs}" arg2="" />
+					</not>
+					<then>
+						<fail message="Detected build services changes. Please check the logs for details. Make sure to commit in all build services results." />
+					</then>
+				</if>
+
+				<generate-backend-batch-junit-report-gradle-task
+					gradle.task.failure.count="0"
+					gradle.task.module.dir="portal-impl/build.xml"
+					gradle.task.name="build-services"
+					gradle.task.start.time="${gradle.task.start.time}"
+				/>
+			</try>
+			<catch>
+				<local name="git.diffs" />
+
+				<exec executable="git" outputproperty="git.diffs">
+					<arg value="diff" />
+					<arg value="--" />
+					<arg value="../modules" />
+					<arg value=":!*/*-portlet-service.jar" />
+					<arg value=":!*/packageinfo" />
+					<arg value=":!*/src/main/resources/service.properties" />
+					<arg value=":!*/src/service.properties" />
+				</exec>
+
+				<local name="gradle.task.failure.message" />
+
+				<condition else="Service Builder failed. Please check the logs for details." property="gradle.task.failure.message" value="Detected build services changes. Please check the logs for details. Make sure to commit in all build services results.">
+					<not>
+						<equals arg1="${git.diffs}" arg2="" />
+					</not>
+				</condition>
+
+				<generate-backend-batch-junit-report-gradle-task
+					gradle.task.failure.count="1"
+					gradle.task.failure.message="${gradle.task.failure.message}"
+					gradle.task.failure.stacktrace="${git.diffs}"
+					gradle.task.module.dir="portal-impl/build.xml"
+					gradle.task.name="build-services"
+					gradle.task.start.time="${gradle.task.start.time}"
+				/>
+
+				<fail message="${gradle.task.failure.message}" />
+			</catch>
+		</trycatch>
 	</target>
 
 	<target name="build-upgrade-table">
