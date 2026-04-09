@@ -70,6 +70,7 @@ public class ServiceBuilderAntTargetTestClass extends BaseTestClass {
 		addTestClassMethod("build-service-counter");
 		addTestClassMethod("build-service-portal");
 		addTestClassMethod("build-service-portlets");
+		addTestClassMethod("build-services");
 
 		File testPropertiesBaseDir = getTestPropertiesBaseDir(
 			getTestClassFile());

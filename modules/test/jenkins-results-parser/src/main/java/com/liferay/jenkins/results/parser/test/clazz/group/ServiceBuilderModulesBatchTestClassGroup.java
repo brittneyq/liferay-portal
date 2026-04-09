@@ -98,10 +98,6 @@ public class ServiceBuilderModulesBatchTestClassGroup
 		File portalModulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
-		List<PathMatcher> excludesPathMatchers = getPathMatchers(
-			getExcludesJobProperties());
-		List<PathMatcher> includesPathMatchers = getIncludesPathMatchers();
-
 		if (testRelevantChanges) {
 			List<File> modifiedFiles =
 				portalGitWorkingDirectory.getModifiedFilesList();
@@ -145,16 +141,21 @@ public class ServiceBuilderModulesBatchTestClassGroup
 				}
 			}
 
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModifiedModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
+			if (_buildType == null) {
+				List<PathMatcher> excludesPathMatchers = getPathMatchers(
+					getExcludesJobProperties());
+
+				List<File> modifiedModuleDirsList =
+					portalGitWorkingDirectory.getModifiedModuleDirsList(
+						excludesPathMatchers, getIncludesPathMatchers());
+
+				if (!modifiedModuleDirsList.isEmpty()) {
+					_buildType = BuildType.CORE;
+				}
+			}
 		}
 		else {
 			_buildType = BuildType.FULL;
-
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
 		}
 
 		if (_buildType != null) {
@@ -165,8 +166,6 @@ public class ServiceBuilderModulesBatchTestClassGroup
 			addTestClass(
 				TestClassFactory.newTestClass(this, portalImplBuildFile));
 		}
-
-		addTestClasses(moduleDirsList);
 	}
 
 	private BuildType _buildType;
