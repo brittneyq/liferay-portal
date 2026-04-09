@@ -355,14 +355,12 @@
 
 		<ant dir="../portal-kernel" inheritAll="false" target="compile" />
 
+		<tstamp>
+			<format pattern="SSS" property="ant.target.start.time" />
+		</tstamp>
+
 		<trycatch>
 			<try>
-				<local name="gradle.task.start.time" />
-
-				<tstamp>
-					<format pattern="SSS" property="gradle.task.start.time" />
-				</tstamp>
-
 				<java
 					classname="com.liferay.portal.tools.service.builder.ServiceBuilder"
 					classpathref="service.builder.classpath"
@@ -383,6 +381,8 @@
 					<arg value="service.incubation.features=${service.builder.incubation.features}" />
 					<arg value="service.input.files.dir=${basedir}/../modules" />
 				</java>
+
+				<echo>${service.builder.batch.output}</echo>
 
 				<if>
 					<istrue value="${build.services.baseline.enabled}" />
@@ -419,6 +419,8 @@
 					<arg value=":!*/src/service.properties" />
 				</exec>
 
+				<echo>GIT DIFFS: ${git.diffs}</echo>
+				
 				<if>
 					<not>
 						<equals arg1="${git.diffs}" arg2="" />
@@ -428,14 +430,16 @@
 					</then>
 				</if>
 
-				<generate-backend-batch-junit-report-gradle-task
-					gradle.task.failure.count="0"
-					gradle.task.module.dir="portal-impl/build.xml"
-					gradle.task.name="build-services"
-					gradle.task.start.time="${gradle.task.start.time}"
+				<generate-backend-batch-junit-report-ant-target
+					ant.target.failure.count="0"
+					ant.target.file="portal-impl/build.xml"
+					ant.target.name="build-services"
+					ant.target.start.time="${ant.target.start.time}"
 				/>
 			</try>
 			<catch>
+				<echo>${service.builder.batch.output}</echo>
+
 				<local name="git.diffs" />
 
 				<exec executable="git" outputproperty="git.diffs">
@@ -456,13 +460,21 @@
 					</not>
 				</condition>
 
-				<generate-backend-batch-junit-report-gradle-task
-					gradle.task.failure.count="1"
-					gradle.task.failure.message="${gradle.task.failure.message}"
-					gradle.task.failure.stacktrace="${git.diffs}"
-					gradle.task.module.dir="portal-impl/build.xml"
-					gradle.task.name="build-services"
-					gradle.task.start.time="${gradle.task.start.time}"
+				<local name="gradle.task.failure.stacktrace" />
+
+				<condition else="${service.builder.batch.output}" property="gradle.task.failure.stacktrace" value="${git.diffs}">
+					<not>
+						<equals arg1="${git.diffs}" arg2="" />
+					</not>
+				</condition>
+
+				<generate-backend-batch-junit-report-ant-target
+					ant.target.failure.count="1"
+					ant.target.failure.message="${gradle.task.failure.message}"
+					ant.target.failure.stacktrace="${gradle.task.failure.stacktrace}"
+					ant.target.file="portal-impl/build.xml"
+					ant.target.name="build-services"
+					ant.target.start.time="${ant.target.start.time}"
 				/>
 
 				<fail message="${gradle.task.failure.message}" />
