@@ -315,52 +315,60 @@
 	</target>
 
 	<target name="build-services">
-		<build-service
-			hbm.file="counter-hbm.xml"
-			service.file="${basedir}/src/com/liferay/counter/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portal/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/announcements/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/asset/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/documentlibrary/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/expando/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/exportimport/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/ratings/service.xml"
-			skip.compile="true"
-		/>
-		<build-service
-			service.file="${basedir}/src/com/liferay/portlet/social/service.xml"
-			skip.compile="true"
-		/>
-
-		<ant dir="../portal-kernel" inheritAll="false" target="compile" />
-
 		<tstamp>
 			<format pattern="SSS" property="ant.target.start.time" />
 		</tstamp>
 
 		<trycatch>
 			<try>
+				<build-service
+					hbm.file="counter-hbm.xml"
+					service.file="${basedir}/src/com/liferay/counter/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portal/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/announcements/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/asset/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/documentlibrary/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/expando/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/exportimport/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/ratings/service.xml"
+					skip.compile="true"
+				/>
+
+				<build-service
+					service.file="${basedir}/src/com/liferay/portlet/social/service.xml"
+					skip.compile="true"
+				/>
+
+				<ant dir="../portal-kernel" inheritAll="false" target="compile" />
+
 				<java
 					classname="com.liferay.portal.tools.service.builder.ServiceBuilder"
 					classpathref="service.builder.classpath"
