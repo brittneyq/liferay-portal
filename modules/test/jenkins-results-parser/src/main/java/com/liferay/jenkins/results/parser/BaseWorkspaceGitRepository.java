@@ -1414,23 +1414,6 @@ public abstract class BaseWorkspaceGitRepository
 						"Unable to reset Git directory: " + directory,
 						executionResult.getStandardError()));
 			}
-
-			GitWorkingDirectory gitWorkingDirectory = getGitWorkingDirectory();
-
-			String branchName = getBranchName();
-
-			if (!JenkinsResultsParserUtil.isNullOrEmpty(branchName)) {
-				gitWorkingDirectory.checkoutLocalGitBranch(
-					gitWorkingDirectory.createLocalGitBranch(
-						branchName, true, "HEAD"));
-			}
-
-			String upstreamBranchName = getUpstreamBranchName();
-
-			if (!gitWorkingDirectory.localGitBranchExists(upstreamBranchName)) {
-				gitWorkingDirectory.createLocalGitBranch(
-					upstreamBranchName, true, getBaseBranchSHA());
-			}
 		}
 	}
 

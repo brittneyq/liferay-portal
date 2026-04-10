@@ -240,18 +240,6 @@ public class TestClassGroupFactory {
 					batchTestClassGroup);
 			}
 
-			if (batchTestClassGroup instanceof
-					ServiceBuilderModulesBatchTestClassGroup) {
-
-				if (jsonObject != null) {
-					return new ServiceBuilderModulesSegmentTestClassGroup(
-						batchTestClassGroup, jsonObject);
-				}
-
-				return new ServiceBuilderModulesSegmentTestClassGroup(
-					batchTestClassGroup);
-			}
-
 			if (jsonObject != null) {
 				return new ModulesSegmentTestClassGroup(
 					batchTestClassGroup, jsonObject);
