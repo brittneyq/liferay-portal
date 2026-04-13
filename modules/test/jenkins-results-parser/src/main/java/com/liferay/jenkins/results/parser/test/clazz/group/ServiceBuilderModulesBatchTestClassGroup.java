@@ -35,11 +35,6 @@ public class ServiceBuilderModulesBatchTestClassGroup
 		return jsonObject;
 	}
 
-	@Override
-	protected List<JobProperty> getIncludesJobProperties() {
-		return Collections.emptyList();
-	}
-
 	protected ServiceBuilderModulesBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
@@ -50,6 +45,11 @@ public class ServiceBuilderModulesBatchTestClassGroup
 		String batchName, PortalTestClassJob portalTestClassJob) {
 
 		super(batchName, portalTestClassJob);
+	}
+
+	@Override
+	protected List<JobProperty> getIncludesJobProperties() {
+		return Collections.emptyList();
 	}
 
 	@Override
