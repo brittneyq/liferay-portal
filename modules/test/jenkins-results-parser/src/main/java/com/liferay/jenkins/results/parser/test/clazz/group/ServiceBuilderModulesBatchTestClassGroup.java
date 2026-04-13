@@ -5,16 +5,15 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
+import com.liferay.jenkins.results.parser.job.property.JobProperty;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
 
 import java.io.File;
 import java.io.IOException;
 
-import java.nio.file.PathMatcher;
-
+import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -26,23 +25,6 @@ public class ServiceBuilderModulesBatchTestClassGroup
 	extends ModulesBatchTestClassGroup {
 
 	@Override
-	public int getAxisCount() {
-		if (ignore()) {
-			return 0;
-		}
-
-		if (!containsTestClasses() && (_buildType == BuildType.CORE)) {
-			return 1;
-		}
-
-		return super.getAxisCount();
-	}
-
-	public BuildType getBuildType() {
-		return _buildType;
-	}
-
-	@Override
 	public JSONObject getJSONObject() {
 		if (jsonObject != null) {
 			return jsonObject;
@@ -50,24 +32,18 @@ public class ServiceBuilderModulesBatchTestClassGroup
 
 		jsonObject = super.getJSONObject();
 
-		jsonObject.put("build_type", _buildType);
-
 		return jsonObject;
 	}
 
-	public static enum BuildType {
-
-		CORE, FULL
-
+	@Override
+	protected List<JobProperty> getIncludesJobProperties() {
+		return Collections.emptyList();
 	}
 
 	protected ServiceBuilderModulesBatchTestClassGroup(
 		JSONObject jsonObject, PortalTestClassJob portalTestClassJob) {
 
 		super(jsonObject, portalTestClassJob);
-
-		_buildType = BuildType.valueOf(
-			jsonObject.optString("build_type", "FULL"));
 	}
 
 	protected ServiceBuilderModulesBatchTestClassGroup(
@@ -95,80 +71,11 @@ public class ServiceBuilderModulesBatchTestClassGroup
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
 
-		File portalModulesBaseDir = new File(
-			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
+		File portalImplBuildFile = new File(
+			portalGitWorkingDirectory.getWorkingDirectory(),
+			"portal-impl/build.xml");
 
-		List<PathMatcher> excludesPathMatchers = getPathMatchers(
-			getExcludesJobProperties());
-		List<PathMatcher> includesPathMatchers = getIncludesPathMatchers();
-
-		if (testRelevantChanges) {
-			List<File> modifiedFiles =
-				portalGitWorkingDirectory.getModifiedFilesList();
-
-			List<File> modifiedPortalToolsServiceBuilderFiles =
-				JenkinsResultsParserUtil.getIncludedFiles(
-					null,
-					getPathMatchers(
-						"util/portal-tools-service-builder/**",
-						portalModulesBaseDir),
-					modifiedFiles);
-
-			if (!modifiedPortalToolsServiceBuilderFiles.isEmpty()) {
-				_buildType = BuildType.FULL;
-			}
-			else {
-				List<File> modifiedPortalImplFiles =
-					JenkinsResultsParserUtil.getIncludedFiles(
-						null,
-						getPathMatchers(
-							"portal-impl/**",
-							portalGitWorkingDirectory.getWorkingDirectory()),
-						modifiedFiles);
-
-				if (!modifiedPortalImplFiles.isEmpty()) {
-					_buildType = BuildType.CORE;
-				}
-				else {
-					List<File> modifiedPortalKernelFiles =
-						JenkinsResultsParserUtil.getIncludedFiles(
-							null,
-							getPathMatchers(
-								"portal-kernel/**",
-								portalGitWorkingDirectory.
-									getWorkingDirectory()),
-							modifiedFiles);
-
-					if (!modifiedPortalKernelFiles.isEmpty()) {
-						_buildType = BuildType.CORE;
-					}
-				}
-			}
-
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModifiedModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
-		}
-		else {
-			_buildType = BuildType.FULL;
-
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
-		}
-
-		if (_buildType != null) {
-			File portalImplBuildFile = new File(
-				portalGitWorkingDirectory.getWorkingDirectory(),
-				"portal-impl/build.xml");
-
-			addTestClass(
-				TestClassFactory.newTestClass(this, portalImplBuildFile));
-		}
-
-		addTestClasses(moduleDirsList);
+		addTestClass(TestClassFactory.newTestClass(this, portalImplBuildFile));
 	}
-
-	private BuildType _buildType;
 
 }
