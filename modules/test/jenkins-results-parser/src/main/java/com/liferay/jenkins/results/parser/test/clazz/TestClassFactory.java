@@ -315,6 +315,22 @@ public class TestClassFactory {
 			else if (batchTestClassGroup instanceof
 						RESTBuilderModulesBatchTestClassGroup) {
 
+				if ((testClassFile == null) && jsonObject.has("file")) {
+					testClassFile = new File(jsonObject.getString("file"));
+				}
+
+				String testClassFileName = testClassFile.getName();
+
+				if (testClassFileName.endsWith(".xml")) {
+					if (jsonObject != null) {
+						return new RESTBuilderAntTargetTestClass(
+							batchTestClassGroup, jsonObject);
+					}
+
+					return new RESTBuilderAntTargetTestClass(
+						batchTestClassGroup, testClassFile);
+				}
+
 				if (jsonObject != null) {
 					return new RESTBuilderModulesTestClass(
 						batchTestClassGroup, jsonObject);
