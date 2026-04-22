@@ -403,7 +403,7 @@ mariadb.executable=${mariadb.executable}]]></echo>
 		<sequential>
 			<local name="builder.type" />
 
-			<condition else="service builder" property="builder.type" value="REST builder">
+			<condition else="build services" property="builder.type" value="REST builder">
 				<equals arg1="@{ant.target.name}" arg2="build-rests" />
 			</condition>
 
