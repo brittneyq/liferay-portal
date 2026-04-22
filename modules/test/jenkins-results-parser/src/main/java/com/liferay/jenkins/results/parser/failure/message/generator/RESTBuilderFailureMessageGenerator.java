@@ -13,7 +13,8 @@ public class RESTBuilderFailureMessageGenerator
 
 	@Override
 	public String getMessage(String consoleText) {
-		int start = consoleText.lastIndexOf(_TOKEN_ERROR_PROCESSING_REST_CONFIG);
+		int start = consoleText.lastIndexOf(
+			_TOKEN_ERROR_PROCESSING_REST_CONFIG);
 
 		if (start != -1) {
 			start = consoleText.lastIndexOf("\n", start);
