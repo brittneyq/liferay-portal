@@ -5,7 +5,6 @@
 
 package com.liferay.jenkins.results.parser.test.clazz;
 
-import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 
 import java.io.File;
@@ -31,9 +30,7 @@ public class ServiceBuilderAntTargetTestClass extends BaseAntTargetTestClass {
 
 	@Override
 	protected void addTestClassMethods(String upstreamBranchName) {
-		if (JenkinsResultsParserUtil.isUnifiedBuilderSupported(
-				upstreamBranchName)) {
-
+		if (getBatchTestClassGroup().isUnifiedBuilderSupported()) {
 			addTestClassMethod("build-services");
 
 			return;

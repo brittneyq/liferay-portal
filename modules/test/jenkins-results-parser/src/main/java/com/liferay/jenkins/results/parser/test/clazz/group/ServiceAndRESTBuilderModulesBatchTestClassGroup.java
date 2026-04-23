@@ -5,7 +5,6 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
@@ -35,14 +34,12 @@ public class ServiceAndRESTBuilderModulesBatchTestClassGroup
 
 	@Override
 	protected void setTestClasses() throws IOException {
-		PortalGitWorkingDirectory portalGitWorkingDirectory =
-			getPortalGitWorkingDirectory();
-
-		if (!JenkinsResultsParserUtil.isUnifiedBuilderSupported(
-				portalGitWorkingDirectory.getUpstreamBranchName())) {
-
+		if (!isUnifiedBuilderSupported()) {
 			return;
 		}
+
+		PortalGitWorkingDirectory portalGitWorkingDirectory =
+			getPortalGitWorkingDirectory();
 
 		File portalImplBuildFile = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(),
