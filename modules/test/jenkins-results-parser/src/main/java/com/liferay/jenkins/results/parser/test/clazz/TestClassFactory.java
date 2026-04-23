@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONArray;
@@ -70,7 +71,7 @@ public class TestClassFactory {
 		BatchTestClassGroup batchTestClassGroup, File testClassFile,
 		String antTargetName) {
 
-		if ("build-rests".equals(antTargetName)) {
+		if (Objects.equals(antTargetName, "build-rests")) {
 			return new RESTBuilderAntTargetTestClass(
 				batchTestClassGroup, testClassFile);
 		}
@@ -345,8 +346,9 @@ public class TestClassFactory {
 							JSONObject methodJSONObject =
 								methodsJSONArray.getJSONObject(i);
 
-							if ("build-rests".equals(
-									methodJSONObject.optString("name"))) {
+							if (Objects.equals(
+									methodJSONObject.optString("name"),
+									"build-rests")) {
 
 								antTargetName = "build-rests";
 
@@ -356,7 +358,7 @@ public class TestClassFactory {
 					}
 				}
 
-				if ("build-rests".equals(antTargetName)) {
+				if (Objects.equals(antTargetName, "build-rests")) {
 					if (jsonObject != null) {
 						return new RESTBuilderAntTargetTestClass(
 							batchTestClassGroup, jsonObject);
