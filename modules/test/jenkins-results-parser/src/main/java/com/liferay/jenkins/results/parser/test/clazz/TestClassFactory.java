@@ -18,6 +18,7 @@ import com.liferay.jenkins.results.parser.test.clazz.group.PluginsBatchTestClass
 import com.liferay.jenkins.results.parser.test.clazz.group.PluginsGulpBatchTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.RESTBuilderModulesBatchTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.SemVerModulesBatchTestClassGroup;
+import com.liferay.jenkins.results.parser.test.clazz.group.ServiceAndRESTBuilderModulesBatchTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.ServiceBuilderModulesBatchTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.TCKJunitBatchTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.WorkspacesCompileBatchTestClassGroup;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -62,6 +64,19 @@ public class TestClassFactory {
 		Collections.sort(playwrightJUnitTestClasses);
 
 		return playwrightJUnitTestClasses;
+	}
+
+	public static TestClass newAntTargetTestClass(
+		BatchTestClassGroup batchTestClassGroup, File testClassFile,
+		String antTargetName) {
+
+		if ("build-rests".equals(antTargetName)) {
+			return new RESTBuilderAntTargetTestClass(
+				batchTestClassGroup, testClassFile);
+		}
+
+		return new ServiceBuilderAntTargetTestClass(
+			batchTestClassGroup, testClassFile);
 	}
 
 	public static TestClass newTestClass(
@@ -310,6 +325,53 @@ public class TestClassFactory {
 				}
 
 				return new PluginsGulpTestClass(
+					batchTestClassGroup, testClassFile);
+			}
+			else if (batchTestClassGroup instanceof
+						ServiceAndRESTBuilderModulesBatchTestClassGroup) {
+
+				if ((testClassFile == null) && jsonObject.has("file")) {
+					testClassFile = new File(jsonObject.getString("file"));
+				}
+
+				String antTargetName = "build-services";
+
+				if (jsonObject != null) {
+					JSONArray methodsJSONArray = jsonObject.optJSONArray(
+						"methods");
+
+					if (methodsJSONArray != null) {
+						for (int i = 0; i < methodsJSONArray.length(); i++) {
+							JSONObject methodJSONObject =
+								methodsJSONArray.getJSONObject(i);
+
+							if ("build-rests".equals(
+									methodJSONObject.optString("name"))) {
+
+								antTargetName = "build-rests";
+
+								break;
+							}
+						}
+					}
+				}
+
+				if ("build-rests".equals(antTargetName)) {
+					if (jsonObject != null) {
+						return new RESTBuilderAntTargetTestClass(
+							batchTestClassGroup, jsonObject);
+					}
+
+					return new RESTBuilderAntTargetTestClass(
+						batchTestClassGroup, testClassFile);
+				}
+
+				if (jsonObject != null) {
+					return new ServiceBuilderAntTargetTestClass(
+						batchTestClassGroup, jsonObject);
+				}
+
+				return new ServiceBuilderAntTargetTestClass(
 					batchTestClassGroup, testClassFile);
 			}
 			else if (batchTestClassGroup instanceof
