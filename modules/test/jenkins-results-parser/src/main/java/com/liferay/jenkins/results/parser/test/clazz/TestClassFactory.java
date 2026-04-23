@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -73,11 +72,11 @@ public class TestClassFactory {
 
 		if (Objects.equals(antTargetName, "build-rests")) {
 			return new RESTBuilderAntTargetTestClass(
-				batchTestClassGroup, testClassFile);
+				batchTestClassGroup, testClassFile, antTargetName);
 		}
 
 		return new ServiceBuilderAntTargetTestClass(
-			batchTestClassGroup, testClassFile);
+			batchTestClassGroup, testClassFile, antTargetName);
 	}
 
 	public static TestClass newTestClass(
@@ -331,31 +330,11 @@ public class TestClassFactory {
 			else if (batchTestClassGroup instanceof
 						ServiceAndRESTBuilderModulesBatchTestClassGroup) {
 
-				if ((testClassFile == null) && jsonObject.has("file")) {
-					testClassFile = new File(jsonObject.getString("file"));
-				}
-
-				String antTargetName = "build-services";
+				String antTargetName = null;
 
 				if (jsonObject != null) {
-					JSONArray methodsJSONArray = jsonObject.optJSONArray(
-						"methods");
-
-					if (methodsJSONArray != null) {
-						for (int i = 0; i < methodsJSONArray.length(); i++) {
-							JSONObject methodJSONObject =
-								methodsJSONArray.getJSONObject(i);
-
-							if (Objects.equals(
-									methodJSONObject.optString("name"),
-									"build-rests")) {
-
-								antTargetName = "build-rests";
-
-								break;
-							}
-						}
-					}
+					antTargetName = jsonObject.optString(
+						"ant_target_name", null);
 				}
 
 				if (Objects.equals(antTargetName, "build-rests")) {
@@ -365,7 +344,7 @@ public class TestClassFactory {
 					}
 
 					return new RESTBuilderAntTargetTestClass(
-						batchTestClassGroup, testClassFile);
+						batchTestClassGroup, testClassFile, antTargetName);
 				}
 
 				if (jsonObject != null) {
@@ -374,7 +353,7 @@ public class TestClassFactory {
 				}
 
 				return new ServiceBuilderAntTargetTestClass(
-					batchTestClassGroup, testClassFile);
+					batchTestClassGroup, testClassFile, "build-services");
 			}
 			else if (batchTestClassGroup instanceof
 						RESTBuilderModulesBatchTestClassGroup) {

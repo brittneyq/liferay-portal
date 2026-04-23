@@ -23,14 +23,23 @@ public class ServiceBuilderAntTargetTestClass extends BaseAntTargetTestClass {
 	}
 
 	protected ServiceBuilderAntTargetTestClass(
+		BatchTestClassGroup batchTestClassGroup, File testClassFile,
+		String antTargetName) {
+
+		super(batchTestClassGroup, testClassFile, antTargetName);
+	}
+
+	protected ServiceBuilderAntTargetTestClass(
 		BatchTestClassGroup batchTestClassGroup, JSONObject jsonObject) {
 
 		super(batchTestClassGroup, jsonObject);
 	}
 
 	@Override
-	protected void addTestClassMethods(String upstreamBranchName) {
-		if (getBatchTestClassGroup().isUnifiedBuilderSupported()) {
+	protected void addTestClassMethods() {
+		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
+
+		if (batchTestClassGroup.isUnifiedBuilderSupported()) {
 			addTestClassMethod("build-services");
 
 			return;

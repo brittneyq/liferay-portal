@@ -7,7 +7,6 @@ package com.liferay.jenkins.results.parser.test.clazz;
 
 import com.liferay.jenkins.results.parser.DownstreamBuildReport;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.TestClassReport;
 import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 
@@ -19,6 +18,43 @@ import org.json.JSONObject;
  * @author Brittney Nguyen
  */
 public abstract class BaseAntTargetTestClass extends BaseTestClass {
+
+	@Override
+	public int compareTo(TestClass testClass) {
+		int result = super.compareTo(testClass);
+
+		if (result != 0) {
+			return result;
+		}
+
+		if (testClass instanceof BaseAntTargetTestClass) {
+			BaseAntTargetTestClass otherBaseAntTargetTestClass =
+				(BaseAntTargetTestClass)testClass;
+
+			String otherAntTargetName =
+				otherBaseAntTargetTestClass.getAntTargetName();
+
+			if ((_antTargetName == null) && (otherAntTargetName == null)) {
+				return 0;
+			}
+
+			if (_antTargetName == null) {
+				return -1;
+			}
+
+			if (otherAntTargetName == null) {
+				return 1;
+			}
+
+			return _antTargetName.compareTo(otherAntTargetName);
+		}
+
+		return 0;
+	}
+
+	public String getAntTargetName() {
+		return _antTargetName;
+	}
 
 	public DownstreamBuildReport getCachedDownstreamBuildReport() {
 		if (!isBuildCachingEnabled()) {
@@ -53,6 +89,17 @@ public abstract class BaseAntTargetTestClass extends BaseTestClass {
 	}
 
 	@Override
+	public JSONObject getJSONObject() {
+		JSONObject jsonObject = super.getJSONObject();
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(_antTargetName)) {
+			jsonObject.put("ant_target_name", _antTargetName);
+		}
+
+		return jsonObject;
+	}
+
+	@Override
 	public String getTestClassName() {
 		String name = getName();
 
@@ -66,12 +113,18 @@ public abstract class BaseAntTargetTestClass extends BaseTestClass {
 	protected BaseAntTargetTestClass(
 		BatchTestClassGroup batchTestClassGroup, File testClassFile) {
 
+		this(batchTestClassGroup, testClassFile, null);
+	}
+
+	protected BaseAntTargetTestClass(
+		BatchTestClassGroup batchTestClassGroup, File testClassFile,
+		String antTargetName) {
+
 		super(batchTestClassGroup, testClassFile);
 
-		PortalGitWorkingDirectory portalGitWorkingDirectory =
-			batchTestClassGroup.getPortalGitWorkingDirectory();
+		_antTargetName = antTargetName;
 
-		addTestClassMethods(portalGitWorkingDirectory.getUpstreamBranchName());
+		addTestClassMethods();
 
 		File testPropertiesBaseDir = getTestPropertiesBaseDir(
 			getTestClassFile());
@@ -95,6 +148,8 @@ public abstract class BaseAntTargetTestClass extends BaseTestClass {
 
 		super(batchTestClassGroup, jsonObject);
 
+		_antTargetName = jsonObject.optString("ant_target_name", null);
+
 		if (jsonObject.has("test_properties_file")) {
 			_testPropertiesFile = new File(
 				jsonObject.getString("test_properties_file"));
@@ -107,8 +162,9 @@ public abstract class BaseAntTargetTestClass extends BaseTestClass {
 			"testray_main_component_name");
 	}
 
-	protected abstract void addTestClassMethods(String upstreamBranchName);
+	protected abstract void addTestClassMethods();
 
+	private final String _antTargetName;
 	private DownstreamBuildReport _cachedDownstreamBuildReport;
 	private TestClassReport _cachedTestClassReport;
 	private boolean _cachedTestClassReportSearched;

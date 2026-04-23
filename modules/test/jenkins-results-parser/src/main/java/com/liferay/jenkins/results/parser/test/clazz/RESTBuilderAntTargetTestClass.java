@@ -23,13 +23,20 @@ public class RESTBuilderAntTargetTestClass extends BaseAntTargetTestClass {
 	}
 
 	protected RESTBuilderAntTargetTestClass(
+		BatchTestClassGroup batchTestClassGroup, File testClassFile,
+		String antTargetName) {
+
+		super(batchTestClassGroup, testClassFile, antTargetName);
+	}
+
+	protected RESTBuilderAntTargetTestClass(
 		BatchTestClassGroup batchTestClassGroup, JSONObject jsonObject) {
 
 		super(batchTestClassGroup, jsonObject);
 	}
 
 	@Override
-	protected void addTestClassMethods(String upstreamBranchName) {
+	protected void addTestClassMethods() {
 		addTestClassMethod("build-rests");
 	}
 

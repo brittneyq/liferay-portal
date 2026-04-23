@@ -48,6 +48,12 @@ public class AntTargetBatchBuildTestrayCaseResult
 
 	@Override
 	public long getDuration() {
+		TestReport testReport = _getAntTargetTestReport();
+
+		if (testReport != null) {
+			return testReport.getDuration();
+		}
+
 		TestClassReport testClassReport = getTestClassReport();
 
 		if (testClassReport == null) {
@@ -59,11 +65,13 @@ public class AntTargetBatchBuildTestrayCaseResult
 
 	@Override
 	public String getErrors() {
+		TestReport antTargetTestReport = _getAntTargetTestReport();
+
 		TestClassReport testClassReport = getTestClassReport();
 
 		BuildReport buildReport = getBuildReport();
 
-		if (testClassReport == null) {
+		if ((antTargetTestReport == null) && (testClassReport == null)) {
 			if (buildReport == null) {
 				return "Unable to run build on CI";
 			}
@@ -87,12 +95,22 @@ public class AntTargetBatchBuildTestrayCaseResult
 
 		StringBuilder sb = new StringBuilder();
 
-		for (TestReport testReport : testClassReport.getTestReports()) {
-			if (testReport.isFailing()) {
-				sb.append(testReport.getTestName());
+		if (antTargetTestReport != null) {
+			if (antTargetTestReport.isFailing()) {
+				sb.append(antTargetTestReport.getTestName());
 				sb.append(": ");
-				sb.append(testReport.getErrorStackTrace());
+				sb.append(antTargetTestReport.getErrorStackTrace());
 				sb.append("\n");
+			}
+		}
+		else {
+			for (TestReport testReport : testClassReport.getTestReports()) {
+				if (testReport.isFailing()) {
+					sb.append(testReport.getTestName());
+					sb.append(": ");
+					sb.append(testReport.getErrorStackTrace());
+					sb.append("\n");
+				}
 			}
 		}
 
@@ -129,6 +147,13 @@ public class AntTargetBatchBuildTestrayCaseResult
 			return super.getName();
 		}
 
+		String antTargetName = baseAntTargetTestClass.getAntTargetName();
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(antTargetName)) {
+			return JenkinsResultsParserUtil.combine(
+				getBatchName(), "[", antTargetName, "]");
+		}
+
 		return JenkinsResultsParserUtil.combine(
 			getBatchName(), "[", baseAntTargetTestClass.getName(), "]");
 	}
@@ -139,6 +164,20 @@ public class AntTargetBatchBuildTestrayCaseResult
 
 		if (buildReport == null) {
 			return Status.UNTESTED;
+		}
+
+		TestReport antTargetTestReport = _getAntTargetTestReport();
+
+		if (antTargetTestReport != null) {
+			if (antTargetTestReport.isFailing()) {
+				return Status.FAILED;
+			}
+
+			if (antTargetTestReport.isSkipped()) {
+				return Status.UNTESTED;
+			}
+
+			return Status.PASSED;
 		}
 
 		TestClassReport testClassReport = getTestClassReport();
@@ -218,6 +257,34 @@ public class AntTargetBatchBuildTestrayCaseResult
 		}
 
 		super.initBuildReport();
+	}
+
+	private TestReport _getAntTargetTestReport() {
+		BaseAntTargetTestClass baseAntTargetTestClass = getTestClass();
+
+		if (baseAntTargetTestClass == null) {
+			return null;
+		}
+
+		String antTargetName = baseAntTargetTestClass.getAntTargetName();
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(antTargetName)) {
+			return null;
+		}
+
+		TestClassReport testClassReport = getTestClassReport();
+
+		if (testClassReport == null) {
+			return null;
+		}
+
+		for (TestReport testReport : testClassReport.getTestReports()) {
+			if (Objects.equals(antTargetName, testReport.getTestName())) {
+				return testReport;
+			}
+		}
+
+		return null;
 	}
 
 	private String _getTestClassName() {
