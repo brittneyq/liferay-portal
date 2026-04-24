@@ -54,10 +54,6 @@ public class AntTargetBatchBuildTestrayCaseResult
 			return testReport.getDuration();
 		}
 
-		if (_hasAntTargetName()) {
-			return super.getDuration();
-		}
-
 		TestClassReport testClassReport = getTestClassReport();
 
 		if (testClassReport == null) {
@@ -71,13 +67,9 @@ public class AntTargetBatchBuildTestrayCaseResult
 	public String getErrors() {
 		TestReport antTargetTestReport = _getAntTargetTestReport();
 
+		TestClassReport testClassReport = getTestClassReport();
+
 		BuildReport buildReport = getBuildReport();
-
-		TestClassReport testClassReport = null;
-
-		if (!_hasAntTargetName()) {
-			testClassReport = getTestClassReport();
-		}
 
 		if ((antTargetTestReport == null) && (testClassReport == null)) {
 			if (buildReport == null) {
@@ -186,18 +178,6 @@ public class AntTargetBatchBuildTestrayCaseResult
 			}
 
 			return Status.PASSED;
-		}
-
-		if (_hasAntTargetName()) {
-			String result = buildReport.getResult();
-
-			if ((result == null) || result.equals("SUCCESS") ||
-				result.equals("UNSTABLE")) {
-
-				return Status.UNTESTED;
-			}
-
-			return Status.FAILED;
 		}
 
 		TestClassReport testClassReport = getTestClassReport();
@@ -313,17 +293,6 @@ public class AntTargetBatchBuildTestrayCaseResult
 		String testClassName = baseAntTargetTestClass.getName();
 
 		return testClassName.replaceAll("/", ".");
-	}
-
-	private boolean _hasAntTargetName() {
-		BaseAntTargetTestClass baseAntTargetTestClass = getTestClass();
-
-		if (baseAntTargetTestClass == null) {
-			return false;
-		}
-
-		return !JenkinsResultsParserUtil.isNullOrEmpty(
-			baseAntTargetTestClass.getAntTargetName());
 	}
 
 	private TestClassReport _testClassReport;
