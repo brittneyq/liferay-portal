@@ -12,7 +12,7 @@ import com.liferay.portal.kernel.dao.db.DBTypeToSQLMap;
 import java.util.Arrays;
 
 /**
- * @author Luis Ortiz Fuentes
+ * @author Luis Ortiz Fuentess
  */
 public class UpgradeProcessFactory {
 

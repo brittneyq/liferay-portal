@@ -6,7 +6,7 @@
 package com.liferay.dynamic.data.mapping.internal.upgrade.v5_3_3.test;
 
 /**
- * @author Pedro Leite
+ * @author Pedro Leites
  */
 public class DDMTemplateCTUpgradeProcessTest
 	extends com.liferay.dynamic.data.mapping.upgrade.v4_3_2.test.
