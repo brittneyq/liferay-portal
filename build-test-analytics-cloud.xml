@@ -481,6 +481,30 @@
 						externalMap.put("name", dockerNetworkName);
 					}
 
+					public void updateExtraHosts(Map dockerComposeMap) {
+						String dockerNetworkName = getDockerNetworkName();
+
+						if (dockerNetworkName == null) {
+							return;
+						}
+
+						Map servicesMap = dockerComposeMap.get("services");
+
+						for (Object serviceMapObject : servicesMap.values()) {
+							Map serviceMap = (Map)serviceMapObject;
+
+							List extraHosts = (List)serviceMap.get("extra_hosts");
+
+							if (extraHosts == null) {
+								extraHosts = new ArrayList();
+
+								serviceMap.put("extra_hosts", extraHosts);
+							}
+
+							extraHosts.add(dockerNetworkName + ":host-gateway");
+						}
+					}
+
 					public void updateOSBFaroFrontendService(Map dockerComposeMap) {
 						Map servicesMap = dockerComposeMap.get("services");
 
@@ -551,6 +575,7 @@
 					Map dockerComposeMap = getDockerComposeMap();
 
 					updateDockerNetwork(dockerComposeMap);
+					updateExtraHosts(dockerComposeMap);
 					updateOSBFaroFrontendService(dockerComposeMap);
 					updateServiceImages(dockerComposeMap);
 					updateVolumes(dockerComposeMap);
