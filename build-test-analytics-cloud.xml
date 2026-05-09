@@ -275,6 +275,10 @@
 
 			<get-host-git-dir />
 
+			<local name="ip.address" />
+
+			<get-ip-address />
+
 			<beanshell>
 				<![CDATA[
 					import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -488,6 +492,12 @@
 							return;
 						}
 
+						String ipAddress = project.getProperty("ip.address");
+
+						if ((ipAddress == null) || ipAddress.isEmpty()) {
+							return;
+						}
+
 						Map servicesMap = dockerComposeMap.get("services");
 
 						for (Object serviceMapObject : servicesMap.values()) {
@@ -501,7 +511,7 @@
 								serviceMap.put("extra_hosts", extraHosts);
 							}
 
-							extraHosts.add(dockerNetworkName + ":host-gateway");
+							extraHosts.add(dockerNetworkName + ":" + ipAddress);
 						}
 					}
 
