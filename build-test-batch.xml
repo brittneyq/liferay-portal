@@ -1204,6 +1204,15 @@ mariadb.executable=${mariadb.executable}]]></echo>
 					<delete file="plugins.war.zip" />
 				</then>
 			</if>
+
+			<get-testcase-property property.name="analytics.cloud.enabled" />
+
+			<if>
+				<equals arg1="${analytics.cloud.enabled}" arg2="true" />
+				<then>
+					<ant antfile="build-test-analytics-cloud.xml" target="start-analytics-cloud" />
+				</then>
+			</if>
 		</sequential>
 	</macrodef>
 
