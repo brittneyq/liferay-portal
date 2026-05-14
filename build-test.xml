@@ -15791,8 +15791,8 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 									exit ${exit_code}
 								fi
 
-								# Verify the restored Liferay schema is accessible and dump tablespace + table diagnostics so the cause is visible when it is not - SQLCODE=-204 surfaces here at restore time instead of inside DBUpgrader later. List tablespaces highlights ROLLFORWARD_PENDING / RESTORE_PENDING; list tables confirms whether the RELEASE_ object is present under DB2INST1.
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal user ${database.username} using ${database.password}; db2 list tablespaces show detail; db2 list tables for schema DB2INST1; db2 "select count(*) from DB2INST1.RELEASE_"'
+								# Verify the restored Liferay schema is accessible and dump tablespace + per-schema table diagnostics so the cause is visible when it is not - SQLCODE=-204 surfaces here at restore time instead of inside DBUpgrader later. List tablespaces highlights ROLLFORWARD_PENDING / RESTORE_PENDING; the schema-count query identifies where the portal tables actually live when the cross-version restore lands them outside DB2INST1.
+								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal user ${database.username} using ${database.password}; db2 list tablespaces show detail; db2 list tables for schema DB2INST1; db2 "select tabschema, count(*) from syscat.tables group by tabschema order by 2 desc fetch first 10 rows only"; db2 "select count(*) from DB2INST1.RELEASE_"'
 							]]>
 						</echo>
 
