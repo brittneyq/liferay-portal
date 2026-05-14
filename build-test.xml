@@ -15780,7 +15780,7 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 
 								echo "${output}"
 
-								# SQL2519N/SQL2555I means restore succeeded but the database must be upgraded to the current release - the upgrade command below is the resolution, so treat it as restore success.
+								# DB2 returns a non-zero exit for SQL2519N (restored, needs upgrade) and SQL2555I (restored and auto-upgraded) even though restore itself succeeded - treat both as success.
 								if [[ (${exit_code} != "0") ]] && [[ ($output == *"SQL2519N"*) || ($output == *"SQL2555I"*) ]]
 								then
 									exit_code=0
@@ -15791,8 +15791,7 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 									exit ${exit_code}
 								fi
 
-								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 upgrade database lportal user ${database.username} using ${database.password}' || exit $?
-
+								# Fail fast if the restored Liferay schema is not accessible to JDBC - surfaces SQLCODE=-204 at restore time instead of letting DBUpgrader abort the server later.
 								su - db2inst1 -c '/database/config/db2inst1/sqllib/bin/db2 connect to lportal user ${database.username} using ${database.password} && db2 "select count(*) from DB2INST1.RELEASE_"'
 							]]>
 						</echo>
