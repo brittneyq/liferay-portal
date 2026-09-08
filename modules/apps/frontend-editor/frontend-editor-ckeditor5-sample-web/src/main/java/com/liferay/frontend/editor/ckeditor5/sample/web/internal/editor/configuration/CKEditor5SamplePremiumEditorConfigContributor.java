@@ -9,6 +9,8 @@ import com.liferay.frontend.editor.ckeditor5.sample.web.internal.constants.CKEdi
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Validator;
@@ -39,14 +41,14 @@ public class CKEditor5SamplePremiumEditorConfigContributor
 		String licenseKey = System.getenv("CKEDITOR_DXP_LICENSE_KEY");
 
 		if (Validator.isNull(licenseKey)) {
-			System.out.println("CKEDITOR_DXP_LICENSE_KEY: absent from getenv");
+			_log.info("CKEDITOR_DXP_LICENSE_KEY is absent from System.getenv");
 
 			return;
 		}
 
-		System.out.println(
-			"CKEDITOR_DXP_LICENSE_KEY: getenv returned " +
-				licenseKey.length() + " characters");
+		_log.info(
+			"CKEDITOR_DXP_LICENSE_KEY read from System.getenv with length " +
+				licenseKey.length());
 
 		jsonObject.put(
 			"licenseKey", licenseKey
@@ -56,5 +58,8 @@ public class CKEditor5SamplePremiumEditorConfigContributor
 			"showSourceEditingEnhanced", true
 		);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		CKEditor5SamplePremiumEditorConfigContributor.class);
 
 }

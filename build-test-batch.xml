@@ -3565,6 +3565,11 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 										<env key="PLAYWRIGHT_PROJECT_NAME" value="${playwright.project.name}" />
 									</exec>
 
+									<exec executable="/bin/bash" failonerror="false">
+										<arg value="-c" />
+										<arg value="echo CKEDITOR_DXP_LICENSE_KEY in the app server environment: $(tr '\0' '\n' &lt; /proc/$(pgrep -f org.apache.catalina.startup.Bootstrap | head -1)/environ | grep -c '^CKEDITOR_DXP_LICENSE_KEY=')" />
+									</exec>
+
 									<start-docker-playwright />
 
 									<gradle-execute dir="${playwright.dir}" task="npmInstall" />
