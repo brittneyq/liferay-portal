@@ -3531,6 +3531,23 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								replace="${java.jdk.home}/bin"
 							/>
 
+							<beanshell>
+								<![CDATA[
+									import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
+									String licenseKey = project.getProperty("ckeditor.dxp.license.key");
+
+									if (licenseKey == null) {
+										System.out.println("ckeditor.dxp.license.key is not set");
+									}
+									else {
+										System.out.println("ckeditor.dxp.license.key length: " + String.valueOf(licenseKey.length()));
+
+										System.out.println("redaction covers the key: " + String.valueOf(JenkinsResultsParserUtil.redact(licenseKey).equals("[REDACTED]")));
+									}
+								]]>
+							</beanshell>
+
 							<local name="exception.message" />
 
 							<trycatch property="exception.message">
