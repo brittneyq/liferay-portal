@@ -39,8 +39,14 @@ public class CKEditor5SamplePremiumEditorConfigContributor
 		String licenseKey = System.getenv("CKEDITOR_DXP_LICENSE_KEY");
 
 		if (Validator.isNull(licenseKey)) {
+			System.out.println("CKEDITOR_DXP_LICENSE_KEY: absent from getenv");
+
 			return;
 		}
+
+		System.out.println(
+			"CKEDITOR_DXP_LICENSE_KEY: getenv returned " +
+				licenseKey.length() + " characters");
 
 		jsonObject.put(
 			"licenseKey", licenseKey
