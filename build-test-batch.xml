@@ -3620,6 +3620,11 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 									<fail message="${exception.message}" />
 								</catch>
 								<finally>
+									<exec executable="/bin/bash" failonerror="false">
+										<arg value="-c" />
+										<arg value="echo '--- getenv log check ---'; grep -h CKEDITOR_DXP_LICENSE_KEY ${liferay.home}/logs/liferay.*.log | tail -2; echo '--- end getenv log check ---'" />
+									</exec>
+
 									<stop-docker-playwright />
 
 									<exec executable="/bin/bash" timeout="${test.class.playwright.teardown.timeout}">
