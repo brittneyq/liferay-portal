@@ -3531,6 +3531,23 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								replace="${java.jdk.home}/bin"
 							/>
 
+							<beanshell>
+								<![CDATA[
+									import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
+									String licenseKey = project.getProperty("ckeditor.dxp.license.key");
+
+									if (licenseKey == null) {
+										System.out.println("ckeditor.dxp.license.key is not set");
+									}
+									else {
+										System.out.println("ckeditor.dxp.license.key length: " + String.valueOf(licenseKey.length()));
+
+										System.out.println("redaction covers the key: " + String.valueOf(JenkinsResultsParserUtil.redact(licenseKey).equals("[REDACTED]")));
+									}
+								]]>
+							</beanshell>
+
 							<local name="exception.message" />
 
 							<trycatch property="exception.message">
@@ -3538,6 +3555,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 									<exec executable="/bin/bash" failonerror="true" timeout="${test.class.playwright.setup.timeout}">
 										<arg value="modules/test/playwright/env/set_up.sh" />
 										<env key="APP_SERVER_TYPE" value="@{app.server.type}" />
+										<env if:set="ckeditor.dxp.license.key" key="CKEDITOR_DXP_LICENSE_KEY" value="${ckeditor.dxp.license.key}" />
 										<env key="DATABASE_TYPE" value="@{database.type}" />
 										<env key="JAVA_HOME" value="${java.jdk.home}" />
 										<env key="JAVA_OPTS" value="${java.jdk.opts}" />
@@ -3545,6 +3563,11 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 										<env key="LIFERAY_PORTAL_URL" value="http://${env.NODE_NAME}:8080" />
 										<env key="PATH" value="${execute.path}" />
 										<env key="PLAYWRIGHT_PROJECT_NAME" value="${playwright.project.name}" />
+									</exec>
+
+									<exec executable="/bin/bash" failonerror="false">
+										<arg value="-c" />
+										<arg value="echo CKEDITOR_DXP_LICENSE_KEY in the app server environment: $(tr '\0' '\n' &lt; /proc/$(pgrep -f org.apache.catalina.startup.Bootstrap | head -1)/environ | grep -c '^CKEDITOR_DXP_LICENSE_KEY=')" />
 									</exec>
 
 									<start-docker-playwright />
@@ -3597,6 +3620,11 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 									<fail message="${exception.message}" />
 								</catch>
 								<finally>
+									<exec executable="/bin/bash" failonerror="false">
+										<arg value="-c" />
+										<arg value="echo '--- getenv log check ---'; grep -h CKEDITOR_DXP_LICENSE_KEY ${liferay.home}/logs/liferay.*.log | tail -2; echo '--- end getenv log check ---'" />
+									</exec>
+
 									<stop-docker-playwright />
 
 									<exec executable="/bin/bash" timeout="${test.class.playwright.teardown.timeout}">

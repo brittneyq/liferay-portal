@@ -6,4 +6,5 @@
 export const config = {
 	name: 'frontend-editor-ckeditor-web.main',
 	testDir: 'tests/frontend-editor-ckeditor-web/main',
+	testMatch: 'tests/ckeditor5/react_cet_premium.spec.ts',
 };
