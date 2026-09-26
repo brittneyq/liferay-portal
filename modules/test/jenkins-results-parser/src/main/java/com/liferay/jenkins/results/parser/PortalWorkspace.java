@@ -434,13 +434,6 @@ public class PortalWorkspace extends BaseWorkspace {
 		PortalWorkspaceGitRepository portalWorkspaceGitRepository =
 			getPortalWorkspaceGitRepository();
 
-		String portalUpstreamBranchName =
-			portalWorkspaceGitRepository.getUpstreamBranchName();
-
-		if (!portalUpstreamBranchName.equals("master")) {
-			return;
-		}
-
 		_updateWorkspaceGitRepository(
 			"git-commit/liferay-portal-master-private",
 			portalWorkspaceGitRepository.getPortalPrivateRepositoryDirName());
