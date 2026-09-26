@@ -11,7 +11,9 @@ import com.liferay.jenkins.results.parser.TopLevelBuild;
 
 import java.io.File;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -91,8 +93,11 @@ public class PersistentResourceFactoryTest
 		String workspaceName1 = RandomTestUtil.randomString();
 
 		Assert.assertEquals(
-			"liferay-docker-" + workspaceName1 + ".tar",
-			_getArtifactName(
+			new TreeSet<>(
+				Arrays.asList(
+					"liferay-docker-" + workspaceName1 + ".tar",
+					"liferay-workspace-" + workspaceName1 + ".zip")),
+			_getArtifactNames(
 				PersistentResourceFactory.newPersistentResource(
 					buildDatabase, null,
 					PersistentResource.Type.WORKSPACE_BUNDLE, workspaceName1)));
@@ -100,8 +105,11 @@ public class PersistentResourceFactoryTest
 		String workspaceName2 = RandomTestUtil.randomString();
 
 		Assert.assertEquals(
-			"liferay-docker-" + workspaceName2 + ".tar",
-			_getArtifactName(
+			new TreeSet<>(
+				Arrays.asList(
+					"liferay-docker-" + workspaceName2 + ".tar",
+					"liferay-workspace-" + workspaceName2 + ".zip")),
+			_getArtifactNames(
 				PersistentResourceFactory.newPersistentResource(
 					buildDatabase, null,
 					PersistentResource.Type.WORKSPACE_BUNDLE, workspaceName2)));
@@ -124,13 +132,18 @@ public class PersistentResourceFactoryTest
 		}
 	}
 
-	private String _getArtifactName(PersistentResource persistentResource) {
-		List<PersistentResource.Artifact> artifacts =
-			persistentResource.getArtifacts();
+	private Set<String> _getArtifactNames(
+		PersistentResource persistentResource) {
 
-		PersistentResource.Artifact artifact = artifacts.get(0);
+		Set<String> artifactNames = new TreeSet<>();
 
-		return artifact.getName();
+		for (PersistentResource.Artifact artifact :
+				persistentResource.getArtifacts()) {
+
+			artifactNames.add(artifact.getName());
+		}
+
+		return artifactNames;
 	}
 
 	private BuildDatabase _mockBuildDatabase() {

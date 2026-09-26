@@ -14,9 +14,11 @@ import com.liferay.jenkins.results.parser.WorkspaceGitRepository;
 import java.io.File;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +38,7 @@ public class WorkspaceBundlePersistentResourceTest
 	@Test
 	public void testGetArtifacts() {
 		for (String workspaceName : _getWorkspaceNames()) {
-			List<String> artifactNames = new ArrayList<>();
+			Set<String> artifactNames = new TreeSet<>();
 
 			WorkspaceBundlePersistentResource
 				workspaceBundlePersistentResource =
@@ -50,8 +52,10 @@ public class WorkspaceBundlePersistentResourceTest
 			}
 
 			Assert.assertEquals(
-				Collections.singletonList(
-					"liferay-docker-" + workspaceName + ".tar"),
+				new TreeSet<>(
+					Arrays.asList(
+						"liferay-docker-" + workspaceName + ".tar",
+						"liferay-workspace-" + workspaceName + ".zip")),
 				artifactNames);
 		}
 	}
