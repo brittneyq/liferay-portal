@@ -13,8 +13,8 @@ import com.liferay.jenkins.results.parser.WorkspaceGitRepository;
 
 import java.io.File;
 
-import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Brittney Nguyen
@@ -43,8 +43,12 @@ public class WorkspaceBundlePersistentResource
 
 	@Override
 	protected Set<String> getArtifactNames() {
-		return Collections.singleton(
-			"liferay-docker-" + _workspaceName + ".tar");
+		Set<String> artifactNames = new TreeSet<>();
+
+		artifactNames.add("liferay-docker-" + _workspaceName + ".tar");
+		artifactNames.add("liferay-workspace-" + _workspaceName + ".zip");
+
+		return artifactNames;
 	}
 
 	@Override
