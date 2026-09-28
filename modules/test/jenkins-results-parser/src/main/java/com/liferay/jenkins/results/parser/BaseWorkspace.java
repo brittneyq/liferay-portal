@@ -323,7 +323,7 @@ public abstract class BaseWorkspace implements Workspace {
 						"workspace.repository.dir.names",
 						_primaryWorkspaceGitRepository.getName(),
 						_primaryWorkspaceGitRepository.getUpstreamBranchName(),
-						jobName)));
+						jobName, Environment.get("CI_TEST_SUITE"))));
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(ioException);
