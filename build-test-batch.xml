@@ -5243,6 +5243,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
         name: ${env.DOCKER_NETWORK_NAME}
 services:
     liferay:
+        depends_on: !reset {}
         environment:
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_DRIVER_UPPERCASEC_LASS_UPPERCASEN_AME: ${database.postgresql.driver}
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_PASSWORD: "${database.postgresql.password}"
@@ -5258,7 +5259,6 @@ services:
 				<arg value="--file" />
 				<arg value="docker-compose-ci.yaml" />
 				<arg value="create" />
-				<arg value="--no-deps" />
 				<arg value="liferay" />
 			</exec>
 
