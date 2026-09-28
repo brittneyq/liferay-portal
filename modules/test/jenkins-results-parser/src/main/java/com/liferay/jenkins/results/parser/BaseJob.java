@@ -405,30 +405,26 @@ public abstract class BaseJob implements Job {
 
 	@Override
 	public Set<String> getDistRequiredBatchNames() {
+		if (!isStandaloneBatchEnabled()) {
+			return getBatchNames();
+		}
+
 		Set<String> batchNames = new TreeSet<>();
 
-		if (!isStandaloneBatchEnabled()) {
-			batchNames.addAll(getBatchNames());
-		}
-		else {
-			JobProperty jobProperty = getJobProperty(
-				"test.batch.names.standalone");
+		JobProperty jobProperty = getJobProperty("test.batch.names.standalone");
 
-			Set<String> standaloneTestBatchNames = getSetFromString(
-				jobProperty.getValue());
+		Set<String> standaloneTestBatchNames = getSetFromString(
+			jobProperty.getValue());
 
-			for (BatchTestClassGroup batchTestClassGroup :
-					getBatchTestClassGroups()) {
+		for (BatchTestClassGroup batchTestClassGroup :
+				getBatchTestClassGroups()) {
 
-				String batchName = batchTestClassGroup.getBatchName();
+			String batchName = batchTestClassGroup.getBatchName();
 
-				if (!standaloneTestBatchNames.contains(batchName)) {
-					batchNames.add(batchName);
-				}
+			if (!standaloneTestBatchNames.contains(batchName)) {
+				batchNames.add(batchName);
 			}
 		}
-
-		batchNames.removeAll(_getWorkspaceBundleBatchNames());
 
 		return batchNames;
 	}
@@ -436,11 +432,7 @@ public abstract class BaseJob implements Job {
 	@Override
 	public Set<String> getDistRequiredSegmentNames() {
 		if (!isStandaloneBatchEnabled()) {
-			Set<String> segmentNames = new TreeSet<>(getSegmentNames());
-
-			segmentNames.removeAll(getWorkspaceBundleSegmentNames());
-
-			return segmentNames;
+			return getSegmentNames();
 		}
 
 		Set<String> segmentNames = new TreeSet<>();
@@ -456,8 +448,6 @@ public abstract class BaseJob implements Job {
 			if (standaloneTestBatchNames.contains(
 					segmentTestClassGroup.getBatchName()) ||
 				(segmentTestClassGroup.isTestAnalyticsCloud() &&
-				 JenkinsResultsParserUtil.isCloudCINode()) ||
-				(_isWorkspaceBundleSegment(segmentTestClassGroup) &&
 				 JenkinsResultsParserUtil.isCloudCINode())) {
 
 				continue;
@@ -899,24 +889,6 @@ public abstract class BaseJob implements Job {
 		}
 
 		return workspaceBundleNames;
-	}
-
-	public Set<String> getWorkspaceBundleSegmentNames() {
-		Set<String> segmentNames = new TreeSet<>();
-
-		if (!JenkinsResultsParserUtil.isCloudCINode()) {
-			return segmentNames;
-		}
-
-		for (SegmentTestClassGroup segmentTestClassGroup :
-				getSegmentTestClassGroups()) {
-
-			if (_isWorkspaceBundleSegment(segmentTestClassGroup)) {
-				segmentNames.add(segmentTestClassGroup.getSegmentName());
-			}
-		}
-
-		return segmentNames;
 	}
 
 	@Override
@@ -1734,59 +1706,6 @@ public abstract class BaseJob implements Job {
 		}
 
 		return 2;
-	}
-
-	private Set<String> _getWorkspaceBundleBatchNames() {
-		Set<String> batchNames = new TreeSet<>();
-
-		if (!JenkinsResultsParserUtil.isCloudCINode()) {
-			return batchNames;
-		}
-
-		for (BatchTestClassGroup batchTestClassGroup :
-				getBatchTestClassGroups()) {
-
-			List<SegmentTestClassGroup> segmentTestClassGroups =
-				batchTestClassGroup.getSegmentTestClassGroups();
-
-			if (segmentTestClassGroups.isEmpty()) {
-				continue;
-			}
-
-			boolean workspaceBundleBatch = true;
-
-			for (SegmentTestClassGroup segmentTestClassGroup :
-					segmentTestClassGroups) {
-
-				if (!_isWorkspaceBundleSegment(segmentTestClassGroup)) {
-					workspaceBundleBatch = false;
-
-					break;
-				}
-			}
-
-			if (workspaceBundleBatch) {
-				batchNames.add(batchTestClassGroup.getBatchName());
-			}
-		}
-
-		return batchNames;
-	}
-
-	private boolean _isWorkspaceBundleSegment(
-		SegmentTestClassGroup segmentTestClassGroup) {
-
-		if (!(segmentTestClassGroup instanceof
-				PlaywrightSegmentTestClassGroup)) {
-
-			return false;
-		}
-
-		PlaywrightSegmentTestClassGroup playwrightSegmentTestClassGroup =
-			(PlaywrightSegmentTestClassGroup)segmentTestClassGroup;
-
-		return !JenkinsResultsParserUtil.isNullOrEmpty(
-			playwrightSegmentTestClassGroup.getWorkspaceBundleName());
 	}
 
 	private static final String[] _JUNIT_BATCH_NAMES = {
