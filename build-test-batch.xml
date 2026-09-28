@@ -3630,7 +3630,15 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 										</else>
 									</if>
 
-									<start-docker-playwright />
+									<if>
+										<isset property="env.PLAYWRIGHT_WORKSPACE_BUNDLE_NAME" />
+										<then>
+											<start-docker-playwright portal.url="http://liferay:8080" />
+										</then>
+										<else>
+											<start-docker-playwright />
+										</else>
+									</if>
 
 									<gradle-execute dir="${playwright.dir}" task="npmInstall" />
 
@@ -5215,15 +5223,32 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 				<arg value="${project.dir}/dist/liferay-docker-@{workspace.bundle.name}.tar" />
 			</exec>
 
-			<echo file="${workspace.bundle.dir}/docker-compose-ci.yaml"><![CDATA[services:
+			<exec executable="docker" failonerror="true">
+				<arg value="exec" />
+				<arg value="${database.postgresql.host}" />
+				<arg value="psql" />
+				<arg value="--command" />
+				<arg value="DROP DATABASE IF EXISTS lportal_workspace;" />
+				<arg value="--command" />
+				<arg value="CREATE DATABASE lportal_workspace;" />
+				<arg value="--dbname" />
+				<arg value="postgres" />
+				<arg value="--username" />
+				<arg value="${database.postgresql.username}" />
+			</exec>
+
+			<echo file="${workspace.bundle.dir}/docker-compose-ci.yaml"><![CDATA[networks:
+    default:
+        external: true
+        name: ${env.DOCKER_NETWORK_NAME}
+services:
     liferay:
         environment:
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_DRIVER_UPPERCASEC_LASS_UPPERCASEN_AME: ${database.postgresql.driver}
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_PASSWORD: "${database.postgresql.password}"
-            LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_URL: jdbc:postgresql://${database.postgresql.host}:5432/${database.postgresql.schema}
+            LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_URL: jdbc:postgresql://${database.postgresql.host}:5432/lportal_workspace
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_USERNAME: ${database.postgresql.username}
-        volumes:
-            -   ${project.dir}/modules/test/playwright/tests/${playwright.project.dir.name}/env/portal-ext.properties:/mnt/liferay/files/portal-setup-wizard.properties
+        ports: !override []
 ]]></echo>
 
 			<exec dir="${workspace.bundle.dir}" executable="docker" failonerror="true">
@@ -5231,12 +5256,25 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 				<arg value="--file" />
 				<arg value="docker-compose.yaml" />
 				<arg value="--file" />
-				<arg value="docker-compose.integration-test.yaml" />
+				<arg value="docker-compose-ci.yaml" />
+				<arg value="create" />
+				<arg value="--no-deps" />
+				<arg value="liferay" />
+			</exec>
+
+			<exec executable="docker" failonerror="true">
+				<arg value="cp" />
+				<arg value="${project.dir}/modules/test/playwright/tests/${playwright.project.dir.name}/env/portal-ext.properties" />
+				<arg value="liferay:/opt/liferay/portal-setup-wizard.properties" />
+			</exec>
+
+			<exec dir="${workspace.bundle.dir}" executable="docker" failonerror="true">
+				<arg value="compose" />
+				<arg value="--file" />
+				<arg value="docker-compose.yaml" />
 				<arg value="--file" />
 				<arg value="docker-compose-ci.yaml" />
-				<arg value="up" />
-				<arg value="--detach" />
-				<arg value="--no-deps" />
+				<arg value="start" />
 				<arg value="liferay" />
 			</exec>
 
@@ -5254,7 +5292,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 				<arg value="--retry-max-time" />
 				<arg value="600" />
 				<arg value="--silent" />
-				<arg value="http://localhost:8080/c/portal/status" />
+				<arg value="http://liferay:8080/c/portal/status" />
 			</exec>
 		</sequential>
 	</macrodef>
@@ -5281,6 +5319,8 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 		<attribute name="workspace.bundle.name" />
 
 		<sequential>
+			<print-docker-logs container.name="liferay" />
+
 			<local name="workspace.bundle.dir" />
 
 			<condition else="${project.dir}/workspaces/@{workspace.bundle.name}" property="workspace.bundle.dir" value="${liferay.portal.private.dir}/workspaces/@{workspace.bundle.name}">
@@ -5291,8 +5331,6 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 				<arg value="compose" />
 				<arg value="--file" />
 				<arg value="docker-compose.yaml" />
-				<arg value="--file" />
-				<arg value="docker-compose.integration-test.yaml" />
 				<arg value="--file" />
 				<arg value="docker-compose-ci.yaml" />
 				<arg value="down" />
