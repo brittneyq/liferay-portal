@@ -101,6 +101,8 @@ public interface Job {
 
 	public Set<String> getWorkspaceBundleNames();
 
+	public Set<String> getWorkspaceBundleSegmentNames();
+
 	public boolean isBuildCachingEnabled();
 
 	public boolean isDownstreamEnabled();
