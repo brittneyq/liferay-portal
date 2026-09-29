@@ -8549,8 +8549,6 @@ ${docker.start.error}</fail>
 	</macrodef>
 
 	<macrodef name="start-docker-playwright">
-		<attribute default="" name="portal.url" />
-
 		<sequential>
 			<propertyregex
 				input="${portal.dir}"
@@ -8709,12 +8707,6 @@ ${docker.start.error}</fail>
 			<set-playwright-object-storage-salesforce-properties />
 
 			<local name="env.portal.url.arg" />
-
-			<condition property="env.portal.url.arg" value="--env=PORTAL_URL=@{portal.url}">
-				<not>
-					<equals arg1="@{portal.url}" arg2="" />
-				</not>
-			</condition>
 
 			<condition else="" property="env.portal.url.arg" value="--env=PORTAL_URL=http://${env.NODE_NAME}:8080">
 				<isset property="env.NODE_NAME" />

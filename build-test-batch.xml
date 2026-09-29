@@ -3630,15 +3630,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 										</else>
 									</if>
 
-									<if>
-										<isset property="env.PLAYWRIGHT_WORKSPACE_BUNDLE_NAME" />
-										<then>
-											<start-docker-playwright portal.url="http://liferay:8080" />
-										</then>
-										<else>
-											<start-docker-playwright />
-										</else>
-									</if>
+									<start-docker-playwright />
 
 									<gradle-execute dir="${playwright.dir}" task="npmInstall" />
 
@@ -5237,11 +5229,10 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 				<arg value="${database.postgresql.username}" />
 			</exec>
 
-			<echo file="${workspace.bundle.dir}/docker-compose-ci.yaml"><![CDATA[networks:
-    default:
-        external: true
-        name: ${env.DOCKER_NETWORK_NAME}
-services:
+			<echo file="${workspace.bundle.dir}/docker-compose-ci.yaml"><![CDATA[services:
+    database:
+        profiles:
+            -   workspace-database
     liferay:
         depends_on: !reset {}
         environment:
@@ -5249,6 +5240,7 @@ services:
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_PASSWORD: "${database.postgresql.password}"
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_URL: jdbc:postgresql://${database.postgresql.host}:5432/lportal_workspace
             LIFERAY_JDBC_PERIOD_DEFAULT_PERIOD_USERNAME: ${database.postgresql.username}
+        network_mode: container:${env.NODE_NAME}
         ports: !override []
 ]]></echo>
 
@@ -5268,31 +5260,10 @@ services:
 				<arg value="liferay:/opt/liferay/portal-setup-wizard.properties" />
 			</exec>
 
-			<exec dir="${workspace.bundle.dir}" executable="docker" failonerror="true">
-				<arg value="compose" />
-				<arg value="--file" />
-				<arg value="docker-compose.yaml" />
-				<arg value="--file" />
-				<arg value="docker-compose-ci.yaml" />
-				<arg value="start" />
-				<arg value="liferay" />
-			</exec>
+			<exec dir="${workspace.bundle.dir}" executable="bash" failonerror="true">
+				<arg value="scripts/bootstrap/start.sh" />
 
-			<exec executable="curl" failonerror="true">
-				<arg value="--fail" />
-				<arg value="--max-time" />
-				<arg value="5" />
-				<arg value="--output" />
-				<arg value="/dev/null" />
-				<arg value="--retry" />
-				<arg value="60" />
-				<arg value="--retry-all-errors" />
-				<arg value="--retry-delay" />
-				<arg value="10" />
-				<arg value="--retry-max-time" />
-				<arg value="600" />
-				<arg value="--silent" />
-				<arg value="http://liferay:8080/c/portal/status" />
+				<env key="LIFERAY_COMPOSE_OVERRIDES" value="ci" />
 			</exec>
 		</sequential>
 	</macrodef>
