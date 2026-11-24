@@ -769,8 +769,10 @@ public class DXPCloudClientTestrayImporter extends BaseClientTestrayImporter {
 
 		JenkinsResultsParserUtil.gzip(xmlFile, xmlGzipFile);
 
-		uploadAttachment(
-			xmlGzipFile, _getRelativeURLPath() + "/" + xmlGzipFile.getName());
+		TestrayCloudBucket testrayCloudBucket = getTestrayCloudBucket();
+
+		testrayCloudBucket.createTestrayCloudObject(
+			_getRelativeURLPath() + "/" + xmlGzipFile.getName(), xmlGzipFile);
 	}
 
 	private static final long _START_TIME = System.currentTimeMillis();

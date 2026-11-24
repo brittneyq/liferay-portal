@@ -166,8 +166,8 @@ public class TestrayServerTest extends com.liferay.jenkins.results.parser.Test {
 
 		mockURLReaders();
 
-		String testrayServerURL = JenkinsResultsParserUtil.combine(
-			"https://", RandomTestUtil.randomLowerCaseString(), ".liferay.com");
+		String testrayServerURL =
+			"https://" + RandomTestUtil.randomLowerCaseString();
 
 		String exceptionMessage = RandomTestUtil.randomString();
 

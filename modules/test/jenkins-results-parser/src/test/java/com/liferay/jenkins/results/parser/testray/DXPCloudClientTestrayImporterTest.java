@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -84,12 +85,10 @@ public class DXPCloudClientTestrayImporterTest
 			JenkinsResultsParserUtil.combine(
 				"<testsuites><testsuite name=\"", testSuiteName,
 				"\"><testcase classname=\"", testSuiteName, "\" name=\"",
-				RandomTestUtil.randomString(), "\" time=\"",
-				String.valueOf(RandomTestUtil.randomInt()), "\"/>",
-				"<testcase classname=\"", testSuiteName, "\" name=\"",
-				RandomTestUtil.randomString(), "\" time=\"",
-				String.valueOf(RandomTestUtil.randomInt()), "\"><failure ",
-				"message=\"", failureMessage, "\" type=\"FAILURE\"/>",
+				RandomTestUtil.randomString(), "\"/>", "<testcase classname=\"",
+				testSuiteName, "\" name=\"", RandomTestUtil.randomString(),
+				"\"><failure ",
+				"message=\"", failureMessage, "\"/>",
 				"</testcase></testsuite></testsuites>"));
 
 		JenkinsResultsParserUtil.write(
@@ -97,7 +96,7 @@ public class DXPCloudClientTestrayImporterTest
 			RandomTestUtil.randomString());
 		JenkinsResultsParserUtil.write(
 			new File(projectDir, "playwright-report/index.html"),
-			"<html><body><img src=\"data/failure.png\"/></body></html>");
+			RandomTestUtil.randomString());
 
 		_runMain(projectDir, "playwright");
 
@@ -111,7 +110,7 @@ public class DXPCloudClientTestrayImporterTest
 			Mockito.eq(testrayProductVersion),
 			Mockito.startsWith("DXP Cloud Client Build - "),
 			Mockito.any(Date.class), Mockito.isNull(),
-			Mockito.eq(_testrayBuildSHA)
+			Mockito.eq(_TESTRAY_BUILD_SHA)
 		);
 
 		Document document = Dom4JUtil.parse(
@@ -185,11 +184,11 @@ public class DXPCloudClientTestrayImporterTest
 
 				testEquals(
 					JenkinsResultsParserUtil.combine(
-						_testrayCloudBaseURL, "/", key, "?authuser=0"),
+						_TESTRAY_CLOUD_BASE_URL, "/", key, "?authuser=0"),
 					fileElement.attributeValue("url"));
 			}
 
-			attachmentNames.sort(null);
+			Collections.sort(attachmentNames);
 
 			testEquals(
 				Arrays.asList("Failure Screenshot", "Playwright Report"),
@@ -305,11 +304,11 @@ public class DXPCloudClientTestrayImporterTest
 
 			testEquals(
 				JenkinsResultsParserUtil.combine(
-					_testrayCloudBaseURL, "/", key, "?authuser=0"),
+					_TESTRAY_CLOUD_BASE_URL, "/", key, "?authuser=0"),
 				fileElement.attributeValue("url"));
 		}
 
-		attachmentNames.sort(null);
+		Collections.sort(attachmentNames);
 
 		testEquals(
 			Arrays.asList(
@@ -425,12 +424,10 @@ public class DXPCloudClientTestrayImporterTest
 		String testrayServerURL =
 			"https://" + RandomTestUtil.randomLowerCaseString();
 
-		_testrayBuildSHA = RandomTestUtil.randomSHA();
-
 		Map<String, String> environmentMap = new HashMap<>();
 
 		environmentMap.put("projectDir", projectDir.getPath());
-		environmentMap.put("testrayBuildSHA", _testrayBuildSHA);
+		environmentMap.put("testrayBuildSHA", _TESTRAY_BUILD_SHA);
 		environmentMap.put("testrayCloudBucketName", testrayCloudBucketName);
 		environmentMap.put(
 			"testrayOAuth2ClientId", RandomTestUtil.randomString());
@@ -471,11 +468,8 @@ public class DXPCloudClientTestrayImporterTest
 			Mockito.anyString(), Mockito.any(File.class)
 		);
 
-		_testrayCloudBaseURL =
-			"https://" + RandomTestUtil.randomLowerCaseString();
-
 		Mockito.doReturn(
-			_testrayCloudBaseURL
+			_TESTRAY_CLOUD_BASE_URL
 		).when(
 			testrayCloudBucket
 		).getTestrayCloudBaseURL();
@@ -547,10 +541,13 @@ public class DXPCloudClientTestrayImporterTest
 		}
 	}
 
+	private static final String _TESTRAY_BUILD_SHA = RandomTestUtil.randomSHA();
+
+	private static final String _TESTRAY_CLOUD_BASE_URL =
+		"https://" + RandomTestUtil.randomLowerCaseString();
+
 	private final List<String> _keys = new ArrayList<>();
 	private final Map<String, String> _resultsFileContents = new HashMap<>();
 	private TestrayBuild _testrayBuild;
-	private String _testrayBuildSHA;
-	private String _testrayCloudBaseURL;
 
 }

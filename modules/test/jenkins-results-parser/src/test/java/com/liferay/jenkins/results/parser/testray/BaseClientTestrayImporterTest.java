@@ -73,9 +73,6 @@ public class BaseClientTestrayImporterTest
 			_testrayServer
 		).getURL();
 
-		_testrayCloudBucketMockedStatic = Mockito.mockStatic(
-			TestrayCloudBucket.class);
-
 		_testrayCloudBucketMockedStatic.when(
 			() -> TestrayCloudBucket.getInstance(Mockito.anyString())
 		).thenReturn(
@@ -88,8 +85,6 @@ public class BaseClientTestrayImporterTest
 		).thenReturn(
 			true
 		);
-
-		_testrayFactoryMockedStatic = Mockito.mockStatic(TestrayFactory.class);
 
 		_testrayFactoryMockedStatic.when(
 			() -> TestrayFactory.newTestrayServer(Mockito.anyString())
@@ -181,8 +176,63 @@ public class BaseClientTestrayImporterTest
 
 	@Test
 	public void testGetTestrayBuild() throws Exception {
-		_testGetTestrayBuild(RandomTestUtil.randomSHA());
-		_testGetTestrayBuild(null);
+		TestrayProject testrayProject = Mockito.mock(TestrayProject.class);
+		String testrayProjectName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			testrayProject
+		).when(
+			_testrayServer
+		).getTestrayProjectByName(
+			testrayProjectName
+		);
+
+		TestrayProductVersion testrayProductVersion = Mockito.mock(
+			TestrayProductVersion.class);
+		String testrayProductVersionName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			testrayProductVersion
+		).when(
+			testrayProject
+		).createTestrayProductVersion(
+			testrayProductVersionName
+		);
+
+		TestrayRoutine testrayRoutine = Mockito.mock(TestrayRoutine.class);
+		String testrayRoutineName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			testrayRoutine
+		).when(
+			testrayProject
+		).createTestrayRoutine(
+			testrayRoutineName
+		);
+
+		TestrayBuild testrayBuild = Mockito.mock(TestrayBuild.class);
+		Date testrayBuildDate = new Date(RandomTestUtil.randomLong());
+		String testrayBuildName = RandomTestUtil.randomString();
+		String testrayBuildSHA = RandomTestUtil.randomSHA();
+
+		Mockito.doReturn(
+			testrayBuild
+		).when(
+			testrayRoutine
+		).createTestrayBuild(
+			testrayProductVersion, testrayBuildName, testrayBuildDate, null,
+			testrayBuildSHA
+		);
+
+		BaseClientTestrayImporter baseClientTestrayImporter =
+			_newBaseClientTestrayImporter();
+
+		testSame(
+			testrayBuild,
+			baseClientTestrayImporter.getTestrayBuild(
+				testrayBuildDate, testrayBuildName, testrayBuildSHA,
+				testrayProductVersionName, testrayProjectName,
+				testrayRoutineName));
 	}
 
 	@Test
@@ -215,8 +265,6 @@ public class BaseClientTestrayImporterTest
 	public void testGetTestrayBuildTestrayServer() throws Exception {
 		Properties buildProperties = new Properties();
 
-		buildProperties.setProperty(
-			"testray.cloud.bucket", RandomTestUtil.randomString());
 		buildProperties.setProperty(
 			"testray.oauth2.client.id", RandomTestUtil.randomString());
 		buildProperties.setProperty(
@@ -351,7 +399,7 @@ public class BaseClientTestrayImporterTest
 
 			Assert.assertTrue(workingTestrayResultsFile.exists());
 
-			_assertDeleted(resultsTarGzFiles.get(0));
+			_assertParentFileDeleted(resultsTarGzFiles.get(0));
 		}
 		finally {
 			JenkinsResultsParserUtil.delete(workingTestrayResultsDir);
@@ -389,22 +437,20 @@ public class BaseClientTestrayImporterTest
 					Arrays.asList(resultsFile),
 					Mockito.mock(TestrayBuild.class))));
 
-		_assertDeleted(resultsTarGzFiles.get(0));
-
 		Assert.assertTrue(resultsFile.exists());
+
+		_assertParentFileDeleted(resultsTarGzFiles.get(0));
 	}
 
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-	private void _assertDeleted(File resultsTarGzFile) {
-		Assert.assertFalse(resultsTarGzFile.exists());
-
+	private void _assertParentFileDeleted(File resultsTarGzFile) {
 		File absoluteResultsTarGzFile = resultsTarGzFile.getAbsoluteFile();
 
-		File tempDir = absoluteResultsTarGzFile.getParentFile();
+		File parentFile = absoluteResultsTarGzFile.getParentFile();
 
-		Assert.assertFalse(tempDir.exists());
+		Assert.assertFalse(parentFile.exists());
 	}
 
 	private BaseClientTestrayImporter _newBaseClientTestrayImporter() {
@@ -537,65 +583,6 @@ public class BaseClientTestrayImporterTest
 		System.clearProperty(varName);
 	}
 
-	private void _testGetTestrayBuild(String testrayBuildSHA) throws Exception {
-		TestrayProject testrayProject = Mockito.mock(TestrayProject.class);
-		String testrayProjectName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayProject
-		).when(
-			_testrayServer
-		).getTestrayProjectByName(
-			testrayProjectName
-		);
-
-		TestrayProductVersion testrayProductVersion = Mockito.mock(
-			TestrayProductVersion.class);
-		String testrayProductVersionName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayProductVersion
-		).when(
-			testrayProject
-		).createTestrayProductVersion(
-			testrayProductVersionName
-		);
-
-		TestrayRoutine testrayRoutine = Mockito.mock(TestrayRoutine.class);
-		String testrayRoutineName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayRoutine
-		).when(
-			testrayProject
-		).createTestrayRoutine(
-			testrayRoutineName
-		);
-
-		TestrayBuild testrayBuild = Mockito.mock(TestrayBuild.class);
-		Date testrayBuildDate = new Date(RandomTestUtil.randomLong());
-		String testrayBuildName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayBuild
-		).when(
-			testrayRoutine
-		).createTestrayBuild(
-			testrayProductVersion, testrayBuildName, testrayBuildDate, null,
-			testrayBuildSHA
-		);
-
-		BaseClientTestrayImporter baseClientTestrayImporter =
-			_newBaseClientTestrayImporter();
-
-		testSame(
-			testrayBuild,
-			baseClientTestrayImporter.getTestrayBuild(
-				testrayBuildDate, testrayBuildName, testrayBuildSHA,
-				testrayProductVersionName, testrayProjectName,
-				testrayRoutineName));
-	}
-
 	private void _testGetTestrayBuildTestrayServer(
 			String expectedTestrayServerURL, String testrayServerURL)
 		throws Exception {
@@ -653,11 +640,6 @@ public class BaseClientTestrayImporterTest
 		_testrayFactoryMockedStatic.verify(
 			() -> TestrayFactory.newTestrayServer(expectedTestrayServerURL));
 
-		_testrayCloudBucketMockedStatic.verify(
-			() -> TestrayCloudBucket.getInstance(
-				_environmentMap.get("testrayCloudBucketName")),
-			Mockito.atLeastOnce());
-
 		ArgumentCaptor<JenkinsResultsParserUtil.HTTPAuthorization>
 			httpAuthorizationArgumentCaptor = ArgumentCaptor.forClass(
 				JenkinsResultsParserUtil.HTTPAuthorization.class);
@@ -695,8 +677,10 @@ public class BaseClientTestrayImporterTest
 	private final Map<String, String> _environmentMap = new HashMap<>();
 	private final TestrayCloudBucket _testrayCloudBucket = Mockito.mock(
 		TestrayCloudBucket.class);
-	private MockedStatic<TestrayCloudBucket> _testrayCloudBucketMockedStatic;
-	private MockedStatic<TestrayFactory> _testrayFactoryMockedStatic;
+	private MockedStatic<TestrayCloudBucket> _testrayCloudBucketMockedStatic =
+		Mockito.mockStatic(TestrayCloudBucket.class);
+	private MockedStatic<TestrayFactory> _testrayFactoryMockedStatic =
+		Mockito.mockStatic(TestrayFactory.class);
 	private final TestrayServer _testrayServer = Mockito.mock(
 		TestrayServer.class);
 

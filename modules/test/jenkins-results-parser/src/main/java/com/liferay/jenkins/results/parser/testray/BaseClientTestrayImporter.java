@@ -29,12 +29,6 @@ public abstract class BaseClientTestrayImporter
 	implements ClientTestrayImporter {
 
 	protected BaseClientTestrayImporter() {
-		String testrayServerURL = getEnvVarValue("testrayServerURL");
-
-		if (!JenkinsResultsParserUtil.isNullOrEmpty(testrayServerURL)) {
-			_testrayServerURL = testrayServerURL;
-		}
-
 		_testrayOAuth2ClientId = getEnvVarValue("testrayOAuth2ClientId");
 		_testrayOAuth2ClientSecret = getEnvVarValue(
 			"testrayOAuth2ClientSecret");
@@ -70,6 +64,12 @@ public abstract class BaseClientTestrayImporter
 
 		_testrayCloudBucket = TestrayCloudBucket.getInstance(
 			testrayCloudBucketName);
+
+		String testrayServerURL = getEnvVarValue("testrayServerURL");
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(testrayServerURL)) {
+			_testrayServerURL = testrayServerURL;
+		}
 	}
 
 	protected String getEnvVarValue(String varName) {
@@ -132,13 +132,11 @@ public abstract class BaseClientTestrayImporter
 			List<File> resultsFiles, TestrayBuild testrayBuild)
 		throws IOException {
 
-		File tempDir = null;
+		Path path = Files.createTempDirectory("testray-results-");
+
+		File tempDir = path.toFile();
 
 		try {
-			Path path = Files.createTempDirectory("testray-results-");
-
-			tempDir = path.toFile();
-
 			File testrayResultsDir = new File(tempDir, "testray-results");
 
 			testrayResultsDir.mkdirs();
@@ -164,9 +162,7 @@ public abstract class BaseClientTestrayImporter
 				"inbox/" + resultsTarGzFile.getName(), resultsTarGzFile);
 		}
 		finally {
-			if (tempDir != null) {
-				JenkinsResultsParserUtil.delete(tempDir);
-			}
+			JenkinsResultsParserUtil.delete(tempDir);
 		}
 	}
 
@@ -179,7 +175,6 @@ public abstract class BaseClientTestrayImporter
 			_testrayServerURL);
 
 		testrayServer.setCommunicationFailureNotificationEnabled(false);
-
 		testrayServer.setHTTPAuthorization(
 			new JenkinsResultsParserUtil.ClientCredentialsHTTPAuthorization(
 				_testrayOAuth2ClientId, _testrayOAuth2ClientSecret,

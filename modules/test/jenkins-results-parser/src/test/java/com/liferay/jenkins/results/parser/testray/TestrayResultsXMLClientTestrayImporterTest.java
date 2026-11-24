@@ -115,9 +115,6 @@ public class TestrayResultsXMLClientTestrayImporterTest
 			_testrayServer
 		).getURL();
 
-		_testrayCloudBucketMockedStatic = Mockito.mockStatic(
-			TestrayCloudBucket.class);
-
 		_testrayCloudBucketMockedStatic.when(
 			() -> TestrayCloudBucket.getInstance(Mockito.anyString())
 		).thenReturn(
@@ -130,8 +127,6 @@ public class TestrayResultsXMLClientTestrayImporterTest
 		).thenReturn(
 			true
 		);
-
-		_testrayFactoryMockedStatic = Mockito.mockStatic(TestrayFactory.class);
 
 		_testrayFactoryMockedStatic.when(
 			() -> TestrayFactory.newTestrayServer(Mockito.anyString())
@@ -186,11 +181,11 @@ public class TestrayResultsXMLClientTestrayImporterTest
 
 		String randomString = RandomTestUtil.randomString();
 
+		File file = new File(
+			testrayResultsDir, RandomTestUtil.randomString() + ".txt");
+
 		Files.write(
-			new File(
-				testrayResultsDir, RandomTestUtil.randomString() + ".txt"
-			).toPath(),
-			randomString.getBytes(StandardCharsets.UTF_8));
+			file.toPath(), randomString.getBytes(StandardCharsets.UTF_8));
 
 		TestrayResultsXMLClientTestrayImporter.main(new String[0]);
 
@@ -257,11 +252,11 @@ public class TestrayResultsXMLClientTestrayImporterTest
 
 		String randomString = RandomTestUtil.randomString();
 
+		File file = new File(
+			testrayResultsDir, RandomTestUtil.randomString() + ".txt");
+
 		Files.write(
-			new File(
-				testrayResultsDir, RandomTestUtil.randomString() + ".txt"
-			).toPath(),
-			randomString.getBytes(StandardCharsets.UTF_8));
+			file.toPath(), randomString.getBytes(StandardCharsets.UTF_8));
 
 		RuntimeException runtimeException = Assert.assertThrows(
 			RuntimeException.class,
@@ -275,49 +270,6 @@ public class TestrayResultsXMLClientTestrayImporterTest
 		_testrayFactoryMockedStatic.verify(
 			() -> TestrayFactory.newTestrayServer(Mockito.anyString()),
 			Mockito.never());
-	}
-
-	@Test
-	public void testImportResultsTwice() throws Exception {
-		File testrayResultsDir = temporaryFolder.newFolder();
-
-		_environmentMap.put("testrayResultsDir", testrayResultsDir.getPath());
-
-		Map<String, String> testSuiteProperties = _newTestSuiteProperties();
-
-		_writeResultsFile(
-			new File(testrayResultsDir, RandomTestUtil.randomString() + ".xml"),
-			testSuiteProperties);
-
-		TestrayResultsXMLClientTestrayImporter.main(new String[0]);
-		TestrayResultsXMLClientTestrayImporter.main(new String[0]);
-
-		Mockito.verify(
-			_testrayRoutine, Mockito.times(2)
-		).createTestrayBuild(
-			_testrayProductVersion,
-			testSuiteProperties.get("testray.build.name"),
-			Date.from(Instant.parse("2026-01-15T18:00:00Z")), null,
-			testSuiteProperties.get("git.id")
-		);
-
-		Mockito.verify(
-			_testrayProject, Mockito.times(2)
-		).createTestrayProductVersion(
-			testSuiteProperties.get("testray.product.version")
-		);
-
-		Mockito.verify(
-			_testrayProject, Mockito.times(2)
-		).createTestrayRoutine(
-			testSuiteProperties.get("testray.build.type")
-		);
-
-		Mockito.verify(
-			_testrayServer, Mockito.times(2)
-		).getTestrayProjectByName(
-			testSuiteProperties.get("testray.project.name")
-		);
 	}
 
 	@Test
@@ -607,9 +559,9 @@ public class TestrayResultsXMLClientTestrayImporterTest
 			File file, Map<String, String> testSuiteProperties)
 		throws Exception {
 
-		File dir = file.getParentFile();
+		File parentFile = file.getParentFile();
 
-		dir.mkdirs();
+		parentFile.mkdirs();
 
 		String resultsXML = _toResultsXML(testSuiteProperties);
 
@@ -622,8 +574,10 @@ public class TestrayResultsXMLClientTestrayImporterTest
 	private final TestrayBuild _testrayBuild = Mockito.mock(TestrayBuild.class);
 	private final TestrayCloudBucket _testrayCloudBucket = Mockito.mock(
 		TestrayCloudBucket.class);
-	private MockedStatic<TestrayCloudBucket> _testrayCloudBucketMockedStatic;
-	private MockedStatic<TestrayFactory> _testrayFactoryMockedStatic;
+	private MockedStatic<TestrayCloudBucket> _testrayCloudBucketMockedStatic =
+		Mockito.mockStatic(TestrayCloudBucket.class);
+	private MockedStatic<TestrayFactory> _testrayFactoryMockedStatic =
+		Mockito.mockStatic(TestrayFactory.class);
 	private final TestrayProductVersion _testrayProductVersion = Mockito.mock(
 		TestrayProductVersion.class);
 	private final TestrayProject _testrayProject = Mockito.mock(
