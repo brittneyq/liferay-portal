@@ -166,10 +166,9 @@ public class TestrayServerTest extends com.liferay.jenkins.results.parser.Test {
 
 		mockURLReaders();
 
+		String exceptionMessage = RandomTestUtil.randomString();
 		String testrayServerURL =
 			"https://" + RandomTestUtil.randomLowerCaseString();
-
-		String exceptionMessage = RandomTestUtil.randomString();
 
 		setURLReaderException(
 			new IOException(exceptionMessage), testrayServerURL);

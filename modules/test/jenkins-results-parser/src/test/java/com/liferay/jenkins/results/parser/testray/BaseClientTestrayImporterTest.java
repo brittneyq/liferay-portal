@@ -177,40 +177,11 @@ public class BaseClientTestrayImporterTest
 	@Test
 	public void testGetTestrayBuild() throws Exception {
 		TestrayProject testrayProject = Mockito.mock(TestrayProject.class);
-		String testrayProjectName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayProject
-		).when(
-			_testrayServer
-		).getTestrayProjectByName(
-			testrayProjectName
-		);
-
 		TestrayProductVersion testrayProductVersion = Mockito.mock(
 			TestrayProductVersion.class);
-		String testrayProductVersionName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayProductVersion
-		).when(
-			testrayProject
-		).createTestrayProductVersion(
-			testrayProductVersionName
-		);
-
 		TestrayRoutine testrayRoutine = Mockito.mock(TestrayRoutine.class);
-		String testrayRoutineName = RandomTestUtil.randomString();
-
-		Mockito.doReturn(
-			testrayRoutine
-		).when(
-			testrayProject
-		).createTestrayRoutine(
-			testrayRoutineName
-		);
-
 		TestrayBuild testrayBuild = Mockito.mock(TestrayBuild.class);
+
 		Date testrayBuildDate = new Date(RandomTestUtil.randomLong());
 		String testrayBuildName = RandomTestUtil.randomString();
 		String testrayBuildSHA = RandomTestUtil.randomSHA();
@@ -222,6 +193,36 @@ public class BaseClientTestrayImporterTest
 		).createTestrayBuild(
 			testrayProductVersion, testrayBuildName, testrayBuildDate, null,
 			testrayBuildSHA
+		);
+
+		String testrayProductVersionName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			testrayProductVersion
+		).when(
+			testrayProject
+		).createTestrayProductVersion(
+			testrayProductVersionName
+		);
+
+		String testrayRoutineName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			testrayRoutine
+		).when(
+			testrayProject
+		).createTestrayRoutine(
+			testrayRoutineName
+		);
+
+		String testrayProjectName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			testrayProject
+		).when(
+			_testrayServer
+		).getTestrayProjectByName(
+			testrayProjectName
 		);
 
 		BaseClientTestrayImporter baseClientTestrayImporter =
@@ -311,11 +312,6 @@ public class BaseClientTestrayImporterTest
 
 	@Test
 	public void testUploadResults() throws Exception {
-		File resultsDir = temporaryFolder.newFolder();
-
-		List<File> resultsFiles = Arrays.asList(
-			_newResultsFile(resultsDir), _newResultsFile(resultsDir));
-
 		File workingTestrayResultsDir = new File("testray-results");
 
 		Assert.assertFalse(workingTestrayResultsDir.exists());
@@ -357,10 +353,15 @@ public class BaseClientTestrayImporterTest
 				Mockito.anyString(), Mockito.any(File.class)
 			);
 
-			long startTimeMillis = System.currentTimeMillis();
+			File resultsDir = temporaryFolder.newFolder();
+
+			List<File> resultsFiles = Arrays.asList(
+				_newResultsFile(resultsDir), _newResultsFile(resultsDir));
 
 			BaseClientTestrayImporter baseClientTestrayImporter =
 				_newBaseClientTestrayImporter();
+
+			long startTimeMillis = System.currentTimeMillis();
 
 			baseClientTestrayImporter.uploadResults(resultsFiles, testrayBuild);
 
@@ -595,12 +596,6 @@ public class BaseClientTestrayImporterTest
 
 		TestrayServer testrayServer = Mockito.mock(TestrayServer.class);
 
-		_testrayFactoryMockedStatic.when(
-			() -> TestrayFactory.newTestrayServer(expectedTestrayServerURL)
-		).thenReturn(
-			testrayServer
-		);
-
 		TestrayProject testrayProject = Mockito.mock(TestrayProject.class);
 
 		Mockito.doReturn(
@@ -625,6 +620,12 @@ public class BaseClientTestrayImporterTest
 			testrayServer
 		).getURL();
 
+		_testrayFactoryMockedStatic.when(
+			() -> TestrayFactory.newTestrayServer(expectedTestrayServerURL)
+		).thenReturn(
+			testrayServer
+		);
+
 		BaseClientTestrayImporter baseClientTestrayImporter =
 			_newBaseClientTestrayImporter();
 
@@ -640,15 +641,15 @@ public class BaseClientTestrayImporterTest
 		_testrayFactoryMockedStatic.verify(
 			() -> TestrayFactory.newTestrayServer(expectedTestrayServerURL));
 
-		ArgumentCaptor<JenkinsResultsParserUtil.HTTPAuthorization>
-			httpAuthorizationArgumentCaptor = ArgumentCaptor.forClass(
-				JenkinsResultsParserUtil.HTTPAuthorization.class);
-
 		Mockito.verify(
 			testrayServer
 		).setCommunicationFailureNotificationEnabled(
 			false
 		);
+
+		ArgumentCaptor<JenkinsResultsParserUtil.HTTPAuthorization>
+			httpAuthorizationArgumentCaptor = ArgumentCaptor.forClass(
+				JenkinsResultsParserUtil.HTTPAuthorization.class);
 
 		Mockito.verify(
 			testrayServer

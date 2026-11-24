@@ -337,6 +337,28 @@ public class DXPCloudClientTestrayImporterTest
 
 	private TestrayBuild _mockTestrayBuild() {
 		TestrayBuild testrayBuild = Mockito.mock(TestrayBuild.class);
+		TestrayProductVersion testrayProductVersion = Mockito.mock(
+			TestrayProductVersion.class);
+		TestrayProject testrayProject = Mockito.mock(TestrayProject.class);
+		TestrayRoutine testrayRoutine = Mockito.mock(TestrayRoutine.class);
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			testrayProductVersion
+		).getName();
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			testrayProject
+		).getName();
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			testrayRoutine
+		).getName();
 
 		Mockito.doReturn(
 			RandomTestUtil.randomLong()
@@ -350,22 +372,11 @@ public class DXPCloudClientTestrayImporterTest
 			testrayBuild
 		).getName();
 
-		TestrayProductVersion testrayProductVersion = Mockito.mock(
-			TestrayProductVersion.class);
-
 		Mockito.doReturn(
 			testrayProductVersion
 		).when(
 			testrayBuild
 		).getTestrayProductVersion();
-
-		Mockito.doReturn(
-			RandomTestUtil.randomString()
-		).when(
-			testrayProductVersion
-		).getName();
-
-		TestrayProject testrayProject = Mockito.mock(TestrayProject.class);
 
 		Mockito.doReturn(
 			testrayProject
@@ -374,24 +385,10 @@ public class DXPCloudClientTestrayImporterTest
 		).getTestrayProject();
 
 		Mockito.doReturn(
-			RandomTestUtil.randomString()
-		).when(
-			testrayProject
-		).getName();
-
-		TestrayRoutine testrayRoutine = Mockito.mock(TestrayRoutine.class);
-
-		Mockito.doReturn(
 			testrayRoutine
 		).when(
 			testrayBuild
 		).getTestrayRoutine();
-
-		Mockito.doReturn(
-			RandomTestUtil.randomString()
-		).when(
-			testrayRoutine
-		).getName();
 
 		return testrayBuild;
 	}

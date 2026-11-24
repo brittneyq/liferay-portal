@@ -179,10 +179,10 @@ public class TestrayResultsXMLClientTestrayImporterTest
 
 		_writeResultsFile(resultsFile2, testSuiteProperties2);
 
-		String randomString = RandomTestUtil.randomString();
-
 		File file = new File(
 			testrayResultsDir, RandomTestUtil.randomString() + ".txt");
+
+		String randomString = RandomTestUtil.randomString();
 
 		Files.write(
 			file.toPath(), randomString.getBytes(StandardCharsets.UTF_8));
@@ -250,10 +250,10 @@ public class TestrayResultsXMLClientTestrayImporterTest
 
 		_environmentMap.put("testrayResultsDir", testrayResultsDir.getPath());
 
-		String randomString = RandomTestUtil.randomString();
-
 		File file = new File(
 			testrayResultsDir, RandomTestUtil.randomString() + ".txt");
+
+		String randomString = RandomTestUtil.randomString();
 
 		Files.write(
 			file.toPath(), randomString.getBytes(StandardCharsets.UTF_8));
