@@ -676,9 +676,10 @@ public class BaseClientTestrayImporterTest
 	private final Map<String, String> _environmentMap = new HashMap<>();
 	private final TestrayCloudBucket _testrayCloudBucket = Mockito.mock(
 		TestrayCloudBucket.class);
-	private MockedStatic<TestrayCloudBucket> _testrayCloudBucketMockedStatic =
-		Mockito.mockStatic(TestrayCloudBucket.class);
-	private MockedStatic<TestrayFactory> _testrayFactoryMockedStatic =
+	private final MockedStatic<TestrayCloudBucket>
+		_testrayCloudBucketMockedStatic = Mockito.mockStatic(
+			TestrayCloudBucket.class);
+	private final MockedStatic<TestrayFactory> _testrayFactoryMockedStatic =
 		Mockito.mockStatic(TestrayFactory.class);
 	private final TestrayServer _testrayServer = Mockito.mock(
 		TestrayServer.class);

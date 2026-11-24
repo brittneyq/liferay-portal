@@ -87,8 +87,7 @@ public class DXPCloudClientTestrayImporterTest
 				"\"><testcase classname=\"", testSuiteName, "\" name=\"",
 				RandomTestUtil.randomString(), "\"/>", "<testcase classname=\"",
 				testSuiteName, "\" name=\"", RandomTestUtil.randomString(),
-				"\"><failure ",
-				"message=\"", failureMessage, "\"/>",
+				"\"><failure ", "message=\"", failureMessage, "\"/>",
 				"</testcase></testsuite></testsuites>"));
 
 		JenkinsResultsParserUtil.write(

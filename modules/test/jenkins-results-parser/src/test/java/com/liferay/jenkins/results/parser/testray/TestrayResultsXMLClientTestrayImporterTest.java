@@ -574,9 +574,10 @@ public class TestrayResultsXMLClientTestrayImporterTest
 	private final TestrayBuild _testrayBuild = Mockito.mock(TestrayBuild.class);
 	private final TestrayCloudBucket _testrayCloudBucket = Mockito.mock(
 		TestrayCloudBucket.class);
-	private MockedStatic<TestrayCloudBucket> _testrayCloudBucketMockedStatic =
-		Mockito.mockStatic(TestrayCloudBucket.class);
-	private MockedStatic<TestrayFactory> _testrayFactoryMockedStatic =
+	private final MockedStatic<TestrayCloudBucket>
+		_testrayCloudBucketMockedStatic = Mockito.mockStatic(
+			TestrayCloudBucket.class);
+	private final MockedStatic<TestrayFactory> _testrayFactoryMockedStatic =
 		Mockito.mockStatic(TestrayFactory.class);
 	private final TestrayProductVersion _testrayProductVersion = Mockito.mock(
 		TestrayProductVersion.class);
