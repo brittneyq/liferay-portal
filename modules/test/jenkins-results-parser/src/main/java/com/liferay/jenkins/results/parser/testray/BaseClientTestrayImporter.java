@@ -100,12 +100,12 @@ public abstract class BaseClientTestrayImporter
 					" on ", _testrayServerURL));
 		}
 
-		TestrayRoutine testrayRoutine = testrayProject.createTestrayRoutine(
-			testrayRoutineName);
-
 		TestrayProductVersion testrayProductVersion =
 			testrayProject.createTestrayProductVersion(
 				testrayProductVersionName);
+
+		TestrayRoutine testrayRoutine = testrayProject.createTestrayRoutine(
+			testrayRoutineName);
 
 		return testrayRoutine.createTestrayBuild(
 			testrayProductVersion, testrayBuildName, testrayBuildDate, null,

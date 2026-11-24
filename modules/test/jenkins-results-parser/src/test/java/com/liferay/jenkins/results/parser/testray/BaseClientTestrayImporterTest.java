@@ -148,12 +148,11 @@ public class BaseClientTestrayImporterTest
 
 	@Test
 	public void testConstructorTestrayCloudBucketName() {
-		_testConstructorTestrayCloudBucketName(
-			TestrayCloudBucket.DEFAULT_BUCKET_NAME, null, null);
-
 		String testrayCloudBucketName = RandomTestUtil.randomString();
 		String testrayS3BucketName = RandomTestUtil.randomString();
 
+		_testConstructorTestrayCloudBucketName(
+			TestrayCloudBucket.DEFAULT_BUCKET_NAME, null, null);
 		_testConstructorTestrayCloudBucketName(
 			testrayCloudBucketName, testrayCloudBucketName,
 			testrayS3BucketName);
@@ -169,9 +168,9 @@ public class BaseClientTestrayImporterTest
 		_testGetEnvVarValue("", systemPropertyValue, systemPropertyValue);
 		_testGetEnvVarValue(
 			environmentValue, environmentValue, systemPropertyValue);
-		_testGetEnvVarValue(null, systemPropertyValue, systemPropertyValue);
 
 		_testGetEnvVarValue(null, null, null);
+		_testGetEnvVarValue(null, systemPropertyValue, systemPropertyValue);
 	}
 
 	@Test
@@ -273,11 +272,10 @@ public class BaseClientTestrayImporterTest
 
 		JenkinsResultsParserUtil.setBuildProperties(buildProperties);
 
-		_testGetTestrayBuildTestrayServer("https://testray.liferay.com", null);
-
 		String testrayServerURL =
 			"https://" + RandomTestUtil.randomLowerCaseString();
 
+		_testGetTestrayBuildTestrayServer("https://testray.liferay.com", null);
 		_testGetTestrayBuildTestrayServer(testrayServerURL, testrayServerURL);
 	}
 
@@ -333,8 +331,8 @@ public class BaseClientTestrayImporterTest
 				testrayBuild
 			).getId();
 
-			List<File> resultsTarGzFiles = new ArrayList<>();
 			Map<String, byte[]> resultsTarGzFileContents = new HashMap<>();
+			List<File> resultsTarGzFiles = new ArrayList<>();
 
 			Mockito.doAnswer(
 				invocation -> {

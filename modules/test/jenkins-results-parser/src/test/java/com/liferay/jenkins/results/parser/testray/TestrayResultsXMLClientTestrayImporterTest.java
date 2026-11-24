@@ -146,17 +146,17 @@ public class TestrayResultsXMLClientTestrayImporterTest
 
 	@Test
 	public void testConstructor() throws Exception {
+		File file = temporaryFolder.newFile();
+
+		_testConstructor(
+			"Unable to find directory " + file.getPath(), file.getPath());
+
 		File missingDir = new File(
 			temporaryFolder.getRoot(), RandomTestUtil.randomString());
 
 		_testConstructor(
 			"Unable to find directory " + missingDir.getPath(),
 			missingDir.getPath());
-
-		File file = temporaryFolder.newFile();
-
-		_testConstructor(
-			"Unable to find directory " + file.getPath(), file.getPath());
 
 		_testConstructor("\"testrayResultsDir\" is not set", "");
 		_testConstructor("\"testrayResultsDir\" is not set", null);
@@ -411,8 +411,8 @@ public class TestrayResultsXMLClientTestrayImporterTest
 			invalidResultsFile.toPath(),
 			resultsXML.getBytes(StandardCharsets.UTF_8));
 
-		File validResultsFile = new File(testrayResultsDir, "b.xml");
 		Map<String, String> testSuiteProperties = _newTestSuiteProperties();
+		File validResultsFile = new File(testrayResultsDir, "b.xml");
 
 		_writeResultsFile(validResultsFile, testSuiteProperties);
 

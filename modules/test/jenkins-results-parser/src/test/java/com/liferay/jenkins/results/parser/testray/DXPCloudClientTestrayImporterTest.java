@@ -100,9 +100,9 @@ public class DXPCloudClientTestrayImporterTest
 
 		_runMain(projectDir, "playwright");
 
-		TestrayRoutine testrayRoutine = _testrayBuild.getTestrayRoutine();
 		TestrayProductVersion testrayProductVersion =
 			_testrayBuild.getTestrayProductVersion();
+		TestrayRoutine testrayRoutine = _testrayBuild.getTestrayRoutine();
 
 		Mockito.verify(
 			testrayRoutine
@@ -197,23 +197,23 @@ public class DXPCloudClientTestrayImporterTest
 
 		Element passedTestcaseElement = testcaseElements.get(0);
 
-		Assert.assertNull(passedTestcaseElement.element("failure"));
-
 		testEquals(
 			"passed",
 			_getPropertyValue(
 				passedTestcaseElement, "testray.testcase.status"));
 
+		Assert.assertNull(passedTestcaseElement.element("failure"));
+
 		Element failedTestcaseElement = testcaseElements.get(1);
-
-		Element failureElement = failedTestcaseElement.element("failure");
-
-		testEquals(failureMessage, failureElement.attributeValue("message"));
 
 		testEquals(
 			"failed",
 			_getPropertyValue(
 				failedTestcaseElement, "testray.testcase.status"));
+
+		Element failureElement = failedTestcaseElement.element("failure");
+
+		testEquals(failureMessage, failureElement.attributeValue("message"));
 
 		testEquals(5, _keys.size());
 
@@ -281,7 +281,6 @@ public class DXPCloudClientTestrayImporterTest
 			testName,
 			_getPropertyValue(testcaseElement, "testray.testcase.name"));
 
-		List<String> attachmentNames = new ArrayList<>();
 		Pattern attachmentKeyPattern = Pattern.compile(
 			JenkinsResultsParserUtil.combine(
 				"gcp/\\d{4}-\\d{2}/dxp-cloud/",
@@ -289,6 +288,7 @@ public class DXPCloudClientTestrayImporterTest
 				Pattern.quote(testDir.getName()),
 				"/(console\\.txt|index\\.html|poshi-log\\.txt|summary\\.html)",
 				"\\.gz"));
+		List<String> attachmentNames = new ArrayList<>();
 		Element attachmentsElement = testcaseElement.element("attachments");
 
 		for (Element fileElement : attachmentsElement.elements("file")) {
